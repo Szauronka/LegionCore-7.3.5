@@ -39,6 +39,7 @@ target_include_directories(shared
 
 target_link_libraries(shared
   PRIVATE
+    trinity-core-interface
     process
   PUBLIC
     database

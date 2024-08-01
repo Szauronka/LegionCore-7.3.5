@@ -14,6 +14,10 @@ cmake_minimum_required(VERSION 3.11)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
+# add this options before PROJECT keyword
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+
 # Set projectname (must be done AFTER setting configurationtypes)
 project(LegionCore)
 

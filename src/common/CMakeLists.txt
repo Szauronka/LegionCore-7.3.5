@@ -59,6 +59,7 @@ target_include_directories(common
 target_link_libraries(common
   PRIVATE
     process
+    trinity-core-interface
   PUBLIC
     trinity-core-interface
     mysql
