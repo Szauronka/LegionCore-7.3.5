@@ -18,10 +18,11 @@
 #include "LoginRESTService.h"
 #include "Configuration/Config.h"
 #include "DatabaseEnv.h"
-#include "IpNetwork.h"
 #include "Errors.h"
 #include "ProtobufJSON.h"
 #include "Optional.h"
+#include "JSON/ProtobufJSON.h"
+#include "IpNetwork.h"
 #include "Realm.h"
 #include "Resolver.h"
 #include "SessionManager.h"
@@ -78,7 +79,8 @@ bool LoginRESTService::Start(Trinity::Asio::IoContext& ioContext)
         return false;
     }
 
-    _localAddress = *localAddress;
+
+    _localAddress = endPoint->endpoint();
     _localNetmask = Trinity::Net::GetDefaultNetmaskV4(_localAddress.address().to_v4());
 
     // set up form inputs

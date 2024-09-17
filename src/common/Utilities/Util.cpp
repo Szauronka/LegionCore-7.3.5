@@ -20,6 +20,7 @@
 #include "Util.h"
 #include "Common.h"
 #include "CompilerDefs.h"
+#include "IpAddress.h"
 #include "utf8.h"
 #include "Errors.h" // for ASSERT
 #include <cstdarg>
