@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2021 TrinityCore <https://www.trinitycore.org/>
+ * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,10 +18,8 @@
 #ifndef Resolver_h__
 #define Resolver_h__
 
-#include "IoContext.h"
-#include "Optional.h"
+#include "Common.h"
 #include <boost/asio/ip/tcp.hpp>
-#include <string>
 
 namespace Trinity
 {
@@ -33,17 +31,20 @@ namespace Trinity
         class Resolver
         {
         public:
-            explicit Resolver(IoContext& ioContext) : _impl(ioContext) { }
+            explicit Resolver(boost::asio::io_service& ioService) : _impl(ioService) { }
 
             Optional<boost::asio::ip::tcp::endpoint> Resolve(boost::asio::ip::tcp const& protocol, std::string const& host, std::string const& service)
             {
                 boost::system::error_code ec;
-                boost::asio::ip::resolver_base::flags flagsResolver = boost::asio::ip::resolver_base::all_matching;
-                boost::asio::ip::tcp::resolver::results_type results = _impl.resolve(protocol, host, service, flagsResolver, ec);
-                if (results.begin() == results.end() || ec)
+                boost::asio::ip::resolver_query_base::flags flagsResolver = boost::asio::ip::resolver_query_base::all_matching;
+                boost::asio::ip::tcp::resolver::query externalAddressQuery(protocol, host, service, flagsResolver);
+
+                boost::asio::ip::tcp::resolver::iterator end;
+                boost::asio::ip::tcp::resolver::iterator results = _impl.resolve(externalAddressQuery, ec);
+                if (results == end || ec)
                     return {};
 
-                return results.begin()->endpoint();
+                return results->endpoint();
             }
 
         private:

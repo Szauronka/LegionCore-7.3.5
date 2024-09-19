@@ -21,6 +21,8 @@
 
 #include "Define.h"
 #include "Realm.h"
+#include "Resolver.h"
+#include <array>
 #include <map>
 #include <array>
 #include <vector>
@@ -75,7 +77,6 @@ class RealmList
 {
 public:
     typedef std::map<Battlenet::RealmHandle, Realm> RealmMap;
-    typedef std::map<uint32, boost::asio::ip::address> RealmIPMap;
 
     static RealmList* Instance();
 
@@ -104,9 +105,9 @@ private:
 
     std::vector<RealmBuildInfo> _builds;
     RealmMap _realms;
-    RealmIPMap _realmIPs;
     std::unordered_set<std::string> _subRegions;
     uint32 _updateInterval;
+
     std::unique_ptr<Trinity::Asio::DeadlineTimer> _updateTimer;
     std::unique_ptr<Trinity::Asio::Resolver> _resolver;
     mutable std::recursive_mutex i_RealmList_lock;

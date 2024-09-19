@@ -58,8 +58,9 @@ bool LoginRESTService::Start(Trinity::Asio::IoContext& ioContext)
         _port = 8081;
     }
 
-    boost::system::error_code ec;
-    Trinity::Asio::Resolver resolver(ioContext);
+
+    Trinity::Asio::Resolver resolver(ioService);
+
 
     std::string configuredAddress = sConfigMgr->GetStringDefault("LoginREST.ExternalAddress", "127.0.0.1");
     Optional<boost::asio::ip::tcp::endpoint> externalAddress = resolver.Resolve(boost::asio::ip::tcp::v4(), configuredAddress, std::to_string(_port));
@@ -80,7 +81,7 @@ bool LoginRESTService::Start(Trinity::Asio::IoContext& ioContext)
     }
 
 
-    _localAddress = endPoint->endpoint();
+    _localAddress = *localAddress;
     _localNetmask = Trinity::Net::GetDefaultNetmaskV4(_localAddress.address().to_v4());
 
     // set up form inputs

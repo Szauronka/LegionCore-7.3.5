@@ -50,8 +50,10 @@ RealmList* RealmList::Instance()
 void RealmList::Initialize(Trinity::Asio::IoContext& ioContext, uint32 updateInterval)
 {
     _updateInterval = updateInterval;
+
     _updateTimer = Trinity::make_unique<Trinity::Asio::DeadlineTimer>(ioContext);
     _resolver = std::make_unique<Trinity::Asio::Resolver>(ioContext);
+
 
     LoadBuildInfo();
     // Get the content of the realmlist table in the database
@@ -192,7 +194,6 @@ void RealmList::UpdateRealms(boost::system::error_code const& error)
 
                 Battlenet::RealmHandle id{ region, battlegroup, realmId };
 
-                _realmIPs[realmId] = externalAddress->address();
 
                 UpdateRealm(id, build, name, externalAddress->address(), localAddress->address(), localSubmask->address(), port, icon, flag,
                     timezone, (allowedSecurityLevel <= SEC_ADMINISTRATOR ? AccountTypes(allowedSecurityLevel) : SEC_ADMINISTRATOR), pop);
