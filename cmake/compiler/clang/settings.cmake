@@ -1,3 +1,5 @@
+include(CheckCXXSourceCompiles)
+
 # Set build-directive (used in core to tell which buildtype we used)
 target_compile_definitions(trinity-compile-option-interface
   INTERFACE
@@ -36,3 +38,30 @@ target_compile_definitions(trinity-compile-option-interface
   INTERFACE
     -DDEBUG=1)
 
+if (BUILD_SHARED_LIBS)
+  # -fPIC is needed to allow static linking in shared libs.
+  # -fvisibility=hidden sets the default visibility to hidden to prevent exporting of all symbols.
+  target_compile_options(trinity-compile-option-interface
+    INTERFACE
+      -fPIC)
+
+  target_compile_options(trinity-hidden-symbols-interface
+    INTERFACE
+      -fvisibility=hidden)
+
+  # --no-undefined to throw errors when there are undefined symbols
+  # (caused through missing TRINITY_*_API macros).
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --no-undefined")
+
+  message(STATUS "Clang: Disallow undefined symbols")
+endif()
+
+# speedup PCH builds by forcing template instantiations during PCH generation
+set(CMAKE_REQUIRED_FLAGS "-fpch-instantiate-templates")
+check_cxx_source_compiles("int main() { return 0; }" CLANG_HAS_PCH_INSTANTIATE_TEMPLATES)
+unset(CMAKE_REQUIRED_FLAGS)
+if(CLANG_HAS_PCH_INSTANTIATE_TEMPLATES)
+  target_compile_options(trinity-compile-option-interface
+          INTERFACE
+          -fpch-instantiate-templates)
+endif()

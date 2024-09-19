@@ -46,8 +46,9 @@ int32 handle_post_plugin(soap* soapClient)
     return sLoginService.HandlePost(soapClient);
 }
 
-bool LoginRESTService::Start(Trinity::Asio::IoContext& ioContext)
+bool LoginRESTService::Start(Trinity::Asio::IoContext* ioContext)
 {
+    _ioContext = ioContext;
     _waitTime = sConfigMgr->GetIntDefault("RestWaitTime", 60);
 
     _bindIP = sConfigMgr->GetStringDefault("BindIP", "0.0.0.0");
@@ -59,7 +60,8 @@ bool LoginRESTService::Start(Trinity::Asio::IoContext& ioContext)
     }
 
 
-    Trinity::Asio::Resolver resolver(ioService);
+    Trinity::Asio::Resolver resolver(*ioContext);
+
 
 
     std::string configuredAddress = sConfigMgr->GetStringDefault("LoginREST.ExternalAddress", "127.0.0.1");
@@ -104,9 +106,10 @@ bool LoginRESTService::Start(Trinity::Asio::IoContext& ioContext)
     input->set_type("submit");
     input->set_label("Log In");
 
-    _loginTicketCleanupTimer = new Trinity::Asio::DeadlineTimer(ioContext);
+
+    _loginTicketCleanupTimer = std::make_shared<Trinity::Asio::DeadlineTimer>(*ioContext);
     _loginTicketCleanupTimer->expires_from_now(boost::posix_time::seconds(10));
-    _loginTicketCleanupTimer->async_wait(std::bind(&LoginRESTService::CleanupLoginTickets, this, std::placeholders::_1));
+    _loginTicketCleanupTimer->async_wait(std::bind(&LoginRESTService::CleanupLoginTickets, this));
 
     _thread = std::thread(std::bind(&LoginRESTService::Run, this));
     return true;
@@ -393,14 +396,8 @@ void LoginRESTService::AddLoginTicket(std::string const& id, std::unique_ptr<Bat
     ticket.ExpiryTime = time(nullptr) + _waitTime;
 }
 
-void LoginRESTService::CleanupLoginTickets(boost::system::error_code const& error)
+void LoginRESTService::CleanupLoginTickets()
 {
-    if (error)
-    {
-        TC_LOG_TRACE(LOG_FILTER_BATTLENET, "REST LoginRESTService::CleanupLoginTickets error %s", error.message().c_str());
-        return;
-    }
-
     time_t now = time(nullptr);
 
     {
@@ -415,7 +412,7 @@ void LoginRESTService::CleanupLoginTickets(boost::system::error_code const& erro
     }
 
     _loginTicketCleanupTimer->expires_from_now(boost::posix_time::seconds(10));
-    _loginTicketCleanupTimer->async_wait(std::bind(&LoginRESTService::CleanupLoginTickets, this, std::placeholders::_1));
+    _loginTicketCleanupTimer->async_wait(std::bind(&LoginRESTService::CleanupLoginTickets, this));
 }
 
 Namespace namespaces[] =

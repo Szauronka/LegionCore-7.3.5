@@ -18,12 +18,15 @@
 #ifndef LoginRESTService_h__
 #define LoginRESTService_h__
 
+#include "DeadlineTimer.h"
 #include "IoContext.h"
-#include "IpAddress.h"
 #include "Session.h"
 #include "Define.h"
 #include "Login.pb.h"
+#include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ip/address.hpp>
+#include <boost/asio/deadline_timer.hpp>
 #include "DeadlineTimer.h"
 #include <atomic>
 #include <mutex>
@@ -35,11 +38,13 @@ struct soap_plugin;
 class LoginRESTService
 {
 public:
-    LoginRESTService() : _stopped(false), _port(0), _loginTicketCleanupTimer(nullptr) { }
+    LoginRESTService() : _ioContext(nullptr), _stopped(false), _port(0), _loginTicketCleanupTimer(nullptr) { }
 
     static LoginRESTService& Instance();
 
-    bool Start(Trinity::Asio::IoContext& ioContext);
+
+    bool Start(Trinity::Asio::IoContext* ioContext);
+
     void Stop();
 
     boost::asio::ip::tcp::endpoint const& GetAddressForClient(boost::asio::ip::address const& address) const;
@@ -60,7 +65,7 @@ private:
     std::string CalculateShaPassHash(std::string const& name, std::string const& password);
 
     void AddLoginTicket(std::string const& id, std::unique_ptr<Battlenet::Session::AccountInfo> accountInfo);
-    void CleanupLoginTickets(boost::system::error_code const& error);
+    void CleanupLoginTickets();
 
     struct LoginTicket
     {
@@ -98,6 +103,7 @@ private:
         char const* ContentType;
     };
 
+    Trinity::Asio::IoContext* _ioContext;
     std::thread _thread;
     std::atomic<bool> _stopped;
     Battlenet::JSON::Login::FormInputs _formInputs;
@@ -109,7 +115,9 @@ private:
     boost::asio::ip::address_v4 _localNetmask;
     std::mutex _loginTicketMutex;
     std::unordered_map<std::string, LoginTicket> _validLoginTickets;
-    Trinity::Asio::DeadlineTimer* _loginTicketCleanupTimer;
+
+    std::shared_ptr<Trinity::Asio::DeadlineTimer> _loginTicketCleanupTimer;
+
 };
 
 #define sLoginService LoginRESTService::Instance()

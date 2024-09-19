@@ -23,7 +23,9 @@
 #include "LogCommon.h"
 #include "Appender.h"
 #include "Logger.h"
-#include "Strand.h"
+#include "AsioHacksFwd.h"
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/strand.hpp>
 #include <string>
 #include <unordered_map>
 #include <string>
@@ -31,6 +33,9 @@
 #include <safe_ptr.h>
 #include "StringFormat.h"
 #include "Common.h"
+
+typedef std::unordered_map<uint8, Logger> LoggerMap;
+typedef std::vector<Logger*> LoggerList;
 
 namespace Trinity
 {
@@ -40,22 +45,20 @@ namespace Trinity
     }
 }
 
-typedef std::unordered_map<uint8, Logger> LoggerMap;
-typedef std::vector<Logger*> LoggerList;
-
 class Log
 {
+private:
     Log();
     ~Log();
-
-public:
     Log(Log const&) = delete;
     Log(Log&&) = delete;
     Log& operator=(Log const&) = delete;
     Log& operator=(Log&&) = delete;
 
-    static Log* instance(Trinity::Asio::IoContext* ioContext = nullptr);
+public:
+    static Log* instance();
 
+    void Initialize(Trinity::Asio::IoContext* ioContext);
     void LoadFromConfig();
     void Close();
     bool ShouldLog(LogFilterType type, LogLevel level) const;
@@ -93,7 +96,6 @@ public:
     static void outTimestamp(FILE* file);
     uint32 GetRealmID() const { return realm; }
 
-    void outU(const char* str, ...);
 
     std::atomic<bool> _checkLock{};
 

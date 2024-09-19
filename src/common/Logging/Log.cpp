@@ -18,7 +18,6 @@
 
 #include "Log.h"
 #include "Common.h"
-#include "Strand.h"
 #include "Config.h"
 #include "Util.h"
 #include "AppenderConsole.h"
@@ -27,6 +26,7 @@
 #include "LogOperation.h"
 #include "Logger.h"
 #include "Duration.h"
+#include "Strand.h"
 
 #include <cstdarg>
 #include <sstream>
@@ -47,7 +47,6 @@ Log::Log() : _ioContext(nullptr), _strand(nullptr)
     SetRealmID(0);
     m_logsTimestamp = "_" + GetTimestampStr();
     loggerList.resize(LOG_FILTER_MAX);
-    LoadFromConfig();
     _checkLock = false;
 }
 
@@ -57,17 +56,21 @@ Log::~Log()
     Close();
 }
 
-Log* Log::instance(Trinity::Asio::IoContext* ioContext)
+Log* Log::instance()
 {
     static Log instance;
+    return &instance;
+}
 
-    if (ioContext != nullptr)
+void Log::Initialize(Trinity::Asio::IoContext* ioContext)
+{
+    if (ioContext)
     {
-        instance._ioContext = ioContext;
-        instance._strand = new Trinity::Asio::Strand(*ioContext);
+        _ioContext = ioContext;
+        _strand = new Trinity::Asio::Strand(*ioContext);
     }
 
-    return &instance;
+    LoadFromConfig();
 }
 
 uint8 Log::NextAppenderId()
@@ -314,11 +317,15 @@ void Log::write(std::unique_ptr<LogMessage>&& msg)
 
     if (_ioContext)
     {
-        std::shared_ptr<LogOperation> logOperation = std::make_shared<LogOperation>(logger, std::move(msg));
+        auto logOperation = std::make_shared<LogOperation>(logger, std::move(msg));
         Trinity::Asio::post(*_ioContext, Trinity::Asio::bind_executor(*_strand, [logOperation]() { logOperation->call(); }));
     }
     else
         logger->write(msg.get());
+
+    // initialize stderr and stdout, without this launcher wont have realtime output
+    std::cout << "";
+    std::cerr << "";
 }
 
 std::string Log::GetTimestampStr()
@@ -668,19 +675,6 @@ void Log::outMapInfo(const char * str, ...)
         va_end(ap);
         fflush(mapInfoFile);
     }
-}
-
-void Log::outU(const char* str, ...)
-{
-    if (!str)
-        return;
-
-    va_list ap;
-    va_start(ap, str);
-
-    vlog(LOG_FILTER_UWOW_CORE, LOG_LEVEL_ERROR, str, ap);
-
-    va_end(ap);
 }
 
 void Log::outWarden(const char * str, ...)
