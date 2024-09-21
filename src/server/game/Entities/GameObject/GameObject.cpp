@@ -134,7 +134,7 @@ void GameObject::RemoveFromOwner()
     else if (ownerGUID.IsPet())
         ownerType = "pet";
 
-    TC_LOG_FATAL(LOG_FILTER_GENERAL, "Delete GameObject (GUID: %u Entry: %u SpellId %u LinkedGO %u) that lost references to owner (GUID %u Type '%s') GO list. Crash possible later.",
+    TC_LOG_FATAL("misc", "Delete GameObject (GUID: %u Entry: %u SpellId %u LinkedGO %u) that lost references to owner (GUID %u Type '%s') GO list. Crash possible later.",
         GetGUIDLow(), GetGOInfo()->entry, m_spellId, GetGOInfo()->GetLinkedGameObjectEntry(), ownerGUID.GetCounter(), ownerType);
     SetOwnerGUID(ObjectGuid::Empty);
 }
@@ -230,7 +230,7 @@ bool GameObject::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map* map, u
     m_stationaryPosition.Relocate(pos);
     if (!IsPositionValid())
     {
-        TC_LOG_ERROR(LOG_FILTER_GENERAL, "Gameobject (GUID: %u Entry: %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)", guidlow, name_id, pos.GetPositionX(), pos.GetPositionY());
+        TC_LOG_ERROR("misc", "Gameobject (GUID: %u Entry: %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)", guidlow, name_id, pos.GetPositionX(), pos.GetPositionY());
         return false;
     }
 
@@ -249,7 +249,7 @@ bool GameObject::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map* map, u
     GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(name_id);
     if (!goinfo)
     {
-        TC_LOG_ERROR(LOG_FILTER_SQL, "Gameobject (GUID: %u Entry: %u) not created: non-existing entry in `gameobject_template`. Map: %u (X: %f Y: %f Z: %f)", guidlow, name_id, map->GetId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
+        TC_LOG_ERROR("sql.sql", "Gameobject (GUID: %u Entry: %u) not created: non-existing entry in `gameobject_template`. Map: %u (X: %f Y: %f Z: %f)", guidlow, name_id, map->GetId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
         return false;
     }
 
@@ -262,7 +262,7 @@ bool GameObject::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map* map, u
 
     if (goinfo->type >= MAX_GAMEOBJECT_TYPE)
     {
-        TC_LOG_ERROR(LOG_FILTER_SQL, "Gameobject (GUID: %u Entry: %u) not created: non-existing GO type '%u' in `gameobject_template`. It will crash client if created.", guidlow, name_id, goinfo->type);
+        TC_LOG_ERROR("sql.sql", "Gameobject (GUID: %u Entry: %u) not created: non-existing GO type '%u' in `gameobject_template`. It will crash client if created.", guidlow, name_id, goinfo->type);
         return false;
     }
 
@@ -402,7 +402,7 @@ void GameObject::Update(uint32 diff)
     if (!AI())
     {
         if (!AIM_Initialize())
-            TC_LOG_ERROR(LOG_FILTER_GENERAL, "Could not initialize GameObjectAI");
+            TC_LOG_ERROR("misc", "Could not initialize GameObjectAI");
     } else
         AI()->UpdateAI(diff);
 
@@ -889,7 +889,7 @@ void GameObject::SaveToDB()
     GameObjectData const* data = sObjectMgr->GetGOData(m_DBTableGuid);
     if (!data)
     {
-        TC_LOG_ERROR(LOG_FILTER_GENERAL, "GameObject::SaveToDB failed, cannot get gameobject data!");
+        TC_LOG_ERROR("misc", "GameObject::SaveToDB failed, cannot get gameobject data!");
         return;
     }
 
@@ -974,7 +974,7 @@ bool GameObject::LoadGameObjectFromDB(ObjectGuid::LowType guid, Map* map, bool a
     GameObjectData const* data = sObjectMgr->GetGOData(guid);
     if (!data)
     {
-        TC_LOG_ERROR(LOG_FILTER_SQL, "Gameobject (GUID: %u) not found in table `gameobject`, can't load. ", guid);
+        TC_LOG_ERROR("sql.sql", "Gameobject (GUID: %u) not found in table `gameobject`, can't load. ", guid);
         return false;
     }
 
@@ -1156,9 +1156,6 @@ uint16 GameObject::GetAIAnimKitId() const
 
 uint32 GameObject::GetScriptId() const
 {
-    if (GameObjectData const* gameObjectData = GetGOData())
-        return gameObjectData->ScriptId;
-
     return GetGOInfo()->ScriptId;
 }
 
@@ -1749,7 +1746,7 @@ void GameObject::Use(Unit* user)
 
                 if (info->goober.eventID)
                 {
-                    TC_LOG_DEBUG(LOG_FILTER_MAPSCRIPTS, "Goober ScriptStart id %u for GO entry %u (GUID %u).", info->goober.eventID, GetEntry(), GetDBTableGUIDLow());
+                    TC_LOG_DEBUG("maps.script", "Goober ScriptStart id %u for GO entry %u (GUID %u).", info->goober.eventID, GetEntry(), GetDBTableGUIDLow());
                     GetMap()->ScriptsStart(sEventScripts, info->goober.eventID, player, this);
                     EventInform(info->goober.eventID);
                 }
@@ -1831,7 +1828,7 @@ void GameObject::Use(Unit* user)
 
                     //provide error, no fishable zone or area should be 0
                     if (!zone_skill)
-                        TC_LOG_ERROR(LOG_FILTER_SQL, "Fishable areaId %u are not properly defined in `skill_fishing_base_level`.", subzone);
+                        TC_LOG_ERROR("sql.sql", "Fishable areaId %u are not properly defined in `skill_fishing_base_level`.", subzone);
 
                     int32 skill = player->GetSkillValue(SKILL_FISHING);
 
@@ -1847,7 +1844,7 @@ void GameObject::Use(Unit* user)
 
                     int32 roll = irand(1, 100);
 
-                    TC_LOG_DEBUG(LOG_FILTER_GENERAL, "Fishing check (skill: %i zone min skill: %i chance %i roll: %i", skill, zone_skill, chance, roll);
+                    TC_LOG_DEBUG("misc", "Fishing check (skill: %i zone min skill: %i chance %i roll: %i", skill, zone_skill, chance, roll);
 
                     // but you will likely cause junk in areas that require a high fishing skill (not yet implemented)
                     if (chance >= roll)
@@ -2294,7 +2291,7 @@ void GameObject::Use(Unit* user)
         }
         default:
             if (GetGoType() >= MAX_GAMEOBJECT_TYPE)
-                TC_LOG_ERROR(LOG_FILTER_GENERAL, "GameObject::Use(): unit (type: %u, guid: %u, name: %s) tries to use object (guid: %u, entry: %u, name: %s) of unknown type (%u)",
+                TC_LOG_ERROR("misc", "GameObject::Use(): unit (type: %u, guid: %u, name: %s) tries to use object (guid: %u, entry: %u, name: %s) of unknown type (%u)",
                     user->GetTypeId(), user->GetGUIDLow(), user->GetName(), GetGUIDLow(), GetEntry(), GetGOInfo()->name.c_str(), GetGoType());
             break;
     }
@@ -2306,9 +2303,9 @@ void GameObject::Use(Unit* user)
     if (!spellInfo)
     {
         if (!user->IsPlayer() || !sOutdoorPvPMgr->HandleCustomSpell(user->ToPlayer(), spellId, this))
-            TC_LOG_ERROR(LOG_FILTER_GENERAL, "WORLD: unknown spell id %u at use action for gameobject (Entry: %u GoType: %u)", spellId, GetEntry(), GetGoType());
+            TC_LOG_DEBUG("misc", "WORLD: unknown spell id %u at use action for gameobject (Entry: %u GoType: %u)", spellId, GetEntry(), GetGoType());
         else
-            TC_LOG_ERROR(LOG_FILTER_GENERAL, "WORLD: %u non-dbc spell was handled by OutdoorPvP", spellId);
+            TC_LOG_DEBUG("misc", "WORLD: %u non-dbc spell was handled by OutdoorPvP", spellId);
         return;
     }
 
@@ -2318,16 +2315,16 @@ void GameObject::Use(Unit* user)
         CastSpell(user, spellId);
 }
 
-SpellCastResult GameObject::CastSpell(Unit* target, uint32 spellId)
+void GameObject::CastSpell(Unit* target, uint32 spellId)
 {
     if (target)
         if (Player* tmpPlayer = target->ToPlayer())
             if (tmpPlayer->IsSpectator())
-                return SPELL_FAILED_ERROR;
+                return;
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
-        return SPELL_FAILED_ERROR;
+        return;
 
     bool self = false;
 
@@ -2365,8 +2362,8 @@ SpellCastResult GameObject::CastSpell(Unit* target, uint32 spellId)
     if (self)
     {
         if (target)
-            return target->CastSpell(target, spellInfo, true);
-        return SPELL_FAILED_ERROR;
+            target->CastSpell(target, spellInfo, true);
+        return;
     }
 
     if (goInfo->type == GAMEOBJECT_TYPE_TRAP && target && target->IsPlayer())
@@ -2377,14 +2374,14 @@ SpellCastResult GameObject::CastSpell(Unit* target, uint32 spellId)
     //summon world trigger
     Creature* trigger = SummonTrigger(GetPositionX(), GetPositionY(), GetPositionZ(), 0, spellInfo->CalcCastTime() + 100);
     if (!trigger)
-        return SPELL_FAILED_ERROR;
+        return;
 
     if (Unit* owner = GetOwner())
     {
         trigger->setFaction(owner->getFaction());
         // needed for GO casts for proper target validation checks
         trigger->SetGuidValue(UNIT_FIELD_SUMMONED_BY, owner->GetGUID());
-        return trigger->CastSpell(target ? target : trigger, spellInfo, true, nullptr, nullptr, owner->GetGUID());
+        trigger->CastSpell(target ? target : trigger, spellInfo, true, nullptr, nullptr, owner->GetGUID());
     }
     else
     {
@@ -2393,7 +2390,7 @@ SpellCastResult GameObject::CastSpell(Unit* target, uint32 spellId)
         trigger->setFaction(14);
         // Set owner guid for target if no owner available - needed by trigger auras
         // - trigger gets despawned and there's no caster avalible (see AuraEffect::TriggerSpell())
-        return trigger->CastSpell(target ? target : trigger, spellInfo, true, nullptr, nullptr, target ? target->GetGUID() : ObjectGuid::Empty);
+        trigger->CastSpell(target ? target : trigger, spellInfo, true, nullptr, nullptr, target ? target->GetGUID() : ObjectGuid::Empty);
     }
 }
 
@@ -3201,15 +3198,14 @@ public:
     bool IsSpawned() const override { return _owner->isSpawned(); }
     uint32 GetDisplayId() const override { return _owner->GetDisplayId(); }
     uint8 GetNameSetId() const override { return _owner->GetNameSetId(); }
-    //bool IsInPhase(std::set<uint32> const& phases) const override { return _owner->GetPhases();}
     bool InSamePhaseId(std::set<uint32> const& phases, bool otherUsePlayerPhasingRules) const override { return _owner->InSamePhaseId(phases, otherUsePlayerPhasingRules); }
     uint32 GetPhaseMask() const override { return _owner->GetPhaseMask(); }
     G3D::Vector3 GetPosition() const override { return G3D::Vector3(_owner->GetPositionX(), _owner->GetPositionY(), _owner->GetPositionZ()); }
     float GetOrientation() const override { return _owner->GetOrientation(); }
     float GetScale() const override { return _owner->GetObjectScale(); }
-    //bool IsDoor() const override  { return _owner->GetGoType() == GAMEOBJECT_TYPE_DOOR; }
-   // GameObject const* GetOwner() const override  { return _owner; }
-   // uint32 GetGUIDLow() const override  { return _owner->GetGUIDLow(); }
+    bool IsDoor() const override  { return _owner->GetGoType() == GAMEOBJECT_TYPE_DOOR; }
+    GameObject const* GetOwner() const override  { return _owner; }
+    uint32 GetGUIDLow() const override  { return _owner->GetGUIDLow(); }
 
     void DebugVisualizeCorner(G3D::Vector3 const& corner) const override
     {

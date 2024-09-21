@@ -70,7 +70,7 @@ bool WorldSocketMgr::StartNetwork(Trinity::Asio::IoContext& ioContext, std::stri
 
     if (m_SockOutUBuff <= 0)
     {
-        TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "Network.OutUBuff is wrong in your config file");
+        TC_LOG_ERROR("network", "Network.OutUBuff is wrong in your config file");
         return false;
     }
 
@@ -104,7 +104,7 @@ void WorldSocketMgr::OnSocketOpen(tcp::socket&& sock, uint32 threadIndex)
         sock.set_option(boost::asio::socket_base::send_buffer_size(_socketSendBufferSize), err);
         if (err && err != boost::system::errc::not_supported)
         {
-            TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "WorldSocketMgr::OnSocketOpen sock.set_option(boost::asio::socket_base::send_buffer_size) err = %s", err.message().c_str());
+            TC_LOG_ERROR("network", "WorldSocketMgr::OnSocketOpen sock.set_option(boost::asio::socket_base::send_buffer_size) err = %s", err.message().c_str());
             return;
         }
     }
@@ -116,7 +116,7 @@ void WorldSocketMgr::OnSocketOpen(tcp::socket&& sock, uint32 threadIndex)
         sock.set_option(boost::asio::ip::tcp::no_delay(true), err);
         if (err)
         {
-            TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "WorldSocketMgr::OnSocketOpen sock.set_option(boost::asio::ip::tcp::no_delay) err = %s", err.message().c_str());
+            TC_LOG_ERROR("network", "WorldSocketMgr::OnSocketOpen sock.set_option(boost::asio::ip::tcp::no_delay) err = %s", err.message().c_str());
             return;
         }
     }

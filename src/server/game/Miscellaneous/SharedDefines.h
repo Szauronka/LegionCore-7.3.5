@@ -6188,6 +6188,8 @@ enum class UIErrors : uint32
 	ERR_GLYPH_TARGET_NOT_AVAILABLE                          = 984,
 };
 
+#define MAX_ACCOUNT_TUTORIAL_VALUES 8
+
 enum class RaidGroupReason : uint8
 {
     NONE                    = 0,

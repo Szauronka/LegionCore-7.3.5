@@ -370,7 +370,7 @@ void Item::UpdateDuration(Player* owner, uint32 diff)
     if (!GetUInt32Value(ITEM_FIELD_EXPIRATION))
         return;
 
-    TC_LOG_DEBUG(LOG_FILTER_PLAYER_ITEMS, "Item::UpdateDuration Item (Entry: %u Duration %u Diff %u)", GetEntry(), GetUInt32Value(ITEM_FIELD_EXPIRATION), diff);
+    TC_LOG_DEBUG("entities.player.items", "Item::UpdateDuration Item (Entry: %u Duration %u Diff %u)", GetEntry(), GetUInt32Value(ITEM_FIELD_EXPIRATION), diff);
 
     if (GetUInt32Value(ITEM_FIELD_EXPIRATION) <= diff)
     {
@@ -1219,7 +1219,7 @@ void Item::AddToUpdateQueueOf(Player* player)
 
     if (player->GetGUID() != GetOwnerGUID())
     {
-        TC_LOG_DEBUG(LOG_FILTER_PLAYER_ITEMS, "Item::AddToUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GetOwnerGUID().GetGUIDLow(), player->GetGUIDLow());
+        TC_LOG_DEBUG("entities.player.items", "Item::AddToUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GetOwnerGUID().GetGUIDLow(), player->GetGUIDLow());
         return;
     }
 
@@ -1241,7 +1241,7 @@ void Item::RemoveFromUpdateQueueOf(Player* player)
 
     if (player->GetGUID() != GetOwnerGUID())
     {
-        TC_LOG_DEBUG(LOG_FILTER_PLAYER_ITEMS, "Item::RemoveFromUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GetOwnerGUID().GetGUIDLow(), player->GetGUIDLow());
+        TC_LOG_DEBUG("entities.player.items", "Item::RemoveFromUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GetOwnerGUID().GetGUIDLow(), player->GetGUIDLow());
         return;
     }
 
@@ -3144,7 +3144,7 @@ void BonusData::AddBonus(uint32 type, int32 const (&values)[3])
 
 void Item::ApplyItemChildEquipment(Player* owner, bool apply)
 {
-    //TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "Item::ApplyItemChildEquipment apply %u", apply);
+    //TC_LOG_DEBUG("network", "Item::ApplyItemChildEquipment apply %u", apply);
 
     ItemChildEquipmentEntry const* childEquipement = sDB2Manager.GetItemChildEquipment(GetEntry());
     if (!childEquipement)

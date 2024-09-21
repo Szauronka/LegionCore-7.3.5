@@ -41,7 +41,7 @@ target_link_libraries(shared
   PRIVATE
     process
   PUBLIC
-    mysql
+    database
     cds
     boost
     fmt

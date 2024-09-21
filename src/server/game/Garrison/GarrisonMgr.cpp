@@ -150,7 +150,7 @@ uint64 GarrisonMgr::GenerateFollowerDbId()
 {
     if (_followerDbIdGenerator >= std::numeric_limits<uint64>::max())
     {
-        TC_LOG_ERROR(LOG_FILTER_GENERAL, "Garrison follower db id overflow! Can't continue, shutting down server. ");
+        TC_LOG_ERROR("misc", "Garrison follower db id overflow! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
 
@@ -161,7 +161,7 @@ uint64 GarrisonMgr::GenerateMissionDbId()
 {
     if (_missionDbIdGenerator >= std::numeric_limits<uint64>::max())
     {
-        TC_LOG_ERROR(LOG_FILTER_GENERAL, "Garrison mission db id overflow! Can't continue, shutting down server. ");
+        TC_LOG_ERROR("misc", "Garrison mission db id overflow! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
 
@@ -172,7 +172,7 @@ uint64 GarrisonMgr::GenerateShipmentDbId()
 {
     if (_shipmentDbIdGenerator >= std::numeric_limits<uint64>::max())
     {
-        TC_LOG_ERROR(LOG_FILTER_GENERAL, "Garrison shipment db id overflow! Can't continue, shutting down server. ");
+        TC_LOG_ERROR("misc", "Garrison shipment db id overflow! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
 
@@ -391,7 +391,7 @@ void GarrisonMgr::LoadMissionsRewards()
     QueryResult result = WorldDatabase.Query("SELECT  `MissionID`, `RewardXP`, `RewardItemID`, `ItemAmount`, `CurrencyID`, `CurrencyValue`, `BonusAbilityID`, `Unknown`, `KillCredit` FROM mission_reward ORDER BY `CurrencyID` DESC");
     if (!result)
     {
-        TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 mission reward. DB table `mission_reward` is empty.");
+        TC_LOG_INFO("server.loading", ">> Loaded 0 mission reward. DB table `mission_reward` is empty.");
         return;
     }
     uint32 msTime = getMSTime();
@@ -402,27 +402,27 @@ void GarrisonMgr::LoadMissionsRewards()
 
     } while (result->NextRow());
 
-    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u mission rewards in %u.", uint32(_garrMissionRewardByMissionID.size()), GetMSTimeDiffToNow(msTime));
+    TC_LOG_INFO("server.loading", ">> Loaded %u mission rewards in %u.", uint32(_garrMissionRewardByMissionID.size()), GetMSTimeDiffToNow(msTime));
 }
 
 void GarrisonMgr::LoadMissionsOwermaxRewards()
 {
     uint32 msTime = getMSTime();
 
-    //                                                    0          1          2              3              4             5                6                7           8
-    QueryResult result = WorldDatabase.Query("SELECT  `MissionID`, `RewardXP`, `RewardItemID`, `ItemAmount`, `CurrencyID`, `CurrencyValue`, `BonusAbilityID`, `Unknown`, `KillCredit` FROM mission_reward_owermax ORDER BY `CurrencyID` DESC");
-    if (!result)
-    {
-        TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 mission owermax reward. DB table `mission_reward_owermax` is empty.");
-        return;
-    }
+    ////                                                      0          1          2              3              4             5                6                7           8
+    //QueryResult result = WorldDatabase.Query("SELECT  `MissionID`, `RewardXP`, `RewardItemID`, `ItemAmount`, `CurrencyID`, `CurrencyValue`, `BonusAbilityID`, `Unknown`, `KillCredit` FROM mission_reward_owermax ORDER BY `CurrencyID` DESC");
+    //if (!result)
+    //{
+    //    TC_LOG_INFO("server.loading", ">> Loaded 0 mission owermax reward. DB table `mission_reward_owermax` is empty.");
+    //    return;
+    //}
 
-    
-    {
-        auto rew = GarrMissionRewardEntry(result->Fetch());
-        _garrMissionOwermaxRewardByMissionID[rew.MissionID] = rew;
+    //do
+    //{
+    //    auto rew = GarrMissionRewardEntry(result->Fetch());
+    //    _garrMissionOwermaxRewardByMissionID[rew.MissionID] = rew;
 
-    } while (result->NextRow());
+    //} while (result->NextRow());
 
     for (auto const& missionEntry : sGarrMissionStore)
     {
@@ -462,7 +462,7 @@ void GarrisonMgr::LoadMissionsOwermaxRewards()
         data.KillCredit = 0; // not needed
     }
 
-    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u mission owermax rewards in %u.", uint32(_garrMissionOwermaxRewardByMissionID.size()), GetMSTimeDiffToNow(msTime));
+    TC_LOG_INFO("server.loading", ">> Loaded %u mission owermax rewards in %u.", uint32(_garrMissionOwermaxRewardByMissionID.size()), GetMSTimeDiffToNow(msTime));
 }
 
 void GarrisonMgr::LoadMissionsQuestLink()
@@ -471,7 +471,7 @@ void GarrisonMgr::LoadMissionsQuestLink()
     QueryResult result = WorldDatabase.Query("SELECT  `QuestID`, `MissionStartID` FROM mission_quest_link");
     if (!result)
     {
-        TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 mission quest reward. DB table `mission_quest_link` is empty.");
+        TC_LOG_INFO("server.loading", ">> Loaded 0 mission quest reward. DB table `mission_quest_link` is empty.");
         return;
     }
 
@@ -484,20 +484,20 @@ void GarrisonMgr::LoadMissionsQuestLink()
 
         if (!sGarrMissionStore.LookupEntry(missionID))
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Non-existing sGarrMissionStore missionID %u was referenced in `mission_quest_link`.", missionID);
+            TC_LOG_ERROR("sql.sql", "Non-existing sGarrMissionStore missionID %u was referenced in `mission_quest_link`.", missionID);
             continue;
         }
 
         uint32 quest_id = fields[0].GetUInt32();
         if (!sQuestDataStore->GetQuestTemplate(quest_id))
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Non-existing quest %u was referenced in `mission_quest_link`.", quest_id);
+            TC_LOG_ERROR("sql.sql", "Non-existing quest %u was referenced in `mission_quest_link`.", quest_id);
             continue;
         }
         _quest_mission_link_store[quest_id] = missionID;
     } while (result->NextRow());
 
-    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u mission rewards in %u.", uint32(_quest_mission_link_store.size()), GetMSTimeDiffToNow(msTime));
+    TC_LOG_INFO("server.loading", ">> Loaded %u mission rewards in %u.", uint32(_quest_mission_link_store.size()), GetMSTimeDiffToNow(msTime));
 }
 
 void GarrisonMgr::LoadPlotFinalizeGOInfo()
@@ -508,7 +508,7 @@ void GarrisonMgr::LoadPlotFinalizeGOInfo()
         "allianceGameObjectId, allianceX, allianceY, allianceZ, allianceO FROM garrison_plot_finalize_info");
     if (!result)
     {
-        TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 garrison follower class spec abilities. DB table `garrison_plot_finalize_info` is empty.");
+        TC_LOG_INFO("server.loading", ">> Loaded 0 garrison follower class spec abilities. DB table `garrison_plot_finalize_info` is empty.");
         return;
     }
 
@@ -522,33 +522,33 @@ void GarrisonMgr::LoadPlotFinalizeGOInfo()
         
         if (!sGarrPlotInstanceStore.LookupEntry(garrPlotInstanceId))
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Non-existing GarrPlotInstance.db2 entry %u was referenced in `garrison_plot_finalize_info`.", garrPlotInstanceId);
+            TC_LOG_ERROR("sql.sql", "Non-existing GarrPlotInstance.db2 entry %u was referenced in `garrison_plot_finalize_info`.", garrPlotInstanceId);
             continue;
         }
 
         GameObjectTemplate const* goTemplate = sObjectMgr->GetGameObjectTemplate(hordeGameObjectId);
         if (!goTemplate)
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Non-existing gameobject_template entry %u was referenced in `garrison_plot_finalize_info`.`hordeGameObjectId` for garrPlotInstanceId %u goID %u.", hordeGameObjectId, garrPlotInstanceId, hordeGameObjectId);
+            TC_LOG_ERROR("sql.sql", "Non-existing gameobject_template entry %u was referenced in `garrison_plot_finalize_info`.`hordeGameObjectId` for garrPlotInstanceId %u goID %u.", hordeGameObjectId, garrPlotInstanceId, hordeGameObjectId);
             continue;
         }
 
         if (goTemplate->type != GAMEOBJECT_TYPE_GOOBER)
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Invalid gameobject type %u (entry %u) was referenced in `garrison_plot_finalize_info`.`hordeGameObjectId` for garrPlotInstanceId %u.", goTemplate->type, hordeGameObjectId, garrPlotInstanceId);
+            TC_LOG_ERROR("sql.sql", "Invalid gameobject type %u (entry %u) was referenced in `garrison_plot_finalize_info`.`hordeGameObjectId` for garrPlotInstanceId %u.", goTemplate->type, hordeGameObjectId, garrPlotInstanceId);
             continue;
         }
 
         goTemplate = sObjectMgr->GetGameObjectTemplate(allianceGameObjectId);
         if (!goTemplate)
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Non-existing gameobject_template entry %u was referenced in `garrison_plot_finalize_info`.`allianceGameObjectId` for garrPlotInstanceId %u goID %u.", allianceGameObjectId, garrPlotInstanceId, allianceGameObjectId);
+            TC_LOG_ERROR("sql.sql", "Non-existing gameobject_template entry %u was referenced in `garrison_plot_finalize_info`.`allianceGameObjectId` for garrPlotInstanceId %u goID %u.", allianceGameObjectId, garrPlotInstanceId, allianceGameObjectId);
             continue;
         }
 
         if (goTemplate->type != GAMEOBJECT_TYPE_GOOBER)
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Invalid gameobject type %u (entry %u) was referenced in `garrison_plot_finalize_info`.`allianceGameObjectId` for garrPlotInstanceId %u.", goTemplate->type, allianceGameObjectId, garrPlotInstanceId);
+            TC_LOG_ERROR("sql.sql", "Invalid gameobject type %u (entry %u) was referenced in `garrison_plot_finalize_info`.`allianceGameObjectId` for garrPlotInstanceId %u.", goTemplate->type, allianceGameObjectId, garrPlotInstanceId);
             continue;
         }
         
@@ -561,7 +561,7 @@ void GarrisonMgr::LoadPlotFinalizeGOInfo()
     }
     while (result->NextRow());
 
-    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u garrison plot finalize entries in %u.", uint32(_finalizePlotGOInfo.size()), GetMSTimeDiffToNow(msTime));
+    TC_LOG_INFO("server.loading", ">> Loaded %u garrison plot finalize entries in %u.", uint32(_finalizePlotGOInfo.size()), GetMSTimeDiffToNow(msTime));
 }
 
 void GarrisonMgr::LoadFollowerClassSpecAbilities()
@@ -569,7 +569,7 @@ void GarrisonMgr::LoadFollowerClassSpecAbilities()
     QueryResult result = WorldDatabase.Query("SELECT classSpecId, abilityId FROM garrison_follower_class_spec_abilities");
     if (!result)
     {
-        TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 garrison follower class spec abilities. DB table `garrison_follower_class_spec_abilities` is empty.");
+        TC_LOG_INFO("server.loading", ">> Loaded 0 garrison follower class spec abilities. DB table `garrison_follower_class_spec_abilities` is empty.");
         return;
     }
 
@@ -583,14 +583,14 @@ void GarrisonMgr::LoadFollowerClassSpecAbilities()
 
         if (!sGarrClassSpecStore.LookupEntry(classSpecId))
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Non-existing GarrClassSpec.db2 entry %u was referenced in `garrison_follower_class_spec_abilities` by row (%u, %u).", classSpecId, classSpecId, abilityId);
+            TC_LOG_ERROR("sql.sql", "Non-existing GarrClassSpec.db2 entry %u was referenced in `garrison_follower_class_spec_abilities` by row (%u, %u).", classSpecId, classSpecId, abilityId);
             continue;
         }
 
         GarrAbilityEntry const* ability = sGarrAbilityStore.LookupEntry(abilityId);
         if (!ability)
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Non-existing GarrAbility.db2 entry %u was referenced in `garrison_follower_class_spec_abilities` by row (%u, %u).", abilityId, classSpecId, abilityId);
+            TC_LOG_ERROR("sql.sql", "Non-existing GarrAbility.db2 entry %u was referenced in `garrison_follower_class_spec_abilities` by row (%u, %u).", abilityId, classSpecId, abilityId);
             continue;
         }
 
@@ -603,7 +603,7 @@ void GarrisonMgr::LoadFollowerClassSpecAbilities()
     for (auto& pair : _garrisonFollowerClassSpecAbilities)
         pair.second.sort();
 
-    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u garrison follower class spec abilities in %u.", count, GetMSTimeDiffToNow(msTime));
+    TC_LOG_INFO("server.loading", ">> Loaded %u garrison follower class spec abilities in %u.", count, GetMSTimeDiffToNow(msTime));
 }
 
 void GarrisonMgr::LoadBuildingSpawnNPC()
@@ -613,7 +613,7 @@ void GarrisonMgr::LoadBuildingSpawnNPC()
 
     if (!result)
     {
-        TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 garrison building creatures. DB table `garrison_building_creature` is empty.");
+        TC_LOG_INFO("server.loading", ">> Loaded 0 garrison building creatures. DB table `garrison_building_creature` is empty.");
         return;
     }
 
@@ -631,20 +631,20 @@ void GarrisonMgr::LoadBuildingSpawnNPC()
         CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(entry);
         if (!cInfo)
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Table `garrison_building_creature` has creature with non existing creature entry %u, skipped.", entry);
+            TC_LOG_ERROR("sql.sql", "Table `garrison_building_creature` has creature with non existing creature entry %u, skipped.", entry);
             continue;
         }
 
         if (!sGarrPlotInstanceStore.LookupEntry(garrPlotInstanceId))
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Non-existing GarrPlotInstance.db2 entry %u was referenced in `garrison_building_creature`.", garrPlotInstanceId);
+            TC_LOG_ERROR("sql.sql", "Non-existing GarrPlotInstance.db2 entry %u was referenced in `garrison_building_creature`.", garrPlotInstanceId);
             continue;
         }
 
         //! BuildID = 0 - empty build spawn.
         if (BuildID && !sGarrBuildingStore.LookupEntry(BuildID))
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Non-existing GarrBuilding.db2 entry %u was referenced in `garrison_building_creature`.", BuildID);
+            TC_LOG_ERROR("sql.sql", "Non-existing GarrBuilding.db2 entry %u was referenced in `garrison_building_creature`.", BuildID);
             continue;
         }
 
@@ -661,12 +661,12 @@ void GarrisonMgr::LoadBuildingSpawnNPC()
         _buildSpawnNpc[BuildID][garrPlotInstanceId].push_back(data);
 
         if (!data.mapid)
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Not supported map %u in `garrison_building_creature`.", map);
+            TC_LOG_ERROR("sql.sql", "Not supported map %u in `garrison_building_creature`.", map);
 
         ++count;
     } while (result->NextRow());
 
-    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u garrison building creatures in %u.", count, GetMSTimeDiffToNow(msTime));
+    TC_LOG_INFO("server.loading", ">> Loaded %u garrison building creatures in %u.", count, GetMSTimeDiffToNow(msTime));
 }
 
 void GarrisonMgr::LoadBuildingSpawnGo()
@@ -676,7 +676,7 @@ void GarrisonMgr::LoadBuildingSpawnGo()
 
     if (!result)
     {
-        TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 garrison building go. DB table `garrison_building_gameobject` is empty.");
+        TC_LOG_INFO("server.loading", ">> Loaded 0 garrison building go. DB table `garrison_building_gameobject` is empty.");
         return;
     }
 
@@ -693,7 +693,7 @@ void GarrisonMgr::LoadBuildingSpawnGo()
         auto templ = sObjectMgr->GetGameObjectTemplate(entry);
         if (!templ)
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Table `garrison_building_gameobject` has go with non existing go entry %u, skipped.", entry);
+            TC_LOG_ERROR("sql.sql", "Table `garrison_building_gameobject` has go with non existing go entry %u, skipped.", entry);
             continue;
         }
 
@@ -701,21 +701,21 @@ void GarrisonMgr::LoadBuildingSpawnGo()
         {
             if (entry  != 239085)
             {
-                TC_LOG_ERROR(LOG_FILTER_SQL, "Table `garrison_building_gameobject` has go (%u) with no allowed type %u, skipped.", templ->type, entry);
+                TC_LOG_ERROR("sql.sql", "Table `garrison_building_gameobject` has go (%u) with no allowed type %u, skipped.", templ->type, entry);
                 continue;
             }
         }
 
         if (!sGarrPlotInstanceStore.LookupEntry(garrPlotInstanceId))
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Non-existing GarrPlotInstance.db2 entry %u was referenced in `garrison_building_gameobject`.", garrPlotInstanceId);
+            TC_LOG_ERROR("sql.sql", "Non-existing GarrPlotInstance.db2 entry %u was referenced in `garrison_building_gameobject`.", garrPlotInstanceId);
             continue;
         }
 
         //! BuildID = 0 - empty build spawn.
         if (BuildID && !sGarrBuildingStore.LookupEntry(BuildID))
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Non-existing GarrBuilding.db2 entry %u was referenced in `garrison_building_gameobject`.", BuildID);
+            TC_LOG_ERROR("sql.sql", "Non-existing GarrBuilding.db2 entry %u was referenced in `garrison_building_gameobject`.", BuildID);
             continue;
         }
 
@@ -736,12 +736,12 @@ void GarrisonMgr::LoadBuildingSpawnGo()
         _buildSpawnGo[BuildID][garrPlotInstanceId].push_back(data);
 
         if (!data.mapid)
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Not supported map %u in `garrison_building_gameobject`.", map);
+            TC_LOG_ERROR("sql.sql", "Not supported map %u in `garrison_building_gameobject`.", map);
 
         ++count;
     } while (result->NextRow());
 
-    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u garrison building go in %u.", count, GetMSTimeDiffToNow(msTime));
+    TC_LOG_INFO("server.loading", ">> Loaded %u garrison building go in %u.", count, GetMSTimeDiffToNow(msTime));
 }
 
 void GarrisonMgr::LoadMissionLine()
@@ -751,7 +751,7 @@ void GarrisonMgr::LoadMissionLine()
 
     if (!result)
     {
-        TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 garrison mission lines. DB table `garrison_mission_line` is empty.");
+        TC_LOG_INFO("server.loading", ">> Loaded 0 garrison mission lines. DB table `garrison_mission_line` is empty.");
         return;
     }
 
@@ -770,7 +770,7 @@ void GarrisonMgr::LoadMissionLine()
         GarrMissionEntry const* missionEntry = sGarrMissionStore.LookupEntry(missionID);
         if (!missionEntry)
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Non-existing sGarrMissionStore missionID %u was referenced in `garrison_mission_line`.", missionID);
+            TC_LOG_ERROR("sql.sql", "Non-existing sGarrMissionStore missionID %u was referenced in `garrison_mission_line`.", missionID);
             continue;
         }
 
@@ -778,14 +778,14 @@ void GarrisonMgr::LoadMissionLine()
 
         if (NextMission && !NextMissionEntry)
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Non-existing sGarrMissionStore missionID %u was referenced in `garrison_mission_line`.", NextMission);
+            TC_LOG_ERROR("sql.sql", "Non-existing sGarrMissionStore missionID %u was referenced in `garrison_mission_line`.", NextMission);
             continue;
         }
 
         GarrFollowerEntry const* followerEntry = sGarrFollowerStore.LookupEntry(ReqGarrFollowerID);
         if (ReqGarrFollowerID && !followerEntry)
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Non-existing sGarrFollowerStore ReqGarrFollowerID %u was referenced in `garrison_mission_line`.", ReqGarrFollowerID);
+            TC_LOG_ERROR("sql.sql", "Non-existing sGarrFollowerStore ReqGarrFollowerID %u was referenced in `garrison_mission_line`.", ReqGarrFollowerID);
             continue;
         }
 
@@ -804,7 +804,7 @@ void GarrisonMgr::LoadMissionLine()
         ++count;
     } while (result->NextRow());
 
-    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u garrison mission lines in %u.", count, GetMSTimeDiffToNow(msTime));
+    TC_LOG_INFO("server.loading", ">> Loaded %u garrison mission lines in %u.", count, GetMSTimeDiffToNow(msTime));
 }
 
 void GarrisonMgr::LoadShipment()
@@ -814,7 +814,7 @@ void GarrisonMgr::LoadShipment()
 
     if (!result)
     {
-        TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 garrison shipment. DB table `garrison_shipment` is empty.");
+        TC_LOG_INFO("server.loading", ">> Loaded 0 garrison shipment. DB table `garrison_shipment` is empty.");
         return;
     }
 
@@ -835,14 +835,14 @@ void GarrisonMgr::LoadShipment()
 
         if (data.SiteID && data.SiteID != SITE_ID_GARRISON_ALLIANCE && data.SiteID != SITE_ID_GARRISON_HORDE)
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Table `garrison_shipment` has non-existen SiteID %u, skipped.", data.SiteID);
+            TC_LOG_ERROR("sql.sql", "Table `garrison_shipment` has non-existen SiteID %u, skipped.", data.SiteID);
             continue;
         }
 
         CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(data.NpcEntry);
         if (!cInfo)
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Table `garrison_shipment` has creature with non existing creature entry %u, skipped.", data.NpcEntry);
+            TC_LOG_ERROR("sql.sql", "Table `garrison_shipment` has creature with non existing creature entry %u, skipped.", data.NpcEntry);
             continue;
         }
 
@@ -850,7 +850,7 @@ void GarrisonMgr::LoadShipment()
         {
             if (!sCharShipmentStore.LookupEntry(data.ShipmentID))
             {
-                TC_LOG_ERROR(LOG_FILTER_SQL, "Non-existing CharShipment.db2 entry %u was referenced in `garrison_shipment`.", data.ShipmentID);
+                TC_LOG_ERROR("sql.sql", "Non-existing CharShipment.db2 entry %u was referenced in `garrison_shipment`.", data.ShipmentID);
                 continue;
             }
         }
@@ -858,7 +858,7 @@ void GarrisonMgr::LoadShipment()
         CharShipmentContainerEntry const* shipmentConteinerEntry = sCharShipmentContainerStore.LookupEntry(data.ContainerID);
         if (!shipmentConteinerEntry)
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Non-existing CharShipmentContainer.db2 entry %u was referenced in `garrison_shipment`.", data.ContainerID);
+            TC_LOG_ERROR("sql.sql", "Non-existing CharShipmentContainer.db2 entry %u was referenced in `garrison_shipment`.", data.ContainerID);
             continue;
         }
         data.cEntry = shipmentConteinerEntry;
@@ -873,7 +873,7 @@ void GarrisonMgr::LoadShipment()
         ++count;
     } while (result->NextRow());
 
-    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u garrison_shipment in %u.", count, GetMSTimeDiffToNow(msTime));
+    TC_LOG_INFO("server.loading", ">> Loaded %u garrison_shipment in %u.", count, GetMSTimeDiffToNow(msTime));
 }
 
 void GarrisonMgr::LoadTradeSkill()
@@ -886,7 +886,7 @@ void GarrisonMgr::LoadTradeSkill()
     QueryResult result = WorldDatabase.Query("SELECT npcEntry, spellID, conditionID FROM garrison_tradeskill ORDER BY `npcEntry` DESC, `conditionID` ASC");
     if (!result)
     {
-        TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 garrison tradeskills. DB table `garrison_tradeskill` is empty.");
+        TC_LOG_INFO("server.loading", ">> Loaded 0 garrison tradeskills. DB table `garrison_tradeskill` is empty.");
         return;
     }
 
@@ -901,7 +901,7 @@ void GarrisonMgr::LoadTradeSkill()
         CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(npc);
         if (!cInfo)
         {
-            TC_LOG_ERROR(LOG_FILTER_SQL, "Table `garrison_tradeskill` has creature with non existing creature entry %u, skipped.", npc);
+            TC_LOG_ERROR("sql.sql", "Table `garrison_tradeskill` has creature with non existing creature entry %u, skipped.", npc);
             continue;
         }
 
@@ -938,7 +938,7 @@ void GarrisonMgr::LoadTradeSkill()
 
     } while (result->NextRow());
 
-    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u garrison_tradeskill in %u.", count, GetMSTimeDiffToNow(msTime));
+    TC_LOG_INFO("server.loading", ">> Loaded %u garrison_tradeskill in %u.", count, GetMSTimeDiffToNow(msTime));
 }
 
 TradeskillList const * GarrisonMgr::GetTradeSkill(uint32 npcID)
@@ -1052,168 +1052,168 @@ uint32 GarrShipment::selectShipment(Player* p) const
                 // class halls. mage.
                 case 131:
                     //http://ru.wowhead.com/order-advancement=384/elemental-power
-                    if (itr2->second->GarrFollowerID == 769 && !g->hasTalent(384))
+                    if (itr2->second->GarrFollowerID == 769 && !g->hasTallent(384))
                         continue;
-                    if (itr2->second->GarrFollowerID == 660 && g->hasTalent(384))
+                    if (itr2->second->GarrFollowerID == 660 && g->hasTallent(384))
                         continue;
                     break;
                 case 132:
                     //http://www.wowhead.com/order-advancement=385/higher-learning
-                    if (itr2->second->GarrFollowerID == 769 && !g->hasTalent(385))
+                    if (itr2->second->GarrFollowerID == 769 && !g->hasTallent(385))
                         continue;
-                    if (itr2->second->GarrFollowerID == 659 && g->hasTalent(385))
+                    if (itr2->second->GarrFollowerID == 659 && g->hasTallent(385))
                         continue;
                     break;
                 // class hall. Dk
                 case 134:
                 {
                     //if tallent http://www.wowhead.com/order-advancement=428/construct-quarter
-                    if (itr2->second->GarrFollowerID == 664 && !g->hasTalent(428))
+                    if (itr2->second->GarrFollowerID == 664 && !g->hasTallent(428))
                         continue;
-                    if (itr2->second->GarrFollowerID == 662 && g->hasTalent(428))
+                    if (itr2->second->GarrFollowerID == 662 && g->hasTallent(428))
                         continue;
                     break;
                 }
                 case 135:
                     //http://www.wowhead.com/order-advancement=429/live-by-the-sword
-                    if (itr2->second->GarrFollowerID == 894 && !g->hasTalent(429))
+                    if (itr2->second->GarrFollowerID == 894 && !g->hasTallent(429))
                         continue;
-                    if (itr2->second->GarrFollowerID == 663 && g->hasTalent(429))
+                    if (itr2->second->GarrFollowerID == 663 && g->hasTallent(429))
                         continue;
                     break;
                 // class halls. warrior.
                 case 158:
                 //http://www.wowhead.com/order-advancement=406/trial-by-fire
-                    if (itr2->second->GarrFollowerID == 688 && !g->hasTalent(406))
+                    if (itr2->second->GarrFollowerID == 688 && !g->hasTallent(406))
                         continue;
-                    if (itr2->second->GarrFollowerID == 686 && g->hasTalent(406))
+                    if (itr2->second->GarrFollowerID == 686 && g->hasTallent(406))
                         continue;
                     break;
                 case 159:
                     //http://www.wowhead.com/order-advancement=407/ascension
-                    if (itr2->second->GarrFollowerID == 852 && !g->hasTalent(407))
+                    if (itr2->second->GarrFollowerID == 852 && !g->hasTallent(407))
                         continue;
-                    if (itr2->second->GarrFollowerID == 687 && g->hasTalent(407))
+                    if (itr2->second->GarrFollowerID == 687 && g->hasTallent(407))
                         continue;
                     break;
                 // class halls. druid.
                 case 140:
                     //http://www.wowhead.com/order-advancement=351/laughing-sisters
-                    if (itr2->second->GarrFollowerID == 668 && !g->hasTalent(351))
+                    if (itr2->second->GarrFollowerID == 668 && !g->hasTallent(351))
                         continue;
-                    if (itr2->second->GarrFollowerID == 763 && g->hasTalent(351))
+                    if (itr2->second->GarrFollowerID == 763 && g->hasTallent(351))
                         continue;
                     break;
                 case 141:
                     //http://www.wowhead.com/order-advancement=352/force-of-the-forest
-                    if (itr2->second->GarrFollowerID == 670 && !g->hasTalent(352))
+                    if (itr2->second->GarrFollowerID == 670 && !g->hasTallent(352))
                         continue;
-                    if (itr2->second->GarrFollowerID == 669 && g->hasTalent(352))
+                    if (itr2->second->GarrFollowerID == 669 && g->hasTallent(352))
                         continue;
                     break;
                // class halls. prist.
                 case 149:
                     //http://www.wowhead.com/order-advancement=450/inquisition
-                    if (itr2->second->GarrFollowerID == 678 && !g->hasTalent(450))
+                    if (itr2->second->GarrFollowerID == 678 && !g->hasTallent(450))
                         continue;
-                    if (itr2->second->GarrFollowerID == 677 && g->hasTalent(450))
+                    if (itr2->second->GarrFollowerID == 677 && g->hasTallent(450))
                         continue;
                     break;
                 case 150:
                     //http ://www.wowhead.com/order-advancement=451/shadow-heresy
-                    if (itr2->second->GarrFollowerID == 920 && !g->hasTalent(451))
+                    if (itr2->second->GarrFollowerID == 920 && !g->hasTallent(451))
                         continue;
-                    if (itr2->second->GarrFollowerID == 679 && g->hasTalent(451))
+                    if (itr2->second->GarrFollowerID == 679 && g->hasTallent(451))
                         continue;
                     break;
                 // class halls. monk.
                 case 124:
                     //http://www.wowhead.com/order-advancement=250/path-of-the-ox
-                    if (itr2->second->GarrFollowerID == 627 && !g->hasTalent(250))
+                    if (itr2->second->GarrFollowerID == 627 && !g->hasTallent(250))
                         continue;
-                    if (itr2->second->GarrFollowerID == 622 && g->hasTalent(250))
+                    if (itr2->second->GarrFollowerID == 622 && g->hasTallent(250))
                         continue;
                     break;
                 case 125:
                     //http://www.wowhead.com/order-advancement=251/path-of-the-tiger
-                    if (itr2->second->GarrFollowerID == 630 && !g->hasTalent(251))
+                    if (itr2->second->GarrFollowerID == 630 && !g->hasTallent(251))
                         continue;
-                    if (itr2->second->GarrFollowerID == 629 && g->hasTalent(251))
+                    if (itr2->second->GarrFollowerID == 629 && g->hasTallent(251))
                         continue;
                     break;
                 // class halls. hunter.
                 case 143:
                     //http://www.wowhead.com/order-advancement=373/keen-eye
-                    if (itr2->second->GarrFollowerID == 799 && !g->hasTalent(373))
+                    if (itr2->second->GarrFollowerID == 799 && !g->hasTallent(373))
                         continue;
-                    if (itr2->second->GarrFollowerID == 671 && g->hasTalent(373))
+                    if (itr2->second->GarrFollowerID == 671 && g->hasTallent(373))
                         continue;
                     break;
                 case 144:
                     //http://www.wowhead.com/order-advancement=374/wild-calling
-                    if (itr2->second->GarrFollowerID == 800 && !g->hasTalent(374))
+                    if (itr2->second->GarrFollowerID == 800 && !g->hasTallent(374))
                         continue;
-                    if (itr2->second->GarrFollowerID == 672 && g->hasTalent(374))
+                    if (itr2->second->GarrFollowerID == 672 && g->hasTallent(374))
                         continue;
                     break;
                 // class halls. paladin.
                 case 146:
                     //http://www.wowhead.com/order-advancement=395/as-one
-                    if (itr2->second->GarrFollowerID == 770 && !g->hasTalent(395))
+                    if (itr2->second->GarrFollowerID == 770 && !g->hasTallent(395))
                         continue;
-                    if (itr2->second->GarrFollowerID == 674 && g->hasTalent(395))
+                    if (itr2->second->GarrFollowerID == 674 && g->hasTallent(395))
                         continue;
                     break;
                 case 147:
                     //http://www.wowhead.com/order-advancement=396/templar-of-the-silver-hand
-                    if (itr2->second->GarrFollowerID == 771 && !g->hasTalent(396))
+                    if (itr2->second->GarrFollowerID == 771 && !g->hasTallent(396))
                         continue;
-                    if (itr2->second->GarrFollowerID == 675 && g->hasTalent(396))
+                    if (itr2->second->GarrFollowerID == 675 && g->hasTallent(396))
                         continue;
                     break;
                 // class halls. rogue
                 case 152:
                     //http://www.wowhead.com/order-advancement=439/defiant-legacy
-                    if (itr2->second->GarrFollowerID == 681 && !g->hasTalent(439))
+                    if (itr2->second->GarrFollowerID == 681 && !g->hasTallent(439))
                         continue;
-                    if (itr2->second->GarrFollowerID == 680 && g->hasTalent(439))
+                    if (itr2->second->GarrFollowerID == 680 && g->hasTallent(439))
                         continue;
                     break;
                 case 153:
                     //http://www.wowhead.com/order-advancement=440/crimson-sails
-                    if (itr2->second->GarrFollowerID == 907 && !g->hasTalent(440))
+                    if (itr2->second->GarrFollowerID == 907 && !g->hasTallent(440))
                         continue;
-                    if (itr2->second->GarrFollowerID == 682 && g->hasTalent(440))
+                    if (itr2->second->GarrFollowerID == 682 && g->hasTallent(440))
                         continue;
                     break;
                 // class halls. warlock
                 case 129:
                     //http ://www.wowhead.com/order-advancement=362/dark-mastery
-                    if (itr2->second->GarrFollowerID == 681 && !g->hasTalent(362))
+                    if (itr2->second->GarrFollowerID == 681 && !g->hasTallent(362))
                         continue;
-                    if (itr2->second->GarrFollowerID == 649 && g->hasTalent(362))
+                    if (itr2->second->GarrFollowerID == 649 && g->hasTallent(362))
                         continue;
                     break;
                 case 128:
                     //http://www.wowhead.com/order-advancement=365/grimoire-of-servitude
-                    if (itr2->second->GarrFollowerID == 767 && !g->hasTalent(365))
+                    if (itr2->second->GarrFollowerID == 767 && !g->hasTallent(365))
                         continue;
-                    if (itr2->second->GarrFollowerID == 741 && g->hasTalent(365))
+                    if (itr2->second->GarrFollowerID == 741 && g->hasTallent(365))
                         continue;
                     break;
                 // class halls. demon hunter.
                 case 137:
                     //http://www.wowhead.com/order-advancement=417/naga-myrmidons
-                    if (itr2->second->GarrFollowerID == 876 && !g->hasTalent(417))
+                    if (itr2->second->GarrFollowerID == 876 && !g->hasTallent(417))
                         continue;
-                    if (itr2->second->GarrFollowerID == 665 && g->hasTalent(417))
+                    if (itr2->second->GarrFollowerID == 665 && g->hasTallent(417))
                         continue;
                     break;
                 case 138:
                     //http://www.wowhead.com/order-advancement=418/demonic-power
-                    if (itr2->second->GarrFollowerID == 877 && !g->hasTalent(418))
+                    if (itr2->second->GarrFollowerID == 877 && !g->hasTallent(418))
                         continue;
-                    if (itr2->second->GarrFollowerID == 666 && g->hasTalent(418))
+                    if (itr2->second->GarrFollowerID == 666 && g->hasTallent(418))
                         continue;
                     break;
                 default:

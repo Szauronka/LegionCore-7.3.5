@@ -476,7 +476,7 @@ namespace Battlepay
 
     struct ProductGroupLocale
     {
-        StringVector Name;
+        std::vector<std::string> Name;
     };
 }
 

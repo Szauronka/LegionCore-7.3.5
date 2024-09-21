@@ -44,7 +44,7 @@ uint32 Battlenet::GameUtilitiesService::HandleProcessClientRequest(game_utilitie
 
     if (!command)
     {
-        TC_LOG_ERROR(LOG_FILTER_BATTLENET, "%s sent ClientRequest with no command.", GetCallerInfo().c_str());
+        TC_LOG_ERROR("server.bnetserver", "%s sent ClientRequest with no command.", GetCallerInfo().c_str());
         return ERROR_RPC_MALFORMED_REQUEST;
     }
 
@@ -54,7 +54,7 @@ uint32 Battlenet::GameUtilitiesService::HandleProcessClientRequest(game_utilitie
     if (command->name() == "Command_RealmJoinRequest_v1_b9")
         return HandleRealmJoinRequest(params, response);
 
-    TC_LOG_ERROR(LOG_FILTER_BATTLENET, "%s sent ClientRequest with ERROR_RPC_NOT_IMPLEMENTED", GetCallerInfo().c_str());
+    TC_LOG_ERROR("server.bnetserver", "%s sent ClientRequest with ERROR_RPC_NOT_IMPLEMENTED", GetCallerInfo().c_str());
     return ERROR_RPC_NOT_IMPLEMENTED;
 }
 

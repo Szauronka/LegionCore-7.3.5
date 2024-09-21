@@ -48,24 +48,17 @@ char const* GitRevision::GetHotfixesDatabase()
 
 #define _PACKAGENAME "TrinityCore"
 
-#if PLATFORM == TC_PLATFORM_WINDOWS
-#  ifdef _WIN64
-#    define TRINITY_PLATFORM_STR "Win64"
-#  else
-#    define TRINITY_PLATFORM_STR "Win32"
-#  endif
-#elif PLATFORM == TC_PLATFORM_APPLE
-#  define TRINITY_PLATFORM_STR "MacOSX"
-#elif PLATFORM == TC_PLATFORM_INTEL
-#  define TRINITY_PLATFORM_STR "Intel"
-#else // TC_PLATFORM_UNIX
-#  define TRINITY_PLATFORM_STR "Unix"
-#endif
-
 char const* GitRevision::GetFullVersion()
 {
-    return "TrinityCore rev. " VER_PRODUCTVERSION_STR
-        " (" TRINITY_PLATFORM_STR ", " _BUILD_DIRECTIVE ", " _PACKAGENAME ")";
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
+# ifdef _WIN64
+    return VER_PRODUCTVERSION_STR " (Win64, " _BUILD_DIRECTIVE ")";
+# else
+    return VER_PRODUCTVERSION_STR " (Win32, " _BUILD_DIRECTIVE ")";
+# endif
+#else
+    return VER_PRODUCTVERSION_STR " (Unix, " _BUILD_DIRECTIVE ")";
+#endif
 }
 
 char const* GitRevision::GetCompanyNameStr()

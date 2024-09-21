@@ -25,8 +25,8 @@
 #include "Errors.h" // for ASSERT
 #include <cstdarg>
 #include "StringFormat.h"
-#include "IpAddress.h"
-#include <boost/algorithm/string.hpp>
+#include <boost/asio/ip/address.hpp>
+#include <thread>
 
 #if COMPILER == COMPILER_GNU
 #include <sys/socket.h>
@@ -463,29 +463,36 @@ bool Utf8toWStr(char const* utf8str, size_t csize, wchar_t* wstr, size_t& wsize)
 {
     try
     {
-        size_t len = utf8::distance(utf8str, utf8str + csize);
-        if (len > wsize)
-        {
-            if (wsize > 0)
-                wstr[0] = L'\0';
-            wsize = 0;
-            return false;
-        }
-
-        wsize = len;
-        utf8::utf8to16(utf8str, utf8str + csize, wstr);
-        wstr[len] = L'\0';
+        CheckedBufferOutputIterator<wchar_t> out(wstr, wsize);
+        out = utf8::utf8to16(utf8str, utf8str+csize, out);
+        wsize -= out.remaining(); // remaining unused space
+        wstr[wsize] = L'\0';
     }
-    catch (std::exception&)
+    catch (std::exception const&)
     {
-        if (wsize > 0)
+        // Replace the converted string with an error message if there is enough space
+        // Otherwise just return an empty string
+        wchar_t const* errorMessage = L"An error occurred converting string from UTF-8 to WStr";
+        size_t errorMessageLength = wcslen(errorMessage);
+        if (wsize >= errorMessageLength)
+        {
+            wcscpy(wstr, errorMessage);
+            wsize = wcslen(wstr);
+        }
+        else if (wsize > 0)
+        {
             wstr[0] = L'\0';
-        wsize = 0;
+            wsize = 0;
+        }
+        else
+            wsize = 0;
+
         return false;
     }
 
     return true;
 }
+
 
 bool Utf8toWStr(const std::string& utf8str, wchar_t* wstr, size_t& wsize)
 {
@@ -494,17 +501,14 @@ bool Utf8toWStr(const std::string& utf8str, wchar_t* wstr, size_t& wsize)
 
 bool Utf8toWStr(const std::string& utf8str, std::wstring& wstr)
 {
+    wstr.clear();
     try
     {
-        if (size_t len = utf8::distance(utf8str.c_str(), utf8str.c_str() + utf8str.size()))
-        {
-            wstr.resize(len);
-            utf8::utf8to16(utf8str.c_str(), utf8str.c_str() + utf8str.size(), &wstr[0]);
-        }
+        utf8::utf8to16(utf8str.c_str(), utf8str.c_str()+utf8str.size(), std::back_inserter(wstr));
     }
-    catch (std::exception&)
+    catch (std::exception const&)
     {
-        wstr = L"";
+        wstr.clear();
         return false;
     }
 
@@ -605,7 +609,7 @@ std::wstring GetMainPartOfName(std::wstring wname, uint32 declension)
 
 bool utf8ToConsole(const std::string& utf8str, std::string& conStr)
 {
-#if PLATFORM == TC_PLATFORM_WINDOWS
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
     std::wstring wstr;
     if (!Utf8toWStr(utf8str, wstr))
         return false;
@@ -622,7 +626,7 @@ bool utf8ToConsole(const std::string& utf8str, std::string& conStr)
 
 bool consoleToUtf8(const std::string& conStr, std::string& utf8str)
 {
-#if PLATFORM == TC_PLATFORM_WINDOWS
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
     std::wstring wstr;
     wstr.resize(conStr.size());
     OemToCharBuffW(&conStr[0], &wstr[0], conStr.size());
@@ -658,7 +662,7 @@ void utf8printf(FILE* out, const char *str, ...)
 
 void vutf8printf(FILE* out, const char *str, va_list* ap)
 {
-#if PLATFORM == TC_PLATFORM_WINDOWS
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
     char temp_buf[32 * 1024];
     wchar_t wtemp_buf[32 * 1024];
 
@@ -733,8 +737,6 @@ void HexStrToByteArray(std::string const& str, uint8* out, bool reverse /*= fals
         out[j++] = strtoul(buffer, nullptr, 16);
     }
 }
-
-
 
 flag128::flag128(uint32 p1, uint32 p2, uint32 p3, uint32 p4)
 {
@@ -874,10 +876,4 @@ uint32& flag128::operator[](uint8 el)
 const uint32& flag128::operator[](uint8 el) const
 {
     return part[el];
-}
-
-bool StringToBool(std::string const& str)
-{
-    std::string lowerStr = boost::algorithm::to_lower_copy(str);
-    return lowerStr == "1" || lowerStr == "true" || lowerStr == "yes";
 }

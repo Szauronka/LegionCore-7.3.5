@@ -177,7 +177,7 @@ public:
                         anchorGUID = anchor->GetGUID();
                     }
                     else
-                        TC_LOG_ERROR(LOG_FILTER_TSCR, "npc_unworthy_initiateAI: unable to find anchor!");
+                        TC_LOG_ERROR("scripts", "npc_unworthy_initiateAI: unable to find anchor!");
 
                     float dist = 99.0f;
                     GameObject* prison = NULL;
@@ -197,7 +197,7 @@ public:
                     if (prison)
                         prison->ResetDoorOrButton();
                     else
-                        TC_LOG_ERROR(LOG_FILTER_TSCR, "npc_unworthy_initiateAI: unable to find prison!");
+                        TC_LOG_ERROR("scripts", "npc_unworthy_initiateAI: unable to find prison!");
                 }
                 break;
             case PHASE_TO_EQUIP:
@@ -207,10 +207,23 @@ public:
                         wait_timer -= diff;
                     else
                     {
-                        me->GetMotionMaster()->MovePoint(1, anchorX, anchorY, me->GetPositionZ());
-                        //TC_LOG_DEBUG(LOG_FILTER_TSCR, "npc_unworthy_initiateAI: move to %f %f %f", anchorX, anchorY, me->GetPositionZ());
+// there is bug in this part of the script, unworthy initiate drops through
+// the floor instead of going to the acherus soul prison..
+/*                      me->GetMotionMaster()->MovePoint(1, anchorX, anchorY, me->GetPositionZ());
+                        //TC_LOG_DEBUG("scripts", "npc_unworthy_initiateAI: move to %f %f %f", anchorX, anchorY, me->GetPositionZ());
                         phase = PHASE_EQUIPING;
                         wait_timer = 0;
+*/
+
+/*BUG WORKAROUND*/
+                        wait_timer = 5000;
+                        me->CastSpell(me, SPELL_DK_INITIATE_VISUAL, true);
+
+                        if (Player* starter = Unit::GetPlayer(*me, playerGUID))
+                        Talk(1, playerGUID);
+
+                        phase = PHASE_TO_ATTACK;
+/*BUG WORKAROUND END*/
                     }
                 }
                 break;
@@ -1183,12 +1196,12 @@ void AddSC_the_scarlet_enclave_c1()
     new npc_unworthy_initiate();
     new npc_unworthy_initiate_anchor();
     new go_acherus_soul_prison();
-    new npc_death_knight_initiate();
+    //new npc_death_knight_initiate();
     new npc_salanar_the_horseman();
     new npc_dark_rider_of_acherus();
     new npc_ros_dark_rider();
     new npc_dkc1_gothik();
-    new npc_scarlet_ghoul();
+    //new npc_scarlet_ghoul();
     new npc_scarlet_miner();
     new npc_scarlet_miner_cart();
     new npc_eye_of_acherus();
