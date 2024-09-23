@@ -6,7 +6,7 @@ template<uint32 t_Level> class BattlePay_Level : BattlePayProductScript
 public:
     explicit BattlePay_Level(std::string scriptName) : BattlePayProductScript(scriptName) {}
 
-    void OnProductDelivery(WorldSession* session, Battlepay::Product const& /*product*/) override
+    void OnProductDelivery(WorldSession* session, Battlepay::Product const* /*product*/) override
     {
         auto player = session->GetPlayer();
         if (!player)
@@ -16,7 +16,7 @@ public:
         player->SaveToDB();
     }
 
-    bool CanBuy(WorldSession* session, Battlepay::Product const& /*product*/, std::string& reason) override
+    bool CanBuy(WorldSession* session, Battlepay::Product const* /*product*/, std::string& reason) override
     {
         auto player = session->GetPlayer();
         if (!player)
@@ -40,12 +40,12 @@ template <uint32 t_AccountServiceFlag> class BattlePay_AccountService : BattlePa
 public:
     explicit BattlePay_AccountService(std::string scriptName) : BattlePayProductScript(scriptName) {}
 
-    void OnProductDelivery(WorldSession* /*session*/, Battlepay::Product const& /*product*/) override
+    void OnProductDelivery(WorldSession* /*session*/, Battlepay::Product const* /*product*/) override
     {
         return; //session->SetServiceFlags(t_AccountServiceFlag);
     }
 
-    bool CanBuy(WorldSession* /*session*/, Battlepay::Product const& /*product*/, std::string& reason) override
+    bool CanBuy(WorldSession* /*session*/, Battlepay::Product const* /*product*/, std::string& reason) override
     {
 
         return true;

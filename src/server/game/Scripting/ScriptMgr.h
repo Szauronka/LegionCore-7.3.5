@@ -210,9 +210,12 @@ class BattlePayProductScript : public ScriptObject
 protected:
     explicit BattlePayProductScript(std::string scriptName);
 public:
-    virtual void OnProductDelivery(WorldSession* /*session*/, Battlepay::Product const& /*product*/) { }
+
+    bool IsDatabaseBound() const override { return true; }
+
+    virtual void OnProductDelivery(WorldSession* /*session*/, Battlepay::Product const* /*product*/) { }
     virtual bool CanShow(WorldSession* /*session*/, Battlepay::Product const& /*product*/) { return true; }
-    virtual bool CanBuy(WorldSession* /*session*/, Battlepay::Product const& /*product*/, std::string& /*reason*/) { return true; }
+    virtual bool CanBuy(WorldSession* /*session*/, Battlepay::Product const* /*product*/, std::string& /*reason*/) { return true; }
     virtual std::string GetCustomData(Battlepay::Product const& /*product*/) { return ""; }
 };
 
@@ -1166,9 +1169,13 @@ class ScriptMgr
         void OnWorldStateCreate(uint32 variableID, uint32 value, uint8 type);
         void OnWorldStateDelete(uint32 variableID, uint8 type);
 
+
         void RegisterBattlePayProductScript(std::string scriptName, BattlePayProductScript* script);
-        void OnBattlePayProductDelivery(WorldSession* session, Battlepay::Product const& product);
-        bool BattlePayCanBuy(WorldSession* session, Battlepay::Product const& product, std::string& reason);
+
+        /* BattlePayProductScript */
+        void RegisterBattlePayProductScript(std::string scriptName, BattlePayProductScript* script);
+		void OnBattlePayProductDelivery(WorldSession* session, Battlepay::Product const* product);
+        bool BattlePayCanBuy(WorldSession* session, Battlepay::Product const* product, std::string& reason);
         std::string BattlePayGetCustomData(Battlepay::Product const& product);
     
         /* QuestScript */
