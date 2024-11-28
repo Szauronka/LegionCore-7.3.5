@@ -1,21 +1,3 @@
-/*
- * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
-
- // This is where scripts' loading functions should be declared:
 void AddSC_instance_temple_of_jade_serpent();       // Temple of Jade Serpent
 void AddSC_boss_wise_mari();
 void AddSC_boss_lorewalker_stonestep();
@@ -91,7 +73,7 @@ void AddSC_boss_iron_qon();
 void AddSC_boss_twin_consorts();
 void AddSC_boss_lei_shen();
 void AddSC_boss_ra_den();
-void AddSC_instance_siege_of_orgrimmar();           // Siege of Orgrimmar 
+void AddSC_instance_siege_of_orgrimmar();           // Siege of Orgrimmar
 void AddSC_siege_of_orgrimmar();
 void AddSC_boss_immerseus();
 void AddSC_boss_fallen_protectors();
@@ -119,8 +101,6 @@ void AddSC_vale_of_eternal_blossoms();
 void AddSC_WanderingIsland();
 void AddSC_timeless_isle();
 
-// The name of this function should match:
-// void Add${NameOfDirectory}Scripts()
 void AddPandariaScripts()
 {
     AddSC_instance_temple_of_jade_serpent();        // Temple of Jade Serpent
@@ -199,7 +179,7 @@ void AddPandariaScripts()
     AddSC_boss_twin_consorts();
     AddSC_boss_lei_shen();
     AddSC_boss_ra_den();
-    AddSC_instance_siege_of_orgrimmar();           // Siege of Orgrimmar 
+    AddSC_instance_siege_of_orgrimmar();           // Siege of Orgrimmar
     AddSC_siege_of_orgrimmar();
     AddSC_boss_immerseus();
     AddSC_boss_fallen_protectors();
@@ -216,14 +196,14 @@ void AddPandariaScripts()
     AddSC_boss_paragons_of_the_klaxxi();
     AddSC_boss_garrosh_hellscream();
 
-     AddSC_valley_of_the_four_winds();
-     AddSC_krasarang_wilds();
-     AddSC_kun_lai_summit();
-     AddSC_dread_wastes();
-     AddSC_jade_forest();
-     AddSC_the_veiled_stair();
-     AddSC_townlong_steppes();
-     AddSC_vale_of_eternal_blossoms();
-     AddSC_WanderingIsland();
-     AddSC_timeless_isle();
+    AddSC_valley_of_the_four_winds();
+    AddSC_krasarang_wilds();
+    AddSC_kun_lai_summit();
+    AddSC_dread_wastes();
+    AddSC_jade_forest();
+    AddSC_the_veiled_stair();
+    AddSC_townlong_steppes();
+    AddSC_vale_of_eternal_blossoms();
+    AddSC_WanderingIsland();
+    AddSC_timeless_isle();
 }

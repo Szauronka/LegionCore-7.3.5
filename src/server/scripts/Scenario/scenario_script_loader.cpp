@@ -1,21 +1,5 @@
-/*
- * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
-
- // This is where scripts' loading functions should be declared:
+void AddSC_brokenIslands();
+void AddSC_instance_broken_islands();
 
 //< Arena of Annihilation
 void AddSC_instance_arena_of_annihilation();
@@ -107,7 +91,7 @@ void AddSC_proving_grounds();
 
 //< Broken Shore
 void AddSC_instance_broken_shore();
-void AddSC_broken_shore();
+void AddSC_paladin_broken_shore();
 
 //< Shield's Reset
 void AddSC_instance_shields_rest();
@@ -176,20 +160,11 @@ void AddSC_instance_army_training();
 
 void AddSC_instance_temple_of_the_jade_serpent();
 
-void AddSC_brawlers_guild();
-void AddSC_brawlers_guild_bosses_rank_one();
-void AddSC_brawlers_guild_bosses_rank_two();
-void AddSC_brawlers_guild_bosses_rank_three();
-void AddSC_brawlers_guild_bosses_rank_four();
-void AddSC_brawlers_guild_bosses_rank_five();
-void AddSC_brawlers_guild_bosses_rank_six();
-void AddSC_brawlers_guild_bosses_rank_seven();
-
-
-// The name of this function should match:
-// void Add${NameOfDirectory}Scripts()
 void AddScenarioScripts()
 {
+    AddSC_brokenIslands();
+    AddSC_instance_broken_islands();
+
     //< Arena of Annihilation
     AddSC_instance_arena_of_annihilation();
     AddSC_boss_scar_shell();
@@ -202,7 +177,7 @@ void AddScenarioScripts()
     AddSC_fall_of_shan_bu();
     AddSC_instance_fall_of_shan_bu();
 
-    //< Pursuing the Black Harvest
+        //< Pursuing the Black Harvest
     AddSC_pursing_the_black_harvest();
     AddSC_instance_pursuing_the_black_harvest();
 
@@ -280,7 +255,7 @@ void AddScenarioScripts()
 
     //< Broken Shore
     AddSC_instance_broken_shore();
-    AddSC_broken_shore();
+    AddSC_paladin_broken_shore();
 
     //< Shield's Reset
     AddSC_instance_shields_rest();
@@ -348,15 +323,4 @@ void AddScenarioScripts()
     AddSC_instance_army_training();
 
     AddSC_instance_temple_of_the_jade_serpent();
-
-    
-    AddSC_brawlers_guild();
-    AddSC_brawlers_guild_bosses_rank_one();
-    AddSC_brawlers_guild_bosses_rank_two();
-    AddSC_brawlers_guild_bosses_rank_three();
-    AddSC_brawlers_guild_bosses_rank_four();
-    AddSC_brawlers_guild_bosses_rank_five();
-    AddSC_brawlers_guild_bosses_rank_six();
-    AddSC_brawlers_guild_bosses_rank_seven();
-
 }

@@ -1,37 +1,41 @@
-/*
- * Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+void AddSC_azsuna();
+void AddSC_broken_shore();
+void AddSC_highmountain();
+void AddSC_stormheim();
+void AddSC_suramar();
+void AddSC_valsharah();
 
- // This is where scripts' loading functions should be declared:
-void AddSC_Mardum();
-void AddSC_warden_prison();
-void AddSC_world_bossess_legion();
-void AddSC_invasion_point_world_bosses();
-void AddSC_invasion_point_argus();
-void AddSC_sentinax();
-void Addsc_paraxis();
-
-void AddSC_brokenIslands();
-void AddSC_instance_broken_islands();
+void AddSC_instance_antorus();
+void AddSC_boss_worldbreaker();
+void AddSC_boss_felhounds();
+void AddSC_boss_antoran();
+void AddSC_boss_hasabel();
+void AddSC_boss_eonar();
+void AddSC_boss_imonar();
+void AddSC_boss_kingaroth();
+void AddSC_boss_varimathras();
+void AddSC_boss_coven_shivarres();
+void AddSC_boss_aggramar();
+void AddSC_boss_argus();
+void AddSC_antorus();
 
 void AddSC_instance_black_rook_hold_dungeon();  //Black Rook Hold Dungeon
 void AddSC_boss_the_amalgam_of_souls();
 void AddSC_boss_illysanna_ravencrest();
 void AddSC_boss_smashspite_the_hateful();
 void AddSC_boss_lord_kurtalos_ravencrest();
+
+void AddSC_instance_cathedral_of_eternal_night(); //Cathedral of Eternal Night
+void AddSC_boss_agronox();
+void AddSC_boss_thrashbite_the_scornful();
+void AddSC_boss_domatrax();
+void AddSC_boss_mephistroth();
+void AddSC_cathedral_of_eternal_night();
+
+void AddSC_instance_court_of_stars();           //Court of Stars
+void AddSC_boss_patrol_captain_gerdo();
+void AddSC_boss_talixae_flamewreath();
+void AddSC_boss_advisor_melandrus();
 
 void AddSC_instance_darkheart_thicket();       //Dark Heart Thicket
 void AddSC_boss_arch_druid_glaidalis();
@@ -88,11 +92,6 @@ void AddSC_boss_blood_princess_thalena();
 void AddSC_boss_fel_lord_betrug();
 void AddSC_violet_hold_legion();
 
-void AddSC_instance_court_of_stars();           //Court of Stars
-void AddSC_boss_patrol_captain_gerdo();
-void AddSC_boss_talixae_flamewreath();
-void AddSC_boss_advisor_melandrus();
-
 void AddSC_instance_return_to_karazhan();       //Return to Karazhan
 void AddSC_boss_opera_hall();
 void AddSC_boss_maiden_of_virtue_legion();
@@ -104,13 +103,6 @@ void AddSC_boss_shade_of_medivh();
 void AddSC_boss_vizaduum_the_watcher();
 void AddSC_karazhan_chess();
 void AddSC_boss_rtk_nightbane();
-
-void AddSC_instance_cathedral_of_eternal_night(); //Cathedral of Eternal Night
-void AddSC_boss_agronox();
-void AddSC_boss_thrashbite_the_scornful();
-void AddSC_boss_domatrax();
-void AddSC_boss_mephistroth();
-void AddSC_cathedral_of_eternal_night();
 
 void AddSC_instance_the_emerald_nightmare();      //The Emerald Nightmare
 void AddSC_the_emerald_nightmare();
@@ -159,19 +151,12 @@ void AddSC_boss_saprish();
 void AddSC_boss_viceroy_nezhar();
 void AddSC_boss_lura();
 
-void AddSC_instance_antorus();
-void AddSC_boss_worldbreaker();
-void AddSC_boss_felhounds();
-void AddSC_boss_antoran();
-void AddSC_boss_hasabel();
-void AddSC_boss_eonar();
-void AddSC_boss_imonar();
-void AddSC_boss_kingaroth();
-void AddSC_boss_varimathras();
-void AddSC_boss_coven_shivarres();
-void AddSC_boss_aggramar();
-void AddSC_boss_argus();
-void AddSC_antorus();
+void AddSC_Mardum();
+void AddSC_warden_prison();
+void AddSC_invasion_point_world_bosses();
+void AddSC_invasion_point_argus();
+void AddSC_sentinax();
+void Addsc_paraxis();
 
 // Micro-Holidays
 void AddSC_CallOfTheScarab();
@@ -189,26 +174,46 @@ void AddSC_DarkMoonConcertBlightBoar();
 void AddSC_TheGreatGromereganRun();
 void AddSC_MoonkinFestival();
 
-// The name of this function should match:
-// void Add${NameOfDirectory}Scripts()
 void AddLegionScripts()
 {
-    AddSC_Mardum();
-    AddSC_warden_prison();
-    AddSC_world_bossess_legion();
-    AddSC_invasion_point_world_bosses();
-    AddSC_invasion_point_argus();
-    AddSC_sentinax();
-    Addsc_paraxis();
-	
-    AddSC_brokenIslands();
-    AddSC_instance_broken_islands();
+    AddSC_azsuna();
+    AddSC_broken_shore();
+    AddSC_highmountain();
+    AddSC_stormheim();
+    AddSC_suramar();
+    AddSC_valsharah();
+
+    AddSC_instance_antorus();
+    AddSC_boss_worldbreaker();
+    AddSC_boss_felhounds();
+    AddSC_boss_antoran();
+    AddSC_boss_hasabel();
+    AddSC_boss_eonar();
+    AddSC_boss_imonar();
+    AddSC_boss_kingaroth();
+    AddSC_boss_varimathras();
+    AddSC_boss_coven_shivarres();
+    AddSC_boss_aggramar();
+    AddSC_boss_argus();
+    AddSC_antorus();
 
     AddSC_instance_black_rook_hold_dungeon();  //Black Rook Hold Dungeon
     AddSC_boss_the_amalgam_of_souls();
     AddSC_boss_illysanna_ravencrest();
     AddSC_boss_smashspite_the_hateful();
     AddSC_boss_lord_kurtalos_ravencrest();
+
+    AddSC_instance_cathedral_of_eternal_night(); //Cathedral of Eternal Night
+    AddSC_boss_agronox();
+    AddSC_boss_thrashbite_the_scornful();
+    AddSC_boss_domatrax();
+    AddSC_boss_mephistroth();
+    AddSC_cathedral_of_eternal_night();
+
+    AddSC_instance_court_of_stars();           //Court of Stars
+    AddSC_boss_patrol_captain_gerdo();
+    AddSC_boss_talixae_flamewreath();
+    AddSC_boss_advisor_melandrus();
 
     AddSC_instance_darkheart_thicket();       //Dark Heart Thicket
     AddSC_boss_arch_druid_glaidalis();
@@ -233,18 +238,6 @@ void AddLegionScripts()
     AddSC_boss_ymiron_the_fallen_king();
     AddSC_boss_harbaron();
     AddSC_boss_helya();
-
-    AddSC_instance_tomb_of_sargeras();
-    AddSC_boss_goroth();
-    AddSC_boss_mistress_sasszine();
-    AddSC_boss_sisters_of_the_moon();
-    AddSC_tomb_of_sargeras();
-    AddSC_boss_demonic_inquisition();
-    AddSC_boss_harjatan();
-    AddSC_boss_maiden_of_vigilance();
-    AddSC_boss_fallen_avatar();
-    AddSC_boss_the_desolate_host();
-    AddSC_boss_tos_kiljaeden();
 
     AddSC_instance_neltharions_lair();         //Neltharions Lair
     AddSC_boss_naraxas();
@@ -277,11 +270,6 @@ void AddLegionScripts()
     AddSC_boss_fel_lord_betrug();
     AddSC_violet_hold_legion();
 
-    AddSC_instance_court_of_stars();           //Court of Stars
-    AddSC_boss_patrol_captain_gerdo();
-    AddSC_boss_talixae_flamewreath();
-    AddSC_boss_advisor_melandrus();
-
     AddSC_instance_return_to_karazhan();       //Return to Karazhan
     AddSC_boss_opera_hall();
     AddSC_boss_maiden_of_virtue_legion();
@@ -294,14 +282,7 @@ void AddLegionScripts()
     AddSC_karazhan_chess();
     AddSC_boss_rtk_nightbane();
 
-    AddSC_instance_cathedral_of_eternal_night(); //Cathedral of Eternal Night
-    AddSC_boss_agronox();
-    AddSC_boss_thrashbite_the_scornful();
-    AddSC_boss_domatrax();
-    AddSC_boss_mephistroth();
-    AddSC_cathedral_of_eternal_night();
-
-    AddSC_instance_the_emerald_nightmare();     //The Emerald Nightmare
+    AddSC_instance_the_emerald_nightmare();      //The Emerald Nightmare
     AddSC_the_emerald_nightmare();
     AddSC_boss_nythendra();
     AddSC_boss_elerethe_renferal();
@@ -311,13 +292,13 @@ void AddLegionScripts()
     AddSC_boss_cenarius();
     AddSC_boss_xavius();
 
-    AddSC_trial_of_valor();                     //Trial of Valor
+    AddSC_trial_of_valor();                      //Trial of Valor
     AddSC_instance_trial_of_valor();
     AddSC_tov_boss_odyn();
     AddSC_boss_garm();
     AddSC_boss_tov_helya();
 
-    AddSC_boss_chronomatic_anomaly();           //The Nighthold
+    AddSC_boss_chronomatic_anomaly();
     AddSC_boss_elisande();
     AddSC_boss_guldan();
     AddSC_boss_high_botanist_telarn();
@@ -329,6 +310,31 @@ void AddLegionScripts()
     AddSC_boss_trilliax();
     AddSC_instance_the_nightnold();
     AddSC_the_nighthold();
+
+    AddSC_instance_tomb_of_sargeras();
+    AddSC_boss_goroth();
+    AddSC_boss_mistress_sasszine();
+    AddSC_boss_sisters_of_the_moon();
+    AddSC_tomb_of_sargeras();
+    AddSC_boss_demonic_inquisition();
+    AddSC_boss_harjatan();
+    AddSC_boss_maiden_of_vigilance();
+    AddSC_boss_fallen_avatar();
+    AddSC_boss_the_desolate_host();
+    AddSC_boss_tos_kiljaeden();
+
+    AddSC_instance_seat_of_the_triumvirate(); // Seat Of The Triumvirate
+    AddSC_boss_zuraal_the_ascended();
+    AddSC_boss_saprish();
+    AddSC_boss_viceroy_nezhar();
+    AddSC_boss_lura();
+
+    AddSC_Mardum();
+    AddSC_warden_prison();
+    AddSC_invasion_point_world_bosses();
+    AddSC_invasion_point_argus();
+    AddSC_sentinax();
+    Addsc_paraxis();
 
     AddSC_CallOfTheScarab();
     AddSC_GlowcapFestival();
@@ -344,24 +350,4 @@ void AddLegionScripts()
     AddSC_DarkMoonConcertBlightBoar();
     AddSC_TheGreatGromereganRun();
     AddSC_MoonkinFestival();
-
-    AddSC_instance_seat_of_the_triumvirate(); // Seat Of The Triumvirate
-    AddSC_boss_zuraal_the_ascended();
-    AddSC_boss_saprish();
-    AddSC_boss_viceroy_nezhar();
-    AddSC_boss_lura();
-
-    AddSC_instance_antorus();
-    AddSC_boss_worldbreaker();
-    AddSC_boss_felhounds();
-    AddSC_boss_antoran();
-    AddSC_boss_hasabel();
-    AddSC_boss_eonar();
-    AddSC_boss_imonar();
-    AddSC_boss_kingaroth();
-    AddSC_boss_varimathras();
-    AddSC_boss_coven_shivarres();
-    AddSC_boss_aggramar();
-    AddSC_boss_argus();
-    AddSC_antorus();
 }

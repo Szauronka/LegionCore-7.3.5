@@ -17,56 +17,56 @@
 
 #include "ScriptLoader.h"
 
-void AddSpellsScripts();
+void AddSpellScripts();
 void AddCommandsScripts();
 
-
-// Battlegrounds
+//bg
 void AddSC_battleground_seething_shore();
 void AddSC_battleground_warsong();
 void AddSC_battleground_kotmogu();
 void AddSC_battleground_shado_pan();
 
 #ifdef SCRIPTS
-void AddWorldScripts();
 void AddBattlePayScripts();
-void AddDraenorScripts();
-void AddEasternKingdomsScripts();
+void AddWorldScripts();
 void AddKalimdorScripts();
-void AddLegionScripts();
-void AddMaelstromScripts();
-void AddNorthrendScripts();
 void AddOutlandScripts();
-void AddPandariaScripts();
+void AddNorthrendScripts();
 void AddOutdoorPvPScripts();
 void AddScenarioScripts();
 void AddCustomScripts();
+void AddLegionScripts();
+void AddDraenorScripts();
+void AddEasternKingdomsScripts();
+void AddMaelstromScripts();
+void AddPandariaScripts();
+void AddBrawlersGuildScripts();
 #endif
 
 void AddScripts()
 {
-    AddSpellsScripts();
+    AddSpellScripts();
     AddCommandsScripts();
-	
 
-    // Battleground scripts
+    // battleground scripts
     AddSC_battleground_seething_shore();
     AddSC_battleground_warsong();
     AddSC_battleground_kotmogu();
     AddSC_battleground_shado_pan();
-    
+
 #ifdef SCRIPTS
-    AddWorldScripts();
     AddBattlePayScripts();
+    AddWorldScripts();
+    AddKalimdorScripts();
+    AddOutlandScripts();
+    AddNorthrendScripts();
+    AddLegionScripts();
     AddDraenorScripts();
     AddEasternKingdomsScripts();
-    AddKalimdorScripts();
-    AddLegionScripts();
     AddMaelstromScripts();
-    AddNorthrendScripts();
-    AddOutlandScripts();
     AddPandariaScripts();
     AddOutdoorPvPScripts();
+    AddBrawlersGuildScripts();
     AddScenarioScripts();
     AddCustomScripts();
 #endif
