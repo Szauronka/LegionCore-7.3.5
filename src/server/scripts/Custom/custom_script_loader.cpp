@@ -16,7 +16,6 @@ void AddSC_cs_world_chat();
 void AddSC_XP_Modifier();
 void AddSC_WhoLoggedScripts();
 void AddSC_WhoLoggedScripts();
-void AddSC_CustomStartups();
 
 // The name of this function should match:
 // void Add${NameOfDirectory}Scripts()
@@ -40,6 +39,5 @@ void AddCustomScripts()
 	AddSC_ClassRewards();
 	AddSC_cs_world_chat();
 	AddSC_XP_Modifier();
-    AddSC_CustomStartups();
 	
 }
