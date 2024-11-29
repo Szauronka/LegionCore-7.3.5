@@ -1666,8 +1666,6 @@ class Player : public Unit, public GridObject<Player>
 
         bool HasToken(uint8 tokenType, uint32 count) const;
         bool ChangeTokenCount(uint8 tokenType, int64 change, uint8 buyType, uint64 productId);
-        bool AddDonateTokenCount(uint32 count);
-        
 
         bool HasItemCount(uint32 item, uint32 count = 1, bool inBankAlso = false) const;
         bool HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item const* ignoreItem = nullptr) const;

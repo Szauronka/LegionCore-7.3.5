@@ -58,10 +58,10 @@ public:
 	void SendReward(Player* player, MapEntry const* map, uint32 amount_expansion)
 	{
 		if (map->IsDungeon())
-			player->AddDonateTokenCount(amount_expansion);
+			//player->ChangeTokenCount(amount_expansion);
 
 		if (map->IsRaid())
-			player->AddDonateTokenCount(amount_expansion * raid_multiplier);
+			//player->ChangeTokenCount(amount_expansion * raid_multiplier);
 	}
 	
     void OnCreatureKill(Player* player, Creature* killed)
