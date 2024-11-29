@@ -58,10 +58,10 @@ public:
 	void SendReward(Player* player, MapEntry const* map, uint32 amount_expansion)
 	{
 		if (map->IsDungeon())
-			//player->ChangeTokenCount(amount_expansion);
+			player->ChangeTokenCount(0, 10000, Battlepay::BattlepayCustomType::BattlePayShop, 0);
 
 		if (map->IsRaid())
-			//player->ChangeTokenCount(amount_expansion * raid_multiplier);
+			player->ChangeTokenCount(0, 10000, Battlepay::BattlepayCustomType::BattlePayShop, 0);
 	}
 	
     void OnCreatureKill(Player* player, Creature* killed)
