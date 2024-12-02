@@ -32,6 +32,23 @@ EndContentData */
 #include "ScriptedCreature.h"
 #include "ScriptedEscortAI.h"
 
+enum WestfallCreature
+{
+    NPC_MERCENARY                     = 42656,
+    NPC_AGENT_KEARNEN                 = 7024,
+    NPC_SHADOWY_FIGURE                = 42680
+};
+
+enum WestfallSpell
+{
+    SPELL_KILL_SHOT_TRIGGERED         = 79525
+};
+
+enum WestfallQuest
+{
+    QUEST_THE_DAWNING_OF_A_NEW_DAY    = 26297
+};
+
 /*######
 ## npc_daphne_stilwell
 ######*/
@@ -464,6 +481,84 @@ class spell_westfall_wake_harvest_golem : public SpellScript
     }
 };
 
+class spell_westfall_sniper_fire_proc : public AuraScript
+{
+    PrepareAuraScript(spell_westfall_sniper_fire_proc);
+
+    bool CheckProc(ProcEventInfo& eventInfo)
+    {
+        _target = (eventInfo.GetProcTarget() == GetTarget() ? eventInfo.GetActor() : eventInfo.GetProcTarget());
+        return _target && _target->IsCreature() && _target->GetEntry() == NPC_MERCENARY;
+    }
+
+    void HandleProc(AuraEffect const* aurEff, ProcEventInfo& /*eventInfo*/)
+    {
+        PreventDefaultAction();
+        GetTarget()->CastSpell(_target, GetSpellInfo()->Effects[aurEff->GetEffIndex()]->TriggerSpell);
+
+    }
+
+    void Register() override
+    {
+        DoCheckProc += AuraCheckProcFn(spell_westfall_sniper_fire_proc::CheckProc);
+        OnEffectProc += AuraEffectProcFn(spell_westfall_sniper_fire_proc::HandleProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+    }
+
+private:
+    Unit* _target = nullptr;
+};
+
+enum AgentKearnenText
+{
+    SAY_0 = 0
+};
+
+class spell_westfall_sniper_fire : public SpellScript
+{
+    PrepareSpellScript(spell_westfall_sniper_fire);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_KILL_SHOT_TRIGGERED });
+    }
+
+    void HandleDummyEffect(SpellEffIndex /*effIndex*/)
+    {
+        Unit* target = GetHitUnit();
+        Unit* caster = GetCaster();
+        if (caster && target)
+            if (Creature* agent = caster->FindNearestCreature(NPC_AGENT_KEARNEN, 100.f))
+            {
+                agent->CastSpell(target, SPELL_KILL_SHOT_TRIGGERED); // 79525
+                if (agent->IsAIEnabled)
+                    agent->AI()->Talk(SAY_0, caster->GetGUID());
+            }
+    }
+
+    void Register() override
+    {
+        OnEffectHitTarget += SpellEffectFn(spell_westfall_sniper_fire::HandleDummyEffect, EFFECT_0, SPELL_EFFECT_DUMMY);
+    }
+};
+
+class areatrigger_westfall_dawning_of_a_new_day : public AreaTriggerScript
+{
+public:
+    areatrigger_westfall_dawning_of_a_new_day()
+      : AreaTriggerScript("areatrigger_westfall_dawning_of_a_new_day")
+    {
+    }
+
+    bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/, bool enter) override
+    {
+        if (enter && player->GetQuestStatus(QUEST_THE_DAWNING_OF_A_NEW_DAY) == QuestStatus::QUEST_STATUS_INCOMPLETE)
+            if (!player->FindNearestCreature(NPC_SHADOWY_FIGURE, 20))
+                player->SummonCreature(NPC_SHADOWY_FIGURE, -11016.6, 1479.32, 47.736, 2.478, TEMPSUMMON_MANUAL_DESPAWN);
+
+        return false;
+    }
+};
+
 void AddSC_westfall()
 {
     new npc_daphne_stilwell();
@@ -473,4 +568,7 @@ void AddSC_westfall()
     RegisterCreatureAI(npc_westfall_overloaded_harvest_golem);
     RegisterAuraScript(spell_westfall_reaping_blows);
     RegisterSpellScript(spell_westfall_wake_harvest_golem);
+    RegisterAuraScript(spell_westfall_sniper_fire_proc);
+    RegisterSpellScript(spell_westfall_sniper_fire);
+    new areatrigger_westfall_dawning_of_a_new_day();
 }

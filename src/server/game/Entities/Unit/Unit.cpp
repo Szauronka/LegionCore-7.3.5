@@ -11167,6 +11167,7 @@ void Unit::SetPowerType(Powers power)
             break;
         case POWER_RAGE: // Reset to zero
             SetPower(POWER_RAGE, 0);
+            break;
         case POWER_FOCUS: // Make it full
             SetFullPower(new_powertype);
             break;
@@ -17864,6 +17865,10 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_SPELL_PROC, spellProto->Id);
         ConditionSourceInfo condInfo = ConditionSourceInfo(eventInfo.GetActor(), eventInfo.GetActionTarget());
         if (!sConditionMgr->IsObjectMeetToConditions(condInfo, conditions))
+            continue;
+
+        // AuraScript Hook
+        if (!triggerData.aura->CallScriptCheckProcHandlers(itr->second.get(), eventInfo))
             continue;
 
         // Triggered spells not triggering additional spells
