@@ -58,7 +58,7 @@ public:
     
     void AddAction(Player *player, uint16 index)
     {
-        player->ADD_GOSSIP_ITEM( 5, data[index].name.c_str(), GOSSIP_SENDER_MAIN, data[index].action);
+        player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, data[index].name.c_str(), GOSSIP_SENDER_MAIN, data[index].action);
     }
 
     bool OnGossipHello(Player* player, Creature* _Creature) override

@@ -104,7 +104,7 @@ class Loskutik_Start : public CreatureScript
             return true;
 
         if ( player->getClass() == CLASS_DEATH_KNIGHT)
-            player->ADD_GOSSIP_ITEM(0, "Start event Patchwerk!", GOSSIP_SENDER_MAIN, START);
+            player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Start event Patchwerk!", GOSSIP_SENDER_MAIN, START);
 
         player->SendPreparedGossip(creature);
 

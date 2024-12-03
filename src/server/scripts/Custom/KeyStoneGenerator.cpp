@@ -15,8 +15,8 @@ public:
 	bool OnGossipHello(Player* player, Creature* creature) override
 	{
 		player->PlayerTalkClass->ClearMenus();
-		player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_BATTLE, "Generate a Mythic Keystone", GOSSIP_SENDER_MAIN, 0, "Generating a random Mythic Keystone. Are you sure?", 0, false);
-		player->ADD_GOSSIP_ITEM_EXTENDED(GOSSIP_ICON_BATTLE, "Destroy my Mythic Kestone", GOSSIP_SENDER_MAIN, 1, "Destroying the Mythic Keystone from your bag. Are you sure?", 0, false);
+		player->ADD_GOSSIP_ITEM_EXTENDED(GossipOptionNpc::None, "Generate a Mythic Keystone", GOSSIP_SENDER_MAIN, 0, "Generating a random Mythic Keystone. Are you sure?", 0, false);
+		player->ADD_GOSSIP_ITEM_EXTENDED(GossipOptionNpc::None, "Destroy my Mythic Kestone", GOSSIP_SENDER_MAIN, 1, "Destroying the Mythic Keystone from your bag. Are you sure?", 0, false);
 		player->PlayerTalkClass->SendGossipMenu(DEFAULT_GOSSIP_MESSAGE, creature->GetGUID());
 
 		return true;
