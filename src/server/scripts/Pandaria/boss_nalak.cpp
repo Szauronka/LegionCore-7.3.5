@@ -44,7 +44,6 @@ public:
         {
             me->SetCanFly(true);
             me->SetDisableGravity(true);
-            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
         }
 
         EventMap events;
@@ -176,7 +175,6 @@ public:
         {
             me->SetCanFly(true);
             me->SetDisableGravity(true);
-            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
         }
 
         void Reset() override
