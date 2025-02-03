@@ -33,9 +33,9 @@ namespace Trinity
         {
         public:
 #if BOOST_VERSION >= 106600
-            explicit Resolver(boost::asio::io_context& ioContext) : _impl(ioContext) { }
+            explicit Resolver(boost::asio::io_context& ioContext) : _impl(ioContext) {}
 #else
-            explicit Resolver(boost::asio::io_service& ioService) : _impl(ioService) { }
+            explicit Resolver(boost::asio::io_service& ioService) : _impl(ioService) {}
 #endif
 
             Optional<boost::asio::ip::tcp::endpoint> Resolve(boost::asio::ip::tcp const& protocol, std::string const& host, std::string const& service)
