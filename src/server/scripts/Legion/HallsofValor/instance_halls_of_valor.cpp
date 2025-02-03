@@ -1,10 +1,11 @@
 /*
+    http://uwow.biz
     Dungeon : Halls of Valor 100-110
 */
 
 #include "Group.h"
 #include "halls_of_valor.h"
-#include "ScriptPCH.h"
+#include "PrecompiledHeaders/ScriptPCH.h"
 #include "WorldPacket.h"
 #include "InstancePackets.h"
 
@@ -31,7 +32,7 @@ public:
 
     struct instance_halls_of_valor_InstanceMapScript : public InstanceScript
     {
-        instance_halls_of_valor_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_halls_of_valor_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         WorldLocation loc_res_pla;
 
@@ -56,7 +57,6 @@ public:
 
         void Initialize() override
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
             LoadDoorData(doorData);
 
@@ -292,6 +292,12 @@ public:
             }
         }
 
+        void OnPlayerLeave(Player* player) override
+        {
+            if (player->HasAura(202160))
+                player->RemoveAura(202160);
+        }
+
         void Update(uint32 diff) override
         {
             if (checkTimer <= diff)
@@ -328,20 +334,55 @@ public:
                 checkTimerAura -= diff;
         }
 
-        void WriteSaveDataMore(std::ostringstream& data) override
+        std::string GetSaveData() override
         {
-            data << fenryrEventDone << " " << skovaldEventDone;
+            OUT_SAVE_INST_DATA;
+
+            std::ostringstream saveStream;
+            saveStream << "H V " << GetBossSaveData() << fenryrEventDone << " " << skovaldEventDone << " ";
+
+            OUT_SAVE_INST_DATA_COMPLETE;
+            return saveStream.str();
         }
 
-        void ReadSaveDataMore(std::istringstream& data) override
+        void Load(const char* in) override
         {
-            data >> fenryrEventDone;
-            data >> skovaldEventDone;
+            if (!in)
+            {
+                OUT_LOAD_INST_DATA_FAIL;
+                return;
+            }
+
+            OUT_LOAD_INST_DATA(in);
+
+            char dataHead1, dataHead2;
+
+            std::istringstream loadStream(in);
+            loadStream >> dataHead1 >> dataHead2;
+
+            if (dataHead1 == 'H' && dataHead2 == 'V')
+            {
+                for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
+                {
+                    uint32 tmpState;
+                    loadStream >> tmpState;
+                    if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                        tmpState = NOT_STARTED;
+                    SetBossState(i, EncounterState(tmpState));
+                }
+                
+                loadStream >> fenryrEventDone;
+                loadStream >> skovaldEventDone;
+
+            } else OUT_LOAD_INST_DATA_FAIL;
+
+            OUT_LOAD_INST_DATA_COMPLETE;
         }
 
         WorldLocation* GetClosestGraveYard(float x, float y, float z) override
         {
-            loc_res_pla.WorldRelocate(1477, x, y, z);
+            loc_res_pla.Relocate(x, y, z);
+            loc_res_pla.SetMapId(1477);
 
             uint32 graveyardId = 5098;
 
@@ -359,7 +400,8 @@ public:
             {
                 if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
                 {
-                    loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                    loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                    loc_res_pla.SetMapId(gy->MapID);
                 }
             }
             return &loc_res_pla;

@@ -1,4 +1,15 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "antorus.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "SpellScript.h"
+#include "SpellAuraEffects.h"
+#include "Vehicle.h"
+#include "CombatAI.h"
 
 enum eSays
 {
@@ -190,7 +201,7 @@ struct boss_antoran_high_command : BossAI
 {
     explicit boss_antoran_high_command(Creature* creature) : BossAI(creature, DATA_ANTORAN)
     {
-        if (me->IsAlive())
+        if (me->isAlive())
         {
             instance->SetBossState(DATA_ANTORAN, NOT_STARTED);
             me->SetReactState(REACT_PASSIVE);
@@ -304,7 +315,7 @@ struct boss_antoran_high_command : BossAI
                         {
                             command->CastSpell(command, SPELL_SHARED_HEALTH, true);
 
-                            if (command->IsAlive() && !command->isInCombat())
+                            if (command->isAlive() && !command->isInCombat())
                                 command->AI()->DoZoneInCombat(command, 100.0f);
                         }
                     }
@@ -494,7 +505,7 @@ struct boss_antoran_high_command : BossAI
                         Position pos;
                         for (auto entry : {NPC_FANATICAL_PYROMANCER, NPC_FELBLADE_SHOCKTROOPER, NPC_FELBLADE_SHOCKTROOPER})
                         {
-                            pos = curCommand->GetRandomNearPosition(10.0f);
+                            curCommand->GetRandomNearPosition(pos, 10.0f);
                             me->SummonCreature(entry, pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
                         }
                     }
@@ -661,7 +672,7 @@ struct npc_command_capsules : VehicleAI
         instance = me->GetInstanceScript();
         me->SetControlled(true, UNIT_STATE_ROOT);
         me->SetReactState(REACT_PASSIVE);
-        me->SetPowerType(POWER_RAGE);
+        me->setPowerType(POWER_RAGE);
     }
 
     std::list<ObjectGuid> shrikeGUIDList;
@@ -1437,6 +1448,7 @@ void AddSC_boss_antoran()
     RegisterCreatureAI(npc_command_felshield_emitter);
     RegisterCreatureAI(npc_command_disruptor_beacon);
     RegisterCreatureAI(npc_command_screaming_shrike);
+
     RegisterSpellScript(spell_command_withering_fire);
     RegisterSpellScript(spell_command_player_chaos_pulse);
     RegisterSpellScript(spell_command_chaos_pulse_filter);

@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "highmaul.hpp"
+#include "SpellAuraEffects.h"
 
 Position const ghargFirstPos = {3466.11f, 7577.58f, 15.203f, 0.8954f};
 Position const ghargSecondPos = {3483.23f, 7598.67f, 10.65f, 0.8954f};
@@ -17,333 +18,6 @@ Position const ironWarmasterPos = {4155.636719f, 7817.216309f, 0.253316f, 0.5142
 Position const ironWarmasterJump = {4182.975098f, 7839.367188f, 7.755508f, 5.603590f};
 Position const teleporterSpawnPos = {4186.096f, 8574.492f, 425.353f, 3.851739f};
 
-struct npc_highmaul_gharg_arena_master : public ScriptedAI
-{
-    enum eMove
-    {
-        MoveFirstPos,
-        MoveSecondPos
-    };
-
-    enum eAction
-    {
-        ActionMove
-    };
-
-    npc_highmaul_gharg_arena_master(Creature* creature) : ScriptedAI(creature)
-    {
-        m_Instance = creature->GetInstanceScript();
-    }
-
-    InstanceScript* m_Instance;
-
-    void Reset() override
-    {
-        me->SetWalk(true);
-        me->SetReactState(REACT_PASSIVE);
-        me->SummonGameObject(ArenaElevator, 3466.438f, 7577.974f, 14.94214f, 0.8901166f, 0.0f, 0.0f, 0.4305113f, 0.9025852f, 1000);
-        me->GetMotionMaster()->MovePoint(MoveFirstPos, ghargFirstPos);
-    }
-
-    bool CanRespawn() override
-    {
-        return false;
-    }
-
-    void DoAction(int32 const action) override
-    {
-        if (action == ActionMove)
-        {
-            if (!m_Instance)
-                return;
-
-            me->GetMotionMaster()->MovePoint(MoveSecondPos, ghargSecondPos);
-            m_Instance->SetData(ElevatorActivated, true);
-        }
-    }
-
-    void sGossipSelect(Player* player, uint32 /*sender*/, uint32 /*action*/) override
-    {
-        if (!m_Instance)
-            return;
-
-        if (m_Instance->GetData(ElevatorActivated))
-            player->NearTeleportTo(ghargTeleportPos);
-        else
-        {
-            me->GetMotionMaster()->MovePoint(MoveSecondPos, ghargSecondPos);
-            m_Instance->SetData(ElevatorActivated, true);
-        }
-
-        player->PlayerTalkClass->SendCloseGossip();
-    }
-
-    void MovementInform(uint32 type, uint32 id) override
-    {
-        if (!m_Instance || type != MovementGeneratorType::POINT_MOTION_TYPE)
-            return;
-
-        switch (id)
-        {
-            case MoveFirstPos:
-            {
-                me->SetFacingTo(0.8954f);
-                me->SetHomePosition(ghargSecondPos);
-                break;
-            }
-            case MoveSecondPos:
-            {
-                me->SetHomePosition(ghargSecondPos);
-
-                /// Start elevator
-                //if (GameObject* l_Elevator = GameObject::GetGameObject(*me, m_Instance->GetGuidData(ArenaElevator)))
-                //    l_Elevator->SetTransportState(GO_STATE_TRANSPORT_STOPPED);
-
-                if (GameObject* l_Wall = GameObject::GetGameObject(*me, m_Instance->GetGuidData(CollisionWall)))
-                    l_Wall->SetGoState(GO_STATE_READY);
-                break;
-            }
-            default:
-                break;
-        }
-    }
-};
-
-struct npc_highmaul_jhorn_the_mad : public MS::AI::CosmeticAI
-{
-    enum eTalks
-    {
-        Intro1,
-        Intro2,
-        Intro3,
-        Intro4,
-        Intro5,
-        Trash1,
-        Trash2,
-        Kargath1,
-        Kargath2
-    };
-
-    enum eActions
-    {
-        StartIntro,
-        ContinueIntro,
-        VulgorDied
-    };
-
-    npc_highmaul_jhorn_the_mad(Creature* creature) : MS::AI::CosmeticAI(creature)
-    {
-        m_Instance = creature->GetInstanceScript();
-    }
-
-    InstanceScript* m_Instance;
-
-    void DoAction(int32 const action) override
-    {
-        switch (action)
-        {
-            case StartIntro:
-            {
-                AddDelayedEvent(1 * IN_MILLISECONDS, [this]() -> void { Talk(Intro1); });
-                AddDelayedEvent(16 * IN_MILLISECONDS, [this]() -> void { Talk(Intro2); });
-                AddDelayedEvent(38 * IN_MILLISECONDS, [this]() -> void { Talk(Intro3); });
-
-                AddDelayedEvent(54 * IN_MILLISECONDS, [this]() -> void
-                {
-                    if (m_Instance)
-                    {
-                        if (GameObject* l_InnerGate = GameObject::GetGameObject(*me, m_Instance->GetGuidData(GateArenaInner)))
-                            l_InnerGate->SetGoState(GO_STATE_ACTIVE);
-                    }
-                });
-
-                AddDelayedEvent(55 * IN_MILLISECONDS, [this]() -> void
-                {
-                    Talk(Intro4);
-
-                    if (m_Instance)
-                    {
-                        if (Creature* l_Vulgor = m_Instance->GetCreature(Vulgor))
-                            l_Vulgor->AI()->DoAction(StartIntro);
-                    }
-                });
-
-                AddDelayedEvent(59 * IN_MILLISECONDS, [this]() -> void
-                {
-                    if (m_Instance)
-                    {
-                        if (GameObject* l_InnerGate = GameObject::GetGameObject(*me, m_Instance->GetGuidData(GateArenaInner)))
-                            l_InnerGate->SetGoState(GO_STATE_READY);
-                    }
-                });
-
-                AddDelayedEvent(70 * IN_MILLISECONDS, [this]() -> void { Talk(Intro5); });
-                break;
-            }
-            case ContinueIntro:
-                AddDelayedEvent(1 * IN_MILLISECONDS, [this]() -> void { Talk(Trash1); });
-                AddDelayedEvent(11 * IN_MILLISECONDS, [this]() -> void { Talk(Trash2); });
-                break;
-            case VulgorDied:
-            {
-                AddDelayedEvent(1 * IN_MILLISECONDS, [this]() -> void { Talk(Kargath1); });
-
-                AddDelayedEvent(11 * IN_MILLISECONDS, [this]() -> void
-                {
-                    if (Creature* kargath = m_Instance->GetCreature((KargathBladefist)))
-                        kargath->AI()->DoAction(VulgorDied);
-                });
-
-                AddDelayedEvent(20 * IN_MILLISECONDS, [this]() -> void { Talk(Kargath2); });
-
-                AddDelayedEvent(21 * IN_MILLISECONDS, [this]() -> void
-                {
-                    if (Creature* kargath = m_Instance->GetCreature((KargathBladefist)))
-                        kargath->SetFacingTo(4.02f);
-                });
-
-                break;
-            }
-            default:
-                break;
-        }
-    }
-};
-
-struct npc_highmaul_thoktar_ironskull : public MS::AI::CosmeticAI
-{
-    enum eTalks
-    {
-        Intro1,
-        Intro2,
-        Intro3,
-        Trash1,
-        Trash2,
-        Kargath1
-    };
-
-    enum eActions
-    {
-        StartIntro,
-        ContinueIntro,
-        VulgorDied
-    };
-
-    npc_highmaul_thoktar_ironskull(Creature* creature) : MS::AI::CosmeticAI(creature) { }
-
-    void DoAction(int32 const action) override
-    {
-        switch (action)
-        {
-            case StartIntro:
-                AddDelayedEvent(11 * IN_MILLISECONDS, [this]() -> void { Talk(Intro1); });
-                AddDelayedEvent(31 * IN_MILLISECONDS, [this]() -> void { Talk(Intro2); });
-                AddDelayedEvent(50 * IN_MILLISECONDS, [this]() -> void { Talk(Intro3); });
-                break;
-            case ContinueIntro:
-                AddDelayedEvent(6 * IN_MILLISECONDS, [this]() -> void { Talk(Trash1); });
-                AddDelayedEvent(17 * IN_MILLISECONDS, [this]() -> void { Talk(Trash2); });
-                break;
-            case VulgorDied:
-                AddDelayedEvent(6 * IN_MILLISECONDS, [this]() -> void { Talk(Kargath1); });
-                break;
-            default:
-                break;
-        }
-    }
-};
-
-
-struct npc_highmaul_imperator_margok : public MS::AI::CosmeticAI
-{
-    enum eTalks
-    {
-        SorckingEvent12,
-        SorckingEvent13
-    };
-
-    enum eActions
-    {
-        VulgorDied = 2,
-        KargathLastTalk
-    };
-
-    enum eMove
-    {
-        MoveFrontGate = 1
-    };
-
-    enum eSpells
-    {
-        TeleportIntoArena = 167048,
-        TeleportVisual = 167050,
-        SitThrone = 88648
-    };
-
-    npc_highmaul_imperator_margok(Creature* creature) : MS::AI::CosmeticAI(creature)
-    {
-        m_Instance = creature->GetInstanceScript();
-    }
-
-    InstanceScript* m_Instance;
-
-    void Reset() override
-    {
-        me->SetReactState(REACT_PASSIVE);
-        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NON_ATTACKABLE);
-    }
-
-    void DoAction(int32 const action) override
-    {
-        switch (action)
-        {
-            case VulgorDied:
-            {
-                AddDelayedEvent(19 * IN_MILLISECONDS, [this]() -> void
-                {
-                    me->CastSpell(me, TeleportIntoArena, true);
-                    me->NearTeleportTo(margokTeleport);
-                    me->CastSpell(me, TeleportVisual, true);
-                });
-
-                AddDelayedEvent(20 * IN_MILLISECONDS, [this]() -> void
-                {
-                    me->SetFacingTo(margokTeleport.GetOrientation());
-                    me->RemoveAura(TeleportIntoArena);
-                });
-
-                AddDelayedEvent(28 * IN_MILLISECONDS, [this]() -> void { Talk(SorckingEvent12); });
-
-                AddDelayedEvent(49 * IN_MILLISECONDS, [this]() -> void
-                {
-                    if (!m_Instance)
-                        return;
-
-                    if (Creature* kargath = m_Instance->GetCreature((KargathBladefist)))
-                    {
-                        kargath->SetWalk(true);
-                        kargath->GetMotionMaster()->MovePoint(MoveFrontGate, kargathPos);
-                    }
-                });
-
-                AddDelayedEvent(39 * IN_MILLISECONDS, [this]() -> void
-                {
-                    if (!m_Instance)
-                        return;
-
-                    if (Creature* kargath = m_Instance->GetCreature((KargathBladefist)))
-                        kargath->AI()->DoAction(KargathLastTalk);
-                });
-
-                AddDelayedEvent(51 * IN_MILLISECONDS, [this]() -> void { Talk(SorckingEvent13); });
-                AddDelayedEvent(52 * IN_MILLISECONDS, [this]() -> void { me->CastSpell(me, SitThrone, true); });
-                break;
-            }
-            default:
-                break;
-        }
-    }
-};
 
 struct npc_highmaul_gorian_guardsman : public MS::AI::CosmeticAI
 {
@@ -1706,7 +1380,7 @@ struct npc_highmaul_highmaul_conscript : public MS::AI::CosmeticAI
                     Position l_Pos;
 
                     me->GetContactPoint(target, l_Pos.m_positionX, l_Pos.m_positionY, l_Pos.m_positionZ);
-                    l_Pos = target->GetFirstCollisionPosition(target->GetObjectSize(), o);
+                    target->GetFirstCollisionPosition(l_Pos, target->GetObjectSize(), o);
                     me->ClearUnitState(UNIT_STATE_ROOT);
                     me->GetMotionMaster()->MoveCharge(l_Pos.m_positionX, l_Pos.m_positionY, l_Pos.m_positionZ + target->GetObjectSize());
 
@@ -1776,7 +1450,7 @@ struct npc_highmaul_ogron_earthshaker : public MS::AI::CosmeticAI
             me->SetFacingTo(m_Orientation);
             me->CastSpell(me, EarthdevastatingSlamDmg, false);
 
-            m_Orientation += float(M_PI / 3);
+            m_Orientation += M_PI / 3;
             ++m_SlamCount;
 
             if (m_SlamCount >= 6)
@@ -2254,7 +1928,7 @@ struct npc_highmaul_warden_thultok : public ScriptedAI
 
     npc_highmaul_warden_thultok(Creature* creature) : ScriptedAI(creature)
     {
-        if (!creature->IsAlive())
+        if (!creature->isAlive())
             me->SummonGameObject(Teleporter, teleporterSpawnPos, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0);
     }
 
@@ -3657,14 +3331,11 @@ class spell_highmaul_time_stop : public AuraScript
 
 void AddSC_highmaul()
 {
-    //RegisterHighmaulCreatureAI(npc_highmaul_gharg_arena_master);
-    //RegisterHighmaulCreatureAI(npc_highmaul_jhorn_the_mad);
-    //RegisterHighmaulCreatureAI(npc_highmaul_thoktar_ironskull);
-    //RegisterHighmaulCreatureAI(npc_highmaul_imperator_margok);
+    
     RegisterHighmaulCreatureAI(npc_highmaul_gorian_guardsman);
     RegisterHighmaulCreatureAI(npc_highmaul_night_twisted_devout);
     RegisterHighmaulCreatureAI(npc_highmaul_gorian_runemaster);
-    //RegisterHighmaulCreatureAI(npc_highmaul_gorian_enforcer);
+    RegisterHighmaulCreatureAI(npc_highmaul_gorian_enforcer);
     RegisterHighmaulCreatureAI(npc_highmaul_underbelly_vagrant);
     RegisterHighmaulCreatureAI(npc_highmaul_gorian_sorcerer);
     //RegisterHighmaulCreatureAI(npc_highmaul_night_twisted_brute);
@@ -3687,11 +3358,11 @@ void AddSC_highmaul()
     RegisterHighmaulCreatureAI(npc_highmaul_warden_thultok);
     RegisterHighmaulCreatureAI(npc_highmaul_gorian_royal_guardsman);
     RegisterHighmaulCreatureAI(npc_highmaul_gorian_high_sorcerer);
-    //RegisterHighmaulCreatureAI(npc_highmaul_ogron_mauler);
+    RegisterHighmaulCreatureAI(npc_highmaul_ogron_mauler);
     RegisterHighmaulCreatureAI(npc_highmaul_guard_captain_thag);
     RegisterHighmaulCreatureAI(npc_highmaul_councilor_daglat);
     RegisterHighmaulCreatureAI(npc_highmaul_councilor_magknor);
-    //RegisterHighmaulCreatureAI(npc_highmaul_arcane_torrent);
+    RegisterHighmaulCreatureAI(npc_highmaul_arcane_torrent);
     RegisterHighmaulCreatureAI(npc_highmaul_councilor_gorluk);
     RegisterHighmaulCreatureAI(npc_highmaul_phantasmal_weapon);
     RegisterHighmaulCreatureAI(npc_highmaul_councilor_nouk);

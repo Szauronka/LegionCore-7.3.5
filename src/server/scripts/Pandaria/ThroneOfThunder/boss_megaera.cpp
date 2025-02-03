@@ -114,7 +114,7 @@ public:
         void Reset()
         {
             events.Reset();
-            me->SetPowerType(POWER_ENERGY);
+            me->setPowerType(POWER_ENERGY);
             me->SetPower(POWER_ENERGY, 0);
 
             if (instance->GetBossState(DATA_MEGAERA != NOT_STARTED))
@@ -209,7 +209,7 @@ struct megaera_headAI : public ScriptedAI
         for (uint8 i = 0; i < 6; i++)
             if (Creature* megaerahead = me->GetCreature(*me, instance->GetGuidData(megaeraheads[i])))
                 if (me->GetEntry() != megaerahead->GetEntry())
-                    if (megaerahead->IsAlive() && !megaerahead->isInCombat())
+                    if (megaerahead->isAlive() && !megaerahead->isInCombat())
                         DoZoneInCombat(megaerahead, 150.0f);
 
         if (instance->GetBossState(DATA_MEGAERA != IN_PROGRESS))
@@ -614,7 +614,8 @@ public:
                         {
                             if (!(*itr)->HasAura(SPELL_TORRENT_OF_ICE_T) && IsPlayerRangeDDOrHeal(*itr))
                             {
-                                Position pos = (*itr)->GetPosition();
+                                Position pos;
+                                (*itr)->GetPosition(&pos);
                                 if (Creature* ar = me->SummonCreature(NPC_ACID_RAIN, pos, TEMPSUMMON_TIMED_DESPAWN, 15000))
                                     DoCast(ar, SPELL_ACID_RAIN_TR_M);
                                 havetarget = true;
@@ -625,7 +626,8 @@ public:
                         {
                             std::list<Player*>::iterator itr = pllist.begin();
                             std::advance(itr, urand(0, pllist.size() - 1));
-                            Position pos = (*itr)->GetPosition();
+                            Position pos;
+                            (*itr)->GetPosition(&pos);
                             if (Creature* ar = me->SummonCreature(NPC_ACID_RAIN, pos, TEMPSUMMON_TIMED_DESPAWN, 15000))
                                 DoCast(ar, SPELL_ACID_RAIN_TR_M);
                         }
@@ -880,7 +882,7 @@ public:
             targetGuid = guid;
             if (Player* pl = me->GetPlayer(*me, guid))
             {
-                if (pl->IsAlive())
+                if (pl->isAlive())
                 {
                     DoCast(pl, SPELL_TORRENT_OF_ICE_T, true);
                     events.RescheduleEvent(EVENT_ACTIVE_PURSUIT, 1000);
@@ -911,7 +913,7 @@ public:
                 case EVENT_ACTIVE_PURSUIT:
                     if (Player* player = me->GetPlayer(*me, targetGuid))
                     {
-                        if (player->IsAlive())
+                        if (player->isAlive())
                         {
                             DoCast(me, SPELL_TORRENT_OF_ICE_AURA, true);
                             me->AddThreat(player, 50000000.0f);
@@ -924,7 +926,7 @@ public:
                     break;
                 case EVENT_DESPAWN:
                     if (Player* player = me->GetPlayer(*me, targetGuid))
-                        if (player->IsAlive())
+                        if (player->isAlive())
                             player->RemoveAurasDueToSpell(SPELL_TORRENT_OF_ICE_T);
                     me->DespawnOrUnsummon();
                     break;   

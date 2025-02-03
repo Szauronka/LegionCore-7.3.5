@@ -32,7 +32,7 @@ public:
 
     struct instance_thunder_forge_InstanceMapScript : public InstanceScript
     {
-        instance_thunder_forge_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_thunder_forge_InstanceMapScript(Map* map) : InstanceScript(map)
         { }
 
         void Initialize() override
@@ -307,5 +307,5 @@ bool Helper::IsNextStageAllowed(InstanceScript* instance, uint8 stage)
 
 void AddSC_instance_thunder_forge()
 {
-    //new instance_thunder_forge();
+    new instance_thunder_forge();
 }

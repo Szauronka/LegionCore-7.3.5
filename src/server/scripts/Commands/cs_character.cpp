@@ -15,13 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-Name: character_commandscript
-%Complete: 100
-Comment: All character related commands
-Category: commandscripts
-EndScriptData */
-
 #include "AccountMgr.h"
 #include "CharacterData.h"
 #include "Chat.h"
@@ -63,7 +56,9 @@ public:
             { "rename",         SEC_GAMEMASTER,     true,  &HandleCharacterRenameCommand,          ""},
             { "reputation",     SEC_GAMEMASTER,     true,  &HandleCharacterReputationCommand,      ""},
             { "titles",         SEC_GAMEMASTER,     true,  &HandleCharacterTitlesCommand,          ""},
+			{ "sendachi",       SEC_GAMEMASTER,     true,  &HandleCharacterSendAchiCommand,        ""},
             { "getrename",      SEC_GAMEMASTER,     true,  &HandleCharacterGetrenameCommand,    ""}
+            
         };
 
         static std::vector<ChatCommand> commandTable =
@@ -97,7 +92,7 @@ public:
     static bool GetDeletedCharacterInfoList(DeletedInfoList& foundList, std::string searchString)
     {
         PreparedQueryResult result;
-        CharacterDatabasePreparedStatement* stmt;
+        PreparedStatement* stmt;
         if (!searchString.empty())
         {
             // search by GUID
@@ -216,7 +211,7 @@ public:
             return;
         }
 
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UDP_RESTORE_DELETE_INFO);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UDP_RESTORE_DELETE_INFO);
         stmt->setString(0, delInfo.name);
         stmt->setUInt32(1, delInfo.accountId);
         stmt->setUInt64(2, delInfo.Guid.GetGUIDLow());
@@ -225,7 +220,7 @@ public:
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_NAME_DATA);
         stmt->setUInt64(0, delInfo.Guid.GetGUIDLow());
         if (PreparedQueryResult result = CharacterDatabase.Query(stmt))
-            sWorld->AddCharacterInfo(delInfo.Guid, delInfo.accountId, delInfo.name, (*result)[2].GetUInt8(), (*result)[0].GetUInt8(), (*result)[1].GetUInt8(), (*result)[2].GetUInt8());
+            sWorld->AddCharacterInfo(delInfo.Guid.GetGUIDLow(), delInfo.name, (*result)[2].GetUInt8(), (*result)[0].GetUInt8(), (*result)[1].GetUInt8(), (*result)[2].GetUInt8(), delInfo.accountId);
     }
 
     static void HandleCharacterLevel(Player* player, ObjectGuid playerGuid, uint32 oldLevel, uint32 newLevel, ChatHandler* handler)
@@ -248,7 +243,7 @@ public:
         else
         {
             // Update level and reset XP, everything else will be updated at login
-            CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_LEVEL);
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_LEVEL);
             stmt->setUInt8(0, uint8(newLevel));
             stmt->setUInt64(1, playerGuid.GetGUIDLow());
             CharacterDatabase.Execute(stmt);
@@ -321,7 +316,7 @@ public:
             std::string oldNameLink = handler->playerLink(targetName);
             handler->PSendSysMessage(LANG_RENAME_PLAYER_GUID, oldNameLink.c_str(), targetGuid.GetGUIDLow());
 
-            CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
             stmt->setUInt16(0, uint16(AT_LOGIN_RENAME));
             stmt->setUInt64(1, targetGuid.GetGUIDLow());
             CharacterDatabase.Execute(stmt);
@@ -379,7 +374,7 @@ public:
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
             return false;
 
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
         stmt->setUInt16(0, uint16(AT_LOGIN_CUSTOMIZE));
         if (target)
         {
@@ -407,7 +402,7 @@ public:
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
             return false;
 
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
         stmt->setUInt16(0, uint16(AT_LOGIN_CHANGE_FACTION));
         if (target)
         {
@@ -434,7 +429,7 @@ public:
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
             return false;
 
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_AT_LOGIN_FLAG);
         stmt->setUInt16(0, uint16(AT_LOGIN_CHANGE_RACE));
         if (target)
         {
@@ -954,7 +949,39 @@ public:
             ObjectMgr::GetPlayerNameByGUID(ObjectGuid::Create<HighGuid::Player>(result->Fetch()->GetUInt64()), PlayerNewName); // nom actuel en cas de rename multiple !
             handler->PSendSysMessage("Le nom actuel du joueur '%s' est : '%s' (guid : '%u')", character.c_str(), PlayerNewName.c_str(), result->Fetch()->GetUInt32());
             return true;
+             }
+        return true;
+    }
+
+	static bool HandleCharacterSendAchiCommand(ChatHandler* handler, char const* args)
+    {
+        char* nameStr;
+        char* achievementID;
+        handler->extractOptFirstArg((char*)args, &nameStr, &achievementID);
+        if (!achievementID)
+            return false;
+
+        Player* target;
+        ObjectGuid targetGuid;
+        std::string targetName;
+        int32 achievementId = atoi(achievementID);
+		
+        if (!handler->extractPlayerTarget(nameStr, &target, &targetGuid, &targetName))
+            return false;
+
+        if (!achievementId)
+            return false;
+
+        if (!target)
+        {
+            handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
+            handler->SetSentErrorMessage(true);
+            return false;
         }
+
+        if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(achievementId))
+            target->CompletedAchievement(achievementEntry);
+
         return true;
     }
 };

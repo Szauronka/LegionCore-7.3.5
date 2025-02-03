@@ -144,9 +144,9 @@ namespace Trinity
          * @brief Reorder the elements of the container randomly.
          *
          * @param container Container to reorder
-        */
+         */
         template<class C>
-        void RandomShuffle(C& container)
+        inline void RandomShuffle(C& container)
         {
             std::shuffle(std::begin(container), std::end(container), RandomEngine::Instance());
         }

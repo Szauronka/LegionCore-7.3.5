@@ -1,9 +1,10 @@
 /*
+    http://uwow.biz
     Dungeon : Maw of Souls 100-110
 */
 
 #include "maw_of_souls.h"
-#include "ScriptPCH.h"
+#include "PrecompiledHeaders/ScriptPCH.h"
 #include "WorldPacket.h"
 #include "InstancePackets.h"
 
@@ -28,9 +29,8 @@ public:
 
     struct instance_maw_of_souls_InstanceMapScript : public InstanceScript
     {
-        instance_maw_of_souls_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_maw_of_souls_InstanceMapScript(Map* map) : InstanceScript(map) 
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 
@@ -164,7 +164,8 @@ public:
 
         WorldLocation* GetClosestGraveYard(float x, float y, float z) override
         {
-            loc_res_pla.WorldRelocate(1492, x, y, z);
+            loc_res_pla.Relocate(x, y, z);
+            loc_res_pla.SetMapId(1492);
 
             uint32 graveyardId = 5102;
 
@@ -177,7 +178,8 @@ public:
             {
                 if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
                 {
-                    loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                    loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                    loc_res_pla.SetMapId(gy->MapID);
                 }
             }
             return &loc_res_pla;

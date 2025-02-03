@@ -34,9 +34,8 @@ class instance_shadow_labyrinth : public InstanceMapScript
 
         struct instance_shadow_labyrinth_InstanceMapScript : public InstanceScript
         {
-            instance_shadow_labyrinth_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+            instance_shadow_labyrinth_InstanceMapScript(Map* map) : InstanceScript(map)
             {
-                SetHeaders(DataHeader);
                 SetBossNumber(EncounterCount);
                 LoadDoorData(doorData);
 
@@ -56,7 +55,7 @@ class instance_shadow_labyrinth : public InstanceMapScript
                         GrandmasterVorpilGUID = creature->GetGUID();
                         break;
                     case NPC_FEL_OVERSEER:
-                        if (creature->IsAlive())
+                        if (creature->isAlive())
                         {
                             ++FelOverseerCount;
                             if (Creature* hellmaw = instance->GetCreature(AmbassadorHellmawGUID))

@@ -1,8 +1,19 @@
 /*
- * Copyright (C) 2011-2012 Haloperidolum <http://wow-mig.ru/>
- * This is private source based on TrinityCore
- * for WoW-Mig project
- * This is no GPL code.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #ifndef BATTLEFIELD_TB_
@@ -495,7 +506,7 @@ struct BfTBGameObjectBuilding
         m_TB->OnDestroyed();
 
         m_TB->SetTimer(m_TB->GetTimer() + 5 * 60 * 1000);
-        m_TB->SendUpdateWorldState(WorldStates::BG_WS_BATTLE_TIMER, (GameTime::GetGameTime() + m_TB->GetTimer() / 1000));
+        m_TB->SendUpdateWorldState(WorldStates::BG_WS_BATTLE_TIMER, (time(nullptr) + m_TB->GetTimer() / 1000));
 
         for (int i = 0; i < BUILDING_MAX_DIFF; i++)
         {

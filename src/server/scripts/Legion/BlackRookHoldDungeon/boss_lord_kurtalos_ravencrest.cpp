@@ -1,10 +1,16 @@
 /*
+    http://uwow.biz
     Dungeon : Black Rook Hold Dungeon 100-110
     Encounter: Lord Kurtalos Ravencrest
     Normal: 100%, Heroic: 100%, Mythic: 100%
 */
 
 #include "black_rook_hold_dungeon.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "SpellScript.h"
+#include "SpellAuraEffects.h"
 
 enum Says
 {
@@ -306,7 +312,7 @@ struct boss_latosius : public BossAI
                     Talk(SAY_DREADLORDS_GUILE);
                     DoCast(SPELL_DREADLORDS_GUILE);
                     for (auto id : {EVENT_SHADOW_BOLT_VOLLEY, EVENT_CLOUD_OF_HYPNOSIS, EVENT_STINGING_SWARM})
-                        events.RescheduleEvent(id, 26000, true);
+                        events.RecalcEventTimer(id, 26000, true);
                     events.RescheduleEvent(EVENT_DREADLORDS_GUILE, 82000);
                     events.RescheduleEvent(EVENT_SUM_IMAGE, 4000);
                     break;
@@ -632,6 +638,7 @@ void AddSC_boss_lord_kurtalos_ravencrest()
     RegisterCreatureAI(npc_kurtalos_ravencrest);
     RegisterCreatureAI(npc_kurtalos_trigger);
     RegisterCreatureAI(npc_kurtalos_stinging_swarm);
+
     RegisterSpellScript(spell_latosius_random_teleport);
     RegisterAuraScript(spell_kurtalos_stinging_swarm);
 }

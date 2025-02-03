@@ -296,7 +296,7 @@ public:
             player->PrepareQuestMenu(creature->GetGUID());
 
         if (player->GetQuestStatus(12801) == QUEST_STATUS_INCOMPLETE && !creature->FindNearestCreature(NPC_HIGHLORD_TIRION_FORDRING, 30.0f))
-            player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "I am ready.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+            player->ADD_GOSSIP_ITEM(0, "I am ready.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
         player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
 
@@ -1304,7 +1304,7 @@ public:
                                 if (!PlayerList.isEmpty())
                                 {
                                     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                                        if (i->getSource()->IsAlive() && me->IsWithinDistInMap(i->getSource(), 50))
+                                        if (i->getSource()->isAlive() && me->IsWithinDistInMap(i->getSource(), 50))
                                             i->getSource()->CastSpell(i->getSource(), SPELL_THE_LIGHT_OF_DAWN_Q, false);
                                 }
                             }
@@ -1512,9 +1512,9 @@ public:
         void NPCChangeTarget(ObjectGuid ui_GUID)
         {
             if (Creature* temp = Unit::GetCreature(*me, ui_GUID))
-                if (temp->IsAlive())
+                if (temp->isAlive())
                     if (Unit* pTarger = SelectTarget(SELECT_TARGET_RANDOM, 0))
-                        if (pTarger->IsAlive())
+                        if (pTarger->isAlive())
                         {
                             // temp->DeleteThreatList();
                             temp->AddThreat(pTarger, 0.0f);
@@ -1631,7 +1631,7 @@ public:
         void DespawnNPC(ObjectGuid pGUID)
         {
             if (Creature* temp = Unit::GetCreature(*me, pGUID))
-                if (temp->IsAlive())
+                if (temp->isAlive())
                 {
                     temp->SetVisible(false);
                     temp->Kill(temp);

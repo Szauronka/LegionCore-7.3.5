@@ -78,7 +78,7 @@ public:
                 for (uint8 i = 0; i < size; ++i)
                 {
                     ObjectGuid guid = instance->GetGuidData(DATA_FEL_CRYSTAL);
-                    TC_LOG_DEBUG("scripts", "Selin: Adding Fel Crystal " UI64FMTD " to list", guid.GetCounter());
+                    TC_LOG_DEBUG(LOG_FILTER_TSCR, "Selin: Adding Fel Crystal " UI64FMTD " to list", guid.GetCounter());
                     Crystals.push_back(guid);
                 }
             }
@@ -109,7 +109,7 @@ public:
                     Unit* unit = Unit::GetUnit(*me, *itr);
                     if (unit)
                     {
-                        if (!unit->IsAlive())
+                        if (!unit->isAlive())
                             CAST_CRE(unit)->Respawn();
 
                         unit->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -118,7 +118,7 @@ public:
 
                 instance->HandleGameObject(instance->GetGuidData(DATA_SELIN_ENCOUNTER_DOOR), true);
                 instance->SetData(DATA_SELIN_EVENT, NOT_STARTED);
-            } else TC_LOG_ERROR("scripts", ERROR_INST_DATA);
+            } else TC_LOG_ERROR(LOG_FILTER_TSCR, ERROR_INST_DATA);
 
             DrainLifeTimer = urand(3000, 7000);
             DrainManaTimer = DrainLifeTimer + 5000;
@@ -146,7 +146,7 @@ public:
             {
                 pCrystal = NULL;
                 pCrystal = Unit::GetUnit(*me, *itr);
-                if (pCrystal && pCrystal->IsAlive())
+                if (pCrystal && pCrystal->isAlive())
                 {
                     if (!CrystalChosen || me->GetDistanceOrder(pCrystal, CrystalChosen, false))
                     {
@@ -183,7 +183,7 @@ public:
             for (GuidList::const_iterator itr = Crystals.begin(); itr != Crystals.end(); ++itr)
             {
                 Creature* pCrystal = Unit::GetCreature(*me, *itr);
-                if (pCrystal && pCrystal->IsAlive())
+                if (pCrystal && pCrystal->isAlive())
                     pCrystal->Kill(pCrystal);
             }
         }
@@ -207,7 +207,7 @@ public:
             if (type == POINT_MOTION_TYPE && id == 1)
             {
                 Unit* CrystalChosen = Unit::GetUnit(*me, CrystalGUID);
-                if (CrystalChosen && CrystalChosen->IsAlive())
+                if (CrystalChosen && CrystalChosen->isAlive())
                 {
                     CrystalChosen->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE + UNIT_FLAG_NOT_SELECTABLE);
                     CrystalChosen->CastSpell(me, SPELL_MANA_RAGE, true);
@@ -215,7 +215,7 @@ public:
                 }
                 else
                 {
-                    TC_LOG_ERROR("scripts", "Selin Fireheart unable to drain crystal as the crystal is either dead or despawned");
+                    TC_LOG_ERROR(LOG_FILTER_TSCR, "Selin Fireheart unable to drain crystal as the crystal is either dead or despawned");
                     DrainingCrystal = false;
                 }
             }
@@ -296,7 +296,7 @@ public:
                         Talk(SAY_EMPOWERED);
 
                         Unit* CrystalChosen = Unit::GetUnit(*me, CrystalGUID);
-                        if (CrystalChosen && CrystalChosen->IsAlive())
+                        if (CrystalChosen && CrystalChosen->isAlive())
                             CrystalChosen->Kill(CrystalChosen);
 
                         CrystalGUID.Clear();
@@ -338,7 +338,7 @@ public:
             if (InstanceScript* instance = me->GetInstanceScript())
             {
                 Creature* Selin = (Unit::GetCreature(*me, instance->GetGuidData(DATA_SELIN)));
-                if (Selin && Selin->IsAlive())
+                if (Selin && Selin->isAlive())
                 {
                     if (CAST_AI(boss_selin_fireheart::boss_selin_fireheartAI, Selin->AI())->CrystalGUID == me->GetGUID())
                     {
@@ -352,7 +352,7 @@ public:
                         }
                     }
                 }
-            } else TC_LOG_ERROR("scripts", ERROR_INST_DATA);
+            } else TC_LOG_ERROR(LOG_FILTER_TSCR, ERROR_INST_DATA);
         }
     };
 

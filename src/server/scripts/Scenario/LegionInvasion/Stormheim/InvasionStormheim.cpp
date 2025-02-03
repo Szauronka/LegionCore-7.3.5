@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Invasion Stormheim
 */
 
@@ -192,7 +193,10 @@ public:
         void IsSummonedBy(Unit* summoner) override
         {
             SetFlyMode(true);
-            summoner->CastSpell(me, 52391, true); //Ride Veh
+            // Nearest player in 10yard automatically ride dragon (if no player they can still click and ride)
+            if (Player* nearest_player = me->FindNearestPlayer(10))
+                if (!nearest_player->IsOnVehicle())
+                    nearest_player->CastSpell(me, 52391, true); // spell: Ride Vehicle
         }
         
         void OnCharmed(bool /*apply*/) override

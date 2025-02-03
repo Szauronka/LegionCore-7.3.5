@@ -27,7 +27,7 @@ class Aura;
 
 typedef void(AuraEffect::*pAuraEffectHandler)(AuraApplication const* aurApp, uint8 mode, bool apply) const;
 
-class TC_GAME_API AuraEffect
+class AuraEffect
 {
     friend void Aura::_InitEffects(uint32 effMask, Unit* caster, float *baseAmount);
     friend Aura* Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, Unit* caster, float* baseAmount, Item* castItem, ObjectGuid casterGUID);
@@ -35,6 +35,7 @@ class TC_GAME_API AuraEffect
     private:
         explicit AuraEffect(Aura* base, uint8 effIndex, float *baseAmount, Unit* caster, uint8 diffMode);
     public:
+		Trinity::AnyData Variables;
         ~AuraEffect();
         Unit* GetCaster() const { return GetBase()->GetCaster(); }
         Unit* GetSaveTarget() const { return saveTarget; }
@@ -364,7 +365,7 @@ class TC_GAME_API AuraEffect
         void HandleAuraProcOnHpBelow(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleExpedite(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleModVisibilityRange(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleSwitchTeam(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+		void HandleSwitchTeam(AuraApplication const* aurApp, uint8 mode, bool apply) const;
 };
 
 #endif

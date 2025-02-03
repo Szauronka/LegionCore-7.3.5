@@ -35,10 +35,10 @@ Battlenet::ServiceDispatcher::ServiceDispatcher()
 void Battlenet::ServiceDispatcher::Dispatch(Session* session, uint32 serviceHash, uint32 token, uint32 methodId, MessageBuffer buffer)
 {
     auto itr = _dispatchers.find(serviceHash);
-    if (itr != _dispatchers.end()) 
+    if (itr != _dispatchers.end())
         itr->second(session, token, methodId, std::forward<MessageBuffer>(buffer));
     else
-        TC_LOG_ERROR("session.rpc", "%s tried to call invalid service 0x%X", session->GetClientInfo().c_str(), serviceHash);
+        TC_LOG_ERROR(LOG_FILTER_BNET_SESSION, "%s tried to call invalid service 0x%X", session->GetClientInfo().c_str(), serviceHash);
 }
 
 Battlenet::ServiceDispatcher& Battlenet::ServiceDispatcher::Instance()

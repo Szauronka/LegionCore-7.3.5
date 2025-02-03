@@ -168,7 +168,7 @@ struct ManaVoidSelector
 
         bool operator()(Unit* unit) const
         {
-            return unit->GetPowerType() == POWER_MANA && _source->GetDistance(unit) > 15.0f;
+            return unit->getPowerType() == POWER_MANA && _source->GetDistance(unit) > 15.0f;
         }
 
         WorldObject const* _source;
@@ -262,7 +262,7 @@ class boss_valithria_dreamwalker : public CreatureScript
 
                 DoCast(me, SPELL_COPY_DAMAGE);
 
-                if (instance && me->IsAlive())
+                if (instance && me->isAlive())
                     instance->SetBossState(DATA_VALITHRIA_DREAMWALKER, NOT_STARTED);
 
                 summons.DespawnAll();
@@ -427,7 +427,7 @@ class boss_valithria_dreamwalker : public CreatureScript
 
                                 for (Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
                                     if (Player* pPlayer = i->getSource())
-                                        if(pPlayer->IsAlive() && pPlayer->IsWithinDistInMap(me, 60.0f, true))
+                                        if(pPlayer->isAlive() && pPlayer->IsWithinDistInMap(me, 60.0f,true))
                                             return;
 
                                 EnterEvadeMode();

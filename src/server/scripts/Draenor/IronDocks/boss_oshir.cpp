@@ -1,9 +1,14 @@
 /*
+    http://epicwow.com/
     Dungeon : Iron Docks 93-95
     Encounter: Oshir
 */
 
 #include "iron_docks.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellAuraEffects.h"
+#include "GameEventMgr.h"
 
 enum Spells
 {

@@ -121,49 +121,29 @@ bool CharmInfo::HasCommandState(CommandStates state) const
 
 void CharmInfo::InitPossessCreateSpells()
 {
-    if (m_unit->GetTypeId() == TYPEID_UNIT)
+    InitEmptyActionBar();
+
+    if (!m_unit->IsCreature())
+        return;
+
+    if (auto creature = m_unit->ToCreature())
     {
-        // Adding switch until better way is found. Malcrom
-        // Adding entrys to this switch will prevent COMMAND_ATTACK being added to pet bar.
-        switch (m_unit->GetEntry())
-        {
-            case 23575: // Mindless Abomination
-            case 24783: // Trained Rock Falcon
-            case 27664: // Crashin' Thrashin' Racer
-            case 40281: // Crashin' Thrashin' Racer
-            case 28511: // Eye of Acherus
-                break;
-            default:
-                InitEmptyActionBar();
-                break;
-        }
+        // TODO: remove all spells and passives in instances after 70 lvl - bugged creature spells
+        if (creature->getLevel() >= 70 && creature->GetMap() && creature->GetMap()->Instanceable())
+            return;
 
-        if (auto creature = m_unit->ToCreature())
+        for (auto itr : creature->m_templateSpells)
         {
-            // TODO: remove all spells and passives in instances after 70 lvl - bugged creature spells
-            if (creature->getLevel() >= 70 && creature->GetMap() && creature->GetMap()->Instanceable())
-                return;
-
-            for (uint8 i = 0; i < MAX_CREATURE_SPELLS; ++i)
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr);
+            if (spellInfo && !spellInfo->HasAttribute(SPELL_ATTR0_CASTABLE_WHILE_DEAD))
             {
-                uint32 spellId = creature->m_templateSpells[i];
-                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-                if (spellInfo)
-                {
-                    // SPELL_ATTR5_NOT_AVAILABLE_WHILE_CHARMED ?
-                    if (spellInfo->HasAttribute(SPELL_ATTR0_CASTABLE_WHILE_DEAD))
-                        continue;
-
-                    if (spellInfo->IsPassive())
-                        m_unit->CastSpell(m_unit, spellInfo, true);
-                    else
-                        AddSpellToActionBar(spellInfo, ACT_PASSIVE, i % MAX_UNIT_ACTION_BAR_INDEX);
-                }
+                if (spellInfo->IsPassive())
+                    m_unit->CastSpell(m_unit, spellInfo, true);
+                else
+                    AddSpellToActionBar(spellInfo, ACT_PASSIVE);
             }
         }
     }
-    else
-        InitEmptyActionBar();
 }
 
 void CharmInfo::InitCharmCreateSpells()
@@ -177,11 +157,12 @@ void CharmInfo::InitCharmCreateSpells()
     // TODO: remove all spells and passives in instances after 70 lvl - bugged creature spells
     if (Creature* creature = m_unit->ToCreature())
     {
-        if (creature->getLevel() >= 70 && creature->GetMap() && creature->GetMap()->Instanceable() && (!m_unit->GetOwner()->IsPlayer() && !m_unit->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN)))
-        {
-            InitEmptyActionBar();
-            return;
-        }
+        if(m_unit->GetOwner())
+            if (creature->getLevel() >= 70 && creature->GetMap() && creature->GetMap()->Instanceable() && (!m_unit->GetOwner()->IsPlayer() && !m_unit->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN)))
+            {
+                InitEmptyActionBar();
+                return;
+            }
     }
 
     InitPetActionBar();
@@ -226,7 +207,7 @@ void CharmInfo::InitCharmCreateSpells()
     }
 }
 
-bool CharmInfo::AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates newstate, uint8 preferredSlot)
+bool CharmInfo::AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates newstate)
 {
     if (spellInfo->HasAttribute(SPELL_ATTR0_HIDDEN_CLIENTSIDE) || spellInfo->HasAttribute(SPELL_ATTR4_HIDDEN_SPELLBOOK))
         return false;
@@ -252,43 +233,26 @@ bool CharmInfo::AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates new
     uint32 spell_id = spellInfo->Id;
     uint32 first_id = spellInfo->GetFirstRankSpell()->Id;
 
-    ASSERT(preferredSlot < MAX_UNIT_ACTION_BAR_INDEX);
-
-    // new spell rank can be already listed
-    for (uint8 i = 0; i < MAX_UNIT_ACTION_BAR_INDEX; ++i)
+    for (auto& i : PetActionBar)
     {
-        if (uint32 action = PetActionBar[i].GetAction())
+        if (uint32 action = i.GetAction())
         {
-            if (PetActionBar[i].IsActionBarForSpell() && sSpellMgr->GetFirstSpellInChain(action) == first_id)
+            if (i.IsActionBarForSpell() && sSpellMgr->GetFirstSpellInChain(action) == first_id)
             {
-                PetActionBar[i].SetAction(spell_id);
+                i.SetAction(spell_id);
                 return true;
             }
         }
     }
 
-    // or use empty slot in other case
-    for (uint8 i = 0; i < MAX_UNIT_ACTION_BAR_INDEX; ++i)
+    for (uint8 i = 0; i < std::extent<decltype(PetActionBar)>::value; ++i)
     {
-        uint8 j = (preferredSlot + i) % MAX_UNIT_ACTION_BAR_INDEX;
-        if (!PetActionBar[j].GetAction() && PetActionBar[j].IsActionBarForSpell())
+        if (!PetActionBar[i].GetAction() && PetActionBar[i].IsActionBarForSpell())
         {
-            newstate = [&]
-            {
-                if (newstate != ACT_DECIDE)
-                    return newstate;
-                if (!spellInfo->IsAutocastable())
-                    return ACT_PASSIVE;
-                if (spellInfo->IsAutocastable())
-                    return ACT_ENABLED;
-                return ACT_DISABLED;
-            }();
-
-            SetActionBar(j, spell_id, newstate);
+            SetActionBar(i, spell_id, newstate == ACT_DECIDE ? spellInfo->IsAutocastable() ? ACT_DISABLED : ACT_PASSIVE : newstate);
             return true;
         }
     }
-
     return false;
 }
 
@@ -296,7 +260,7 @@ bool CharmInfo::RemoveSpellFromActionBar(uint32 spell_id)
 {
     uint32 first_id = sSpellMgr->GetFirstSpellInChain(spell_id);
 
-    for (uint8 i = 0; i < MAX_UNIT_ACTION_BAR_INDEX; ++i)
+    for (uint8 i = 0; i < std::extent<decltype(PetActionBar)>::value; ++i)
     {
         if (uint32 action = PetActionBar[i].GetAction())
         {
@@ -394,6 +358,11 @@ UnitActionBarEntry const* CharmInfo::GetActionBarEntry(uint8 index) const
 void CharmInfo::SetIsCommandAttack(bool val)
 {
     m_isCommandAttack = val;
+}
+
+void CharmInfo::SetIsCommandFollow(bool val)
+{
+    _isCommandFollow = val;
 }
 
 bool CharmInfo::IsCommandAttack()

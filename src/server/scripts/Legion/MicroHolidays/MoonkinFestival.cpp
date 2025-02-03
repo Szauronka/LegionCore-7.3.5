@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
 */
 
 //122138
@@ -417,7 +418,7 @@ struct npc_moonkin_hatchling_pet : ScriptedAI
     void SpellHit(Unit* /*caster*/, SpellInfo const* spell) override
     {
         if (spell->Id == 245342)
-            me->SendPlaySpellVisualKit(84318, 0, 0);
+            me->SendPlaySpellVisualKit(0, 84318, 0);
     }
 
     void UpdateAI(uint32 diff) override

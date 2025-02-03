@@ -1,453 +1,582 @@
+/*
+ * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
 
-enum eSpells
-{
-    //levantus
-    SPELL_GUST_OF_WIND      = 217211,
-    SPELL_RENDING_WHIRL     = 217235,
-    SPELL_MASSIVE_SPOUL     = 217249,
-    SPELL_ELECTRIFY         = 217344,
-    SPELL_TURBULENT_VORTEX  = 217360,
-    SPELL_RAMPAGING_TORRENT = 217229,
-
-    //calamir
-    SPELL_PHASE_FIRE        = 217563,
-    SPELL_PHASE_FROST       = 217831,
-    SPELL_PHASE_ARCANE      = 217834,
-    SPELL_BURNING_BOMB      = 217874,
-    SPELL_HOWLING_GALE      = 217966,
-    SPELL_ARCANOPULSE       = 218005,
-    SPELL_WRATHFUL_FLAMES   = 217893,
-    SPELL_ICY_COMET         = 217919,
-    SPELL_ARCANE_DESOLATION = 217986,
-
-    // jim
-    SPELL_MORE_MORE_MORE        = 223715,
-    // General
-    SPELL_NIGHTSHIFTED_BOLTS    = 223623,
-    SPELL_RESONANCE             = 223614,
-    SPELL_NIGHTSTABLE_ENERGY    = 223689,
-};
-
-// 108829
-class boss_levantus : public CreatureScript
+//90401
+class npc_azsuna_allari_q37660 : public CreatureScript
 {
 public:
-    boss_levantus() : CreatureScript("boss_levantus") {}
+    npc_azsuna_allari_q37660() : CreatureScript("npc_azsuna_allari_q37660") {}
 
-    struct boss_levantusAI : public ScriptedAI
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
     {
-        boss_levantusAI(Creature* creature) : ScriptedAI(creature), summons(me)
+        if (player->GetQuestObjectiveData(37660, 90403))
+            return false;
+
+        player->PlayerTalkClass->SendCloseGossip();
+        player->RewardPlayerAndGroupAtEvent(90403, player);
+        creature->AI()->Talk(1);
+
+        return true;
+    }
+
+    struct npc_azsuna_allari_q37660AI : public ScriptedAI
+    {
+        npc_azsuna_allari_q37660AI(Creature* creature) : ScriptedAI(creature)
         {
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL);
+            me->SetReactState(REACT_PASSIVE);
         }
 
-        EventMap events;
-        SummonList summons;
-        void Reset() override
+        void IsSummonedBy(Unit* who) override
         {
-            events.Reset();
-            summons.DespawnAll();
-            me->RemoveAllAreaObjects();
-            me->SetReactState(REACT_AGGRESSIVE);
+            who->AddPlayerInPersonnalVisibilityList(who->GetGUID());
+            me->GetMotionMaster()->MovePath(90401, false);
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
 
-        void EnterCombat(Unit* unit) override
+        void MovementInform(uint32 type, uint32 id) override
         {
-           // DoCast(SPELL_GUST_OF_WIND);
-            events.RescheduleEvent(EVENT_1, urand(7000, 8000)); //SPELL_RENDING_WHIRL + 40
-            events.RescheduleEvent(EVENT_2, urand(25000, 27000)); //SPELL_MASSIVE_SPOUL + 43
-            events.RescheduleEvent(EVENT_3, urand(50000, 51000)); //SPELL_ELECTRIFY + 43  (доделать)
-            events.RescheduleEvent(EVENT_4, 11000); // SPELL_TURBULENT_VORTEX
-            events.RescheduleEvent(EVENT_5, 1000); //check
-            events.RescheduleEvent(EVENT_6, 3000); // not repeat
-        }
-
-        void EnterEvadeMove()
-        {
-            me->SetReactState(REACT_AGGRESSIVE);
-            summons.DespawnAll();
-        }
-
-        void JustSummoned(Creature* summon) override
-        {
-            summons.Summon(summon);
-        }
-
-        void SpellHit(Unit* /*caster */, SpellInfo const* spell) override
-        {
-            if (spell->Id == SPELL_ELECTRIFY)
-            {
-                std::list<HostileReference*> threatlist = me->getThreatManager().getThreatList();
-                if (!threatlist.empty())
-                {
-                    for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
-                    {
-                        if (Player* pl = me->GetPlayer(*me, (*itr)->getUnitGuid()))
-                        {
-                            if (pl && pl->GetPositionZ() < 0)
-                                me->CastSpell(pl, 217352, true);
-                        }
-                    }
-                }
-            }
-        }
-
-        void UpdateAI(uint32 diff) override
-        {
-            if (!UpdateVictim() || me->HasUnitState(UNIT_STATE_CASTING))
+            if (type != WAYPOINT_MOTION_TYPE)
                 return;
 
-            events.Update(diff);
-
-            if (uint32 eventId = events.ExecuteEvent())
+            if (id == 2)
             {
-                switch (eventId)
-                {
-                    case EVENT_1:
-                        DoCast(SPELL_RENDING_WHIRL);
-                        events.RescheduleEvent(EVENT_1, urand(39000, 41000)); //SPELL_RENDING_WHIRL + 40
-                        break;
-                    case EVENT_2:
-                        DoCast(SPELL_MASSIVE_SPOUL);
-                        events.RescheduleEvent(EVENT_2, urand(39000, 41000)); //SPELL_MASSIVE_SPOUL + 43
-                        break;
-                    case EVENT_3:
-                        DoCast(SPELL_ELECTRIFY);
-                        events.RescheduleEvent(EVENT_3, urand (39000, 41000));
-                        break;
-                    case EVENT_4:
-                        DoCast(SPELL_TURBULENT_VORTEX);
-                        events.RescheduleEvent(EVENT_4, 10000);
-                        break;
-                    case EVENT_5:
-                        if (auto target = me->FindNearestPlayer(100.0f))
-                            if (!me->IsWithinMeleeRange(target))
-                                DoCast(SPELL_RAMPAGING_TORRENT);
-                        events.RescheduleEvent(EVENT_5, 1000); //check
-                        break;
-                    case EVENT_6:
-                        for (int8 i = 0; i < 25; i++)
-                            me->SummonCreature(109211, me->GetPositionX() + irand (-30, 30), me->GetPositionY() + irand (-30, 30), 0.0f, 0.0f);
-                        break;
-                }
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             }
-            DoMeleeAttackIfReady();
         }
+
+        void DoAction(int32 const action) override
+        {
+            switch (action)
+            {
+            case 1:
+                me->AddDelayedEvent(1500, [this] {
+                    if (Creature* firstdemon = me->FindNearestCreature(90402, 60.0f, true))
+                        DoCast(firstdemon, 178939);
+                    });
+                me->AddDelayedEvent(4500, [this] {
+                    Talk(2);
+                    });
+                break;
+            case 2:
+                me->AddDelayedEvent(1500, [this] {
+                    if (Creature* seconddemon = me->FindNearestCreature(89276, 60.0f, true))
+                        DoCast(seconddemon, 178939);
+                    });
+                me->AddDelayedEvent(4500, [this] {
+                    Talk(2);
+                    });
+                me->AddDelayedEvent(10000, [this] {
+                    if (Unit* Owner = me->ToTempSummon()->GetSummoner())
+                        if (Player* player = Owner->ToPlayer())
+                            player->RewardPlayerAndGroupAtEvent(89276, player);
+                    });
+                me->AddDelayedEvent(15000, [this] {
+                    Talk(5);
+                    });
+                me->AddDelayedEvent(20000, [this] {
+                    Talk(6);
+                    });
+                me->AddDelayedEvent(25000, [this] {
+                    Talk(7);
+                    });
+                me->AddDelayedEvent(30000, [this] {
+                    me->DespawnOrUnsummon(500);
+                    });
+                break;
+            }
+        }
+
     };
 
-    CreatureAI* GetAI(Creature* creature) const override
+    CreatureAI* GetAI(Creature* creature) const
     {
-        return new boss_levantusAI(creature);
+        return new npc_azsuna_allari_q37660AI(creature);
     }
 };
 
-// 217249
-class spell_massive_spoul : public SpellScriptLoader
-{
-    public:
-        spell_massive_spoul() : SpellScriptLoader("spell_massive_spoul") {}
-
-        class spell_massive_spoul_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_massive_spoul_AuraScript);
-
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (GetCaster() && GetCaster()->ToCreature())
-                {
-                    GetCaster()->GetMotionMaster()->MoveRotate(20000, ROTATE_DIRECTION_RIGHT);
-                    GetCaster()->ToCreature()->AttackStop();
-                    GetCaster()->ToCreature()->SetReactState(REACT_PASSIVE);
-                }
-            }
-
-            void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (GetCaster() && GetCaster()->ToCreature())
-                {
-                    GetCaster()->StopMoving();
-                    GetCaster()->GetMotionMaster()->Clear(false);
-                    GetCaster()->ToCreature()->SetReactState(REACT_AGGRESSIVE);
-                    GetCaster()->ToCreature()->AI()->DoZoneInCombat(GetCaster()->ToCreature(), 150.0f);
-
-                }
-            }
-
-            void Register() override
-            {
-                OnEffectApply += AuraEffectApplyFn(spell_massive_spoul_AuraScript::OnApply, EFFECT_0, SPELL_AURA_CREATE_AREATRIGGER, AURA_EFFECT_HANDLE_REAL);
-                OnEffectRemove += AuraEffectRemoveFn(spell_massive_spoul_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_CREATE_AREATRIGGER, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const override
-        {
-            return new spell_massive_spoul_AuraScript();
-        }
-};
-
-uint32 const phaseSpell[3]
-{
-    SPELL_PHASE_FIRE,
-    SPELL_PHASE_FROST,
-    SPELL_PHASE_ARCANE
-};
-
-// 109331
-class boss_calamir : public CreatureScript
+//107995
+class npc_azsuna_stellagosa_q37862 : public CreatureScript
 {
 public:
-    boss_calamir() : CreatureScript("boss_calamir") {}
+    npc_azsuna_stellagosa_q37862() : CreatureScript("npc_azsuna_stellagosa_q37862") {}
 
-    struct boss_calamirAI : public ScriptedAI
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
     {
-        boss_calamirAI(Creature* creature) : ScriptedAI(creature)
+        if (player->GetQuestObjectiveData(37862, 107995) || (player->GetQuestStatus(37862) == QUEST_STATUS_REWARDED
+            || player->GetQuestStatus(37862) == QUEST_STATUS_COMPLETE))
+            return false;
+
+        player->PlayerTalkClass->SendCloseGossip();
+        player->SummonCreature(107995, creature->GetPosition());
+
+        return true;
+    }
+
+    struct npc_azsuna_stellagosa_q37862AI : public ScriptedAI
+    {
+        npc_azsuna_stellagosa_q37862AI(Creature* creature) : ScriptedAI(creature)
         {
-            timerphase = 100;
-            phase = 0;
+            me->SetReactState(REACT_PASSIVE);
+            me->SetDisableGravity(true);
         }
 
-        EventMap events;
-        uint32 timerphase;
-        uint8 phase;
-
-        void Reset() override
+        void IsSummonedBy(Unit* who) override
         {
-            events.Reset();
-            me->RemoveAllAreaObjects();
+            if (Unit* Owner = me->ToTempSummon()->GetSummoner())
+                if (Player* player = Owner->ToPlayer())
+                    player->RewardPlayerAndGroupAtEvent(107995, player);
+            who->AddPlayerInPersonnalVisibilityList(who->GetGUID());
+            who->CastSpell(me, 77901);
+
+            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            me->AddDelayedEvent(2000, [this] {
+                me->GetMotionMaster()->MovePath(107995, false);;
+                });
         }
 
-        void EnterCombat(Unit* unit) override
+        void MovementInform(uint32 type, uint32 id) override
         {
-            events.RescheduleEvent(EVENT_1, urand(5000, 6000)); // SPELL_1 13
-            events.RescheduleEvent(EVENT_2, urand(15000, 16000)); // SPELL_2 25
+            if (type != WAYPOINT_MOTION_TYPE)
+                return;
+
+            if (id == 1)
+            {
+                if (Unit* Owner = me->ToTempSummon()->GetSummoner())
+                    if (Player* player = Owner->ToPlayer())
+                        player->CastSpell(player, 214402);
+                Talk(0);
+            }
+
+            if (id == 2)
+                Talk(1);
+
+            if (id == 3)
+                Talk(2);
+
+            if (id == 4)
+                Talk(3);
+
+            if (id == 9)
+            {
+                if (Unit* Owner = me->ToTempSummon()->GetSummoner())
+                    if (Player* player = Owner->ToPlayer())
+                        player->RemoveAurasDueToSpell(214402);
+                me->DespawnOrUnsummon(1000);
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_azsuna_stellagosa_q37862AI(creature);
+    }
+};
+
+//91185
+class npc_azsuna_daglop_q38237 : public CreatureScript
+{
+public:
+    npc_azsuna_daglop_q38237() : CreatureScript("npc_azsuna_daglop_q38237") {}
+
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
+    {
+        if (player->GetQuestObjectiveData(38237, 91185))
+            return false;
+
+        player->PlayerTalkClass->SendCloseGossip();
+        player->RewardPlayerAndGroupAtEvent(91185, player);
+        if (Creature* daglop = player->SummonCreature(91185, creature->GetPosition(), TEMPSUMMON_TIMED_DESPAWN, 200000))
+            daglop->AddPlayerInPersonnalVisibilityList(player->GetGUID());
+
+        return true;
+    }
+
+    struct npc_azsuna_daglop_q38237AI : public ScriptedAI
+    {
+        npc_azsuna_daglop_q38237AI(Creature* creature) : ScriptedAI(creature) {}
+
+        void Reset() {}
+
+        void IsSummonedBy(Unit* who) override
+        {
+            me->SetVisible(true);
+            me->GetMotionMaster()->MovePoint(0, -541.24f, 5648.40f, 3.06f);
+            me->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
+        }
+
+        void SummonedCreatureDies(Creature* summon, Unit* /*killer*/) override
+        {
+            if (summon->GetEntry() == 91184)
+            {
+                me->AddDelayedEvent(1000, [this] {
+                    Talk(1);
+                    me->SetReactState(REACT_PASSIVE);
+                    });
+                me->AddDelayedEvent(2000, [this] {
+                    me->GetMotionMaster()->MovePoint(1, -519.28f, 5607.60f, 4.59f);
+                    });
+            }
+        }
+
+        void SpellFinishCast(SpellInfo const* spellInfo) override
+        {
+            if (spellInfo->Id == 181029)
+            {
+                if (Unit* Owner = me->ToTempSummon()->GetSummoner())
+                    if (Player* player = Owner->ToPlayer())
+                        if (Creature* sum = me->SummonCreature(91184, -546.67f, 5658.04f, 2.81f, 5.22f, TEMPSUMMON_TIMED_DESPAWN, 200000))
+                        {
+                            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_NON_ATTACKABLE);
+                            me->SetReactState(REACT_AGGRESSIVE);
+                            sum->AddPlayerInPersonnalVisibilityList(player->GetGUID());
+                            sum->SetVisible(true);
+                        }
+            }
+        }
+
+        void MovementInform(uint32 type, uint32 id) override
+        {
+            if (type == POINT_MOTION_TYPE)
+            {
+                switch (id)
+                {
+                case 0:
+                    me->AddDelayedEvent(1500, [this] {
+                        DoCast(181029);
+                        });
+                    break;
+                case 1:
+                    me->SetVisible(false);
+                    me->DespawnOrUnsummon(500);
+                    break;
+                default:
+                    break;
+                }
+            }
         }
 
         void UpdateAI(uint32 diff) override
         {
-            if (me->HasUnitState(UNIT_STATE_CASTING))
-                return;
-
-            if (timerphase <= diff)
-            {
-                DoCast(me, phaseSpell[phase], true);
-
-                if (phase >= 2)
-                    phase = 0;
-                else
-                    phase++;
-
-                timerphase = 25000;
-
-            } else timerphase -= diff;
-
             if (!UpdateVictim())
                 return;
 
-            events.Update(diff);
-
-            if (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
-                {
-                    case EVENT_1:
-                        if (me->HasAura(SPELL_PHASE_FIRE) || me->HasAura(SPELL_PHASE_FROST) || me->HasAura(SPELL_PHASE_ARCANE))
-                        {
-                            if (me->HasAura(SPELL_PHASE_FIRE))
-                                DoCast(SPELL_BURNING_BOMB);
-                            else if (me->HasAura(SPELL_PHASE_FROST))
-                                DoCast(SPELL_HOWLING_GALE);
-                            // else if (me->HasAura(SPELL_PHASE_ARCANE))
-                            //    DoCast(SPELL_ARCANOPULSE);
-
-                            events.RescheduleEvent(EVENT_1, 13000);
-                        }
-                        else
-                            events.RescheduleEvent(EVENT_1, 1000);
-
-                        break;
-                    case EVENT_2:
-                         if (me->HasAura(SPELL_PHASE_FIRE) || me->HasAura(SPELL_PHASE_FROST) || me->HasAura(SPELL_PHASE_ARCANE))
-                        {
-                            if (me->HasAura(SPELL_PHASE_FIRE))
-                                DoCast(SPELL_WRATHFUL_FLAMES);
-                            else if (me->HasAura(SPELL_PHASE_FROST))
-                                DoCast(SPELL_ICY_COMET);
-                            else if (me->HasAura(SPELL_PHASE_ARCANE))
-                                DoCast(SPELL_ARCANE_DESOLATION);
-
-                            events.RescheduleEvent(EVENT_2, 25000);
-                        }
-                        else
-                            events.RescheduleEvent(EVENT_2, 1000);
-                        break;
-                }
-            }
-
-            DoMeleeAttackIfReady();
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const override
-    {
-        return new boss_calamirAI(creature);
-    }
-};
-
-// 112350
-class boss_withered_jim : public CreatureScript
-{
-public:
-    boss_withered_jim() : CreatureScript("boss_withered_jim") {}
-
-    struct boss_withered_jimAI : public ScriptedAI
-    {
-        boss_withered_jimAI(Creature* creature) : ScriptedAI(creature), summons(me), countclons(0)
-        {
-        }
-
-        EventMap events;
-        SummonList summons;
-        uint8 countclons;
-
-        void Reset() override
-        {
-            events.Reset();
-            me->RemoveAllAreaObjects();
-            summons.DespawnAll();
-            countclons=0;
-        }
-
-        void EnterCombat(Unit* unit) override
-        {
-            events.RescheduleEvent(EVENT_1, 18000);
-            events.RescheduleEvent(EVENT_2, 24000);
-            events.RescheduleEvent(EVENT_3, 22000);
-            if (me->GetEntry() == 102075)
-                events.RescheduleEvent(EVENT_4, 30000);
-            DoCast(223632); // AT
-            DoCast(223599);
-        }
-
-        void JustSummoned(Creature* summon) override
-        {
-            summons.Summon(summon);
-            DoZoneInCombat(me, 150.0f);
-            if (summon->GetEntry() == 112350)
-                summon->CastSpell(summon, 223599);
-            if (summon->GetEntry() == 112342)
-                summon->DespawnOrUnsummon(9000);
-        }
-
-        void JustDied(Unit* who) override
-        {
-            summons.DespawnAll();
-        }
-
-        void DamageTaken(Unit* attacker, uint32& damage, DamageEffectType dmgType) override
-        {
-            if (attacker->GetTypeId() != TYPEID_PLAYER)
-                return;
-
-            if (attacker->GetPositionZ() >= 60.0f)
-                me->Kill(attacker); //cheaters and others
-        }
-
-
-        void UpdateAI(uint32 diff) override
-        {
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
-            if (!UpdateVictim())
-                return;
+            DoSpellAttackIfReady(36227);
+        }
 
-            events.Update(diff);
+    };
 
-            if (uint32 eventId = events.ExecuteEvent())
-            {
-                switch (eventId)
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_azsuna_daglop_q38237AI(creature);
+    }
+};
+
+//97648
+class npc_grasp_of_underking_quest : public CreatureScript
+{
+public:
+    npc_grasp_of_underking_quest() : CreatureScript("npc_grasp_of_underking_quest") {}
+
+    bool OnGossipHello(Player* player, Creature* creature) override
+    {
+        if (player->GetQuestStatus(39025) == QUEST_STATUS_INCOMPLETE)
+        {
+            for (uint32 npcs : { 95051, 94255, 94286})
+                if (Creature* crea = creature->FindNearestCreature(npcs, 5.0f, true))
                 {
-                    case EVENT_1:
-                        DoCast(SPELL_NIGHTSHIFTED_BOLTS);
-                        events.RescheduleEvent(EVENT_1, urand(25000, 30000));
-                        break;
-                    case EVENT_2:
-                        DoCast(SPELL_RESONANCE);
-                        events.RescheduleEvent(EVENT_1, urand(24000, 30000));
-                        break;
-                    case EVENT_3:
-                        DoCast(SPELL_NIGHTSTABLE_ENERGY);
-                        events.RescheduleEvent(EVENT_1, urand(29000, 34000));
-                        break;
-                    case EVENT_4:
-                        ++countclons;
-                        DoCast(SPELL_MORE_MORE_MORE);
-                        if (countclons < 5)
-                            events.RescheduleEvent(EVENT_4, 30000);
-                        events.RescheduleEvent(EVENT_5, 1000);
-                        break;
-                    case EVENT_5:
-                        if (me->HasAura(SPELL_MORE_MORE_MORE))
-                            events.RescheduleEvent(EVENT_5, 1000);
-                        else
-                        {
-                            if (auto add = me->SummonCreature(112350, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation()))
-                                add->CastSpell(add, 223723);
-                        }
-                        break;
+                    if (uint32 id = crea->GetEntry())
+                        player->RewardPlayerAndGroupAtEvent(id, player);
+                    crea->SetDisableGravity(false);
+                    crea->ExitVehicle();
+                    crea->AddDelayedEvent(500, [crea] {
+                        crea->AI()->Talk(0);
+                        crea->GetMotionMaster()->MoveRandom(12.0f);
+                        crea->DespawnOrUnsummon(6500);
+                        });
+                    creature->Kill(creature);
+                }
+            return true;
+        }
+        player->PlayerTalkClass->SendCloseGossip();
+        return true;
+    }
+
+    struct npc_grasp_of_underking_questAI : public ScriptedAI
+    {
+        npc_grasp_of_underking_questAI(Creature* creature) : ScriptedAI(creature)
+        {
+            boarded = false;
+        }
+
+        bool boarded;
+
+        void Reset()
+        {
+            ResetGrasp();
+        }
+
+        void JustDied(Unit* /*killer*/) override
+        {
+            boarded = false;
+        }
+
+        void ResetGrasp()
+        {
+            if (!boarded)
+            {
+                boarded = true;
+                me->AddDelayedEvent(2000, [this] {
+                    if (me->GetPositionX() == 3736.11f && me->GetPositionY() == 4887.47f)
+                        if (Creature* oro = me->SummonCreature(95051, me->GetPosition()))
+                            oro->EnterVehicle(me, 0);
+                    if (me->GetPositionX() == 3649.89f && me->GetPositionY() == 4908.65f)
+                        if (Creature* jale = me->SummonCreature(94255, me->GetPosition()))
+                            jale->EnterVehicle(me, 0);
+                    if (me->GetPositionX() == 3575.87f && me->GetPositionY() == 4839.52f)
+                        if (Creature* oakin = me->SummonCreature(94286, me->GetPosition()))
+                            oakin->EnterVehicle(me, 0);
+                    });
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_grasp_of_underking_questAI(creature);
+    }
+};
+
+// 90317
+enum npcs
+{
+    NPC_DOG = 90241,
+    NPC_SOLDIER = 101943,
+    NPC_INFERNAL = 93619,
+    NPC_GUARD = 90230
+};
+
+Position const dogsdrpos[3] =
+{
+    { -201.42f, 7005.10f, 4.75f, 5.69f }, //bridge
+    { -153.57f, 7091.64f, 0.27f, 5.15f }, //center
+    { -181.03f, 7032.41f, -0.83f, 4.97f },
+};
+
+Position const infpos = { -154.46f, 7105.88f, 0.0f, 4.9f };
+
+struct npc_azsuna_illidari_outpost_initiator : public ScriptedAI
+{
+    npc_azsuna_illidari_outpost_initiator(Creature* creature) : ScriptedAI(creature) {}
+
+    uint32 spawnTimer = urand(5000, 9000);
+    bool dog = false;
+    bool sdr = false;
+    bool inf = false;
+    bool ncr = false;
+
+    void SummonedCreatureDies(Creature* summon, Unit* /*killer*/) override
+    {
+        switch (summon->GetEntry())
+        {
+        case NPC_DOG:
+            dog = false;
+            break;
+        case NPC_SOLDIER:
+            sdr = false;
+            break;
+        case NPC_INFERNAL:
+            inf = false;
+            break;
+        case NPC_GUARD:
+            ncr = false;
+            break;
+        }
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        if (spawnTimer <= diff)
+        {
+            if (!dog)
+            {
+                if (auto _add = me->SummonCreature(NPC_DOG, dogsdrpos[urand(0, 1)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000))
+                {
+                    _add->SetWalk(false);
+                    if (_add->GetPositionX() < -170.0f)
+                        _add->GetMotionMaster()->MovePoint(0, -167.0f, 6979.0f, 5.05f);
+                    else
+                        _add->GetMotionMaster()->MovePoint(0, -126.0f, 7017.0f, 1.15f);
+                    dog = true;
                 }
             }
-
-            DoMeleeAttackIfReady();
+            if (!sdr)
+            {
+                if (auto _add = me->SummonCreature(NPC_SOLDIER, dogsdrpos[urand(0, 1)], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000))
+                {
+                    _add->SetWalk(false);
+                    if (_add->GetPositionX() < -170.0f)
+                        _add->GetMotionMaster()->MovePoint(0, -167.0f, 6979.0f, 5.05f);
+                    else
+                        _add->GetMotionMaster()->MovePoint(0, -126.0f, 7017.0f, 1.15f);
+                    sdr = true;
+                }
+            }
+            if (!inf)
+            {
+                if (auto _add = me->SummonCreature(NPC_INFERNAL, infpos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000))
+                {
+                    _add->GetMotionMaster()->MovePoint(0, -126.0f, 7017.0f, 1.15f);
+                    inf = true;
+                }
+            }
+            if (!ncr)
+            {
+                if (auto _add = me->SummonCreature(NPC_GUARD, dogsdrpos[2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 15000))
+                {
+                    _add->SetWalk(false);
+                    _add->GetMotionMaster()->MovePoint(0, -126.0f, 7017.0f, 1.15f);
+                    ncr = true;
+                }
+            }
+            spawnTimer = urand(5000, 9000);
         }
+        else spawnTimer -= diff;
+    }
+};
+
+//239338 239332 Q37660
+class go_azsuna_soul_gem : public GameObjectScript
+{
+public:
+    go_azsuna_soul_gem() : GameObjectScript("go_azsuna_soul_gem") { }
+
+    bool OnGossipHello(Player* player, GameObject* go) override
+    {
+        if (go->GetEntry() == 239338)
+        {
+            if (!player->GetQuestObjectiveData(37660, 239338) && player->GetQuestObjectiveData(37660, 90403))
+            {
+                GuidList* allari = player->GetSummonList(90401);
+                for (GuidList::const_iterator iter = allari->begin(); iter != allari->end(); ++iter)
+                {
+                    if (Creature* summon = ObjectAccessor::GetCreature(*player, (*iter)))
+                        if (!go->FindNearestCreature(90402, 50.0f, true) || !go->FindNearestCreature(89276, 50.0f, true))
+                        {
+                            summon->GetAI()->DoAction(1);
+                            go->SummonCreature(90402, go->GetPosition());
+                            player->QuestObjectiveSatisfy(239338, 1, QUEST_OBJECTIVE_GAMEOBJECT);
+
+                            player->AddDelayedEvent(8000, [player] {
+                                player->RewardPlayerAndGroupAtEvent(90402, player);
+                                });
+                        }
+                    return true;
+                }
+            }
+        }
+
+        if (go->GetEntry() == 239332)
+        {
+            if (!player->GetQuestObjectiveData(37660, 239332) && player->GetQuestObjectiveData(37660, 90403))
+            {
+                GuidList* allari = player->GetSummonList(90401);
+                for (GuidList::const_iterator iter = allari->begin(); iter != allari->end(); ++iter)
+                {
+                    if (Creature* summon = ObjectAccessor::GetCreature(*player, (*iter)))
+                        if (!go->FindNearestCreature(90402, 50.0f, true) || !go->FindNearestCreature(89276, 50.0f, true))
+                        {
+                            summon->GetAI()->DoAction(2);
+                            go->SummonCreature(89276, go->GetPosition());
+                            player->QuestObjectiveSatisfy(239332, 1, QUEST_OBJECTIVE_GAMEOBJECT);
+
+                            player->AddDelayedEvent(15000, [player] {
+                                player->RewardPlayerAndGroupAtEvent(90402, player);
+                                });
+                        }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+};
+
+// Soul Gem 86963
+class questnpc_soul_gem : public CreatureScript
+{
+public:
+    questnpc_soul_gem() : CreatureScript("questnpc_soul_gem") {}
+
+    struct questnpc_soul_gemAI : public WorldBossAI
+    {
+        questnpc_soul_gemAI(Creature* creature) : WorldBossAI(creature)
+        {
+            me->SetHover(true);
+        }
+
+        void IsSummonedBy(Unit* summoner) override
+        {
+            std::list<uint32> acceptable_demons = { 90241,90230,93619,101943 };
+
+            for (uint32 demon : acceptable_demons)
+            {
+                if (Creature* target = me->FindNearestCreature(demon, 50.0f, false))
+                {
+                    me->AddDelayedEvent(2000, [this, target, summoner]()        // time_delay
+                        {
+                            target->CastSpell(me, 178753, false); // Demon Souls: Soul Missile
+
+                            if (!me->HasAura(178752))
+                                me->CastSpell(me, 178752, false); // Demon Souls: Soul Gem Transform
+
+                            if (summoner->IsPlayer())
+                                summoner->ToPlayer()->KilledMonsterCredit(90298); // Credit for quest
+                        });
+
+                    me->AddDelayedEvent(3000, [this, target]()        // time_delay
+                        {
+                            target->DespawnOrUnsummon();
+                        });
+                }
+            }
+        }
+
     };
 
     CreatureAI* GetAI(Creature* creature) const override
     {
-        return new boss_withered_jimAI(creature);
+        return new questnpc_soul_gemAI(creature);
     }
 };
 
-// 223614
-class spell_resonance : public SpellScriptLoader
+void AddSC_zone_azsuna() 
 {
-public:
-    spell_resonance() : SpellScriptLoader("spell_resonance") {}
-
-    class spell_resonance_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_resonance_AuraScript);
-
-        void OnProc(AuraEffect const* aurEff, ProcEventInfo& eventInfo)
-        {
-            PreventDefaultAction();
-
-            Unit* target = GetTarget();
-            if (!target)
-                return;
-            target->CastSpell(target, 223616);
-        }
-
-        void Register() override
-        {
-            OnEffectProc += AuraEffectProcFn(spell_resonance_AuraScript::OnProc, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN);
-        }
-    };
-
-    AuraScript* GetAuraScript() const override
-    {
-        return new spell_resonance_AuraScript();
-    }
-};
-
-void AddSC_azsuna()
-{
-    new boss_levantus();
-    new spell_massive_spoul();
-    new boss_calamir();
-    new boss_withered_jim();
-    new spell_resonance();
+    new npc_azsuna_allari_q37660();
+    new npc_azsuna_stellagosa_q37862();
+    new npc_azsuna_daglop_q38237();
+    new npc_grasp_of_underking_quest();
+    RegisterCreatureAI(npc_azsuna_illidari_outpost_initiator);
+	new questnpc_soul_gem();
+    new go_azsuna_soul_gem;
 }

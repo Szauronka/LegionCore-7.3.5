@@ -53,7 +53,7 @@ struct StringTextData
     uint32 uiEmote;
 };
 
-class TC_GAME_API SystemMgr
+class SystemMgr
 {
         SystemMgr() {}
         ~SystemMgr() {}

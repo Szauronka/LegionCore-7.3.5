@@ -83,11 +83,6 @@ void WorldState::Reload()
     Value = StateTemplate->DefaultValue;
 }
 
-void WorldState::Unload()
-{
-    ClientGuids.clear();
-}
-
 void WorldState::AddClient(ObjectGuid const& guid)
 {
     if (guid.IsPlayer())
@@ -96,13 +91,13 @@ void WorldState::AddClient(ObjectGuid const& guid)
 
 bool WorldState::HasClient(ObjectGuid const& guid)
 {
-    return ClientGuids.contains(guid);
+    return ClientGuids.contains(ObjectGuidHashGen(guid));
 }
 
 void WorldState::RemoveClient(ObjectGuid const& guid)
 {
     if (guid.IsPlayer())
-        ClientGuids.erase(guid);
+        ClientGuids.erase(ObjectGuidHashGen(guid));
 }
 
 void WorldState::SetValue(uint32 value, bool hidden)
@@ -121,20 +116,19 @@ void WorldState::SetValue(uint32 value, bool hidden)
     packet.Value = value;
     packet.Hidden = hidden;
 
-    for (GuidUnorderedSet::iterator i = ClientGuids.begin(); i != ClientGuids.end();)
+    for (GuidHashSet::iterator i = ClientGuids.begin(); i != ClientGuids.end(); ++i)
     {
         if (Player* player = ObjectAccessor::FindPlayer(*i))
         {
             // Send update only if in instance
             if (InstanceID && InstanceID != (player->InInstance() ? player->GetInstanceId() : 0))
             {
-                i = ClientGuids.erase(i);
+                ClientGuids.erase_at(i);
                 continue;
             }
             player->SendDirectMessage(packet.Write());
-            ++i;
         }
         else
-            i = ClientGuids.erase(i);
+            ClientGuids.erase_at(i);
     }
 }

@@ -1,3 +1,7 @@
+/*
+     http://uwow.biz
+*/
+
 #include "MoveSplineInit.h"
 
 enum eSay

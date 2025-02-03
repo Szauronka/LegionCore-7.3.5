@@ -1,5 +1,12 @@
+/*
+    uwow.biz
+*/
+
 #include "AreaTriggerAI.h"
 #include "QuestData.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
+#include "GameEventMgr.h"
 
 enum eSays
 {
@@ -284,7 +291,7 @@ struct boss_occularus : public ScriptedAI
             for (uint8 i = 0; i < 4; ++i)
             {
                 dist += 2.0f;
-                pos = target->GetNearPosition(dist, 0.0f);
+                target->GetNearPosition(pos, dist, 0.0f);
                 me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_PHANTASM_TRIGGER, true);
             }
         }
@@ -391,7 +398,7 @@ struct boss_inquisitor_meto : public ScriptedAI
                 for (uint8 i = 0; i < 9; i++)
                 {
                     angle += 0.1f;
-                    pos = me->GetNearPosition(35.0f, angle);
+                    me->GetNearPosition(pos, 35.0f, angle);
                     me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_DEATH_FIELD_VISUAL, true);
                 }
                 DoCast(SPELL_DEATH_FIELD);
@@ -404,7 +411,7 @@ struct boss_inquisitor_meto : public ScriptedAI
                 {
                     Position pos;
                     float angle = 6.28f / 3 * i;
-                    pos = me->GetNearPosition(10.0f, angle);
+                    me->GetNearPosition(pos, 10.0f, angle);
                     me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_SEEDS_OF_CHAOS, true);
                 }
                 events.RescheduleEvent(EVENT_SEEDS_OF_CHAOS, 30000);
@@ -462,7 +469,7 @@ struct boss_sotanathor : public ScriptedAI
                 float angle = 0.0f;
                 for (uint8 i = 0; i < 4; i++)
                 {
-                    pos = target->GetNearPosition(5.0f, angle);
+                    target->GetNearPosition(pos, 5.0f, angle);
                     target->CastSpell(pos, SPELL_WAKE_OF_DESTRUCTION, true, 0, 0, me->GetGUID());
                     angle += 1.57f;
                 }
@@ -692,7 +699,7 @@ class spell_beguiling_charm : public SpellScript
             if (!unit)
                 return true;
 
-            if (unit->isInFront(caster, float(M_PI / 2)))
+            if (unit->isInFront(caster, M_PI / 2))
                 return false;
 
             return true;
@@ -820,9 +827,9 @@ class spell_argus_seed_of_destruction : public AuraScript
         float angle = 0.5f;
         for (uint8 i = 0; i < 4; ++i)
         {
-            pos = GetTarget()->GetNearPosition(5.0f, angle);
+            GetTarget()->GetNearPosition(pos, 5.0f, angle);
             GetTarget()->CastSpell(pos, SPELL_WAKE_OF_DESTRUCTION, true);
-            pos = GetTarget()->GetNearPosition(5.0f, -angle);
+            GetTarget()->GetNearPosition(pos, 5.0f, -angle);
             GetTarget()->CastSpell(pos, SPELL_WAKE_OF_DESTRUCTION, true);
             angle += 1.0f;
         }
@@ -1006,37 +1013,37 @@ class spell_enter_rift : public SpellScript
         {
             if (player->FindNearestCreature(125849, 10.0f) && !player->isGameMaster())
             {
-                if (WorldQuest const* wq = sQuestDataStore->GetWorldQuest(sQuestDataStore->GetQuestTemplate(48982)))
+                //if (WorldQuest const* wq = sQuestDataStore->GetWorldQuest(sQuestDataStore->GetQuestTemplate(48982)))
                     if (!player->WorldQuestCompleted(48982) && player->HasAchieved(12085))
                         return SPELL_CAST_OK;
             }
             else if (player->FindNearestCreature(126547, 10.0f) && !player->isGameMaster())
             {
-                if (WorldQuest const* wq = sQuestDataStore->GetWorldQuest(sQuestDataStore->GetQuestTemplate(49099)))
+                //if (WorldQuest const* wq = sQuestDataStore->GetWorldQuest(sQuestDataStore->GetQuestTemplate(49099)))
                     if (!player->WorldQuestCompleted(49099) && player->HasAchieved(12085))
                         return SPELL_CAST_OK;
             }
             else if (player->FindNearestCreature(126593, 10.0f) && !player->isGameMaster())
             {
-                if (WorldQuest const* wq = sQuestDataStore->GetWorldQuest(sQuestDataStore->GetQuestTemplate(49096)))
+                //if (WorldQuest const* wq = sQuestDataStore->GetWorldQuest(sQuestDataStore->GetQuestTemplate(49096)))
                     if (!player->WorldQuestCompleted(49096) && player->HasAchieved(12085))
                         return SPELL_CAST_OK;
             }
             else if (player->FindNearestCreature(126499, 10.0f) && !player->isGameMaster())
             {
-                if (WorldQuest const* wq = sQuestDataStore->GetWorldQuest(sQuestDataStore->GetQuestTemplate(49091)))
+                //if (WorldQuest const* wq = sQuestDataStore->GetWorldQuest(sQuestDataStore->GetQuestTemplate(49091)))
                     if (!player->WorldQuestCompleted(49091) && player->HasAchieved(12085))
                         return SPELL_CAST_OK;
             }
             else if (player->FindNearestCreature(126120, 10.0f) && !player->isGameMaster())
             {
-                if (WorldQuest const* wq = sQuestDataStore->GetWorldQuest(sQuestDataStore->GetQuestTemplate(49098)))
+                //if (WorldQuest const* wq = sQuestDataStore->GetWorldQuest(sQuestDataStore->GetQuestTemplate(49098)))
                     if (!player->WorldQuestCompleted(49098) && player->HasAchieved(12085))
                         return SPELL_CAST_OK;
             }
             else if (player->FindNearestCreature(125863, 10.0f) && !player->isGameMaster())
             {
-                if (WorldQuest const* wq = sQuestDataStore->GetWorldQuest(sQuestDataStore->GetQuestTemplate(49097)))
+                //if (WorldQuest const* wq = sQuestDataStore->GetWorldQuest(sQuestDataStore->GetQuestTemplate(49097)))
                     if (!player->WorldQuestCompleted(49097) && player->HasAchieved(12085))
                         return SPELL_CAST_OK;
             }
@@ -1236,6 +1243,7 @@ void AddSC_invasion_point_world_bosses()
     RegisterCreatureAI(npc_fiery_trickster);
     RegisterCreatureAI(npc_felblaze_maniacr);
     RegisterCreatureAI(npc_slumbering_gasp);
+
     RegisterSpellScript(spell_beguiling_charm);
     RegisterSpellScript(spell_eye_sore);
     RegisterSpellScript(spell_soul_cleave);
@@ -1246,5 +1254,6 @@ void AddSC_invasion_point_world_bosses()
     RegisterAuraScript(spell_infected_claws);
     RegisterAuraScript(spell_folnuna_nausea);
     RegisterAuraScript(spell_slimbering_gasp);
+
     RegisterAreaTriggerAI(at_seeds_of_chaos);
 }

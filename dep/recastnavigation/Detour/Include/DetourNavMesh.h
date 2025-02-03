@@ -21,8 +21,6 @@
 
 #include "DetourAlloc.h"
 #include "DetourStatus.h"
-#include <mutex>
-#include <atomic>
 
 // Undefine (or define in a build cofnig) the following line to use 64bit polyref.
 // Generally not needed, useful for very large worlds.
@@ -289,12 +287,6 @@ struct dtMeshHeader
 /// @ingroup detour
 struct dtMeshTile
 {
-    dtMeshTile();
-
-    std::atomic<bool> dtCheckLock;
-    mutable std::recursive_mutex* dtLock;
-    void WaitLock() const;
-
 	unsigned int salt;					///< Counter describing modifications to the tile.
 
 	unsigned int linksFreeList;			///< Index to the next free link.

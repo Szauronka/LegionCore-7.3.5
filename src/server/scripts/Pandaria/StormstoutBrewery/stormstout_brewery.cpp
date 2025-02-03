@@ -1,7 +1,17 @@
 /*====================
+    uwow.biz
 ======================*/
 
 #include "stormstout_brewery.h"
+#include "ObjectMgr.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
+#include "SpellAuras.h"
+#include "SpellAuraEffects.h"
+#include "Player.h"
+#include "Vehicle.h"
+#include "Group.h"
 
 enum eEvents
 {

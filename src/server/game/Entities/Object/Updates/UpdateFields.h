@@ -135,7 +135,8 @@ enum UnitFields
     UNIT_FIELD_FLAGS                                       = OBJECT_END + 0x055, // Size: 1, Flags: PUBLIC, URGENT
     UNIT_FIELD_FLAGS_2                                     = OBJECT_END + 0x056, // Size: 1, Flags: PUBLIC, URGENT
     UNIT_FIELD_FLAGS_3                                     = OBJECT_END + 0x057, // Size: 1, Flags: PUBLIC, URGENT
-    UNIT_FIELD_AURA_STATE                                  = OBJECT_END + 0x058, // Size: 1, Flags: PUBLIC
+    UNIT_FIELD_BASEATTACKTIME                              = OBJECT_END + 0x059, // Size: 2, Flags: PUBLIC
+	UNIT_FIELD_AURA_STATE                                  = OBJECT_END + 0x058, // Size: 1, Flags: PUBLIC
     UNIT_FIELD_ATTACK_ROUND_BASE_TIME                      = OBJECT_END + 0x059, // Size: 2, Flags: PUBLIC
     UNIT_FIELD_RANGED_ATTACK_ROUND_BASE_TIME               = OBJECT_END + 0x05B, // Size: 1, Flags: PRIVATE
     UNIT_FIELD_BOUNDING_RADIUS                             = OBJECT_END + 0x05C, // Size: 1, Flags: PUBLIC
@@ -150,8 +151,8 @@ enum UnitFields
     UNIT_FIELD_ANIM_TIER                                   = OBJECT_END + 0x065, // Size: 1, Flags: PUBLIC
     UNIT_FIELD_PET_NUMBER                                  = OBJECT_END + 0x066, // Size: 1, Flags: PUBLIC
     UNIT_FIELD_PET_NAME_TIMESTAMP                          = OBJECT_END + 0x067, // Size: 1, Flags: PUBLIC
-    UNIT_FIELD_PET_EXPERIENCE                              = OBJECT_END + 0x068, // Size: 1, Flags: OWNER
-    UNIT_FIELD_PET_NEXT_LEVEL_EXPERIENCE                   = OBJECT_END + 0x069, // Size: 1, Flags: OWNER
+    UNIT_FIELD_PETEXPERIENCE                               = OBJECT_END + 0x068, // Size: 1, Flags: OWNER
+    UNIT_FIELD_PETNEXTLEVELEXP                             = OBJECT_END + 0x069, // Size: 1, Flags: OWNER
     UNIT_FIELD_MOD_CASTING_SPEED                           = OBJECT_END + 0x06A, // Size: 1, Flags: PUBLIC
     UNIT_FIELD_MOD_SPELL_HASTE                             = OBJECT_END + 0x06B, // Size: 1, Flags: PUBLIC
     UNIT_FIELD_MOD_HASTE                                   = OBJECT_END + 0x06C, // Size: 1, Flags: PUBLIC

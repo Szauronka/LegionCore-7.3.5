@@ -99,8 +99,7 @@ namespace MS
 
             targetList.remove_if([me, range, checkLoS](Unit* unit)
             {
-                return !(unit && (me->IsWithinLOSInMap(unit) || !checkLoS) && me->IsWithinDistInMap(unit, range) &&
-                        unit->IsAlive() && unit->GetGUID() != me->GetGUID());
+                return !(unit && (me->IsWithinLOSInMap(unit) || !checkLoS) && me->IsWithinDistInMap(unit, range) && unit->isAlive() && unit->GetGUID() != me->GetGUID());
             });
 
             if (targetList.empty())
@@ -119,8 +118,7 @@ namespace MS
             me->VisitNearbyObject(radius, searcher);
 
             for (auto unit : targetList)
-                if (unit && (me->IsWithinLOSInMap(unit) || !checkLoS) && me->IsWithinDistInMap(unit, range) &&
-                        unit->IsAlive() && unit->GetGUID() != me->GetGUID())
+                if (unit && (me->IsWithinLOSInMap(unit) || !checkLoS) && me->IsWithinDistInMap(unit, range) && unit->isAlive() && unit->GetGUID() != me->GetGUID())
                     return unit;
 
             return nullptr;
@@ -138,8 +136,7 @@ namespace MS
 
             std::list<Player*> temp;
             for (auto& itr : playerList)
-                if (!itr.getSource()->isGameMaster() && (me->IsWithinLOSInMap(itr.getSource()) || !checkLoS) && me->GetExactDist2d(itr.getSource()) < range &&
-                        itr.getSource()->IsAlive())
+                if (!itr.getSource()->isGameMaster() && (me->IsWithinLOSInMap(itr.getSource()) || !checkLoS) && me->GetExactDist2d(itr.getSource()) < range && itr.getSource()->isAlive())
                     temp.push_back(itr.getSource());
 
             if (!temp.empty())
@@ -175,8 +172,7 @@ namespace MS
 
             std::list<Player*> targetList;
             for (auto& itr : playerList)
-                if ((me->IsWithinLOSInMap(itr.getSource()) || !checkLoS) && me->getVictim() != itr.getSource() && me->IsWithinDistInMap(itr.getSource(), range) &&
-                        itr.getSource()->IsAlive())
+                if ((me->IsWithinLOSInMap(itr.getSource()) || !checkLoS) && me->getVictim() != itr.getSource() && me->IsWithinDistInMap(itr.getSource(), range) && itr.getSource()->isAlive())
                     targetList.push_back(itr.getSource());
 
             if (targetList.empty())
@@ -197,8 +193,7 @@ namespace MS
 
             std::list<Player*> temp;
             for (auto& itr : playerList)
-                if (!itr.getSource()->isGameMaster() && (me->IsWithinLOSInMap(itr.getSource()) || !checkLoS) && !me->IsWithinDistInMap(itr.getSource(), range) &&
-                        itr.getSource()->IsAlive())
+                if (!itr.getSource()->isGameMaster() && (me->IsWithinLOSInMap(itr.getSource()) || !checkLoS) && !me->IsWithinDistInMap(itr.getSource(), range) && itr.getSource()->isAlive())
                     return itr.getSource();
 
             return nullptr;
@@ -216,8 +211,7 @@ namespace MS
 
             std::list<Player*> targetList;
             for (auto& itr : playerList)
-                if (!itr.getSource()->isGameMaster() && (me->IsWithinLOSInMap(itr.getSource()) || !checkLoS) && (me->IsWithinDistInMap(itr.getSource(), range) || !range) &&
-                        itr.getSource()->IsAlive())
+                if (!itr.getSource()->isGameMaster() && (me->IsWithinLOSInMap(itr.getSource()) || !checkLoS) && (me->IsWithinDistInMap(itr.getSource(), range) || !range) && itr.getSource()->isAlive())
                     targetList.push_back(itr.getSource());
 
             if (targetList.empty())

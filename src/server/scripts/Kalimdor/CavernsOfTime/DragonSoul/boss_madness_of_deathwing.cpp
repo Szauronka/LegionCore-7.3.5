@@ -795,7 +795,7 @@ class boss_madness_of_deathwing : public CreatureScript
                     if (!creatures.empty())
                     {
                         for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
-                            if ((*itr)->IsAlive())
+                            if ((*itr)->isAlive())
                             {
                                 if (platform == 1 && (*itr)->GetPositionY() > 12200.0f)
                                     return (*itr);
@@ -1248,7 +1248,7 @@ class npc_dragon_soul_thrall_1 : public CreatureScript
                     AnyLivePlayerNoGmCheck(WorldObject const* obj, float range) : _obj(obj), _range(range) {}
                     bool operator()(Player* u)
                     {
-                        if (!u->IsAlive())
+                        if (!u->isAlive())
                             return false;
 
                         if (!_obj->IsWithinDistInMap(u, _range))
@@ -1738,7 +1738,7 @@ class npc_madness_of_deathwing_regenerative_blood : public CreatureScript
             void Reset()
             {
                 events.Reset();
-                me->SetPowerType(POWER_ENERGY);
+                me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 10);
                 me->SetPower(POWER_ENERGY, 0);
             }
@@ -2600,7 +2600,7 @@ class npc_madness_of_deathwing_jump_pad : public CreatureScript
 
                         if (!otherJumpPad)
                         {
-                            //TC_LOG_ERROR("scripts", "OtherJumpPad not found for GUID %u", me->GetGUID().GetCounter());
+                            //TC_LOG_ERROR(LOG_FILTER_TSCR, "OtherJumpPad not found for GUID %u", me->GetGUID().GetCounter());
                             checkTimer = 1000;
                             return;
                         }
@@ -2646,7 +2646,7 @@ class npc_madness_of_deathwing_jump_pad : public CreatureScript
                     PlayerCheck(WorldObject const* obj, uint32 spellEx1, uint32 spellEx2) : _obj(obj), _spellEx1(spellEx2), _spellEx2(spellEx2) {}
                     bool operator()(Player* u)
                     {
-                        if (!u->IsAlive())
+                        if (!u->isAlive())
                             return false;
 
                         if (!u->IsFalling() || _obj->GetPositionZ() < (u->GetPositionZ() + 3.0f))
@@ -2655,7 +2655,7 @@ class npc_madness_of_deathwing_jump_pad : public CreatureScript
                         if (!_obj->IsWithinDistInMap(u, 32.0f, false))
                             return false;
 
-                        if (!_obj->HasInArc(float(M_PI), u))
+                        if (!_obj->HasInArc(M_PI, u))
                             return false;
 
                         if (u->HasAura(_spellEx1) || u->HasAura(_spellEx2))

@@ -1,4 +1,4 @@
-
+//UWoWCore
 //Siege of Orgrimmar
 
 #include "AccountMgr.h"
@@ -126,7 +126,7 @@ public:
 
     struct instance_siege_of_orgrimmar_InstanceMapScript : public InstanceScript
     {
-        instance_siege_of_orgrimmar_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_siege_of_orgrimmar_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         std::map<uint32, ObjectGuid> easyGUIDconteiner;
         //count killed klaxxi
@@ -255,7 +255,6 @@ public:
 
         void Initialize()
         {
-            SetHeaders(DataHeader);
             SetBossNumber(DATA_MAX);
             LoadDoorData(doorData);
 
@@ -556,7 +555,7 @@ public:
                     break;
                 case NPC_LINGERING_CORRUPTION:
                     ++lingering_corruption_count;
-                    if (!creature->IsAlive())
+                    if (!creature->isAlive())
                         creature->Respawn(true);
                     break;
                 case NPC_SLG_GENERIC_MOP:
@@ -1302,7 +1301,7 @@ public:
                     {
                         if (Creature* p = instance->GetCreature(*Itr))
                         {
-                            if (!p->IsAlive())
+                            if (!p->isAlive())
                                 p->Respawn();
                             p->AI()->DoAction(ACTION_RESET);
                             p->NearTeleportTo(p->GetHomePosition().GetPositionX(), p->GetHomePosition().GetPositionY(), p->GetHomePosition().GetPositionZ(), p->GetHomePosition().GetOrientation());
@@ -1637,7 +1636,7 @@ public:
                 klaxxidiecount++;
                 for (std::vector<ObjectGuid>::const_iterator itr = klaxxilist.begin(); itr != klaxxilist.end(); itr++)
                     if (Creature* klaxxi = instance->GetCreature(*itr))
-                        if (klaxxi->IsAlive() && klaxxi->isInCombat())
+                        if (klaxxi->isAlive() && klaxxi->isInCombat())
                             klaxxi->CastSpell(klaxxi, 143483, true); //Paragons Purpose Heal
                 break;
             case DATA_CLEAR_KLAXXI_LIST:
@@ -1651,7 +1650,7 @@ public:
                     {
                         if (Creature* dw = instance->GetCreature(*itr))
                         {
-                            if (dw->IsAlive())
+                            if (dw->isAlive())
                             {
                                 dw->AddAura(SPELL_ELECTROMAGNETIC_BARRIER, dw);
                                 dw->AddAura(SPELL_ELECTROMAGNETIC_BARRIER_V, dw);
@@ -1852,7 +1851,7 @@ public:
                 {
                     for (std::vector<ObjectGuid>::const_iterator itr = engeneerGuids.begin(); itr != engeneerGuids.end(); itr++)
                         if (Creature* eng = instance->GetCreature(*itr))
-                            if (eng->IsAlive())
+                            if (eng->isAlive())
                                 eng->AI()->DoAction(ACTION_FIRST_ENGENEER_DIED);
                 }
                 engeneerGuids.clear();
@@ -1865,13 +1864,13 @@ public:
                     case 0:
                         for (std::vector<ObjectGuid>::const_iterator itr = garroshsoldiersGuids.begin(); itr != garroshsoldiersGuids.end(); itr++)
                             if (Creature* soldier = instance->GetCreature(*itr))
-                                if (soldier->IsAlive())
+                                if (soldier->isAlive())
                                     soldier->SetReactState(REACT_AGGRESSIVE);
                         break;
                     case 1:
                         for (std::vector<ObjectGuid>::const_iterator itr = garroshsoldiersGuids.begin(); itr != garroshsoldiersGuids.end(); itr++)
                             if (Creature* soldier = instance->GetCreature(*itr))
-                                if (soldier->IsAlive())
+                                if (soldier->isAlive())
                                     soldier->StopAttack();
                         break;
                     }
@@ -1913,7 +1912,7 @@ public:
                     Creature* kdsmaunt = instance->GetCreature(!n ? bloodclawGuid : darkfangGuid);
                     if (!kdsmaunt)
                         return;
-                    if (!kdsmaunt->IsAlive() || kdsmaunt->isInCombat())
+                    if (!kdsmaunt->isAlive() || kdsmaunt->isInCombat())
                         return;
                 }
 
@@ -1990,7 +1989,7 @@ public:
         {
             for (std::vector<ObjectGuid>::const_iterator itr = klaxxilist.begin(); itr != klaxxilist.end(); itr++)
                 if (Creature* klaxxi = instance->GetCreature(*itr))
-                    if (klaxxi->IsAlive())
+                    if (klaxxi->isAlive())
                         return false;
             return true;
         }
@@ -2001,7 +2000,7 @@ public:
             if (!PlayerList.isEmpty())
                 for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
                     if (Player* player = Itr->getSource())
-                        if (player->IsAlive() && (player->HasAura(SPELL_TOUCH_OF_YSHAARJ) || player->HasAura(SPELL_EM_TOUCH_OF_YSHAARJ)))
+                        if (player->isAlive() && (player->HasAura(SPELL_TOUCH_OF_YSHAARJ) || player->HasAura(SPELL_EM_TOUCH_OF_YSHAARJ)))
                             player->Kill(player, true);
         }
 
@@ -2014,7 +2013,7 @@ public:
                 {
                     if (Player* player = Itr->getSource())
                     {
-                        if (player->IsAlive())
+                        if (player->isAlive())
                         {       //mind control
                             if (player->HasAura(SPELL_TOUCH_OF_YSHAARJ) || player->HasAura(SPELL_EM_TOUCH_OF_YSHAARJ))
                                 player->Kill(player, true);
@@ -2043,7 +2042,7 @@ public:
                 {
                     if (Player* player = Itr->getSource())
                     {
-                        if (!player->IsAlive())
+                        if (!player->isAlive())
                         {
                             if (player->HasAura(SPELL_REALM_OF_YSHAARJ))
                             {
@@ -2061,7 +2060,9 @@ public:
             for (std::vector<ObjectGuid>::const_iterator itr = edoubtGuids.begin(); itr != edoubtGuids.end(); itr++)
                 if (Creature* add = instance->GetCreature(*itr))
                     add->RemoveAurasDueToSpell(SPELL_CONSUMED_FAITH);
-            Trinity::Containers::RandomShuffle(edoubtGuids);
+            std::random_device rd;
+            std::mt19937 g(rd());
+            std::shuffle(edoubtGuids.begin(), edoubtGuids.end(), g);
             uint8 count = instance->Is25ManRaid() ? 8 : 3;
             for (uint8 n = 0; n < count; n++)
                 if (Creature* add = instance->GetCreature(edoubtGuids[n]))
@@ -2073,7 +2074,9 @@ public:
             for (std::vector<ObjectGuid>::const_iterator itr = efearGuids.begin(); itr != efearGuids.end(); itr++)
                 if (Creature* add = instance->GetCreature(*itr))
                     add->RemoveAurasDueToSpell(SPELL_CONSUMED_COURAGE);
-            Trinity::Containers::RandomShuffle(efearGuids);
+            std::random_device rd;
+            std::mt19937 g(rd());
+            std::shuffle(efearGuids.begin(), efearGuids.end(), g);
             uint8 count = instance->Is25ManRaid() ? 25 : 10;
             for (uint8 n = 0; n < count; n++)
                 if (Creature* add = instance->GetCreature(efearGuids[n]))
@@ -2281,11 +2284,11 @@ public:
                 {
                     for (std::vector<ObjectGuid>::const_iterator itr = rookmeasureGuids.begin(); itr != rookmeasureGuids.end(); itr++)
                         if (Creature* measure = instance->GetCreature(*itr))
-                            if (measure->IsAlive())
+                            if (measure->isAlive())
                                 return;
 
                     if (Creature* rook = instance->GetCreature(fpGUID[0]))
-                        if (rook->IsAlive() && rook->isInCombat())
+                        if (rook->isAlive() && rook->isInCombat())
                             rook->AI()->DoAction(ACTION_END_DESPERATE_MEASURES);
                 }
                 break;
@@ -2295,18 +2298,18 @@ public:
                 {
                     for (std::vector<ObjectGuid>::const_iterator itr = sunmeasureGuids.begin(); itr != sunmeasureGuids.end(); itr++)
                         if (Creature* measure = instance->GetCreature(*itr))
-                            if (measure->IsAlive())
+                            if (measure->isAlive())
                                 return;
 
                     if (Creature* sun = instance->GetCreature(fpGUID[1]))
-                        if (sun->IsAlive() && sun->isInCombat())
+                        if (sun->isAlive() && sun->isInCombat())
                             sun->AI()->DoAction(ACTION_END_DESPERATE_MEASURES);
                 }
                 break;
             case NPC_EMBODIED_ANGUISH_OF_HE:
                 if (creature->GetGUID() == hemeasureGuid)
                     if (Creature* he = instance->GetCreature(fpGUID[2]))
-                        if (he->IsAlive() && he->isInCombat())
+                        if (he->isAlive() && he->isInCombat())
                             he->AI()->DoAction(ACTION_END_DESPERATE_MEASURES);
                 break;
             case NPC_ZEAL:
@@ -2325,28 +2328,28 @@ public:
             case NPC_EMBODIED_DESPAIR:
                 for (std::vector<ObjectGuid>::const_iterator itr = edespairGuids.begin(); itr != edespairGuids.end(); itr++)
                     if (Creature* add = instance->GetCreature(*itr))
-                        if (add->IsAlive())
+                        if (add->isAlive())
                             return;
                 RemoveProtectFromGarrosh();
                 break;
             case NPC_EMBODIED_DOUBT:
                 for (std::vector<ObjectGuid>::const_iterator itr = edoubtGuids.begin(); itr != edoubtGuids.end(); itr++)
                     if (Creature* add = instance->GetCreature(*itr))
-                        if (add->IsAlive())
+                        if (add->isAlive())
                             return;
                 RemoveProtectFromGarrosh();
                 break;
             case NPC_EMBODIED_FEAR:
                 for (std::vector<ObjectGuid>::const_iterator itr = efearGuids.begin(); itr != efearGuids.end(); itr++)
                     if (Creature* add = instance->GetCreature(*itr))
-                        if (add->IsAlive())
+                        if (add->isAlive())
                             return;
                 RemoveProtectFromGarrosh();
                 break;
             case NPC_HUNGRY_KUNCHONG:
                 if (Creature* kaztik = instance->GetCreature(GetGuidData(NPC_KAZTIK)))
                 {
-                    if (kaztik->IsAlive() && kaztik->isInCombat())
+                    if (kaztik->isAlive() && kaztik->isInCombat())
                     {
                         if (Creature* ap = kaztik->FindNearestCreature(NPC_AMBER_PIECE, 150.0f, true))
                         {
@@ -2370,7 +2373,7 @@ public:
             {
                 for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
                     if (Player* player = Itr->getSource())
-                        if (player->IsAlive() && player->HasAura(SPELL_TORMENT_MAIN))
+                        if (player->isAlive() && player->HasAura(SPELL_TORMENT_MAIN))
                             if (Aura* tormentaura = player->GetAura(SPELL_TORMENT_MAIN))
                                 if (CasterGuid == tormentaura->GetCasterGUID())
                                     player->RemoveAurasDueToSpell(SPELL_TORMENT_MAIN);
@@ -2411,7 +2414,7 @@ public:
                 {
                     if (Creature* add = instance->GetCreature(*itr))
                     {
-                        if (!add->IsAlive())
+                        if (!add->isAlive())
                         {
                             add->Respawn();
                             add->GetMotionMaster()->MoveTargetedHome();
@@ -2425,7 +2428,7 @@ public:
                 {
                     if (Creature* add = instance->GetCreature(*itr))
                     {
-                        if (!add->IsAlive())
+                        if (!add->isAlive())
                         {
                             add->Respawn();
                             add->GetMotionMaster()->MoveTargetedHome();
@@ -2439,7 +2442,7 @@ public:
                 {
                     if (Creature* add = instance->GetCreature(*itr))
                     {
-                        if (!add->IsAlive())
+                        if (!add->isAlive())
                         {
                             add->Respawn();
                             add->GetMotionMaster()->MoveTargetedHome();
@@ -2460,7 +2463,7 @@ public:
                 {
                     if (Player* player = Itr->getSource())
                     {
-                        if (player->IsAlive() && player->HasAura(SPELL_ON_CONVEYOR))
+                        if (player->isAlive() && player->HasAura(SPELL_ON_CONVEYOR))
                         {
                             player->SetFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_ALLOW_ONLY_ABILITY); //for safe(block all ability)
                             player->RemoveAurasDueToSpell(SPELL_ON_CONVEYOR);
@@ -2485,21 +2488,51 @@ public:
                 if (!player)
                     continue;
 
-                if (player->IsAlive() && !player->isGameMaster() && !player->HasAura(115877)) // Aura 115877 = Totaly Petrified
+                if (player->isAlive() && !player->isGameMaster() && !player->HasAura(115877)) // Aura 115877 = Totaly Petrified
                     return false;
             }
 
             return true;
         }
 
-        void WriteSaveDataMore(std::ostringstream& data) override
+        std::string GetSaveData()
         {
-            data << EventfieldOfSha;
+            std::ostringstream saveStream;
+            saveStream << "S O " << GetBossSaveData() << " " << EventfieldOfSha;
+            return saveStream.str();
         }
 
-        void ReadSaveDataMore(std::istringstream& data) override
+        void Load(const char* data)
         {
-            data >> EventfieldOfSha;
+            if (!data)
+            {
+                OUT_LOAD_INST_DATA_FAIL;
+                return;
+            }
+
+            OUT_LOAD_INST_DATA(data);
+
+            char dataHead1, dataHead2;
+
+            std::istringstream loadStream(data);
+            loadStream >> dataHead1 >> dataHead2;
+
+            if (dataHead1 == 'S' && dataHead2 == 'O')
+            {
+                for (uint32 i = 0; i < DATA_MAX; ++i)
+                {
+                    uint32 tmpState;
+                    loadStream >> tmpState;
+                    if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                        tmpState = NOT_STARTED;
+                    SetBossState(i, EncounterState(tmpState));
+                }
+                loadStream >> EventfieldOfSha;
+            }
+            else
+                OUT_LOAD_INST_DATA_FAIL;
+
+            OUT_LOAD_INST_DATA_COMPLETE;
         }
         
         bool CheckRequiredBosses(uint32 bossId, uint32 entry, Player const* player = NULL) const

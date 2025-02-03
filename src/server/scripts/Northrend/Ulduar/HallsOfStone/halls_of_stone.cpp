@@ -221,7 +221,7 @@ public:
                             {
                                 if (Creature* pKaddrak = Unit::GetCreature(*me, *itr))
                                 {
-                                    if (pKaddrak->IsAlive())
+                                    if (pKaddrak->isAlive())
                                         pKaddrak->CastSpell(target, DUNGEON_MODE(SPELL_GLARE_OF_THE_TRIBUNAL, H_SPELL_GLARE_OF_THE_TRIBUNAL), true);
                                 }
                             }
@@ -287,7 +287,7 @@ public:
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
 
-        player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_ITEM_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_START, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
         player->SEND_GOSSIP_MENU(TEXT_ID_START, creature->GetGUID());
 
         return true;
@@ -342,7 +342,7 @@ public:
             for (GuidList::const_iterator itr = lDwarfGUIDList.begin(); itr != lDwarfGUIDList.end(); ++itr)
             {
                 Creature* temp = Unit::GetCreature(*me, instance ? (*itr) : ObjectGuid::Empty);
-                if (temp && temp->IsAlive())
+                if (temp && temp->isAlive())
                     temp->DespawnOrUnsummon();
             }
             lDwarfGUIDList.clear();
@@ -355,7 +355,7 @@ public:
                 case 7:
                     if (Creature* creature = GetClosestCreatureWithEntry(me, CREATURE_TRIBUNAL_OF_THE_AGES, 100.0f))
                     {
-                        if (!creature->IsAlive())
+                        if (!creature->isAlive())
                             creature->Respawn();
                         CAST_AI(mob_tribuna_controller::mob_tribuna_controllerAI, creature->AI())->UpdateFacesList();
                         uiControllerGUID = creature->GetGUID();

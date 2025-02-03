@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "return_to_karazhan.h"
 
 enum Says
@@ -541,7 +545,7 @@ public:
 
             me->AddDelayedEvent(100, [this]() -> void
             {
-                if (me && me->IsAlive())
+                if (me && me->isAlive())
                 {
                     Talk(SAY_MAGNIFICENT);
                     Talk(SAY_MAGNIFICENT_WARN);
@@ -553,7 +557,7 @@ public:
             // Remove Immune
             me->AddDelayedEvent(5000, [this]() -> void
             {
-                if (me && me->IsAlive())
+                if (me && me->isAlive())
                     me->RemoveAurasDueToSpell(SPELL_MAGIC_MAGNIFICENT_IMMUNE);
             });
         }
@@ -709,7 +713,7 @@ public:
                         Position pos;
                         for (uint8 i = 0; i < 3; i++)
                         {
-                            pos = me->GetRandomNearPosition(frand(5.0f, 10.0f));
+                            me->GetRandomNearPosition(pos, frand(5.0f, 10.0f));
 
                             if (Creature* assistants = me->SummonCreature(NPC_WINGED_ASSISTANT, pos))
                             {
@@ -975,7 +979,7 @@ public:
 
                     if (Creature* Toe = instance->instance->GetCreature(instance->GetGuidData(NPC_TOE_KNEE)))
                     {
-                        if (Toe && !Toe->IsAlive())
+                        if (Toe && !Toe->isAlive())
                         {
                             Toe->AI()->DoAction(ACTION_3);
                             me->RemoveAurasDueToSpell(SPELL_STUN);
@@ -1153,7 +1157,7 @@ public:
                 for (uint8 i = 0; i < 4; i++)
                 {
                     if (Creature* boss = instance->instance->GetCreature(instance->GetGuidData(bossId[i])))
-                        if (boss->IsAlive())
+                        if (boss->isAlive())
                             boss->CastSpell(boss, SPELL_EMINENCE, true);
                 }
 
@@ -1407,7 +1411,7 @@ public:
                     case EVENT_BABBLET_FOLLOW_TARGET:
                         if (Unit* pTarget = ObjectAccessor::GetUnit(*me, playerGUID))
                         {
-                            if (!pTarget || !pTarget->IsAlive())
+                            if (!pTarget || !pTarget->isAlive())
                             {
                                 events.RescheduleEvent(EVENT_BABBLET_FIXATE, 1000);
                                 break;

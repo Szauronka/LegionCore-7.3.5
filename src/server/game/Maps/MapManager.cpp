@@ -34,10 +34,11 @@
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "ScenarioMgr.h"
+#include "ThreadPoolMgr.hpp"
 #include "World.h"
 #include "WorldPacket.h"
 
-MapManager::MapManager(): _nextInstanceId(0), _mapInfoCounter(0), _scheduledScripts(0)
+MapManager::MapManager(): _nextInstanceId(0), _mapInfoCounter(0)
 {
     _mapCount = sMapStore.GetNumRows() + 1;
     i_maps.assign(_mapCount, nullptr);
@@ -200,7 +201,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
         return false;
     }
 
-    if (!player->IsAlive())
+    if (!player->isAlive())
     {
         if (Corpse* corpse = player->GetCorpse())
         {
@@ -219,15 +220,15 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
             {
                 WorldPackets::Misc::AreaTriggerNoCorpse packet;
                 player->SendDirectMessage(packet.Write());
-                TC_LOG_DEBUG("maps", "MAP: Player '%s' does not have a corpse in instance '%s' and cannot enter.", player->GetName(), entry->MapName->Str[sObjectMgr->GetDBCLocaleIndex()]);
+                TC_LOG_DEBUG(LOG_FILTER_MAPS, "MAP: Player '%s' does not have a corpse in instance '%s' and cannot enter.", player->GetName(), entry->MapName->Str[sObjectMgr->GetDBCLocaleIndex()]);
                 return false;
             }
-            TC_LOG_DEBUG("maps", "MAP: Player '%s' has corpse in instance '%s' and can enter.", player->GetName(), entry->MapName->Str[sObjectMgr->GetDBCLocaleIndex()]);
+            TC_LOG_DEBUG(LOG_FILTER_MAPS, "MAP: Player '%s' has corpse in instance '%s' and can enter.", player->GetName(), entry->MapName->Str[sObjectMgr->GetDBCLocaleIndex()]);
             player->ResurrectPlayer(0.5f, false);
             player->SpawnCorpseBones();
         }
         else
-            TC_LOG_DEBUG("maps", "Map::CanPlayerEnter - player '%s' is dead but does not have a corpse!", player->GetName());
+            TC_LOG_DEBUG(LOG_FILTER_MAPS, "Map::CanPlayerEnter - player '%s' is dead but does not have a corpse!", player->GetName());
     }
     
     Group* group = player->GetGroup();
@@ -239,7 +240,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
             WorldPackets::Chat::ChatNotInParty packet;
             packet.SlashCmd = group ? 3 : 2; // req: 3 - raid, 2 - group
             player->SendDirectMessage(packet.Write());
-            TC_LOG_DEBUG("maps", "MAP: Player '%s' must be in a raid group to enter instance '%s'", player->GetName(), entry->MapName->Str[sObjectMgr->GetDBCLocaleIndex()]);
+            TC_LOG_DEBUG(LOG_FILTER_MAPS, "MAP: Player '%s' must be in a raid group to enter instance '%s'", player->GetName(), entry->MapName->Str[sObjectMgr->GetDBCLocaleIndex()]);
             return false;
         }
     }
@@ -369,6 +370,7 @@ void MapManager::UnloadAll()
                     inst->StopInstance();
 
             map->SetMapStop();
+            map->m_Transports.clear();
         }
     }
 
@@ -517,7 +519,7 @@ void MapManager::LogInfoAllMaps()
     {
         if (Map* map = i_maps[i])
         {
-            uint32 worldObjectCount = map->GetWorldObjectCount();
+            uint32 worldObjectCount = map->GetAllWorldObjectOnMap().size();
             if (!map->Instanceable())
             {
                 // sLog->outMapInfo("LogInfoAllMaps mapId %u worldObjectCount: %u.", i, worldObjectCount);
@@ -527,7 +529,7 @@ void MapManager::LogInfoAllMaps()
             auto& maps = static_cast<MapInstanced*>(map)->GetInstancedMaps();
             for (auto& itr : maps)
                 if (Map* instance = itr.second)
-                    worldObjectCount += instance->GetWorldObjectCount();
+                    worldObjectCount += instance->GetAllWorldObjectOnMap().size();
 
             if (maps.size() > 10) // Only actual instance
                 sLog->outMapInfo("LogInfoAllMaps mapId %u instanceCount %u worldObjectCount: %u.", i, maps.size(), worldObjectCount);

@@ -643,7 +643,8 @@ class npc_collapsing_star : public CreatureScript
                     damage = 0;
                     DoCast(me, SPELL_BLACK_HOLE_SPAWN_VISUAL, true);
                     DoCastAOE(SPELL_BLACK_HOLE_EXPLOSION);
-                    Position pos = me->GetPosition();
+                    Position pos;
+                    me->GetPosition(&pos);
                     if (Unit * Algalon = me->ToTempSummon()->GetSummoner())
                         Algalon->SummonCreature(32953, pos, TEMPSUMMON_CORPSE_DESPAWN);
                     me->DespawnOrUnsummon(1000);
@@ -700,7 +701,8 @@ class npc_black_hole : public CreatureScript
                 {
                     if (SummonMatter <= diff)
                     {
-                        Position pos = me->GetPosition();
+                        Position pos;
+                        me->GetPosition(&pos);
                         if (Unit * Algalon = me->ToTempSummon()->GetSummoner()) 
                         {
                             if (Creature * matter = Algalon->SummonCreature(33089, pos, TEMPSUMMON_CORPSE_DESPAWN))
@@ -878,11 +880,8 @@ class go_celestial_planetarium_access : public GameObjectScript
             {
             }
 
-            bool GossipHello(Player* player, bool isUse) override
+            bool GossipHello(Player* player) override
             {
-                if (!isUse)
-                    return true;
-
                 // Start Algalon event
                 go->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_IN_USE);
                 /* _events.ScheduleEvent(EVENT_DESPAWN_CONSOLE, 5000);
@@ -1205,5 +1204,5 @@ void AddSC_boss_algalon_the_observer()
     new spell_algalon_remove_phase();
     new spell_algalon_cosmic_smash();
     new spell_algalon_cosmic_smash_damage();
-    //new achievement_he_feeds_on_your_tears();
+    new achievement_he_feeds_on_your_tears();
 }

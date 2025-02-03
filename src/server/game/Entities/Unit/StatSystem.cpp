@@ -117,7 +117,7 @@ void Player::UpdateStatsByMask()
     }
 
     if (m_operationsAfterDelayMask & OAD_LOAD_PET)
-        ResummonPetTemporaryUnSummonedIfAny();
+        LoadPet();
 
     if ((m_operationsAfterDelayMask & OAD_UPDATE_RUNES_REGEN) && getClass() == CLASS_DEATH_KNIGHT)
         UpdatePowerRegen(POWER_RUNES);
@@ -259,24 +259,10 @@ bool Player::GetCustomPvPMods(float& val, uint32 type, uint32 specID) const
 {
     switch (specID)
     {
-//         case SPEC_DEMON_HUNER_HAVOC:
-//         {
-//             if (type == AGILITY_MULTIPLICATIVE)
-//             {
-//                 val = 0.75f;
-//                 return true;
-//             }
-//             break;
-//         }
         case SPEC_DEMON_HUNER_VENGEANCE:
         {
             switch (type)
             {
-//                 case AGILITY_MULTIPLICATIVE:
-//                 {
-//                     val = 0.95f;
-//                     return true;
-//                 }
                 case ATTACK_POWER_FOR_ATTACKER:
                 {
                     val = 7.f;
@@ -287,24 +273,15 @@ bool Player::GetCustomPvPMods(float& val, uint32 type, uint32 specID) const
             }
             break;
         }
-//         case SPEC_DK_FROST:
-//         {
-//             if (type == STRENGTH_MULTIPLICATIVE)
-//             {
-//                 val = 0.8f;
-//                 return true;
-//             }
-//             break;
-//         }
         case SPEC_DK_BLOOD:
         {
             switch (type)
             {
-//                 case STAMINA_MULTIPLICATIVE:
-//                 {
-//                     val = 0.85f;
-//                     return true;
-//                 }
+                case STAMINA_MULTIPLICATIVE:
+				{
+					val = 0.7f;
+					return true;
+				}
                 case ATTACK_POWER_FOR_ATTACKER:
                 {
                     val = 7.f;
@@ -329,24 +306,19 @@ bool Player::GetCustomPvPMods(float& val, uint32 type, uint32 specID) const
             }
             break;
         }
-//         case SPEC_DRUID_CAT:
-//         {
-//             if (type == AGILITY_MULTIPLICATIVE)
-//             {
-//                 val = 0.87f;
-//                 return true;
-//             }
-//             break;
-//         }
         case SPEC_DRUID_BEAR:
+		case SPEC_DRUID_RESTORATION:
+		{
+			if (type == MOD_POWER_REGEN_OVERRIDE)
+			{
+				val = -13200.0f;
+				return true;
+			}
+			break;
+		}
         {
             switch (type)
             {
-//                 case AGILITY_MULTIPLICATIVE:
-//                 {
-//                     val = 0.85f;
-//                     return true;
-//                 }
                 case ATTACK_POWER_FOR_ATTACKER:
                 {
                     val = 7.f;
@@ -357,51 +329,15 @@ bool Player::GetCustomPvPMods(float& val, uint32 type, uint32 specID) const
             }
             break;
         }
-//         case SPEC_DRUID_RESTORATION:
-//         {
-//             if (type == INTELLECT_MULTIPLICATIVE)
-//             {
-//                 val = 1.27f;
-//                 return true;
-//             }
-//             break;
-//         }
-//         case SPEC_WARLOCK_AFFLICTION:
-//         {
-//             if (type == INTELLECT_MULTIPLICATIVE)
-//             {
-//                 val = 1.1f;
-//                 return true;
-//             }
-//             break;
-//         }
-//         case SPEC_WARLOCK_DEMONOLOGY:
-//         {
-//             if (type == STAMINA_MULTIPLICATIVE)
-//             {
-//                 val = 1.05f;
-//                 return true;
-//             }
-//             break;
-//         }
-//         case SPEC_MAGE_FROST:
-//         {
-//             if (type == INTELLECT_MULTIPLICATIVE)
-//             {
-//                 val = 1.08f;
-//                 return true;
-//             }
-//             break;
-//         }
-//         case SPEC_MAGE_FIRE:
-//         {
-//             if (type == INTELLECT_MULTIPLICATIVE)
-//             {
-//                 val = 0.98f;
-//                 return true;
-//             }
-//             break;
-//         }
+         case SPEC_MAGE_FROST:
+         {
+             if (type == INTELLECT_MULTIPLICATIVE)
+             {
+                 val = 1.01f;
+                 return true;
+             }
+             break;
+         }
         case SPEC_MAGE_ARCANE:
         {
             if (type == INTELLECT_MULTIPLICATIVE)
@@ -415,11 +351,20 @@ bool Player::GetCustomPvPMods(float& val, uint32 type, uint32 specID) const
         {
             if (type == INTELLECT_MULTIPLICATIVE)
             {
-                val = 1.335f;
+                val = 1.34f;
                 return true;
             }
             break;
         }
+		case SPEC_SHAMAN_RESTORATION:
+		{
+			if (type == MOD_POWER_REGEN_OVERRIDE)
+			{
+				val = -13200.0f;
+				return true;
+			}
+			break;
+		}
         case SPEC_WARRIOR_PROTECTION:
         {
             if (type == ATTACK_POWER_FOR_ATTACKER)
@@ -433,7 +378,7 @@ bool Player::GetCustomPvPMods(float& val, uint32 type, uint32 specID) const
         {
             if (type == AGILITY_MULTIPLICATIVE)
             {
-                val = 0.594f;
+                val = 0.60f;
                 return true;
             }
             break;
@@ -463,45 +408,41 @@ bool Player::GetCustomPvPMods(float& val, uint32 type, uint32 specID) const
                 val = 7.f;
                 return true;
             }
+			if (type == VERSATILITY_1_2_MULTIPLICATIVE || type == VERSATILITY_2_2_MULTIPLICATIVE)
+			{
+				val = 0.1f;
+				return true;
+			}
             break;
         }
-//         case SPEC_PALADIN_HOLY:
-//         {
-//             if (type == INTELLECT_MULTIPLICATIVE)
-//             {
-//                 val = 1.35f;
-//                 return true;
-//             }
-//             break;
-//         }
         case SPEC_PALADIN_PROTECTION:
-        {
-            switch (type)
-            {
-//                 case STRENGTH_MULTIPLICATIVE:
-//                 {
-//                     val = 0.76f;
-//                     return true;
-//                 }
-                case ATTACK_POWER_FOR_ATTACKER:
-                {
-                    val = 7.f;
-                    return true;
-                }
-                default:
-                    break;
-            }
-            break;
-        }
-//         case SPEC_PRIEST_SHADOW:
-//         {
-//             if (type == INTELLECT_MULTIPLICATIVE)
-//             {
-//                 val = 1.17f;
-//                 return true;
-//             }
-//             break;
-//         }
+		{
+			switch (type)
+			{
+			case ATTACK_POWER_FOR_ATTACKER:
+			{
+				val = 7.f;
+				return true;
+			}
+			case MOD_POWER_REGEN_OVERRIDE:
+			{
+				val = -8800.0f;
+				return true;
+			}
+			default:
+				break;
+			}
+			break;
+		}
+		case SPEC_PALADIN_HOLY:
+		{
+			if (type == MOD_POWER_REGEN_OVERRIDE)
+			{
+				val = -8800.0f;
+				return true;
+			}
+			break;
+		}
         case SPEC_PRIEST_HOLY:
         {
             if (type == INTELLECT_MULTIPLICATIVE)
@@ -515,7 +456,7 @@ bool Player::GetCustomPvPMods(float& val, uint32 type, uint32 specID) const
         {
             if (type == AGILITY_MULTIPLICATIVE)
             {
-                val = 0.69f;
+                val = 0.67f;
                 return true;
             }
             break;
@@ -524,20 +465,11 @@ bool Player::GetCustomPvPMods(float& val, uint32 type, uint32 specID) const
         {
             if (type == AGILITY_MULTIPLICATIVE)
             {
-                val = 0.985f;
+                val = 0.99f;
                 return true;
             }
             break;
         }
-//         case SPEC_HUNTER_SURVIVAL:
-//         {
-//             if (type == AGILITY_MULTIPLICATIVE)
-//             {
-//                 val = 0.85f;
-//                 return true;
-//             }
-//             break;
-//         }
         default:
             break;
     }
@@ -546,18 +478,20 @@ bool Player::GetCustomPvPMods(float& val, uint32 type, uint32 specID) const
 
 void Player::CalcPvPTemplate(AuraType auratype, float & templateMod, float & otherMod, std::function<bool(AuraEffect const*)> const& predicate)
 {
-    auto const& mTotalAuraList = GetAuraEffectsByType(auratype);
-    for (auto const& auraEffect : mTotalAuraList)
+    if (auto const* mTotalAuraList = GetAuraEffectsByType(auratype))
     {
-        if (predicate(auraEffect))
+        for (auto const& auraEffect : *mTotalAuraList)
         {
-            if (auraEffect->GetId() == SPELL_PVP_STATS_TEMPLATE)
+            if (predicate(auraEffect))
             {
-                templateMod += auraEffect->GetAmount();
-            }
-            else
-            {
-                otherMod += auraEffect->GetAmount();
+                if (auraEffect->GetId() == SPELL_PVP_STATS_TEMPLATE)
+                {
+                    templateMod += auraEffect->GetAmount();
+                }
+                else
+                {
+                    otherMod += auraEffect->GetAmount();
+                }
             }
         }
     }
@@ -567,10 +501,10 @@ void Player::UpdateSpellDamageAndHealingBonus()
 {
     int32 amount = m_baseSpellPower;
 
-    AuraEffectList const& mOverrideSpellPowerAuras = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_SPELL_POWER_BY_AP_PCT);
-    if (mOverrideSpellPowerAuras.begin() != mOverrideSpellPowerAuras.end())
+    AuraEffectList const* mOverrideSpellPowerAuras = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_SPELL_POWER_BY_AP_PCT);
+    if (mOverrideSpellPowerAuras && mOverrideSpellPowerAuras->begin() != mOverrideSpellPowerAuras->end())
     {
-        for (AuraEffectList::const_iterator itr = mOverrideSpellPowerAuras.begin(); itr != mOverrideSpellPowerAuras.end(); ++itr)
+        for (AuraEffectList::const_iterator itr = mOverrideSpellPowerAuras->begin(); itr != mOverrideSpellPowerAuras->end(); ++itr)
             amount = int32(GetTotalAttackPowerValue(BASE_ATTACK) * (*itr)->GetAmount() / 100.0f);
 
         SetStatFloatValue(PLAYER_FIELD_OVERRIDE_SPELL_POWER_BY_APPERCENT, GetTotalAuraModifier(SPELL_AURA_OVERRIDE_SPELL_POWER_BY_AP_PCT));
@@ -904,17 +838,8 @@ void Player::UpdateMaxHealth()
             pet->UpdateMaxHealth();
 }
 
-uint32 Player::GetPowerIndex(Powers power) const
-{
-    return sDB2Manager.GetPowerIndexByClass(power, getClass());
-}
-
 void Player::UpdateMaxPower(Powers power)
 {
-    uint32 powerIndex = GetPowerIndex(power);
-    if (powerIndex == MAX_POWERS || powerIndex >= MAX_POWERS_PER_CLASS)
-        return;
-
     if (power == POWER_ALTERNATE)
         return;
 
@@ -1293,25 +1218,29 @@ void Player::UpdateHastRegen(float auraMods)
 
     SetFloatValue(UNIT_FIELD_MOD_HASTE_REGEN, std::min(1.0f, val));
 
-    AuraEffectList const& CooldownByMeleeHaste = GetAuraEffectsByType(SPELL_AURA_MOD_COOLDOWN_BY_HASTE_REGEN);
-    for (AuraEffectList::const_iterator itr = CooldownByMeleeHaste.begin(); itr != CooldownByMeleeHaste.end(); ++itr)
+    if (AuraEffectList const* CooldownByMeleeHaste = GetAuraEffectsByType(SPELL_AURA_MOD_COOLDOWN_BY_HASTE_REGEN))
     {
-        (*itr)->SetCanBeRecalculated(true);
-        (*itr)->RecalculateAmount(this);
+        for (AuraEffectList::const_iterator itr = CooldownByMeleeHaste->begin(); itr != CooldownByMeleeHaste->end(); ++itr)
+        {
+            (*itr)->SetCanBeRecalculated(true);
+            (*itr)->RecalculateAmount(this);
+        }
     }
-
-    AuraEffectList const& GcdByMeleeHaste = GetAuraEffectsByType(SPELL_AURA_MOD_GLOBAL_COOLDOWN_BY_HASTE_REGEN);
-    for (AuraEffectList::const_iterator itr = GcdByMeleeHaste.begin(); itr != GcdByMeleeHaste.end(); ++itr)
+    if (AuraEffectList const* GcdByMeleeHaste = GetAuraEffectsByType(SPELL_AURA_MOD_GLOBAL_COOLDOWN_BY_HASTE_REGEN))
     {
-        (*itr)->SetCanBeRecalculated(true);
-        (*itr)->RecalculateAmount(this);
+        for (AuraEffectList::const_iterator itr = GcdByMeleeHaste->begin(); itr != GcdByMeleeHaste->end(); ++itr)
+        {
+            (*itr)->SetCanBeRecalculated(true);
+            (*itr)->RecalculateAmount(this);
+        }
     }
-
-    AuraEffectList const& RecHasteReg = GetAuraEffectsByType(SPELL_AURA_CHARGE_RECOVERY_AFFECTED_BY_HASTE_REGEN);
-    for (AuraEffectList::const_iterator itr = RecHasteReg.begin(); itr != RecHasteReg.end(); ++itr)
+    if (AuraEffectList const* RecHasteReg = GetAuraEffectsByType(SPELL_AURA_CHARGE_RECOVERY_AFFECTED_BY_HASTE_REGEN))
     {
-        (*itr)->SetCanBeRecalculated(true);
-        (*itr)->RecalculateAmount(this);
+        for (AuraEffectList::const_iterator itr = RecHasteReg->begin(); itr != RecHasteReg->end(); ++itr)
+        {
+            (*itr)->SetCanBeRecalculated(true);
+            (*itr)->RecalculateAmount(this);
+        }
     }
 }
 
@@ -1345,7 +1274,7 @@ void Player::UpdateMeleeHastMod(float auraMods)
     amount *= auraMods;
     amount -= 100.0f;
 
-    //TC_LOG_ERROR("network", "UpdateMeleeHastMod mod %f", mod);
+    //TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "UpdateMeleeHastMod mod %f", mod);
 
     float value = 1.0f;
 
@@ -1370,7 +1299,7 @@ void Player::UpdateHastMod(float auraMods)
     amount *= auraMods;
     amount -= 100.0f;
 
-    //TC_LOG_DEBUG("network", "UpdateHastMod amount %f", amount);
+    //TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "UpdateHastMod amount %f", amount);
 
     float value = 1.0f;
 
@@ -1393,7 +1322,7 @@ void Player::UpdateRangeHastMod(float auraMods)
     amount *= auraMods;
     amount -= 100.0f;
 
-    //TC_LOG_ERROR("network", "UpdateRangeHastMod mod %f", mod);
+    //TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "UpdateRangeHastMod mod %f", mod);
 
     float value = 1.0f;
 
@@ -1628,21 +1557,23 @@ void Unit::UpdateManaRegen()
     // manaMod% of base mana every 5 seconds is base for all classes
     float baseRegen = CalculatePct(float(GetCreateMana()), manaMod) / 5.0f;
     float auraMp5regen = 0.0f;
-    AuraEffectList const& ModPowerRegenAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN);
-    for (AuraEffectList::const_iterator i = ModPowerRegenAuras.begin(); i != ModPowerRegenAuras.end(); ++i)
+    if (AuraEffectList const* ModPowerRegenAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN))
     {
-        if (Powers((*i)->GetMiscValue()) == POWER_MANA)
+        for (AuraEffectList::const_iterator i = ModPowerRegenAuras->begin(); i != ModPowerRegenAuras->end(); ++i)
         {
-            bool periodic = false;
-            if (Aura* aur = (*i)->GetBase())
-                if (AuraEffect const* aurEff = aur->GetEffect(1))
-                    if (aurEff->GetAuraType() == SPELL_AURA_PERIODIC_DUMMY)
-                    {
-                        periodic = true;
-                        auraMp5regen += aurEff->GetAmount() / 5.0f;
-                    }
-            if (!periodic)
-                auraMp5regen += (*i)->GetAmount() / 5.0f;
+            if (Powers((*i)->GetMiscValue()) == POWER_MANA)
+            {
+                bool periodic = false;
+                if (Aura* aur = (*i)->GetBase())
+                    if (AuraEffect const* aurEff = aur->GetEffect(1))
+                        if (aurEff->GetAuraType() == SPELL_AURA_PERIODIC_DUMMY)
+                        {
+                            periodic = true;
+                            auraMp5regen += aurEff->GetAmount() / 5.0f;
+                        }
+                if (!periodic)
+                    auraMp5regen += (*i)->GetAmount() / 5.0f;
+            }
         }
     }
 
@@ -1721,7 +1652,7 @@ void Unit::UpdateHastMod()
     auratypelist.push_back(SPELL_AURA_HASTE_SPELLS);
     auratypelist.push_back(SPELL_AURA_MELEE_SLOW);
 
-    //TC_LOG_DEBUG("network", "UpdateHastMod amount %f", amount);
+    //TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "UpdateHastMod amount %f", amount);
 
     float value = 1.0f;
     if (isAnySummons())
@@ -1770,7 +1701,7 @@ void Unit::UpdatePowerRegen(uint32 power)
     if (!powerEntry)
         return;
 
-    uint32 powerIndex = GetPowerIndex(Powers(power));
+    uint32 powerIndex = GetPowerIndex(power);
     if (powerIndex == MAX_POWERS || powerIndex >= MAX_POWERS_PER_CLASS)
         return;
 
@@ -1820,9 +1751,9 @@ void Unit::UpdatePowerRegen(uint32 power)
     valInCOmbat += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) / 5.0f;
     SetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER + powerIndex, valInCOmbat);
 
-    // TC_LOG_DEBUG("spells", "Unit::UpdatePowerRegen RegenPeace valOutCOmbat %f, powerIndex %i, power %i", valOutCOmbat, powerIndex, power);
-    // TC_LOG_DEBUG("spells", "Unit::UpdatePowerRegen RegenCombat valInCOmbat %f, powerIndex %i, power %i", valInCOmbat, powerIndex, power);
-    // TC_LOG_DEBUG("spells", "Unit::UpdatePowerRegen powerIndex %i, power %i, RegenCombat %f, RegenPeace %f", powerIndex, power, powerEntry->RegenCombat, powerEntry->RegenPeace);
+    // TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "Unit::UpdatePowerRegen RegenPeace valOutCOmbat %f, powerIndex %i, power %i", valOutCOmbat, powerIndex, power);
+    // TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "Unit::UpdatePowerRegen RegenCombat valInCOmbat %f, powerIndex %i, power %i", valInCOmbat, powerIndex, power);
+    // TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "Unit::UpdatePowerRegen powerIndex %i, power %i, RegenCombat %f, RegenPeace %f", powerIndex, power, powerEntry->RegenCombat, powerEntry->RegenPeace);
 }
 
 /*#######################################
@@ -1857,7 +1788,7 @@ bool Creature::UpdateAllStats()
     UpdateMaxHealth();
     UpdateAttackPowerAndDamage();
     UpdateAttackPowerAndDamage(true);
-    UpdateMaxPower(GetPowerType());
+    UpdateMaxPower(getPowerType());
     UpdateMaxPower(POWER_ALTERNATE);
 
     for (int8 i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
@@ -1914,22 +1845,8 @@ void Creature::UpdateMaxHealth()
     SetMaxHealth(static_cast<uint64>(value));
 }
 
-uint32 Creature::GetPowerIndex(Powers power) const
-{
-    if (power == GetPowerType())
-        return 0;
-    if (power == POWER_ALTERNATE)
-        return 1;
-    if (power == POWER_COMBO_POINTS)
-        return 2;
-    return MAX_POWERS;
-}
-
 void Creature::UpdateMaxPower(Powers power)
 {
-    if (GetPowerIndex(power) == MAX_POWERS)
-        return;
-
     int32 cur_maxpower = GetMaxPower(power);
     int32 value = GetCreatePowers(power);
 
@@ -2092,7 +2009,7 @@ bool Guardian::UpdateStats(Stats stat)
 
                 if (isPet())
                 {
-                    switch (ToPet()->GetSpecialization())
+                    switch (ToPet()->GetSpecializationId())
                     {
                         case SPEC_PET_ADAPTATION_FEROCITY:
                         case SPEC_PET_FEROCITY: mod = 0.67f; break;
@@ -2152,7 +2069,7 @@ bool Guardian::UpdateStats(Stats stat)
         }
         case STAT_INTELLECT:
         {
-            if (GetPowerType() == POWER_MANA)
+            if (getPowerType() == POWER_MANA)
                 UpdateMaxPower(POWER_MANA);
             if (owner->getClass() == CLASS_MAGE)
                 UpdateAttackPowerAndDamage();
@@ -2167,12 +2084,10 @@ bool Guardian::UpdateStats(Stats stat)
 
 bool Guardian::UpdateAllStats()
 {
-    UpdateMaxHealth();
-
     for (uint8 i = STAT_STRENGTH; i < MAX_STATS; ++i)
         UpdateStats(Stats(i));
 
-    UpdateMaxPower(GetPowerType());
+    UpdateMaxPower(getPowerType());
     UpdateMaxPower(POWER_ALTERNATE);
 
     for (uint8 i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
@@ -2214,7 +2129,7 @@ void Guardian::UpdateArmor()
     else
         value = m_owner->GetModifierValue(unitMod, BASE_VALUE);
 
-    //TC_LOG_DEBUG("misc", "Guardian::UpdateArmor value %f creature_ID %i", value, creature_ID);
+    //TC_LOG_DEBUG(LOG_FILTER_PETS, "Guardian::UpdateArmor value %f creature_ID %i", value, creature_ID);
 
     value *= GetModifierValue(unitMod, BASE_PCT);
     value *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_RESISTANCE_PCT, 1);
@@ -2251,7 +2166,7 @@ void Guardian::UpdateMaxHealth()
         //value += GetModifierValue(unitMod, TOTAL_VALUE);
         value *= GetModifierValue(unitMod, TOTAL_PCT);
 
-        //TC_LOG_DEBUG("misc", "Guardian::UpdateMaxHealth multiplicator %f creature_ID %i hp %f", multiplicator, creature_ID, value);
+        //TC_LOG_DEBUG(LOG_FILTER_PETS, "Guardian::UpdateMaxHealth multiplicator %f creature_ID %i hp %f", multiplicator, creature_ID, value);
     }
     else
     {
@@ -2269,9 +2184,6 @@ void Guardian::UpdateMaxHealth()
 
 void Guardian::UpdateMaxPower(Powers power)
 {
-    if (GetPowerIndex(power) == MAX_POWERS)
-        return;
-
     int32 value = GetCreatePowers(power);
 
     uint32 creature_ID = isHunterPet() ? 1 : GetEntry();
@@ -2289,7 +2201,7 @@ void Guardian::UpdateMaxPower(Powers power)
     value *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_MAX_MANA, power);
     value *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_ADD_ENERGY_PERCENT, power);
 
-    // TC_LOG_DEBUG("misc", "Guardian::UpdateMaxPower value %f creature_ID %i", value, creature_ID);
+    // TC_LOG_DEBUG(LOG_FILTER_PETS, "Guardian::UpdateMaxPower value %f creature_ID %i", value, creature_ID);
     SetMaxPower(power, value);
 }
 
@@ -2481,8 +2393,7 @@ void Player::UpdateCRSpeed()
     SetFloatValue(PLAYER_FIELD_SPEED, std::max(0.0f, val));
 
     for (uint8 i = 0; i < MAX_MOVE_TYPE; ++i)
-        if (i != MOVE_TURN_RATE && i != MOVE_PITCH_RATE) // unsupported in UpdateSpeed
-            UpdateSpeed(UnitMoveType(i), true);
+        UpdateSpeed(UnitMoveType(i), true);
 }
 
 void Player::UpdateLifesteal()
@@ -2497,7 +2408,7 @@ void Player::UpdateLifesteal()
 
     SetFloatValue(PLAYER_FIELD_LIFESTEAL, std::max(0.0f, val));
 
-    //TC_LOG_DEBUG("spells", "Player: UpdateLifesteal val %f", val);
+    //TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "Player: UpdateLifesteal val %f", val);
 }
 
 void Player::UpdateAvoidance()

@@ -1,0 +1,4 @@
+DELETE FROM `creature` WHERE `guid`=306058527;
+INSERT INTO `creature` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `PhaseId`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `npcflag2`, `unit_flags`, `dynamicflags`, `ScriptName`, `AiID`, `MovementID`, `MeleeID`, `isActive`, `skipClone`, `personal_size`, `isTeemingSpawn`, `unit_flags3`, `WpID`, `BoxID`, `protec_anti_doublet`) VALUES (306058527, 41456, 0, 5144, 5124, 1, 1, '', 0, 1, -7270.26, 5074.5, -243.229, 6.27141, 300, 0, 0, 1094800, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL);
+DELETE FROM `quest_objectives` WHERE `ID`=266999;
+DELETE FROM `quest_objectives` WHERE `ID`=266998;

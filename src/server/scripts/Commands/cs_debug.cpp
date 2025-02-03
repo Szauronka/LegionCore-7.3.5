@@ -15,13 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-Name: debug_commandscript
-%Complete: 100
-Comment: All debug related commands
-Category: commandscripts
-EndScriptData */
-
 #include "BattlegroundMgr.h"
 #include "Cell.h"
 #include "ChallengeMgr.h"
@@ -143,7 +136,7 @@ public:
             { "freeze",         SEC_ADMINISTRATOR,  false, &HandleDebugFreeze,                 ""},
             { "combat",         SEC_ADMINISTRATOR,  false, &HandleDebugPlayerCombat,           ""},
             { "garrison",       SEC_ADMINISTRATOR,  false, nullptr,                             "", debugGarrisonCommandTable },
-            { "transport",      SEC_ADMINISTRATOR,  false, &HandleDebugTransportCommand,       ""},
+            { "transport",      SEC_ADMINISTRATOR,  false, &HandleDebugStartTransport,         ""},
             { "setelevel",      SEC_ADMINISTRATOR,  false, &HandleDebugSetEffectiveLevel,      ""},
             { "pvelogs",        SEC_ADMINISTRATOR,  false, &HandleDebugPvELogsCommand,         ""},
             { "setkillpoints",  SEC_GAMEMASTER,     false, &HandleDebugKillPointsCommand,      ""},
@@ -537,11 +530,11 @@ public:
             }
             else
             {
-                TC_LOG_ERROR("misc", "Sending opcode that has unknown type '%s'", type.c_str());
+                TC_LOG_ERROR(LOG_FILTER_GENERAL, "Sending opcode that has unknown type '%s'", type.c_str());
                 break;
             }
         }
-        TC_LOG_DEBUG("network", "Sending opcode %u", data.GetOpcode());
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "Sending opcode %u", data.GetOpcode());
         data.hexlike();
         player->GetSession()->SendPacket(&data, true);
         handler->PSendSysMessage(LANG_COMMAND_OPCODESENT, data.GetOpcode(), unit->GetName());
@@ -1756,7 +1749,7 @@ public:
     {
         Player* player = handler->GetSession()->GetPlayer();
 
-        TC_LOG_INFO("sql.dev", "(@PATH, XX, %.3f, %.3f, %.5f, 0, 0, 0, 100, 0),", player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
+        TC_LOG_INFO(LOG_FILTER_SQL_DEV, "(@PATH, XX, %.3f, %.3f, %.5f, 0, 0, 0, 100, 0),", player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
 
         handler->PSendSysMessage("Waypoint SQL written to SQL Developer log");
         return true;
@@ -2225,29 +2218,16 @@ public:
         return true;
     }
 
-    static bool HandleDebugTransportCommand(ChatHandler* handler, char const* args)
+    static bool HandleDebugStartTransport(ChatHandler* handler, char const* args)
     {
-        Transport* transport = handler->GetSession()->GetPlayer()->GetTransport();
-        if (!transport)
-            return false;
+        char* centry = strtok((char*)args, " ");
+        uint32 entry = centry ? (int32)atoi(centry) : 0;
 
-        bool start = false;
-        if (!stricmp(args, "stop"))
-            transport->EnableMovement(false);
-        else if (!stricmp(args, "start"))
-        {
-            transport->EnableMovement(true);
-            start = true;
-        }
-        else
-        {
-            Position pos = transport->GetPosition();
-            handler->PSendSysMessage("Transport %s is %s", transport->GetName(), transport->GetGoState() == GO_STATE_READY ? "stopped" : "moving");
-            handler->PSendSysMessage("Transport position: %s", pos.ToString().c_str());
-            return true;
-        }
+        if (auto player = handler->GetSession()->GetPlayer())
+            if (Transport* transport = sTransportMgr->GetTransport(player->GetMap(), entry))
+                transport->EnableMovement(true);
 
-        handler->PSendSysMessage("Transport %s %s", transport->GetName(), start ? "started" : "stopped");
+        handler->PSendSysMessage("Start shio %u", entry);
         return true;
     }
 
@@ -2279,16 +2259,16 @@ public:
         //data.RealmID = realm.Id.Realm;
         //data.MapID = player->GetMapId();
 
-        //data.Guild.emplace();
+        //data.Guild = boost::in_place();
         //data.Guild->GuildID = 9;
         //data.Guild->GuildFaction = player->GetTeamId();
         //data.Guild->GuildName = player->GetGuildName();
 
-        //data.Encounter.emplace();
+        //data.Encounter = boost::in_place();
         //data.Encounter->EncounterID = 1704;
         //data.Encounter->Expansion = CURRENT_EXPANSION;
         //data.Encounter->DifficultyID = 16;
-        //data.Encounter->StartTime = GameTime::GetGameTime();
+        //data.Encounter->StartTime = time(nullptr);
         //data.Encounter->CombatDuration = 7 * MINUTE;
         //data.Encounter->EndTime = data.Encounter->StartTime + data.Encounter->CombatDuration;
         //data.Encounter->Success = true;
@@ -2303,7 +2283,7 @@ public:
         //rooster.ItemLevel = player->GetAverageItemLevelEquipped();
         //data.Rosters.push_back(rooster);
 
-        //TC_LOG_ERROR("misc", " %s ", data.Serealize().c_str());
+        //TC_LOG_ERROR(LOG_FILTER_GENERAL, " %s ", data.Serealize().c_str());
         return true;
     }
 

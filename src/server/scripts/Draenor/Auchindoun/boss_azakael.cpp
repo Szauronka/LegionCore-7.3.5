@@ -7,8 +7,12 @@
 ///  Coded by Davethebrave
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "ScriptMgr.h"
+#include "SpellScript.h"
 #include "ScriptedCreature.h"
 #include "auchindoun.hpp"
+#include "ScriptMgr.h"
+#include <GridNotifiers.h>
 
 enum eAzzakelSpells
 {
@@ -143,7 +147,7 @@ public:
                 m_Counting = 0;
                 m_First = false;
                 m_Summoned = false;
-                me->setFaction(FriendlyFaction);
+                me->setFaction(HostileFaction);
                 me->SetReactState(REACT_PASSIVE);
                 me->AddUnitMovementFlag(MOVEMENTFLAG_ROOT);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL);
@@ -273,8 +277,8 @@ public:
 
             for (uint8 l_I = 0; l_I < 20; ++l_I)
             {
-                float l_X = me->m_positionX + (l_I + 1) * cos(me->GetOrientation());
-                float l_Y = me->m_positionY + (l_I + 1) * sin(me->GetOrientation());
+                float l_X = me->m_positionX + (l_I + 1) * cos(me->m_orientation);
+                float l_Y = me->m_positionY + (l_I + 1) * sin(me->m_orientation);
 
                 /// 326528
                 if (Creature* l_FelSparkNullAITrigger = me->SummonCreature(CreatureFelSparkNullAITrigger, l_X, l_Y, me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 7 * IN_MILLISECONDS))
@@ -630,29 +634,29 @@ public:
 
         void UpdateAI(uint32 /*diff*/) override
         {
-            //std::list<Player*> playerList;
-            //Trinity::AnyPlayerInObjectRangeCheck check(me, 15.0f);
-            //Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, playerList, check);
-            //me->VisitNearbyObject(15.0f, searcher);
-            //if (!playerList.empty())
-            //{
-            //    for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
-            //    {
-            //        if (!*itr)
-            //            continue;
+            std::list<Player*> playerList;
+            Trinity::AnyPlayerInObjectRangeCheck check(me, 15.0f);
+            Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, playerList, check);
+            me->VisitNearbyObject(15.0f, searcher);
+            if (!playerList.empty())
+            {
+                for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+                {
+                    if (!*itr)
+                        continue;
 
-            //        if ((*itr)->IsWithinDistInMap(me, 5.0f))
-            //        {
-            //            if (!(*itr)->HasAura(SpellFelPoolDebuffDmg))
-            //                me->AddAura(SpellFelPoolDebuffDmg, *itr);
-            //        }
-            //        else
-            //        {
-            //            if ((*itr)->HasAura(SpellFelPoolDebuffDmg, me->GetGUID()))
-            //                (*itr)->RemoveAura(SpellFelPoolDebuffDmg);
-            //        }
-            //    }
-            //}
+                    if ((*itr)->IsWithinDistInMap(me, 5.0f))
+                    {
+                        if (!(*itr)->HasAura(SpellFelPoolDebuffDmg))
+                            me->AddAura(SpellFelPoolDebuffDmg, *itr);
+                    }
+                    else
+                    {
+                        if ((*itr)->HasAura(SpellFelPoolDebuffDmg, me->GetGUID()))
+                            (*itr)->RemoveAura(SpellFelPoolDebuffDmg);
+                    }
+                }
+            }
         }
     };
 
@@ -808,8 +812,8 @@ void AddSC_boss_azzakel()
 {
     new boss_azzakel();                             ///< 75927
     new auchindoun_azzakel_mob_controller();        ///< 76216
-    //new auchindoun_azzakel_mob_fel_spark_trigger(); ///< 326527
-    //new auchindoun_azzakel_mob_fel_pool();          ///< 326526
+    new auchindoun_azzakel_mob_fel_spark_trigger(); ///< 326527
+    new auchindoun_azzakel_mob_fel_pool();          ///< 326526
     new auchindoun_azzakel_spell_curtain_flames();  ///< 153392
     new auchindoun_azzakel_spell_claws_of_argus();  ///< 153764
 }

@@ -111,12 +111,12 @@ struct AfterShockAngle
 
 static AfterShockAngle angmod[6] =
 {
-    { float(M_PI), float(M_PI + 1.570796326795f) },
-    { float(M_PI), 0.7853981633975f },
-    { float(M_PI), 1.570796326795f + 0.7853981633975f },
-    { float(M_PI + 1.570796326795f), 0.7853981633975f },
-    { float(M_PI + 1.570796326795f), 1.570796326795f + 0.7853981633975f },
-    { 0.7853981633975f, 1.570796326795f + 0.7853981633975f },
+    {M_PI, M_PI + 1.570796326795f},
+    {M_PI, 0.7853981633975f},
+    {M_PI, 1.570796326795f + 0.7853981633975f},
+    {M_PI + 1.570796326795f, 0.7853981633975f},
+    {M_PI + 1.570796326795f, 1.570796326795f + 0.7853981633975f},
+    {0.7853981633975f, 1.570796326795f + 0.7853981633975f},
 };
 
 class boss_general_nazgrim : public CreatureScript
@@ -323,7 +323,7 @@ class boss_general_nazgrim : public CreatureScript
             {
                 if (pl->getClass() == CLASS_PRIEST || pl->getClass() == CLASS_MAGE || pl->getClass() == CLASS_WARLOCK)
                     return true;
-                else if ((pl->GetPowerType() == POWER_MANA && pl->getClass() == CLASS_DRUID) || pl->getClass() == CLASS_SHAMAN)
+                else if ((pl->getPowerType() == POWER_MANA && pl->getClass() == CLASS_DRUID) || pl->getClass() == CLASS_SHAMAN)
                     return true;
 
                 return false;
@@ -694,7 +694,7 @@ public:
 
         void Reset()
         {
-            me->SetPowerType(POWER_ENERGY);
+            me->setPowerType(POWER_ENERGY);
             me->SetMaxPower(POWER_ENERGY, 100);
             me->SetPower(POWER_ENERGY, 100);
             plGuid.Clear();
@@ -705,7 +705,7 @@ public:
         Player* GetPlayerTarget()
         {
             if (Player* pl = me->GetPlayer(*me, plGuid))
-                if (pl->IsAlive())
+                if (pl->isAlive())
                     return pl;
 
             return NULL;
@@ -926,7 +926,7 @@ public:
         Unit* GetTarget()
         {
             if (Unit* target = me->GetUnit(*me, targetGuid))
-                if (target->IsAlive())
+                if (target->isAlive())
                     return target;
             return 0;
         }
@@ -937,7 +937,7 @@ public:
             {
                 if (Unit* target = me->GetUnit(*me, guid))
                 {
-                    if (target->IsAlive())
+                    if (target->isAlive())
                     {
                         targetGuid = guid;
                         me->AddAura(SPELL_HUNTERS_MARK, target);
@@ -1150,7 +1150,7 @@ public:
             {
                 if (Unit* gn = me->ToTempSummon()->GetSummoner())
                 {
-                    if (gn->IsAlive() && gn->isInCombat())
+                    if (gn->isAlive() && gn->isInCombat())
                         return gn;
                 }
             }

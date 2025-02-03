@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Eye of Azshara 100-110
     Encounter: Serpentrix
     Normal: 100%, Heroic: 100%, Mythic: 100%
@@ -301,7 +302,7 @@ struct npc_eye_of_azshara_stormwake_hydra : public ScriptedAI
                     {
                         if (auto player = Player::GetPlayer(*me, ref->getUnitGuid()))
                         {
-                            if (player->GetDistance(me) < 5.0f && me->isInBack(player, float(M_PI / 2)))
+                            if (player->GetDistance(me) < 5.0f && me->isInBack(player, M_PI / 2))
                             {
                                 DoCast(196287);
                                 events.RescheduleEvent(EVENT_3, 24000);
@@ -479,7 +480,8 @@ class spell_eye_of_azshara_roiling_storm : public AuraScript
             {
                 if (auto player = Player::GetPlayer(*caster, ref->getUnitGuid()))
                 {
-                    Position pos = player->GetRandomNearPosition(5.0f);
+                    Position pos;
+                    player->GetRandomNearPosition(pos, 5.0f);
                     caster->CastSpell(pos, 196292, true);
                 }
             }
@@ -513,7 +515,7 @@ class spell_eye_of_azshara_roiling_storm_script : public SpellScript
         if (GetId() == 196299)
         {
             maxCount = 3;
-            angle += float(- M_PI / 6);
+            angle += -M_PI / 6;
         }
 
         for (uint8 i = 0; i < maxCount; ++i)
@@ -533,7 +535,7 @@ class spell_eye_of_azshara_roiling_storm_script : public SpellScript
                 }
             });
 
-            angle += float(M_PI / 6);
+            angle += M_PI / 6;
         }
     }
 

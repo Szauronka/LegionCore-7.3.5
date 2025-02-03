@@ -109,7 +109,7 @@ public:
         InstanceScript* instance = creature->GetInstanceScript();
 
         if (instance && instance->GetData(TYPE_EVENT) == NOT_STARTED)
-            player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_START_EVENT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_START_EVENT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
         player->SEND_GOSSIP_MENU(GOSSIP_TEXT_EMI, creature->GetGUID());
 
@@ -228,7 +228,7 @@ public:
                 {
                     if (Creature* summon = Unit::GetCreature(*me, *itr))
                     {
-                        if (summon->IsAlive())
+                        if (summon->isAlive())
                             summon->DisappearAndDie();
                         else
                             summon->RemoveCorpse();
@@ -250,7 +250,7 @@ public:
                     if (player->isGameMaster())
                         continue;
 
-                    if (player->IsAlive())
+                    if (player->isAlive())
                     {
                         temp->SetInCombatWith(player);
                         player->SetInCombatWith(temp);

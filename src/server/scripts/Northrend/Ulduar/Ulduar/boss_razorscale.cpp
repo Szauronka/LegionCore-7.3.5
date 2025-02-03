@@ -187,6 +187,7 @@ public:
         {
             _Reset();
             me->SetCanFly(true);
+            me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             me->SetReactState(REACT_PASSIVE);
             PermaGround = false;
@@ -256,7 +257,7 @@ public:
                             phase = PHASE_FLIGHT;
                             events.SetPhase(PHASE_FLIGHT);
                             me->SetCanFly(true);
-                            me->SetAnimTier(AnimTier::Ground);
+                            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                             me->SetReactState(REACT_PASSIVE);
                             me->AttackStop();
@@ -271,7 +272,7 @@ public:
                         case EVENT_LAND:
                             me->SetCanFly(false);
                             me->NearTeleportTo(586.966f, -175.534f, 391.517f, 1.692f);
-                            me->SetAnimTier(AnimTier::Ground);
+                            me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                             DoCast(me, SPELL_STUN, true);
                             if (Creature *pCommander = me->GetCreature(*me, instance->GetGuidData(DATA_EXP_COMMANDER)))
@@ -382,7 +383,7 @@ public:
             events.SetPhase(PHASE_PERMAGROUND);
             me->NearTeleportTo(586.966f, -175.534f, 391.517f, 1.692f);
             me->SetCanFly(false);
-            me->SetAnimTier(AnimTier::Ground);
+            me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             me->SetReactState(REACT_AGGRESSIVE);
             me->RemoveAurasDueToSpell(SPELL_STUN);
@@ -456,7 +457,7 @@ public:
         {
             pPlayer->PrepareGossipMenu(pCreature);
 
-            pPlayer->ADD_GOSSIP_ITEM(GossipOptionNpc::None,GOSSIP_ITEM_1,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT,GOSSIP_ITEM_1,GOSSIP_SENDER_MAIN,GOSSIP_ACTION_INFO_DEF);
             pPlayer->SEND_GOSSIP_MENU(13853, pCreature->GetGUID());
         }
         else pPlayer->SEND_GOSSIP_MENU(13910, pCreature->GetGUID());

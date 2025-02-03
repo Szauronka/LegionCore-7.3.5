@@ -22,6 +22,7 @@ target_link_libraries(mmaps_generator
   PRIVATE
     trinity-core-interface
   PUBLIC
+    shared
     common
     extractor_common
     Recast

@@ -33,7 +33,7 @@ struct GameTele;
 
 class ChatCommand
 {
-    typedef bool(*pHandler)(ChatHandler*, char const*);
+typedef bool(*pHandler)(ChatHandler*, char const*);
 
     public:
         ChatCommand(char const* name, uint32 securityLevel, bool allowConsole, pHandler handler, std::string help, std::vector<ChatCommand> childCommands = std::vector<ChatCommand>()) :
@@ -44,10 +44,10 @@ class ChatCommand
         bool AllowConsole;
         pHandler Handler;
         std::string Help;
-        std::vector<ChatCommand> ChildCommands;
+        std::vector<ChatCommand> ChildCommands;;
 };
 
-class TC_GAME_API ChatHandler
+class ChatHandler
 {
     public:
         WorldSession* GetSession() { return m_session; }
@@ -62,7 +62,7 @@ class TC_GAME_API ChatHandler
         virtual void SendSysMessage(const char *str);
 
         void SendSysMessage(int32 entry);
-
+        
         template<typename... Args>
         void PSendSysMessage(const char* fmt, Args&&... args)
         {
@@ -80,13 +80,12 @@ class TC_GAME_API ChatHandler
         {
             return fmt::sprintf(GetTrinityString(entry), std::forward<Args>(args)...);
         }
-
-        int ParseCommands(const char* text);
+		
+		int ParseCommands(const char* text);
 
         bool PlayerExtraCommand(const char* text);
 
         static std::vector<ChatCommand> const& getCommandTable();
-        static void invalidateCommandTable();
 
         bool isValidChatMessage(const char* msg);
         void SendGlobalSysMessage(const char *str);
@@ -104,7 +103,9 @@ class TC_GAME_API ChatHandler
         bool HasLowerSecurityAccount(WorldSession* target, uint32 account, bool strong = false);
 
         void SendGlobalGMSysMessage(const char *str);
-        Player*   getSelectedPlayer();
+        Player*   getPlayer();
+		Player*   getSelectedPlayer();
+        Player*   getSelectedPlayerOrSelf();
         Creature* getSelectedCreature();
         Unit*     getSelectedUnit();
         WorldObject* getSelectedObject();
@@ -131,6 +132,8 @@ class TC_GAME_API ChatHandler
         GameObject* GetObjectGlobalyWithGuidOrNearWithDbGuid(ObjectGuid::LowType lowguid, uint32 entry);
         bool HasSentErrorMessage() const { return sentErrorMessage; }
         void SetSentErrorMessage(bool val){ sentErrorMessage = val; }
+        static bool LoadCommandTable() { return load_command_table; }
+        static void SetLoadCommandTable(bool val) { load_command_table = val; }
 
         bool ShowHelpForCommand(std::vector<ChatCommand> const& table, const char* cmd);
     protected:
@@ -143,6 +146,7 @@ class TC_GAME_API ChatHandler
         WorldSession* m_session;                           // != NULL for chat command call and NULL for CLI command
 
         // common global flag
+        static bool load_command_table;
         bool sentErrorMessage;
 };
 
@@ -166,7 +170,7 @@ class CliHandler : public ChatHandler
         Print* m_print;
 };
 
-class TC_GAME_API CommandArgs
+class CommandArgs
 {
 public:
     enum CommandArgsType

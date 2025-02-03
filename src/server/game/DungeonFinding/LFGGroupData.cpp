@@ -17,6 +17,7 @@
 
 #include "LFG.h"
 #include "LFGGroupData.h"
+#include <ObjectGuid.h>
 
 namespace lfg
 {

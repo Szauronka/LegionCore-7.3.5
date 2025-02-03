@@ -1,8 +1,10 @@
 /*
+    http://uwow.biz
     Paladin Specialization: Retribution
 */
 
 #include "ScriptMgr.h"
+#include "SpellScript.h"
 #include "ScriptedCreature.h"
 #include "broken_shore.h"
 
@@ -97,7 +99,7 @@ public:
                 {
                     changePos = true;
                     Position pos;
-                    pos = me->GetNearPosition(20.0f, 0.0f);
+                    me->GetNearPosition(pos, 20.0f, 0.0f);
                     me->SetHomePosition(pos);
                 }
             }
@@ -337,7 +339,7 @@ public:
                 {
                     Position pos;
                     float dist = frand(5.0, 15.0f);
-                    pos = tyrosus->GetNearPosition(dist, frand(3.0f, 6.0f));
+                    tyrosus->GetNearPosition(pos, dist, frand(3.0f, 6.0f));
                     summon->GetMotionMaster()->MovePoint(1, pos);
                     summon->SetHomePosition(pos);
                 }
@@ -359,7 +361,7 @@ public:
                     Position pos;
                     for (uint8 i = 0; i < 2; i++)
                     {
-                        pos = tyrosus->GetNearPosition(10.0f, frand(0.0f, 6.28f));
+                        tyrosus->GetNearPosition(pos, 10.0f, frand(0.0f, 6.28f));
                         me->SummonCreature(NPC_BURNING_CRUSHER, pos);
                     }
                     events.RescheduleEvent(EVENT_5, 2000);
@@ -931,7 +933,7 @@ public:
                 summons.DespawnAll();
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_ATTACKABLE_1);
                 DoCast(me, 152821, true); //Morph
-                me->SendPlaySpellVisualKit(61036, 0); //SMSG_PLAY_SPELL_VISUAL_KIT
+                me->SendPlaySpellVisualKit(0, 61036); //SMSG_PLAY_SPELL_VISUAL_KIT
                 if (instance->getScenarionStep() == DATA_STAGE_6)
                     instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 46149); //Step 7. Final
                 me->DespawnOrUnsummon(3000);
@@ -1279,7 +1281,7 @@ class spell_bs_dominate_mind : public SpellScriptLoader
         }
 };
 
-void AddSC_paladin_broken_shore()
+void AddSC_broken_shore()
 {
     new npc_bs_lord_maxwell_tyrosus();
     new npc_bs_highlord_tirion_fordring();

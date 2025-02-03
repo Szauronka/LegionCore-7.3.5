@@ -24,17 +24,19 @@
 #include "Cell.h"
 #include "DB2Structure.h"
 #include "DynamicTree.h"
-#include "FunctionProcessor.h"
 #include "GameObjectModel.h"
 #include "GridDefines.h"
 #include "MapRefManager.h"
-#include "NGrid.h"
 #include "SharedDefines.h"
-#include "ThreadPoolMap.hpp"
 #include "Timer.h"
 #include "Weather.h"
+#include "NGrid.h"
+#include "FunctionProcessor.h"
 #include "World.h"
+#include "ThreadPoolMap.hpp"
 
+#include <cds/container/feldman_hashset_hp.h>
+#include "HashFuctor.h"
 #include <safe_ptr.h>
 
 struct Position;
@@ -47,7 +49,6 @@ class Battlefield;
 class Battleground;
 class BattlegroundMap;
 class CreatureGroup;
-class GridMap;
 class Group;
 class InstanceMap;
 class InstanceSave;
@@ -57,7 +58,6 @@ class Object;
 class OutdoorPvP;
 class Player;
 class TempSummon;
-class Transport;
 class Unit;
 class Weather;
 class WorldLocation;
@@ -70,6 +70,8 @@ class Scenario;
 
 namespace G3D { class Plane; }
 
+typedef cds::container::FeldmanHashSet< cds::gc::HP, WorldObject*, WorldObjectHashAccessor > WorldObjectSet;
+typedef cds::container::FeldmanHashSet< cds::gc::HP, Transport*, TransportHashAccessor > TransportHashSet;
 typedef std::map<ObjectGuid, StaticTransport*> StaticTransportMap;
 
 struct ScriptAction
@@ -136,7 +138,7 @@ struct map_liquidHeader
     float  liquidLevel;
 };
 
-enum ZLiquidStatus : uint32
+enum ZLiquidStatus
 {
     LIQUID_MAP_NO_WATER     = 0x00000000,
     LIQUID_MAP_ABOVE_WATER  = 0x00000001,
@@ -169,6 +171,69 @@ struct LiquidData
     uint32 entry = 0;
     float level = 0.0f;
     float depth_level = 0.0f;
+};
+
+class GridMap
+{
+    uint32  _flags;
+    union{
+        float* m_V9;
+        uint16* m_uint16_V9;
+        uint8* m_uint8_V9;
+    };
+    union{
+        float* m_V8;
+        uint16* m_uint16_V8;
+        uint8* m_uint8_V8;
+    };
+    G3D::Plane* _minHeightPlanes;
+    // Height level data
+    float _gridHeight;
+    float _gridIntHeightMultiplier;
+
+    // Area data
+    uint16* _areaMap;
+
+    // Liquid data
+    float _liquidLevel;
+    uint16* _liquidEntry;
+    uint8* _liquidFlags;
+    float* _liquidMap;
+    uint16 _gridArea;
+    uint16 _liquidGlobalEntry;
+    uint8 _liquidGlobalFlags;
+    uint8 _liquidOffX;
+    uint8 _liquidOffY;
+    uint8 _liquidWidth;
+    uint8 _liquidHeight;
+    bool _fileExists;
+
+    bool loadAreaData(FILE* in, uint32 offset, uint32 size);
+    bool loadHeightData(FILE* in, uint32 offset, uint32 size);
+    bool loadLiquidData(FILE* in, uint32 offset, uint32 size);
+
+    // Get height functions and pointers
+    typedef float (GridMap::*GetHeightPtr) (float x, float y) const;
+    GetHeightPtr _gridGetHeight;
+    float getHeightFromFloat(float x, float y) const;
+    float getHeightFromUint16(float x, float y) const;
+    float getHeightFromUint8(float x, float y) const;
+    float getHeightFromFlat(float x, float y) const;
+
+public:
+    GridMap();
+    ~GridMap();
+    bool loadData(const char* filename);
+    void unloadData();
+
+    uint16 getArea(float x, float y) const;
+
+    float getHeight(float x, float y) const {return (this->*_gridGetHeight)(x, y);}
+    float getMinHeight(float x, float y) const;
+    float getLiquidLevel(float x, float y) const;
+    uint8 getTerrainType(float x, float y) const;
+    ZLiquidStatus getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, LiquidData* data = nullptr);
+    bool fileExists() const { return _fileExists; }
 };
 
 #pragma pack(push, 1)
@@ -211,7 +276,7 @@ typedef std::unordered_map<uint32 /*zoneId*/, ZoneDynamicInfo> ZoneDynamicInfoMa
 
 typedef std::unordered_map<ObjectGuid, std::shared_ptr<WorldObject>> SharedObjectPtr;
 
-class TC_GAME_API Map
+class Map
 {
     friend class MapReference;
     public:
@@ -296,6 +361,7 @@ class TC_GAME_API Map
         uint32 GetAreaId(float x, float y, float z) const;
         uint32 GetZoneId(float x, float y, float z) const;
         void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, float x, float y, float z) const;
+		virtual void SetObjectVisibility(float p_Visibility);
 
         bool IsOutdoors(float x, float y, float z) const;
 
@@ -336,17 +402,17 @@ class TC_GAME_API Map
         SharedObjectPtr m_objectHolder;
 
         uint16 GetMapMaxPlayers() const;
-        bool Instanceable() const;
-        bool IsDungeon() const;
-        bool IsDungeonOrRaid() const;
-        bool IsNonRaidDungeon() const;
-        bool IsRaid() const;
+        bool Instanceable() const { return i_mapEntry && i_mapEntry->Instanceable(); }
+        bool IsDungeon() const { return i_mapEntry && i_mapEntry->IsDungeon(); }
+        bool IsDungeonOrRaid() const { return i_mapEntry && i_mapEntry->Is5pplDungeonOrRaid() && !i_mapEntry->IsContinent(); }
+        bool IsNonRaidDungeon() const { return i_mapEntry && i_mapEntry->IsNonRaidDungeon(); }
+        bool IsRaid() const { return i_mapEntry && i_mapEntry->IsRaid(); }
         bool IsLfr() const { return i_difficulty == DIFFICULTY_LFR || i_difficulty == DIFFICULTY_LFR_RAID || i_difficulty == DIFFICULTY_HC_SCENARIO || i_difficulty == DIFFICULTY_N_SCENARIO; }
         bool isChallenge() const { return i_difficulty == DIFFICULTY_MYTHIC_KEYSTONE; }
         bool IsNeedRecalc() const;
         bool IsCanScale() const;
         bool IsNeedRespawn(uint32 lastRespawn) const { return lastRespawn < m_respawnChallenge; }
-        bool IsScenario() const;
+        bool IsScenario() const { return i_mapEntry && i_mapEntry->IsScenario(); }
         bool IsRaidOrHeroicDungeon() const { return IsRaid() || IsHeroic(); }
         bool IsHeroic() const;
         bool Is10ManRaid() const { return IsRaid() && (i_difficulty == DIFFICULTY_10_N || i_difficulty == DIFFICULTY_25_N); }
@@ -357,11 +423,11 @@ class TC_GAME_API Map
         bool IsMythicRaid() const { return i_difficulty == DIFFICULTY_MYTHIC_RAID; }
         bool IsHeroicPlusRaid() const { return i_difficulty == DIFFICULTY_HEROIC_RAID || i_difficulty == DIFFICULTY_MYTHIC_RAID; }
         bool IsEventScenario() const { return i_difficulty == DIFFICULTY_EVENT_SCENARIO_6 || i_difficulty == DIFFICULTY_EVENT_SCENARIO; }
-        bool IsBattleground() const;
-        bool IsBattleArena() const;
-        bool IsBattlegroundOrArena() const;
-        bool IsGarrison() const;
-        bool IsContinent() const;
+        bool IsBattleground() const { return i_mapEntry && i_mapEntry->IsBattleground(); }
+        bool IsBattleArena() const { return i_mapEntry && i_mapEntry->IsBattleArena(); }
+        bool IsBattlegroundOrArena() const { return i_mapEntry && i_mapEntry->IsBattlegroundOrArena(); }
+        bool IsGarrison() const { return i_mapEntry && i_mapEntry->IsGarrison(); }
+        bool IsContinent() const { return i_mapEntry && i_mapEntry->IsContinent(); }
         bool CanCreatedZone() const;
         bool CanCreatedThread() const;
         BattlegroundMap* ToBgMap()
@@ -391,7 +457,8 @@ class TC_GAME_API Map
 
         void AddWorldObject(WorldObject* obj);
         void RemoveWorldObject(WorldObject* obj);
-        uint32 GetWorldObjectCount() const { return i_objects.size(); }
+        WorldObjectSet& GetAllWorldObjectOnMap();
+        WorldObjectSet const& GetAllWorldObjectOnMap() const;
 
         uint32 GetGridCount();
 
@@ -474,7 +541,7 @@ class TC_GAME_API Map
 
         float GetWaterOrGroundLevel(std::set<uint32> const& phases, float x, float y, float z, float* ground = nullptr, bool swim = false) const;
         float GetHeight(std::set<uint32> const& phases, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, DynamicTreeCallback* dCallback = nullptr) const;
-        bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, std::set<uint32> const& phases, VMAP::ModelIgnoreFlags ignoreFlags, DynamicTreeCallback* dCallback = nullptr) const;
+        bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, std::set<uint32> const& phases, DynamicTreeCallback* dCallback = nullptr) const;
         void Balance() { _dynamicTree.balance(); }
         void RemoveGameObjectModel(GameObjectModel const& model) { _dynamicTree.remove(model); }
         void InsertGameObjectModel(GameObjectModel const& model) { _dynamicTree.insert(model); }
@@ -515,7 +582,7 @@ class TC_GAME_API Map
         // Update object in map
         void AddUpdateObject(Object* obj);
         void RemoveUpdateObject(Object* obj);
-        void UpdateLoop(uint32 _mapID);
+        void UpdateLoop(volatile uint32 _mapID);
         uint32 GetUpdateTime() const;
         uint32 GetSessionTime() const;
         void SetMapUpdateInterval();
@@ -539,6 +606,10 @@ class TC_GAME_API Map
         
         void LoadAllGrids(float p_MinX, float p_MaxX, float p_MinY, float p_MaxY, Player* p_Player);
 
+        void AddTransport(Transport * t);
+        void RemoveTransport(Transport * t);
+
+        TransportHashSet m_Transports;
         virtual void UpdateTransport(uint32 diff);
 
         void AddStaticTransport(StaticTransport* t);
@@ -568,7 +639,7 @@ class TC_GAME_API Map
         uint32 m_activeEntry;
         uint32 m_activeEncounter;
 
-        void updateCollected(std::vector<WorldObject*>& objectsToUpdate, uint32 diff, uint32 _mapId, uint32 _instanceId);
+        void updateCollected(std::vector<WorldObject*>& objectsToUpdate, uint32 diff, volatile uint32 _mapId, volatile uint32 _instanceId);
         std::map<uint32, std::vector<WorldObject*>> i_objectUpdater[2][2];
         std::set<WorldObject*> i_objectTest;
         void VisitNearbyCellsOf(WorldObject* obj);
@@ -642,11 +713,6 @@ class TC_GAME_API Map
     protected:
         void SetUnloadReferenceLock(const GridCoord &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
 
-        // Objects that must update even in inactive grids without activating them
-        typedef std::set<Transport*> TransportsContainer;
-        TransportsContainer _transports;
-        TransportsContainer::iterator _transportsUpdateIter;
-
         MapEntry const* i_mapEntry;
         Difficulty i_difficulty;
         Difficulty i_lootDifficulty;
@@ -700,7 +766,7 @@ class TC_GAME_API Map
         std::set<WorldObject*> i_objectsToRemove;
         std::recursive_mutex i_objectsToRemove_lock;
         std::map<WorldObject*, bool> i_objectsToSwitch;
-        std::set<WorldObject*> i_worldObjects;
+        WorldObjectSet i_worldObjects;
 
         typedef std::multimap<time_t, ScriptAction> ScriptScheduleMap;
         ScriptScheduleMap m_scriptSchedule;
@@ -748,7 +814,7 @@ enum InstanceResetMethod
     INSTANCE_RESET_RESPAWN_DELAY
 };
 
-class TC_GAME_API InstanceMap : public Map
+class InstanceMap : public Map
 {
 public:
     InstanceMap(uint32 id, time_t, uint32 InstanceId, Difficulty difficulty, Map* _parent);

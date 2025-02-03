@@ -24,7 +24,7 @@
 class AreaTrigger;
 class Unit;
 
-class TC_GAME_API AreaTriggerAI
+class AreaTriggerAI
 {
     protected:
         AreaTrigger* const at;
@@ -40,6 +40,9 @@ class TC_GAME_API AreaTriggerAI
 
         // Called on each AreaTrigger update
         virtual void OnUpdate(uint32 /*diff*/) { }
+		
+		// Called on each AreaTrigger proc, timer defined by at->SetPeriodicProcTimer(uint32)
+        virtual void OnPeriodicProc() { }
 
         // Called when the AreaTrigger reach its destination
         virtual void OnDestinationReached() { }

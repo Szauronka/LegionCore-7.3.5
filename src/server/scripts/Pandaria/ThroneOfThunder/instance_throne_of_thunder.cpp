@@ -1,4 +1,4 @@
-
+//UWoWCore
 //Throne of Thunder
 
 #include "throne_of_thunder.h"
@@ -38,7 +38,7 @@ public:
 
     struct instance_throne_of_thunder_InstanceMapScript : public InstanceScript
     {
-        instance_throne_of_thunder_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_throne_of_thunder_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         //Special lists for Megaera heads mechanic
         GuidVector megaeralist;
@@ -130,7 +130,6 @@ public:
         
         void Initialize()
         {
-            SetHeaders(DataHeader);
             SetBossNumber(16);
             LoadDoorData(doorData);
 
@@ -293,7 +292,7 @@ public:
             //Megaera
             case NPC_MEGAERA:
                 megaeraGuid = creature->GetGUID();
-                if (!creature->IsAlive()) //Megaera done, unsummon heads
+                if (!creature->isAlive()) //Megaera done, unsummon heads
                 {
                     if (!megaeralist.empty())
                         for (GuidVector::const_iterator itr = megaeralist.begin(); itr != megaeralist.end(); itr++)
@@ -408,7 +407,7 @@ public:
             }
             //Patch 5.4
             if (IsRaidBoss(creature->GetEntry()))
-                if (creature->IsAlive())
+                if (creature->isAlive())
                     creature->CastSpell(creature, SPELL_SHADO_PAN_ONSLAUGHT, true);
         }
 
@@ -786,9 +785,9 @@ public:
                         {
                             if (Creature* mag = instance->GetCreature(*guid))
                             {
-                                if (mag->IsAlive() && mag->isInCombat())
+                                if (mag->isAlive() && mag->isInCombat())
                                     mag->AI()->EnterEvadeMode();
-                                else if (!mag->IsAlive())
+                                else if (!mag->isAlive())
                                 {
                                     mag->Respawn();
                                     mag->GetMotionMaster()->MoveTargetedHome();
@@ -800,7 +799,7 @@ public:
                     case IN_PROGRESS:
                         if (Creature* animus = instance->GetCreature(darkanimusGuid))
                         {
-                            if (animus->IsAlive() && !animus->isInCombat())
+                            if (animus->isAlive() && !animus->isInCombat())
                                 animus->AI()->DoZoneInCombat(animus, 150.0f);
                         }
 
@@ -808,7 +807,7 @@ public:
                         {
                             if (Creature* mag = instance->GetCreature(*guid))
                             {
-                                if (mag->IsAlive() && !mag->isInCombat())
+                                if (mag->isAlive() && !mag->isInCombat())
                                     mag->AI()->DoZoneInCombat(mag, 150.0f);
                             }
                         }
@@ -1035,7 +1034,9 @@ public:
                             for (std::list<Player*>::const_iterator Itr = pllist.begin(); Itr != pllist.end(); Itr++)
                                 _pllist.push_back((*Itr)->GetGUID());
                             pllist.clear();
-                            Trinity::Containers::RandomShuffle(_pllist);
+                            std::random_device rd;
+                            std::mt19937 g(rd());
+                            std::shuffle(_pllist.begin(), _pllist.end(), g);
                             if (_pllist.size() > maxsize)
                                 _pllist.resize(maxsize);
                             for (GuidVector::const_iterator itr = _pllist.begin(); itr != _pllist.end(); itr++)
@@ -1076,7 +1077,7 @@ public:
                 {
                     for (GuidVector::const_iterator itr = councilGuids.begin(); itr != councilGuids.end(); itr++)
                         if (Creature* council = instance->GetCreature(*itr))
-                            if (council->IsAlive())
+                            if (council->isAlive())
                                 return 1;
                     return 0;
                 }
@@ -1127,7 +1128,7 @@ public:
                 {
                     for (GuidVector::const_iterator itr = councilGuids.begin(); itr != councilGuids.end(); itr++)
                         if (Creature* council = instance->GetCreature(*itr))
-                            if (council->IsAlive())
+                            if (council->isAlive())
                                 return;
 
                     SetBossState(DATA_COUNCIL_OF_ELDERS, DONE);
@@ -1139,7 +1140,7 @@ public:
                     uint8 alivecount = 0;
                     for (GuidVector::const_iterator itr = crimsonfogGuids.begin(); itr != crimsonfogGuids.end(); itr++)
                         if (Creature* cfog = instance->GetCreature(*itr))
-                            if (cfog->IsAlive())
+                            if (cfog->isAlive())
                                 alivecount++;
 
                     if (alivecount)
@@ -1151,7 +1152,7 @@ public:
                     DoUpdateWorldState(WorldStates::WORLD_STATE_ALIVE_FOG_COUNT, 0);
                     crimsonfogGuids.clear();
                     if (Creature* durumu = instance->GetCreature(durumuGuid))
-                        if (durumu->IsAlive() && durumu->isInCombat())
+                        if (durumu->isAlive() && durumu->isInCombat())
                             durumu->AI()->DoAction(ACTION_COLORBLIND_PHASE_DONE);
                 }
                 break;
@@ -1269,7 +1270,7 @@ public:
                 if (!player)
                     continue;
 
-                if (player->IsAlive() && !player->isGameMaster() && !player->HasAura(115877)) // Aura 115877 = Totaly Petrified
+                if (player->isAlive() && !player->isGameMaster() && !player->HasAura(115877)) // Aura 115877 = Totaly Petrified
                     return false;
             }
 
@@ -1567,6 +1568,21 @@ public:
             if (nestnum >= nestmaxcount)
                 nestnum = 0;
         }
+
+        std::string GetSaveData()
+        {
+            std::ostringstream saveStream;
+            saveStream << GetBossSaveData() << " ";
+            return saveStream.str();
+        }
+
+        void Load(const char* data)
+        {
+            std::istringstream loadStream(LoadBossState(data));
+            uint32 buff;
+            for (uint32 i = 0; i < 16; ++i)
+                loadStream >> buff;
+        }
     };
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const
@@ -1760,5 +1776,5 @@ void AddSC_instance_throne_of_thunder()
     new instance_throne_of_thunder();
     new npc_storm_caller();
     new npc_stormbringer();
-    //new npc_teleporter();
+    new npc_teleporter();
 }

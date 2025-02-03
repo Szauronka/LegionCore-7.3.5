@@ -22,7 +22,6 @@
 
 #include "SharedDefines.h"
 #include "DatabaseEnvFwd.h"
-#include "EnumFlag.h"
 
 class Player;
 class ObjectMgr;
@@ -37,14 +36,12 @@ namespace WorldPackets
 
 #define MAX_QUEST_LOG_SIZE 25
 
-#define QUEST_ITEM_DROP_COUNT 4
-
 #define QUEST_REWARD_CHOICES_COUNT 6
 #define QUEST_ITEM_COUNT 4
 #define QUEST_REWARD_REPUTATIONS_COUNT 5
 #define QUEST_EMOTE_COUNT 4
 #define QUEST_REWARD_CURRENCY_COUNT 4
-#define QUEST_REWARD_DISPLAY_SPELL_COUNT 3
+static uint8 const QUEST_REWARD_DISPLAY_SPELL_COUNT = 3;
 
 #define QUEST_REQUIRED 3
 
@@ -203,25 +200,22 @@ enum QuestStatus
     MAX_QUEST_STATUS
 };
 
-enum class QuestGiverStatus : uint32
+enum __QuestGiverStatus
 {
-    None                         = 0x0000,
-    Future                       = 0x0002,
-    Trivial                      = 0x0004,
-    TrivialRepeatableTurnin      = 0x0008,
-    TrivialDailyQuest            = 0x0010,
-    Incomplete                   = 0x0020,
-    RepeatableTurnin             = 0x0040,
-    DailyQuest                   = 0x0080,
-    Quest                        = 0x0100,
-    RewardCompleteNoPOI          = 0x0200,
-    RewardCompletePOI            = 0x0400,
-    LegendaryQuest               = 0x0800,
-    LegendaryRewardCompleteNoPOI = 0x1000,
-    LegendaryRewardCompletePOI   = 0x2000
+    DIALOG_STATUS_NONE                     = 0x000,
+    DIALOG_STATUS_UNK                      = 0x001,
+    DIALOG_STATUS_UNAVAILABLE              = 0x002,
+    DIALOG_STATUS_LOW_LEVEL_AVAILABLE      = 0x004,
+    DIALOG_STATUS_LOW_LEVEL_REWARD_REP     = 0x008,
+    DIALOG_STATUS_LOW_LEVEL_AVAILABLE_REP  = 0x010,
+    DIALOG_STATUS_INCOMPLETE               = 0x020,
+    DIALOG_STATUS_REWARD_REP               = 0x040,
+    DIALOG_STATUS_AVAILABLE_REP            = 0x080,
+    DIALOG_STATUS_AVAILABLE                = 0x100,
+    DIALOG_STATUS_REWARD2                  = 0x200, // no yellow dot on minimap
+    DIALOG_STATUS_REWARD                   = 0x400, // yellow dot on minimap
+    DIALOG_STATUS_IGNORED                  = 0x800, // ignore icon & minimap icon
 };
-
-DEFINE_ENUM_FLAG(QuestGiverStatus);
 
 enum __QuestFlags
 {
@@ -319,30 +313,30 @@ enum __QuestSpecialFlags
 
 struct QuestTemplateLocale
 {
-    std::vector<std::string> LogTitle;
-    std::vector<std::string> LogDescription;
-    std::vector<std::string> QuestDescription;
-    std::vector<std::string> AreaDescription;
-    std::vector<std::string> PortraitGiverText;
-    std::vector<std::string> PortraitGiverName;
-    std::vector<std::string> PortraitTurnInText;
-    std::vector<std::string> PortraitTurnInName;
-    std::vector<std::string> QuestCompletionLog;
+    StringVector LogTitle;
+    StringVector LogDescription;
+    StringVector QuestDescription;
+    StringVector AreaDescription;
+    StringVector PortraitGiverText;
+    StringVector PortraitGiverName;
+    StringVector PortraitTurnInText;
+    StringVector PortraitTurnInName;
+    StringVector QuestCompletionLog;
 };
 
 struct QuestObjectivesLocale
 {
-    std::vector<std::string> Description;
+    StringVector Description;
 };
 
 struct QuestRequestItemsLocale
 {
-    std::vector<std::string> RequestItemsText;
+    StringVector RequestItemsText;
 };
 
 struct QuestOfferRewardLocale
 {
-    std::vector<std::string> OfferRewardText;
+    StringVector OfferRewardText;
 };
 
 enum QuestObjectiveFlags
@@ -388,7 +382,7 @@ typedef std::vector<uint32> PrevChainQuests;
 // This Quest class provides a convenient way to access a few pretotaled (cached) quest details,
 // all base quest information, and any utility functions such as generating the amount of
 // xp to give
-class TC_GAME_API Quest
+class Quest
 {
     friend class ObjectMgr;
     public:
@@ -405,8 +399,6 @@ class TC_GAME_API Quest
         bool HasFlag(uint32 flag) const { return (Flags & flag) != 0; }
         void SetFlag(uint32 flag) { Flags |= flag; }
 
-        bool HasFlagEx(QuestFlagsEx flag) const { return (FlagsEx & uint32(flag)) != 0; }
-
         bool HasSpecialFlag(uint32 flag) const { return (SpecialFlags & flag) != 0; }
         void SetSpecialFlag(uint32 flag) { SpecialFlags |= flag; }
 
@@ -420,9 +412,9 @@ class TC_GAME_API Quest
         bool   IsAutoAccept() const;
         bool   IsAutoComplete() const;
         uint32 GetFlags() const { return Flags; }
+        uint32 GetScriptId() const { return ScriptId; }
         bool   IsDaily() const { return (Flags & QUEST_FLAGS_DAILY) != 0; }
         bool   IsWeekly() const { return (Flags & QUEST_FLAGS_WEEKLY) != 0; }
-        bool   IsMonthly() const { return (SpecialFlags & QUEST_SPECIAL_FLAGS_NOT_REMOVE_SOURCE) != 0; }
         bool   IsSeasonal() const { return (QuestSortID == -QUEST_SORT_SEASONAL || QuestSortID == -QUEST_SORT_SPECIAL || QuestSortID == -QUEST_SORT_LUNAR_FESTIVAL || QuestSortID == -QUEST_SORT_MIDSUMMER || QuestSortID == -QUEST_SORT_BREWFEST || QuestSortID == -QUEST_SORT_LOVE_IS_IN_THE_AIR || QuestSortID == -QUEST_SORT_NOBLEGARDEN) && !IsRepeatable(); }
         bool   IsDailyOrWeekly() const { return (Flags & (QUEST_FLAGS_DAILY | QUEST_FLAGS_WEEKLY)) != 0; }
         bool   IsRaidQuest(Difficulty difficulty) const;
@@ -436,8 +428,8 @@ class TC_GAME_API Quest
 
         void SetObjectiveBuggedState(uint32 objectiveId, bool working);
 
-        uint32 ItemDrop[QUEST_ITEM_DROP_COUNT] = { };
-        uint32 ItemDropQuantity[QUEST_ITEM_DROP_COUNT] = { };
+        uint32 ItemDrop[QUEST_ITEM_COUNT] = { };
+        uint32 ItemDropQuantity[QUEST_ITEM_COUNT] = { };
         uint32 RewardChoiceItemId[QUEST_REWARD_CHOICES_COUNT] = { };
         uint32 RewardChoiceItemCount[QUEST_REWARD_CHOICES_COUNT] = { };
         uint32 RewardChoiceItemDisplayId[QUEST_REWARD_CHOICES_COUNT] = { };
@@ -501,7 +493,7 @@ class TC_GAME_API Quest
         float  RewardMoneyMultiplier;
         uint32 RewardBonusMoney;
         int32  RewardSpell;
-        uint32 RewardDisplaySpell[QUEST_REWARD_DISPLAY_SPELL_COUNT];
+        uint32 RewardDisplaySpell[3];
         uint32 POIContinent;
         float  POIx;
         float  POIy;
@@ -551,6 +543,7 @@ class TC_GAME_API Quest
         uint32 SourceItemIdCount    = 0;
         uint32 SpecialFlags         = 0; // custom flags, not sniffed/WDB
         std::string RewardMailTitle;
+        uint32 ScriptId = 0;
 };
 
 typedef std::map<int32/*idx*/, int32/*data*/> QuestStatusDatas;

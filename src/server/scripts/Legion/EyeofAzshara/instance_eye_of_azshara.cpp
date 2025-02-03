@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Eye of Azshara 100-110
 */
 
@@ -44,9 +45,8 @@ public:
 
     struct instance_eye_of_azshara_InstanceMapScript : public InstanceScript
     {
-        instance_eye_of_azshara_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_eye_of_azshara_InstanceMapScript(Map* map) : InstanceScript(map) 
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 
@@ -289,7 +289,7 @@ public:
                     {
                         instance->ApplyOnEveryPlayer([&](Player* player)
                         {
-                            if (player->IsAlive() && !player->isGameMaster() && !player->HasAura(197134)) //Shelter
+                            if (player->isAlive() && !player->isGameMaster() && !player->HasAura(197134)) //Shelter
                                 player->CastSpell(player, 191797, true); //Violent Winds
                         });
 

@@ -991,7 +991,8 @@ public:
 
         void EnterCombat(Unit* /*p_Attacker*/) override
         {
-            Position l_Pos = me->GetPosition();
+            Position l_Pos;
+            me->GetPosition(&l_Pos);
             me->SetHomePosition(l_Pos);
 
             m_Events.ScheduleEvent(EventFracture, 5000);
@@ -3511,7 +3512,7 @@ public:
     {
         npc_ashran_speedy_horde_racerAI(Creature* creature) : CosmeticAI(creature), m_MoveIndex{0}
         {
-            m_CheckCooldown = uint32(GameTime::GetGameTime() + 5);
+            m_CheckCooldown = uint32(time(nullptr) + 5);
         }
 
         uint8 m_MoveIndex;
@@ -3582,9 +3583,9 @@ void AddSC_AshranNPCHorde()
     new npc_ashran_examiner_rahm_flameheart();
     new npc_ashran_centurion_firescream();
     new npc_ashran_legionnaire_hellaxe();
-    //new npc_ashran_kalgan();
-    //new npc_ashran_fura();
-    //new npc_ashran_nisstyr();
+    new npc_ashran_kalgan();
+    new npc_ashran_fura();
+    new npc_ashran_nisstyr();
     new npc_ashran_atomik();
     new npc_ashran_zaram_sunraiser();
     new npc_ashran_horde_gateway_guardian();

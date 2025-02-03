@@ -1,5 +1,6 @@
 #include "AchievementMgr.h"
 #include "BrawlersGuild.h"
+#include "SpellScript.h"
 
 enum eSpells
 {
@@ -478,7 +479,7 @@ class spell_brawling_powershot : public SpellScriptLoader
 };
 
 
-void AddSC_brawlers_guild_bosses_rank_three()
+void AddSC_the_brawlers_guild_bosses_rank_three()
 {
     new boss_brawguild_doomflipper();
     new boss_brawguild_splat();

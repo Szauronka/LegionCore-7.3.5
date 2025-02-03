@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Demon Hunter Specialization: Vengeance
     To-Do: Last Boss (i havent sniffs)
 */
@@ -131,11 +132,8 @@ public:
     {
         go_portal_fel_soulAI(GameObject* go) : GameObjectAI(go) {}
 
-        bool GossipHello(Player* player, bool isUse) override
+        bool GossipHello(Player* player) override
         {
-            if (!isUse)
-                return true;
-
             if (InstanceScript* instance = player->GetInstanceScript())
                 if (instance->getScenarionStep() == DATA_STAGE_2)
                 {
@@ -301,7 +299,7 @@ public:
                     allari->AI()->AttackStart(me);
                 }
             }
-            events.RescheduleEvent(EVENT_1, 6000); // 215925
+            events.RescheduleEvent(EVENT_1, 10000); // 215925
             events.RescheduleEvent(EVENT_2, 10000); // add  not repeat
             events.RescheduleEvent(EVENT_3, 7000); // not repeat
         }

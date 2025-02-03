@@ -107,7 +107,7 @@ public:
 
     struct instance_violet_hold_InstanceMapScript : public InstanceScript
     {
-        instance_violet_hold_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_violet_hold_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         ObjectGuid uiMoragg;
         ObjectGuid uiErekem;
@@ -165,8 +165,6 @@ public:
 
         void Initialize() override
         {
-            SetHeaders(DataHeader);
-
             uiMoragg.Clear();
             uiErekem.Clear();
             uiIchoron.Clear();
@@ -671,7 +669,7 @@ public:
                 if (player->isGameMaster())
                     continue;
 
-                if (player->IsAlive())
+                if (player->isAlive())
                     return false;
             }
 
@@ -698,7 +696,7 @@ public:
                 next = itr;
                 ++next;
                 if (Creature* creature = instance->GetCreature(*itr))
-                    if (creature && creature->IsAlive())
+                    if (creature && creature->isAlive())
                         creature->DespawnOrUnsummon();
             }
             trashMobs.clear();
@@ -815,7 +813,7 @@ public:
                 ++next;
 
                 Creature* creature = instance->GetCreature(*itr);
-                if (creature && creature->IsAlive())
+                if (creature && creature->isAlive())
                     trigger->Kill(creature);
             }
         }

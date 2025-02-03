@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "the_nighthold.h"
 
 DoorData const doorData[] =
@@ -75,9 +79,8 @@ public:
 
     struct instance_the_nightnold_InstanceMapScript : InstanceScript
     {
-        explicit instance_the_nightnold_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        explicit instance_the_nightnold_InstanceMapScript(Map* map) : InstanceScript(map)
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 
@@ -107,7 +110,7 @@ public:
         {
             if (player)
             {
-                if (GetBossState(DATA_KROSUS) != IN_PROGRESS && player->IsAlive() && player->IsWithinBox({-61.94f, 2814.45f, 3.16f }, 60.f, 60.f, 5.0f))
+                if (GetBossState(DATA_KROSUS) != IN_PROGRESS && player->isAlive() && player->IsWithinBox({ -61.94f, 2814.45f, 3.16f }, 60.f, 60.f, 5.0f))
                 {
                     player->AddDelayedEvent(500, [player]() -> void
                     {
@@ -373,6 +376,10 @@ public:
 
         bool CheckRequiredBosses(uint32 bossId, uint32 /*entry*/, Player const* /*player*/ = nullptr) const override
         {
+            #ifdef WIN32
+                return true;
+            #endif
+
             switch (bossId)
             {
                 case DATA_ANOMALY:
@@ -403,14 +410,45 @@ public:
             return true;
         }
 
-        void WriteSaveDataMore(std::ostringstream& data) override
+        std::string GetSaveData() override
         {
-            data << trilliaxIntro << " " << KrosusIntroTrash;
+            std::ostringstream saveStream;
+            saveStream << "N H " << GetBossSaveData() << trilliaxIntro << KrosusIntroTrash;
+            return saveStream.str();
         }
 
-        void ReadSaveDataMore(std::istringstream& data) override
+        void Load(const char* data) override
         {
-            data >> trilliaxIntro >> KrosusIntroTrash;
+            if (!data)
+            {
+                OUT_LOAD_INST_DATA_FAIL;
+                return;
+            }
+
+            OUT_LOAD_INST_DATA(data);
+
+            char dataHead1, dataHead2;
+
+            std::istringstream loadStream(data);
+            loadStream >> dataHead1 >> dataHead2;
+
+            if (dataHead1 == 'N' && dataHead2 == 'H')
+            {
+                for (uint32 i = 0; i < MAX_ENCOUNTER; ++i)
+                {
+                    uint32 tmpState;
+                    loadStream >> tmpState;
+                    if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                        tmpState = NOT_STARTED;
+                    SetBossState(i, EncounterState(tmpState));
+                }
+                loadStream >> trilliaxIntro >> KrosusIntroTrash;
+            }
+            else
+                OUT_LOAD_INST_DATA_FAIL;
+
+            OUT_LOAD_INST_DATA_COMPLETE;
+
         }
 
         WorldLocation* GetClosestGraveYard(float x, float y, float z) override
@@ -430,7 +468,8 @@ public:
 
             if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
             {
-                loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                loc_res_pla.SetMapId(gy->MapID);
             }
 
             return &loc_res_pla;

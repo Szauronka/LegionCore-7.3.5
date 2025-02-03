@@ -19,97 +19,61 @@
 #include "HomeMovementGenerator.h"
 #include "Creature.h"
 #include "CreatureAI.h"
-#include "MoveSpline.h"
-#include "MoveSplineInit.h"
 #include "WorldPacket.h"
-#include "Vehicle.h"
+#include "MoveSplineInit.h"
+#include "MoveSpline.h"
 
-template<class T>
-HomeMovementGenerator<T>::~HomeMovementGenerator() { }
-
-template<>
-HomeMovementGenerator<Creature>::~HomeMovementGenerator()
+void HomeMovementGenerator<Creature>::DoInitialize(Creature & owner)
 {
-    delete _path;
+    _setTargetLocation(owner);
 }
 
-template<class T>
-void HomeMovementGenerator<T>::SetTargetLocation(T&) { }
+void HomeMovementGenerator<Creature>::DoReset(Creature &)
+{
+}
 
-template<>
-void HomeMovementGenerator<Creature>::SetTargetLocation(Creature& owner)
+void HomeMovementGenerator<Creature>::_setTargetLocation(Creature & owner)
 {
     if (owner.HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED))
-    { // if we are ROOT/STUNNED/DISTRACTED even after aura clear, finalize on next update - otherwise we would get stuck in evade
-        _skipToHome = true;
         return;
-    }
 
     Movement::MoveSplineInit init(owner);
     float x, y, z, o;
     // at apply we can select more nice return points base at current movegen
-    if (owner.GetMotionMaster()->empty() || !owner.GetMotionMaster()->top()->GetResetPosition(owner, x, y, z))
+    if (owner.GetMotionMaster()->empty() || !owner.GetMotionMaster()->top()->GetResetPosition(owner,x,y,z))
     {
         owner.GetHomePosition(x, y, z, o);
         init.SetFacing(o);
     }
-    owner.UpdateAllowedPositionZ(x, y, z);
-    init.MoveTo(x, y, z);
+
+    PathGenerator path(&owner);
+    path.CalculatePath(x, y, z);
+
+    if (path.GetPathType() & PATHFIND_NOPATH)
+        init.MoveTo(x, y, z);
+    else
+        init.MovebyPath(path.GetPath());
+
     init.SetWalk(false);
     init.Launch();
 
-    _skipToHome = false;
-    _arrived = false;
-
+    arrived = false;
     owner.ClearUnitState(UNIT_STATE_ALL_STATE & ~UNIT_STATE_EVADE);
 }
 
-template<class T>
-void HomeMovementGenerator<T>::DoInitialize(T& ) { }
-
-template<>
-void HomeMovementGenerator<Creature>::DoInitialize(Creature& owner)
+bool HomeMovementGenerator<Creature>::DoUpdate(Creature &owner, const uint32 /*time_diff*/)
 {
-    owner.SetNoSearchAssistance(false);
-    SetTargetLocation(owner);
+    arrived = owner.movespline->Finalized();
+    return !arrived;
 }
 
-template<class T>
-void HomeMovementGenerator<T>::DoFinalize(T& ) { }
-
-template<>
 void HomeMovementGenerator<Creature>::DoFinalize(Creature& owner)
 {
-    if (_arrived)
+    if (arrived)
     {
         owner.ClearUnitState(UNIT_STATE_EVADE);
         owner.SetWalk(true);
         owner.LoadCreaturesAddon(true);
-        if (owner.IsVehicle())
-            owner.GetVehicleKit()->Reset(true);
         owner.AI()->JustReachedHome();
-        owner.SetSpawnHealth();
     }
-}
-
-template<class T>
-void HomeMovementGenerator<T>::DoReset(T &) { }
-
-template<>
-void HomeMovementGenerator<Creature>::DoReset(Creature& owner)
-{
-    DoInitialize(owner);
-}
-
-template<class T>
-bool HomeMovementGenerator<T>::DoUpdate(T&, uint32)
-{
-    return false;
-}
-
-template<>
-bool HomeMovementGenerator<Creature>::DoUpdate(Creature& owner, uint32 /*diff*/)
-{
-    _arrived = _skipToHome || owner.movespline->Finalized();
-    return !_arrived;
 }

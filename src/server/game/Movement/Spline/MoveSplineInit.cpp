@@ -30,26 +30,17 @@ namespace Movement
         MoveSpline& move_spline = *unit.movespline;
         bool transport = !unit.GetTransGUID().IsEmpty();
 
-        Location real_position;
+        Location real_position(unit.GetPositionX(), unit.GetPositionY(), unit.GetPositionZ(), unit.GetOrientation());
+        // Elevators also use MOVEMENTFLAG_ONTRANSPORT but we do not keep track of their position changes
+        //if (unit.GetTransGUID())
+        if (unit.m_movementInfo.transport.Guid) //for vehicle too
+            real_position = unit.GetTransOffset();
 
         // there is a big chance that current position is unknown if current state is not finalized, need compute it
         // this also allows calculate spline position and update map position in much greater intervals
         // Don't compute for transport movement if the unit is in a motion between two transports
         if (!move_spline.Finalized() && move_spline.onTransport == transport)
             real_position = move_spline.ComputePosition();
-        else
-        {
-            Position pos;
-            if (!transport)
-                pos = unit.GetPosition();
-            else
-                pos = unit.m_movementInfo.transport.Pos;
-
-            real_position.x = pos.GetPositionX();
-            real_position.y = pos.GetPositionY();
-            real_position.z = pos.GetPositionZ();
-            real_position.orientation = unit.GetOrientation();
-        }
 
         // should i do the things that user should do? - no.
         if (args.path.empty())
@@ -61,33 +52,24 @@ namespace Movement
         move_spline.onTransport = transport;
 
         uint32 moveFlags = unit.m_movementInfo.GetMovementFlags();
+        if (args.walk)
+            moveFlags |= MOVEMENTFLAG_WALKING;
+        else
+            moveFlags &= ~MOVEMENTFLAG_WALKING;
 
         if (!args.flags.backward)
             moveFlags = (moveFlags & ~MOVEMENTFLAG_BACKWARD) | MOVEMENTFLAG_FORWARD;
         else
             moveFlags = (moveFlags & ~MOVEMENTFLAG_FORWARD) | MOVEMENTFLAG_BACKWARD;
 
-        if (moveFlags & MOVEMENTFLAG_ROOT)
-            moveFlags &= ~MOVEMENTFLAG_MASK_MOVING;
-
         if (!args.HasVelocity)
-        {
-            // If spline is initialized with SetWalk method it only means we need to select
-            // walk move speed for it but not add walk flag to unit
-            uint32 moveFlagsForSpeed = moveFlags;
-            if (args.walk)
-                moveFlagsForSpeed |= MOVEMENTFLAG_WALKING;
-            else
-                moveFlagsForSpeed &= ~MOVEMENTFLAG_WALKING;
-
-            args.velocity = unit.GetSpeed(UnitMoveType(SelectSpeedType(moveFlagsForSpeed)));
-            if (Creature* creature = unit.ToCreature())
-                if (creature->HasSearchedAssistance())
-                    args.velocity *= 0.66f;
-        }
+            args.velocity = unit.GetSpeed(UnitMoveType(SelectSpeedType(moveFlags)));
 
         if (!args.Validate())
             return 0;
+
+        if (moveFlags & MOVEMENTFLAG_ROOT)
+            moveFlags &= ~MOVEMENTFLAG_MASK_MOVING;
 
         unit.m_movementInfo.SetMovementFlags(moveFlags);
         move_spline.Initialize(args);

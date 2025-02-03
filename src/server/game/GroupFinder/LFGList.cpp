@@ -1,3 +1,13 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//  MILLENIUM-STUDIO
+//  Copyright 2016 Millenium-studio SARL
+//  All Rights Reserved.
+//
+//  Uwow team 2016
+//
+////////////////////////////////////////////////////////////////////////////////
+
 //#include "Object.h"
 #include "LFGListMgr.h"
 #include "GroupMgr.h"
@@ -10,7 +20,7 @@
 LFGListEntry::LFGListApplicationEntry::LFGListApplicationEntry(ObjectGuid::LowType playerGuid, LFGListEntry* owner)
 {
     ID = sObjectMgr->GetGenerator<HighGuid::LFGObject>()->GenerateLow();
-    ApplicationTime = GameTime::GetGameTime();
+    ApplicationTime = time(nullptr);
     PlayerLowGuid = playerGuid;
     Timeout = ApplicationTime + LFG_LIST_APPLY_FOR_GROUP_TIMEOUT;
     ApplicationStatus = LFGListApplicationStatus::None;
@@ -92,12 +102,12 @@ void LFGListEntry::BroadcastApplicantUpdate(LFGListApplicationEntry const* appli
 
 void LFGListEntry::LFGListApplicationEntry::ResetTimeout()
 {
-    Timeout = GameTime::GetGameTime() + (ApplicationStatus == LFGListApplicationStatus::Invited ? LFG_LIST_INVITE_TO_GROUP_TIMEOUT : LFG_LIST_APPLY_FOR_GROUP_TIMEOUT);
+    Timeout = time(nullptr) + (ApplicationStatus == LFGListApplicationStatus::Invited ? LFG_LIST_INVITE_TO_GROUP_TIMEOUT : LFG_LIST_APPLY_FOR_GROUP_TIMEOUT);
 }
 
 void LFGListEntry::ResetTimeout()
 {
-    Timeout = GameTime::GetGameTime() + LFG_LIST_GROUP_TIMEOUT;
+    Timeout = time(nullptr) + LFG_LIST_GROUP_TIMEOUT;
     sLFGListMgr->SendLFGListStatusUpdate(this);
 }
 
@@ -119,17 +129,17 @@ bool LFGListEntry::Update(uint32 const diff)
             ++itr;
     }
 
-    return Timeout > GameTime::GetGameTime();
+    return Timeout > time(nullptr);
 }
 
 bool LFGListEntry::LFGListApplicationEntry::Update(uint32 const /*diff*/)
 {
-    return Timeout > GameTime::GetGameTime(); ///< Bye bye
+    return Timeout > time(nullptr); ///< Bye bye
 }
 
 LFGListEntry::LFGListEntry() : GroupFinderActivityData(nullptr), ApplicationGroup(nullptr), HonorLevel(0), QuestID(0), ItemLevel(0), AutoAccept(false)
 {
-    CreationTime = uint32(GameTime::GetGameTime());
+    CreationTime = uint32(time(nullptr));
     Timeout = CreationTime + LFG_LIST_GROUP_TIMEOUT;
 }
 

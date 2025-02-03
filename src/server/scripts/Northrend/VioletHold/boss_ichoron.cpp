@@ -154,7 +154,7 @@ public:
 
         void DoAction(const int32 param) override
         {
-            if (!me->IsAlive())
+            if (!me->isAlive())
                 return;
 
             switch (param)
@@ -247,7 +247,7 @@ public:
                         {
                             for (GuidList::const_iterator itr = m_waterElements.begin(); itr != m_waterElements.end(); ++itr)
                                 if (Creature* temp = ObjectAccessor::GetCreature(*me, *itr))
-                                    if (temp->IsAlive())
+                                    if (temp->isAlive())
                                     {
                                         bIsWaterElementsAlive = true;
                                         break;

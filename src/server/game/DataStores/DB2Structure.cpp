@@ -16,11 +16,10 @@
  */
 
 #include "DB2Structure.h"
-#include "GameTime.h"
-#include "QuestData.h"
+#include <WowTime.hpp>
 #include "ReputationPackets.h"
 #include "WorldStateMgr.h"
-#include <WowTime.hpp>
+#include "QuestData.h"
 
 bool AreaTableEntry::IsSanctuary() const
 {
@@ -357,7 +356,7 @@ static std::function<int32(Player const*, int32, int32)> WorldStateExpressionFun
         [](Player const* /*player*/, int32 /*arg1*/, int32 /*arg2*/) -> int32
     {
         MS::Utilities::WowTime time;
-        time.SetUTCTimeFromPosixTime(GameTime::GetGameTime());
+        time.SetUTCTimeFromPosixTime(sWorld->GetGameTime());
 
         return time.Month + 1;
     },
@@ -365,7 +364,7 @@ static std::function<int32(Player const*, int32, int32)> WorldStateExpressionFun
         [](Player const* /*player*/, int32 /*arg1*/, int32 /*arg2*/) -> int32
     {
         MS::Utilities::WowTime time;
-        time.SetUTCTimeFromPosixTime(GameTime::GetGameTime());
+        time.SetUTCTimeFromPosixTime(sWorld->GetGameTime());
 
         return time.MonthDay + 1;
     },
@@ -373,7 +372,7 @@ static std::function<int32(Player const*, int32, int32)> WorldStateExpressionFun
         [](Player const* /*player*/, int32 /*arg1*/, int32 /*arg2*/) -> int32
     {
         MS::Utilities::WowTime time;
-        time.SetUTCTimeFromPosixTime(GameTime::GetGameTime());
+        time.SetUTCTimeFromPosixTime(sWorld->GetGameTime());
 
         return time.GetHourAndMinutes();
     },
@@ -386,7 +385,7 @@ static std::function<int32(Player const*, int32, int32)> WorldStateExpressionFun
         [](Player const* /*player*/, int32 /*arg1*/, int32 /*arg2*/) -> int32
     {
         MS::Utilities::WowTime time;
-        time.SetUTCTimeFromPosixTime(GameTime::GetGameTime());
+        time.SetUTCTimeFromPosixTime(sWorld->GetGameTime());
 
         if (time.Hour <= 12)
             return time.Hour;
@@ -420,7 +419,7 @@ static std::function<int32(Player const*, int32, int32)> WorldStateExpressionFun
         if (!l_ChoosedDuration)
             l_ChoosedDuration = 24;
 
-        time_t l_CurrentTime = GameTime::GetGameTime();
+        time_t l_CurrentTime = sWorld->GetGameTime();
         struct tm l_LocalTime;
         l_LocalTime.tm_isdst = -1;
 
@@ -526,7 +525,7 @@ static std::function<int32(Player const*, int32, int32)> WorldStateExpressionFun
         if (!l_ChoosedDuration)
             l_ChoosedDuration = 24;
 
-        time_t l_CurrentTime = GameTime::GetGameTime();
+        time_t l_CurrentTime = sWorld->GetGameTime();
         struct tm l_LocalTime;
         l_LocalTime.tm_isdst = -1;
 
@@ -652,12 +651,12 @@ static std::function<int32(Player const*, int32, int32)> WorldStateExpressionFun
         /// WorldStateExpressionFunctions::TimerCurrentTime
         [](Player const* /*player*/, int32 /*arg1*/, int32 /*arg2*/) -> int32
     {
-        return GameTime::GetGameTime();
+        return time(nullptr);
     },
         /// WorldStateExpressionFunctions::WeekNumber
         [](Player const* /*player*/, int32 /*arg1*/, int32 /*arg2*/) -> int32
     {
-        time_t time = GameTime::GetGameTime();
+        time_t time = sWorld->GetGameTime();
         return 0/*(time - sWorld->GetServerRaidOrigin()) / WEEK*/;
     },
         /// WorldStateExpressionFunctions::None2
@@ -771,7 +770,7 @@ int32 WorldStateExpression_EvalPush(Player const* player, char const** unpackedE
         int32 l_WorldStateID;
         UNPACK_INT32(l_WorldStateID);
 
-        // TC_LOG_DEBUG("worldquest", "INSERT INTO `world_state_expression` (`WorldStateExpressionID`, `WorldStateID`) VALUES (%u, %u);", ID, l_WorldStateID); // Need for convert WorldStateExpressionID -> WorldStateID
+        // TC_LOG_DEBUG(LOG_FILTER_WORLD_QUEST, "INSERT INTO `world_state_expression` (`WorldStateExpressionID`, `WorldStateID`) VALUES (%u, %u);", ID, l_WorldStateID); // Need for convert WorldStateExpressionID -> WorldStateID
 
         *_worldStateID = l_WorldStateID;
         if (player)
@@ -845,14 +844,14 @@ bool WorldStateExpression_EvalCompare(Player const* player, char const** unpacke
         if (*_worldStateID && state)
             state->insert(std::make_pair(*_worldStateID, leftValue > 0 ? leftValue : 1));
 
-        // TC_LOG_DEBUG("worldquest", "INSERT INTO `world_state_expression` (`WorldStateExpressionID`, `WorldStateID`, `Value0`) VALUES (%u, %u, %i);", ID, *_worldStateID, leftValue); // Need for convert WorldStateExpressionID -> WorldStateID
+        // TC_LOG_DEBUG(LOG_FILTER_WORLD_QUEST, "INSERT INTO `world_state_expression` (`WorldStateExpressionID`, `WorldStateID`, `Value0`) VALUES (%u, %u, %i);", ID, *_worldStateID, leftValue); // Need for convert WorldStateExpressionID -> WorldStateID
         return !!leftValue;
     }
 
     int32 _worldStateID2 = 0;
     auto rValue = WorldStateExpression_EvalArithmetic(player, unpackedExpression, ID, &_worldStateID2);
 
-    // TC_LOG_DEBUG("worldquest", "INSERT INTO `world_state_expression` (`WorldStateExpressionID`, `WorldStateID`, `Value0`, `Value1`) VALUES (%u, %u, %i, %i);", ID, *_worldStateID, rValue, opperand); // Need for convert WorldStateExpressionID -> WorldStateID
+    // TC_LOG_DEBUG(LOG_FILTER_WORLD_QUEST, "INSERT INTO `world_state_expression` (`WorldStateExpressionID`, `WorldStateID`, `Value0`, `Value1`) VALUES (%u, %u, %i, %i);", ID, *_worldStateID, rValue, opperand); // Need for convert WorldStateExpressionID -> WorldStateID
 
     switch (opperand)
     {
@@ -975,9 +974,19 @@ bool MapEntry::IsBattleArena() const
     return InstanceType == MAP_ARENA;
 }
 
+bool MapEntry::IsBattlegroundOrArena() const
+{
+    return InstanceType == MAP_BATTLEGROUND || InstanceType == MAP_ARENA;
+}
+
 bool MapEntry::IsWorldMap() const
 {
     return InstanceType == MAP_COMMON;
+}
+
+bool MapEntry::IsScenario() const
+{
+    return InstanceType == MAP_SCENARIO;
 }
 
 bool MapEntry::Is5pplDungeonOrRaid() const

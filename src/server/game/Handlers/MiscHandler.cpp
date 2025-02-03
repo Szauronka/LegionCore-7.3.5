@@ -24,19 +24,19 @@
 #include "Corpse.h"
 #include "InstancePackets.h"
 #include "LFGMgr.h"
+#include "MapManager.h"
 #include "MiscPackets.h"
 #include "ObjectMgr.h"
 #include "OutdoorPvP.h"
 #include "PlayerDefines.h"
 #include "QuestData.h"
-#include "RestMgr.h"
 #include "ScriptMgr.h"
 #include "Warden.h"
 #include "ArtifactPackets.h"
 
 void WorldSession::HandleRepopRequest(WorldPackets::Misc::RepopRequest& /*packet*/)
 {
-    if (GetPlayer()->IsAlive() || GetPlayer()->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
+    if (GetPlayer()->isAlive() || GetPlayer()->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
         return;
 
     if (GetPlayer()->HasAuraType(SPELL_AURA_PREVENT_RESURRECTION))
@@ -49,12 +49,12 @@ void WorldSession::HandleRepopRequest(WorldPackets::Misc::RepopRequest& /*packet
     // release spirit after he's killed but before he is updated
     if (GetPlayer()->getDeathState() == JUST_DIED)
     {
-        TC_LOG_DEBUG("network", "HandleRepopRequestOpcode: got request after player %s(%d) was killed and before he was updated", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "HandleRepopRequestOpcode: got request after player %s(%d) was killed and before he was updated", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow());
         GetPlayer()->KillPlayer();
     }
 
     //this is spirit release confirm?
-    GetPlayer()->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
+    GetPlayer()->RemovePet(nullptr);
     GetPlayer()->BuildPlayerRepop();
     GetPlayer()->RepopAtGraveyard();
 }
@@ -97,7 +97,7 @@ void WorldSession::HandleTogglePvP(WorldPackets::Misc::TogglePvP& /*packet*/)
     else
     {
         if (!player->pvpInfo.inHostileArea && player->IsPvP())
-            player->pvpInfo.endTimer = GameTime::GetGameTime();
+            player->pvpInfo.endTimer = time(nullptr);
     }
 }
 
@@ -118,13 +118,13 @@ void WorldSession::HandleSetPvP(WorldPackets::Misc::SetPvP& packet)
     else
     {
         if (!player->pvpInfo.inHostileArea && player->IsPvP())
-            player->pvpInfo.endTimer = GameTime::GetGameTime();
+            player->pvpInfo.endTimer = time(nullptr);
     }
 }
 
 void WorldSession::HandlePortGraveyard(WorldPackets::Misc::PortGraveyard& /*packet*/)
 {
-    if (GetPlayer()->IsAlive() || !GetPlayer()->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
+    if (GetPlayer()->isAlive() || !GetPlayer()->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
         return;
 
     GetPlayer()->RepopAtGraveyard();
@@ -146,14 +146,14 @@ void WorldSession::HandleReclaimCorpse(WorldPackets::Misc::ReclaimCorpse& /*pack
     if (!player)
         return;
 
-    if (player->IsAlive() || player->InArena() || !player->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
+    if (player->isAlive() || player->InArena() || !player->HasFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
         return;
 
     Corpse* corpse = player->GetCorpse();
     if (!corpse)
         return;
 
-    if (time_t(corpse->GetGhostTime() + player->GetCorpseReclaimDelay(corpse->GetType() == CORPSE_RESURRECTABLE_PVP)) > time_t(GameTime::GetGameTime()))
+    if (time_t(corpse->GetGhostTime() + player->GetCorpseReclaimDelay(corpse->GetType() == CORPSE_RESURRECTABLE_PVP)) > time_t(time(nullptr)))
         return;
 
     if (!corpse->IsWithinDist(player, CORPSE_RECLAIM_RADIUS, true) || !corpse->IsInMap(player))
@@ -169,7 +169,7 @@ void WorldSession::HandleResurrectResponse(WorldPackets::Misc::ResurrectResponse
     if (!player)
         return;
 
-    if (player->IsAlive())
+    if (player->isAlive())
         return;
 
     if (packet.Response != 0)
@@ -189,7 +189,7 @@ void WorldSession::HandleAreaTrigger(WorldPackets::Misc::AreaTrigger& packet)
     Player* player = GetPlayer();
     if (player->isInFlight())
     {
-        TC_LOG_DEBUG("network", "HandleAreaTrigger: Player '%s' (GUID: %u) in flight, ignore Area Trigger ID:%u",
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "HandleAreaTrigger: Player '%s' (GUID: %u) in flight, ignore Area Trigger ID:%u",
             player->GetName(), player->GetGUIDLow(), packet.AreaTriggerID);
         return;
     }
@@ -197,14 +197,14 @@ void WorldSession::HandleAreaTrigger(WorldPackets::Misc::AreaTrigger& packet)
     AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(packet.AreaTriggerID);
     if (!atEntry)
     {
-        TC_LOG_DEBUG("network", "HandleAreaTrigger: Player '%s' (GUID: %u) send unknown (by DBC) Area Trigger ID:%u",
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "HandleAreaTrigger: Player '%s' (GUID: %u) send unknown (by DBC) Area Trigger ID:%u",
             player->GetName(), player->GetGUIDLow(), packet.AreaTriggerID);
         return;
     }
 
     if (packet.Entered && !player->IsInAreaTriggerRadius(atEntry))
     {
-        TC_LOG_DEBUG("network", "HandleAreaTrigger: Player '%s' (GUID: %u) too far (trigger map: %u player map: %u), ignore Area Trigger ID: %u",
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "HandleAreaTrigger: Player '%s' (GUID: %u) too far (trigger map: %u player map: %u), ignore Area Trigger ID: %u",
             player->GetName(), atEntry->ContinentID, player->GetMapId(), player->GetGUIDLow(), packet.AreaTriggerID);
         return;
     }
@@ -218,7 +218,7 @@ void WorldSession::HandleAreaTrigger(WorldPackets::Misc::AreaTrigger& packet)
     if (sScriptMgr->OnAreaTrigger(player, atEntry, packet.Entered))
         return;
 
-    if (player->IsAlive())
+    if (player->isAlive())
     {
         if (std::unordered_set<uint32> const* quests = sAreaTriggerDataStore->GetQuestsForAreaTrigger(packet.AreaTriggerID))
         {
@@ -245,12 +245,15 @@ void WorldSession::HandleAreaTrigger(WorldPackets::Misc::AreaTrigger& packet)
     if (sAreaTriggerDataStore->IsTavernAreaTrigger(packet.AreaTriggerID))
     {
         // set resting flag we are in the inn
-        player->GetRestMgr().SetRestFlag(REST_FLAG_IN_TAVERN, atEntry->ID);
+        player->SetFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
+        player->InnEnter(time(nullptr), atEntry->ContinentID, atEntry->Pos.X, atEntry->Pos.Y, atEntry->Pos.Z);
+        player->SetRestType(REST_TYPE_IN_TAVERN);
 
         if (sWorld->IsFFAPvPRealm())
         {
             player->RemoveByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, UNIT_BYTE2_FLAG_FFA_PVP);
-            player->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_STATUS);
+            if (player->GetGroup())
+                player->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_STATUS);
         }
 
         return;
@@ -299,6 +302,13 @@ void WorldSession::HandleCompleteMovie(WorldPackets::Misc::CompleteMovie& /*pack
 
     player->setWatchinMovie(false);
     player->SetCanDelayTeleport(false);
+
+    uint32 movie = player->GetMovie();
+    if (!movie)
+        return;
+
+    player->SetMovie(0);
+    sScriptMgr->OnMovieComplete(player, movie);
 }
 
 void WorldSession::HandleFarSight(WorldPackets::Misc::FarSight& packet)
@@ -460,31 +470,12 @@ void WorldSession::HandleSetRaidDifficulty(WorldPackets::Misc::SetRaidDifficulty
     }
 }
 
-void WorldSession::HandleRequestPetInfo(WorldPackets::PetPackets::RequestPetInfo& /*packet*/)
-{
-    // Handle the packet CMSG_REQUEST_PET_INFO - sent when player does ingame /reload command
-
-    // Packet sent when player has a pet
-    if (_player->GetPet())
-        _player->PetSpellInitialize();
-    else if (Unit* charm = _player->GetCharm())
-    {
-        // Packet sent when player has a possessed unit
-        if (charm->HasUnitState(UNIT_STATE_POSSESSED))
-            _player->PossessSpellInitialize();
-        // Packet sent when player controlling a vehicle
-        else if (charm->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED))
-            _player->VehicleSpellInitialize();
-        // Packet sent when player has a charmed unit
-        else
-            _player->CharmSpellInitialize();
-    }
-}
+void WorldSession::HandleRequestPetInfo(WorldPackets::PetPackets::RequestPetInfo& /*packet*/) { }
 
 void WorldSession::HandleUITimeRequest(WorldPackets::Misc::UITimeRequest& /*request*/)
 {
     WorldPackets::Misc::UITime response;
-    response.Time = GameTime::GetGameTime();
+    response.Time = time(nullptr);
     SendPacket(response.Write());
 }
 
@@ -550,7 +541,7 @@ void WorldSession::HandleNeutralPlayerSelectFaction(WorldPackets::Character::Neu
         _player->SetByteValue(UNIT_FIELD_BYTES_0, 0, RACE_PANDAREN_HORDE);
         _player->setFactionForRace(RACE_PANDAREN_HORDE);
         _player->SaveToDB();
-        WorldLocation location(1, 1349.72f, -4374.50f, 26.15f, float(M_PI));
+        WorldLocation location(1, 1349.72f, -4374.50f, 26.15f, M_PI);
         _player->TeleportTo(location);
         _player->SetHomebind(location, 363);
         _player->learnSpell(669, false); // Language Orcish
@@ -561,7 +552,7 @@ void WorldSession::HandleNeutralPlayerSelectFaction(WorldPackets::Character::Neu
         _player->SetByteValue(UNIT_FIELD_BYTES_0, 0, RACE_PANDAREN_ALLIANCE);
         _player->setFactionForRace(RACE_PANDAREN_ALLIANCE);
         _player->SaveToDB();
-        WorldLocation location(0, -9076.77f, 424.74f, 92.42f, float(M_PI));
+        WorldLocation location(0, -9076.77f, 424.74f, 92.42f, M_PI);
         _player->TeleportTo(location);
         _player->SetHomebind(location, 9);
         _player->learnSpell(668, false); // Language Common
@@ -617,7 +608,7 @@ void WorldSession::HandleSummonResponse(WorldPackets::Movement::SummonResponse& 
     if (!player)
         return;
 
-    if (!player->IsAlive() || player->isInCombat())
+    if (!player->isAlive() || player->isInCombat())
         return;
 
     player->SummonIfPossible(packet.Accept);
@@ -675,7 +666,7 @@ void WorldSession::HandleChoiceResponse(WorldPackets::Misc::ChoiceResponse& pack
         return;
 
     if (auto reward = playerChoiceResponse->Reward)
-        if (reward.has_value() && reward->SpellID)
+        if (reward.is_initialized() && reward->SpellID)
             _player->CastSpell(_player, reward->SpellID, true);
 }
 
@@ -707,7 +698,7 @@ void WorldSession::HandleCloseInteraction(WorldPackets::Misc::CloseInteraction& 
 
 void WorldSession::HandleMountSetFavorite(WorldPackets::Misc::MountSetFavorite& packet)
 {
-    GetPlayer()->GetCollectionMgr()->MountSetFavorite(packet.MountSpellID, packet.IsFavorite);
+    GetPlayer()->GetCollectionMgr()->SetMountFlag(packet.MountSpellID, packet.IsFavorite ? MOUNT_FLAG_FAVORITE : MOUNT_FLAG_NONE);
 }
 
 void WorldSession::HandleRequestConsumptionConversionInfo(WorldPackets::Misc::RequestConsumptionConversionInfo& /*packet*/)
@@ -726,3 +717,9 @@ void WorldSession::HandleContributionCollectorContribute(WorldPackets::Misc::Con
 
     sContributionMgr.Contribute(GetPlayer(), packet.OrderIndex);
 }
+
+void WorldSession::HandleConversationLineStarted(WorldPackets::Misc::ConversationLineStarted& /*packet*/)
+{ }
+
+void WorldSession::HandleCheckRAFEmailEnabled(WorldPackets::Misc::CheckRAFEmailEnabled& /*packet*/)
+{ }

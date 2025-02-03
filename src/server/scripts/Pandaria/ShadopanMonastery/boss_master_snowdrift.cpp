@@ -1,4 +1,5 @@
 /*==============
+    uwow.biz
 ==============*/
 
 #include "shadopan_monastery.h"
@@ -386,7 +387,9 @@ struct boss_master_snowdrift : public BossAI
             {
                 std::vector<uint8> randomIndex;
                 for (int i = 0; i < 3; ++i) randomIndex.push_back(i);
-                Trinity::Containers::RandomShuffle(randomIndex);
+                std::random_device rd;
+                std::mt19937 g(rd());
+                std::shuffle(randomIndex.begin(), randomIndex.end(), g);
 
                 bool isBoss = true;
 
@@ -752,6 +755,6 @@ void AddSC_boss_master_snowdrift()
     RegisterCreatureAI(boss_master_snowdrift);
     RegisterCreatureAI(npc_snowdrift_novice);
     RegisterCreatureAI(npc_snowdrift_miniboss);
-    //RegisterCreatureAI(npc_snowdrift_clone);
-    //RegisterCreatureAI(npc_snowdrift_fireball);
+    RegisterCreatureAI(npc_snowdrift_clone);
+    RegisterCreatureAI(npc_snowdrift_fireball);
 }

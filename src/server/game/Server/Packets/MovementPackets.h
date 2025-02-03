@@ -20,7 +20,6 @@
 
 #include "Packet.h"
 #include "Object.h"
-#include "Optional.h"
 
 namespace Movement
 {
@@ -224,8 +223,6 @@ namespace WorldPackets
         public:
             struct ShipTransferPending
             {
-                ShipTransferPending() { } // allows emplace() with clang
-
                 uint32 ID = 0;
                 int32 OriginMapID = -1;
             };
@@ -247,7 +244,7 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            uint32 TransfertAbort = 0;
+            uint32 TransferAbort = 0;
             uint8 Arg = 0;
             uint32 MapID = 0;
             int32 MapDifficultyXConditionID = 0;

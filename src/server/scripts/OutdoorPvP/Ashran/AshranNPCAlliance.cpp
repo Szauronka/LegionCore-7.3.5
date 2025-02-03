@@ -1006,7 +1006,8 @@ public:
 
         void EnterCombat(Unit* /*p_Attacker*/) override
         {
-            Position l_Pos = me->GetPosition();
+            Position l_Pos;
+            me->GetPosition(&l_Pos);
             me->SetHomePosition(l_Pos);
 
             m_Events.ScheduleEvent(EventWildGrowth, 5000);
@@ -1180,7 +1181,11 @@ public:
             {
                 if (Creature* l_Creature = me->FindNearestCreature(LifelessAncient, 20.0f))
                 {
-                    Position l_Pos = l_Creature->GetPosition();
+                    Position l_Pos;
+                    l_Pos.m_positionX = l_Creature->GetPositionX();
+                    l_Pos.m_positionY = l_Creature->GetPositionY();
+                    l_Pos.m_positionZ = l_Creature->GetPositionZ();
+                    l_Pos.m_orientation = l_Creature->GetOrientation();
 
                     /// Creating the circle path from the center
                     Movement::MoveSplineInit l_Init(*me);
@@ -3320,7 +3325,7 @@ public:
     {
         npc_ashran_ex_alliance_racerAI(Creature* creature) : CosmeticAI(creature), m_MoveIndex{0}
         {
-            m_CheckCooldown = uint32(GameTime::GetGameTime() + 5);
+            m_CheckCooldown = uint32(time(nullptr) + 5);
         }
 
         uint8 m_MoveIndex;

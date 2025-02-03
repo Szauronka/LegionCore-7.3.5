@@ -429,7 +429,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
                         GetPlayerListInGrid(plist, me, 20.0f);
                         if (!plist.empty())
                             for (std::list<Player*>::const_iterator itr = plist.begin(); itr != plist.end(); itr++)
-                                if (me->isInFront(*itr, float(M_PI/6)) && me->GetDistance(*itr) <= 8.0f)
+                                if (me->isInFront(*itr, M_PI/6) && me->GetDistance(*itr) <= 8.0f)
                                     me->Kill(*itr, true);
                         findtargets = 750;
                     }
@@ -594,7 +594,7 @@ class boss_thok_the_bloodthirsty : public CreatureScript
             ObjectGuid GetJailerVictimGuid()
             {
                 if (Creature* kj = me->GetCreature(*me, jGuid))
-                    if (kj->IsAlive() && kj->isInCombat())
+                    if (kj->isAlive() && kj->isInCombat())
                         return kj->getVictim() ? kj->getVictim()->GetGUID() : ObjectGuid::Empty;
                 return ObjectGuid::Empty;
             }
@@ -615,7 +615,9 @@ class boss_thok_the_bloodthirsty : public CreatureScript
 
                     if (!_pllist.empty())
                     {
-                        Trinity::Containers::RandomShuffle(_pllist);
+                        std::random_device rd;
+                        std::mt19937 g(rd());
+                        std::shuffle(_pllist.begin(), _pllist.end(), g);
                         std::vector<ObjectGuid>::const_iterator itr = _pllist.begin();
                         std::advance(itr, urand(0, _pllist.size() - 1));
                         return *itr;
@@ -829,7 +831,7 @@ public:
                 {
                     if (Player* pl = me->GetPlayer(*me, sGuid))
                     {
-                        if (!pl->IsAlive())
+                        if (!pl->isAlive())
                         {
                             if (GameObject* it = me->FindNearestGameObject(GO_ICE_TOMB, 10.0f))
                                 it->Delete();
@@ -1170,7 +1172,7 @@ public:
         void HandleEffectRemove(AuraEffect const * /*aurEff*/, AuraEffectHandleModes mode)
         {
             if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
-                if (GetCaster() && GetCaster()->ToCreature() && GetCaster()->IsAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY))
+                if (GetCaster() && GetCaster()->ToCreature() && GetCaster()->isAlive() && GetCaster()->HasAura(SPELL_BLOOD_FRENZY))
                     GetCaster()->ToCreature()->AI()->DoAction(ACTION_FIXATE);
         }
 
@@ -1327,7 +1329,7 @@ public:
                             if (!PlayerList.isEmpty())
                                 for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
                                     if (Player* player = Itr->getSource())
-                                        if (player->IsAlive())
+                                        if (player->isAlive())
                                             player->Kill(player, true);
                         }
                         break;

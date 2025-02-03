@@ -98,7 +98,7 @@ bool CreatureAI::IsInControl()
 
 bool CreatureAI::_EnterEvadeMode()
 {
-    if (!me->IsAlive())
+    if (!me->isAlive())
         return false;
 
     // dont remove vehicle auras, passengers arent supposed to drop off the vehicle
@@ -124,7 +124,6 @@ bool CreatureAI::_EnterEvadeMode()
     me->CombatStop(true);
     me->LoadCreaturesAddon();
     me->SetLootRecipient(nullptr);
-    me->SetCannotReachTarget(false);
     me->ResetPlayerDamageReq();
 
     if (me->IsInEvadeMode())
@@ -140,13 +139,15 @@ Creature* CreatureAI::DoSummon(uint32 entry, Position const& pos, uint32 despawn
 
 Creature* CreatureAI::DoSummon(uint32 entry, WorldObject* obj, float radius, uint32 despawnTime, TempSummonType summonType)
 {
-    Position pos = obj->GetRandomNearPosition(radius);
+    Position pos;
+    obj->GetRandomNearPosition(pos, radius);
     return me->SummonCreature(entry, pos, summonType, despawnTime);
 }
 
 Creature* CreatureAI::DoSummonFlyer(uint32 entry, WorldObject* obj, float flightZ, float radius, uint32 despawnTime, TempSummonType summonType)
 {
-    Position pos = obj->GetRandomNearPosition(radius);
+    Position pos;
+    obj->GetRandomNearPosition(pos, radius);
     pos.m_positionZ += flightZ;
     return me->SummonCreature(entry, pos, summonType, despawnTime);
 }
@@ -172,27 +173,39 @@ void CreatureAI::Talk(std::initializer_list<uint8> ids, ObjectGuid WhisperGuid /
 
 void CreatureAI::Talk(uint8 id, ObjectGuid WhisperGuid)
 {
+    if (!this)
+        return;
+
     sCreatureTextMgr->SendChat(me, id, WhisperGuid);
 }
 
 void CreatureAI::TalkAuto(uint8 id, ObjectGuid WhisperGuid)
 {
+    if (!this)
+        return;
+
     sCreatureTextMgr->SendChat(me, id, WhisperGuid, CHAT_MSG_ADDON, LANG_ADDON, TEXT_RANGE_NORMAL, 0, TEAM_OTHER, false, nullptr, true);
 }
 
 void CreatureAI::DelayTalk(uint32 delayTimer, uint8 id, ObjectGuid WhisperGuid)
 {
+    if (!this)
+        return;
+
     delayTimer *= IN_MILLISECONDS;
 
     me->AddDelayedEvent(delayTimer, [this, id, WhisperGuid]() -> void
     {
-        if (me && me->IsAlive())
+        if (me && me->isAlive())
             Talk(id, WhisperGuid);
     });
 }
 
 void CreatureAI::ZoneTalk(uint8 id, ObjectGuid WhisperGuid)
 {
+    if (!this)
+        return;
+
     sCreatureTextMgr->SendChat(me, id, WhisperGuid, CHAT_MSG_ADDON, LANG_ADDON, TEXT_RANGE_ZONE);
 }
 
@@ -207,7 +220,7 @@ void CreatureAI::DoZoneInCombat(Creature* creature /*= NULL*/, float maxRangeToN
     Map* map = creature->GetMap();
     if (!map->IsDungeon())                                  //use IsDungeon instead of Instanceable, in case battlegrounds will be instantiated
     {
-        TC_LOG_DEBUG("misc", "DoZoneInCombat call for map that isn't an instance (creature entry = %d)", creature->IsCreature() ? creature->ToCreature()->GetEntry() : 0);
+        TC_LOG_DEBUG(LOG_FILTER_GENERAL, "DoZoneInCombat call for map that isn't an instance (creature entry = %d)", creature->IsCreature() ? creature->ToCreature()->GetEntry() : 0);
         return;
     }
 
@@ -230,7 +243,7 @@ void CreatureAI::DoZoneInCombat(Creature* creature /*= NULL*/, float maxRangeToN
 
     if (!creature->HasReactState(REACT_PASSIVE) && !creature->getVictim())
     {
-        TC_LOG_DEBUG("misc", "DoZoneInCombat called for creature that has empty threat list (creature entry = %u)", creature->GetEntry());
+        TC_LOG_DEBUG(LOG_FILTER_GENERAL, "DoZoneInCombat called for creature that has empty threat list (creature entry = %u)", creature->GetEntry());
         return;
     }
 
@@ -239,7 +252,7 @@ void CreatureAI::DoZoneInCombat(Creature* creature /*= NULL*/, float maxRangeToN
         if (player->isGameMaster())
             return;
 
-        if (player->IsAlive())
+        if (player->isAlive())
         {
             creature->SetInCombatWith(player);
             player->SetInCombatWith(creature);
@@ -273,7 +286,7 @@ void CreatureAI::DoAttackerAreaInCombat(Unit* attacker, float range, Unit* pUnit
 
     map->ApplyOnEveryPlayer([&](Player* player)
     {
-        if (player->IsAlive() && attacker->GetDistance(player) <= range)
+        if (player->isAlive() && attacker->GetDistance(player) <= range)
         {
             pUnit->SetInCombatWith(player);
             player->SetInCombatWith(pUnit);
@@ -292,7 +305,7 @@ void CreatureAI::DoAttackerGroupInCombat(Player* attacker)
             {
                 Player* player = itr->getSource();
 
-                if (player && player->IsAlive() && !player->isInCombat() && player->GetMapId() == me->GetMapId())
+                if (player && player->isAlive() && !player->isInCombat() && player->GetMapId() == me->GetMapId())
                 {
                     me->SetInCombatWith(player);
                     player->SetInCombatWith(me);
@@ -314,7 +327,7 @@ void CreatureAI::DoAggroPulse(uint32 diff)
             {
                 if (auto player = Player::GetPlayer(*me, (*itr)->getUnitGuid()))
                 {
-                    if (player->IsAlive())
+                    if (player->isAlive())
                     {
                         me->SetInCombatWithZone();
                         break;
@@ -378,7 +391,7 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
     if (me->GetCreatureType() == CREATURE_TYPE_NON_COMBAT_PET) // non-combat pets should just stand there and look good;)
         return;
 
-    if (me->HasReactState(REACT_AGGRESSIVE) && me->canStartAttack(who, false))
+    if (me->canStartAttack(who, false))
         AttackStart(who);
 }
 
@@ -387,7 +400,7 @@ void CreatureAI::EnterEvadeMode()
     if (!_EnterEvadeMode())
         return;
 
-    TC_LOG_DEBUG("entities.unit", "Creature %u enters evade mode.", me->GetEntry());
+    TC_LOG_DEBUG(LOG_FILTER_UNITS, "Creature %u enters evade mode.", me->GetEntry());
 
     if (!me->GetVehicle()) // otherwise me will be in evade mode forever
     {
@@ -432,6 +445,10 @@ void CreatureAI::SetFlyMode(bool fly)
 {
     me->SetCanFly(fly);
     me->SetDisableGravity(fly);
+    if (fly)
+        me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
+    else
+        me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
 }
 
 AISpellInfoType::AISpellInfoType() : target(AITARGET_SELF), condition(AICOND_COMBAT)

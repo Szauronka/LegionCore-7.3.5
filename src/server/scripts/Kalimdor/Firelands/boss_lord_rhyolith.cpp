@@ -388,7 +388,7 @@ class boss_lord_rhyolith : public CreatureScript
                                 std::list<Creature*> volcanos_1;
                                 for (std::list<Creature*>::const_iterator itr = volcanos.begin(); itr != volcanos.end(); ++itr)
                                 {
-                                    if (me->HasInArc(float(M_PI / 2), (*itr)))
+                                    if (me->HasInArc(M_PI / 2, (*itr)))
                                         volcanos_1.push_back((*itr));
                                 }
                                 pTarget = Trinity::Containers::SelectRandomContainerElement((volcanos_1.empty() ? volcanos : volcanos_1));
@@ -664,7 +664,7 @@ class npc_lord_rhyolith_right_foot : public CreatureScript
 
             void DamageTaken(Unit* who, uint32 &damage, DamageEffectType dmgType)
             {
-                if (!me || !me->IsAlive())
+                if (!me || !me->isAlive())
                     return;
 
                 if (who->GetGUID() == me->GetGUID())
@@ -767,7 +767,7 @@ class npc_lord_rhyolith_left_foot : public CreatureScript
 
             void DamageTaken(Unit* who, uint32 &damage, DamageEffectType dmgType)
             {
-                if (!me || !me->IsAlive())
+                if (!me || !me->isAlive())
                     return;
 
                 if (who->GetGUID() == me->GetGUID())
@@ -1257,9 +1257,10 @@ class spell_lord_rhyolith_magma_flow : public SpellScriptLoader
 
                 count++;
 
-                for (float a = 0; a <= 2 * M_PI; a += float(M_PI / 2))
+                for (float a = 0; a <= 2 * M_PI; a += M_PI / 2)
                 {
-                    Position pos = GetCaster()->GetNearPosition(1.0f * count, a + frand(-0.05f, 0.05f));
+                    Position pos;
+                    GetCaster()->GetNearPosition(pos, 1.0f * count, a + frand(-0.05f, 0.05f));
                     GetCaster()->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_MAGMA_FLOW_AREA, true);
                 }
             }

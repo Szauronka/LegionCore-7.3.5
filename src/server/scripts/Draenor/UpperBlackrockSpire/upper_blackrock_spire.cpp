@@ -1,3 +1,7 @@
+/*
+https://uwow.biz/
+*/
+
 #include "upper_blackrock_spire.h"
 #include "MoveSplineInit.h"
 #include "ScriptedEscortAI.h"
@@ -281,7 +285,7 @@ public:
                     Check = false;
                     Position pos;
                     if (Creature* SonOfBeast = me->GetCreature(*me, SonOfBeastGUID))
-                        pos = SonOfBeast->GetPosition();
+                        SonOfBeast->GetPosition(&pos);
                     pos.m_positionX -= 3.0f;
                     pos.m_positionY -= 3.0f;
                     me->GetMotionMaster()->MovePoint(4, pos);

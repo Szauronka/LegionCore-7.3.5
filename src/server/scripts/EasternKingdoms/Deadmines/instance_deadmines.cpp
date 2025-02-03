@@ -13,16 +13,6 @@ static const DoorData doordata[] =
     {0, 0, DOOR_TYPE_ROOM, BOUNDARY_NONE},
 };
 
-DungeonEncounterData const encounters[] =
-{
-    { DATA_GLUBTOK,   {{ 1064 }} },
-    { DATA_HELIX,     {{ 1065 }} },
-    { DATA_FOEREAPER, {{ 1063 }} },
-    { DATA_ADMIRAL,   {{ 1062 }} },
-    { DATA_CAPTAIN,   {{ 1060 }} },
-    { DATA_VANESSA,   {{ 1081 }} }
-};
-
 class instance_deadmines : public InstanceMapScript
 {
     public:
@@ -35,12 +25,10 @@ class instance_deadmines : public InstanceMapScript
 
         struct instance_deadmines_InstanceMapScript : public InstanceScript
         {
-            instance_deadmines_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+            instance_deadmines_InstanceMapScript(Map* pMap) : InstanceScript(pMap) 
             {
-                SetHeaders(DataHeader);
                 SetBossNumber(MAX_ENCOUNTER);
                 LoadDoorData(doordata);
-                LoadDungeonEncounterData(encounters);
                 
                 uiGlubtokGUID.Clear();
                 uiHelixGUID.Clear();
@@ -268,22 +256,60 @@ class instance_deadmines : public InstanceMapScript
                 return true;
             }
 
-            void WriteSaveDataMore(std::ostringstream& data) override
+            std::string GetSaveData()
             {
-                data << State << " " << uiVanessaEvent;
+                OUT_SAVE_INST_DATA;
+
+                std::string str_data;
+                std::ostringstream saveStream;
+                saveStream << "D M " << GetBossSaveData() << State << " " << uiVanessaEvent << " ";
+                str_data = saveStream.str();
+
+                OUT_SAVE_INST_DATA_COMPLETE;
+                return str_data;
             }
 
-            void ReadSaveDataMore(std::istringstream& data) override
+            void Load(const char* in)
             {
-                data >> State;
+                if (!in)
+                {
+                    OUT_LOAD_INST_DATA_FAIL;
+                    return;
+                }
 
-                if (State == CANNON_BLAST_INITIATED)
-                    if (GameObject *pIronCladDoor = instance->GetGameObject(IronCladDoorGUID))
-                        pIronCladDoor->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
+                OUT_LOAD_INST_DATA(in);
 
-                data >> uiVanessaEvent;
-                if (uiVanessaEvent != DONE)
-                    uiVanessaEvent = NOT_STARTED;
+                char dataHead1, dataHead2;
+
+                std::istringstream loadStream(in);
+                loadStream >> dataHead1 >> dataHead2;
+
+                if (dataHead1 == 'D' && dataHead2 == 'M')
+                {
+
+                    for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
+                    {
+                        uint32 tmpState;
+                        loadStream >> tmpState;
+                        if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                        tmpState = NOT_STARTED;
+                        SetBossState(i, EncounterState(tmpState));
+                    }
+
+                    loadStream >> State;
+
+                    if (State == CANNON_BLAST_INITIATED)
+                        if (GameObject *pIronCladDoor = instance->GetGameObject(IronCladDoorGUID))
+                            pIronCladDoor->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
+
+                    loadStream >> uiVanessaEvent;
+                    if (uiVanessaEvent != DONE)
+                        uiVanessaEvent = NOT_STARTED;
+
+                }
+                else OUT_LOAD_INST_DATA_FAIL;
+
+                OUT_LOAD_INST_DATA_COMPLETE;
             }
 
         private:

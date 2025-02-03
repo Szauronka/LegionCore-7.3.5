@@ -1,7 +1,9 @@
+/*
+    https://uwow.biz/
+*/
+
 #ifndef TrialOfValorH_
 #define TrialOfValorH_
-
-#define DataHeader "TOV"
 
 namespace Data
 {

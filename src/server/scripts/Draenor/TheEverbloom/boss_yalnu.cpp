@@ -1,9 +1,12 @@
 /*
+    http://epicwow.com/
     Dungeon : The Everbloom 100
     Encounter: Yalnu
 */
 
 #include "the_everbloom.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
 
 enum Says
 {
@@ -167,7 +170,7 @@ struct boss_yalnu : public BossAI
             {
                 if (Player* plr = i->getSource())
                 {
-                    if (!plr->IsAlive() || plr->isGameMaster())
+                    if (!plr->isAlive() || plr->isGameMaster())
                         break;
 
                     if (plr->GetCurrentAreaID() == 7330)

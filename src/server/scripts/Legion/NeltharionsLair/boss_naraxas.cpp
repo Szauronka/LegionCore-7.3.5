@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Neltharions Lair 100-110
     Encounter: Naraxas
     Normal: 100%, Heroic: 100%, Mythic: 100%
@@ -200,7 +201,7 @@ struct boss_naraxas : public BossAI
                 for (uint8 i = 0; i < 12; ++i)
                 {
                     dist = frand(10, 20);
-                    pos = me->GetNearPosition(dist, frand(-2.0f, 2.0f));
+                    me->GetNearPosition(pos, dist, frand(-2.0f, 2.0f));
                     me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_TOXIC_WRETCH_AT, true);
                 }
                 break;
@@ -233,7 +234,7 @@ struct boss_naraxas : public BossAI
 
     void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply) override
     {
-        if (!who || !me->isInCombat() || !who->IsAlive())
+        if (!who || !me->isInCombat() || !who->isAlive())
             return;
 
         if (apply)

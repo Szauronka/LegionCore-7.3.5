@@ -1,0 +1,18 @@
+DELETE FROM `creature_loot_template` WHERE `entry`=22871 AND `item`=150477;
+INSERT INTO `creature_loot_template` (`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`, `shared`) VALUES (22871, 150477, 80, 32, 0, 1, 1, 0);
+DELETE FROM `creature_loot_template` WHERE `entry`=22871 AND `item`=150500;
+INSERT INTO `creature_loot_template` (`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`, `shared`) VALUES (22871, 150500, 80, 32, 0, 1, 1, 0);
+DELETE FROM `creature_loot_template` WHERE `entry`=22871 AND `item`=150479;
+INSERT INTO `creature_loot_template` (`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`, `shared`) VALUES (22871, 150479, 80, 32, 0, 1, 1, 0);
+DELETE FROM `creature_loot_template` WHERE `entry`=22871 AND `item`=150533;
+INSERT INTO `creature_loot_template` (`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`, `shared`) VALUES (22871, 150533, 80, 32, 0, 1, 1, 0);
+DELETE FROM `creature_loot_template` WHERE `entry`=22871 AND `item`=150476;
+INSERT INTO `creature_loot_template` (`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`, `shared`) VALUES (22871, 150476, 80, 32, 0, 1, 1, 0);
+DELETE FROM `creature_loot_template` WHERE `entry`=22871 AND `item`=150480;
+INSERT INTO `creature_loot_template` (`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`, `shared`) VALUES (22871, 150480, 80, 32, 0, 1, 1, 0);
+DELETE FROM `creature_loot_template` WHERE `entry`=22871 AND `item`=150528;
+INSERT INTO `creature_loot_template` (`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`, `shared`) VALUES (22871, 150528, 80, 32, 0, 1, 1, 0);
+DELETE FROM `creature_loot_template` WHERE `entry`=22871 AND `item`=150474;
+INSERT INTO `creature_loot_template` (`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`, `shared`) VALUES (22871, 150474, 80, 32, 0, 1, 1, 0);
+DELETE FROM `creature_loot_template` WHERE `entry`=22871 AND `item`=150475;
+INSERT INTO `creature_loot_template` (`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`, `shared`) VALUES (22871, 150475, 80, 32, 0, 1, 1, 0);

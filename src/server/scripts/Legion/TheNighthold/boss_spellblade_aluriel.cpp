@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "the_nighthold.h"
 
 enum Says
@@ -266,7 +270,7 @@ public:
                         {
                             if (Player* player = Player::GetPlayer(*me, pGuid))
                             {
-                                if (player->IsAlive() && player->HasAura(SPELL_SEARING_BRAND_MARK, me->GetGUID()))
+                                if (player->isAlive() && player->HasAura(SPELL_SEARING_BRAND_MARK, me->GetGUID()))
                                 {
                                     if (player->GetDistance(centerPos) > 95.0f)
                                     {
@@ -349,7 +353,7 @@ public:
                         }
                         else if (playerListGUID.size() > 1)
                         {
-                            pos = me->GetRandomNearPosition(5.0f);
+                            me->GetRandomNearPosition(pos, 5.0f);
                             if (Creature* image = me->SummonCreature(NPC_SPELLBLADE_ALURIEL_IMAG, pos))
                             {
                                 image->CastSpell(player, SPELL_SEARING_BRAND_MARK, true);
@@ -471,7 +475,7 @@ public:
                         {
                             AddDelayedEvent(multiTimer, [this] () -> void
                             {
-                                if (me && me->IsAlive() && me->isInCombat())
+                                if (me && me->isAlive() && me->isInCombat())
                                     DoCast(me, SPELL_REPLICATE_ARCANE_ORB_FILTER, true);
                             });
                             multiTimer *= 2;
@@ -592,7 +596,7 @@ public:
                 me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_GRIP, true);
                 AddDelayedEvent(12000, [this] () -> void
                 {
-                    if (me && me->IsAlive() && me->isInCombat())
+                    if (me && me->isAlive() && me->isInCombat())
                     {
                         me->SetReactState(REACT_AGGRESSIVE);
                         me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, false);
@@ -674,13 +678,13 @@ public:
                     me->StopAttack();
                     if (Player* player = Player::GetPlayer(*me, playerGUID))
                     {
-                        if (player->IsAlive() && player->HasAura(SPELL_SEARING_BRAND_MARK, me->GetGUID()))
+                        if (player->isAlive() && player->HasAura(SPELL_SEARING_BRAND_MARK, me->GetGUID()))
                         {
                             if (Unit* owner = me->GetAnyOwner())
                             {
                                 if (player->GetDistance(centerPos) > 95.0f)
                                 {
-                                    if (owner->IsCreature() && owner->IsAlive() && owner->isInCombat())
+                                    if (owner->IsCreature() && owner->isAlive() && owner->isInCombat())
                                     {
                                         owner->ToCreature()->AI()->EnterEvadeMode();
                                         return;
@@ -848,7 +852,7 @@ public:
                             {
                                 if (target->GetDistance(centerPos) > 95.0f)
                                 {
-                                    if (owner->IsCreature() && owner->IsAlive() && owner->isInCombat())
+                                    if (owner->IsCreature() && owner->isAlive() && owner->isInCombat())
                                     {
                                         owner->ToCreature()->AI()->EnterEvadeMode();
                                         return;
@@ -912,7 +916,7 @@ public:
         void EventEnd()
         {
             if (Unit* owner = me->GetAnyOwner())
-                if (owner->IsAlive() && owner->HasAura(SPELL_ENTOMBED_IN_ICE, me->GetGUID()))
+                if (owner->isAlive() && owner->HasAura(SPELL_ENTOMBED_IN_ICE, me->GetGUID()))
                     owner->RemoveAurasDueToSpell(SPELL_ENTOMBED_IN_ICE);
 
             me->DespawnOrUnsummon(100);
@@ -924,7 +928,7 @@ public:
             {
                 if (checkStateTimer <= diff)
                 {
-                    if (!me->GetAnyOwner() || !me->GetAnyOwner()->IsAlive() || !instance || instance->GetBossState(DATA_ALURIEL) != IN_PROGRESS)
+                    if (!me->GetAnyOwner() || !me->GetAnyOwner()->isAlive() || !instance || instance->GetBossState(DATA_ALURIEL) != IN_PROGRESS)
                     {
                         EventEnd();
                         return;
@@ -1418,7 +1422,7 @@ class spell_aluriel_entombed_in_ice : public SpellScriptLoader
             {
                 if (Unit* target = GetTarget())
                 {
-                    if (target->GetMapId() == 1530 && target->IsAlive() && !target->HasAura(SPELL_ENTOMBED_IN_ICE))
+                    if (target->GetMapId() == 1530 && target->isAlive() && !target->HasAura(SPELL_ENTOMBED_IN_ICE))
                     {
                         if (Creature* summon = target->SummonCreature(NPC_ICE_SHARDS, target->GetPosition()))
                         {

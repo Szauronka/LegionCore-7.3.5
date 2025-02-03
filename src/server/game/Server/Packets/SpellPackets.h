@@ -138,7 +138,8 @@ namespace WorldPackets
 
             void Read() override;
 
-            uint64 Action = 0;
+            uint32 Action = 0;
+            uint32 Type = 0;
             uint8 Index = 0;
         };
 
@@ -402,7 +403,7 @@ namespace WorldPackets
 
         //< SMSG_CAST_FAILED
         //< SMSG_PET_CAST_FAILED
-        class TC_GAME_API CastFailed final : public ServerPacket
+        class CastFailed final : public ServerPacket
         {
         public:
             CastFailed(OpcodeServer opcode) : ServerPacket(opcode, 4 + 4 + 4 + 4 + 1) { }
@@ -856,7 +857,7 @@ namespace WorldPackets
             int32 SpellID = 0;
         };
 
-        class TC_GAME_API PlaySpellVisual final : public ServerPacket
+        class PlaySpellVisual final : public ServerPacket
         {
         public:
             PlaySpellVisual() : ServerPacket(SMSG_PLAY_SPELL_VISUAL, 32 + 16 + 4 + 1 + 4) { }

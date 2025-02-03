@@ -142,7 +142,7 @@ public:
                 Council[1] = instance->GetGuidData(DATA_VERASDARKSHADOW);
                 Council[2] = instance->GetGuidData(DATA_LADYMALANDE);
                 Council[3] = instance->GetGuidData(DATA_HIGHNETHERMANCERZEREVOR);
-            } else TC_LOG_ERROR("scripts", ERROR_INST_DATA);
+            } else TC_LOG_ERROR(LOG_FILTER_TSCR, ERROR_INST_DATA);
         }
 
         void EnterCombat(Unit* /*who*/) {}
@@ -235,7 +235,7 @@ public:
                 if (!pMember)
                     continue;
 
-                if (!pMember->IsAlive())
+                if (!pMember->isAlive())
                 {
                     pMember->RemoveCorpse();
                     pMember->Respawn();
@@ -266,7 +266,7 @@ public:
             if (!instance)
                 return;
 
-            if (target && target->IsAlive())
+            if (target && target->isAlive())
             {
                 Council[0] = instance->GetGuidData(DATA_GATHIOSTHESHATTERER);
                 Council[1] = instance->GetGuidData(DATA_HIGHNETHERMANCERZEREVOR);
@@ -286,7 +286,7 @@ public:
                     {
                         Unit* member = Unit::GetUnit(*me, Council[i]);
                         if (
-                            member && member->IsAlive())
+                            member && member->isAlive())
                             CAST_CRE(member)->AI()->AttackStart(target);
                     }
                 }
@@ -320,7 +320,7 @@ public:
                     }
 
                     Creature* pMember = (Unit::GetCreature(*me, Council[DeathCount]));
-                    if (pMember && pMember->IsAlive())
+                    if (pMember && pMember->isAlive())
                         pMember->DealDamage(pMember, pMember->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     ++DeathCount;
                     EndEventTimer = 1500;
@@ -339,9 +339,9 @@ public:
                             if (Creature* Member = (Unit::GetCreature((*me), Council[i])))
                             {
                                 // This is the evade/death check.
-                                if (Member->IsAlive() && !Member->getVictim())
+                                if (Member->isAlive() && !Member->getVictim())
                                     ++EvadeCheck;                   //If all members evade, we reset so that players can properly reset the event
-                                else if (!Member->IsAlive())         // If even one member dies, kill the rest, set instance data, and kill self.
+                                else if (!Member->isAlive())         // If even one member dies, kill the rest, set instance data, and kill self.
                                 {
                                     EndEventTimer = 1000;
                                     CheckTimer = 0;
@@ -389,7 +389,7 @@ struct boss_illidari_councilAI : public ScriptedAI
         }
         else
         {
-            TC_LOG_ERROR("scripts", ERROR_INST_DATA);
+            TC_LOG_ERROR(LOG_FILTER_TSCR, ERROR_INST_DATA);
             EnterEvadeMode();
             return;
         }
@@ -437,7 +437,7 @@ struct boss_illidari_councilAI : public ScriptedAI
     {
         if (!instance)
         {
-            TC_LOG_ERROR("scripts", ERROR_INST_DATA);
+            TC_LOG_ERROR(LOG_FILTER_TSCR, ERROR_INST_DATA);
             return;
         }
 

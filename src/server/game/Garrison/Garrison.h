@@ -208,14 +208,14 @@ typedef std::list<WorldPackets::Garrison::Shipment> ShipmentSet;
 typedef std::unordered_map<uint32/*buildingType*/, ObjectGuid /*guid*/> ShipmentConteinerSpawn;
 typedef std::unordered_map<uint16/*buildingType*/, std::unordered_map<uint16, uint32>> buildingData;
 
-class TC_GAME_API Garrison
+class Garrison
 {
 public:
     explicit Garrison(Player* owner);
 
     bool LoadFromDB(PreparedQueryResult const& garrison, PreparedQueryResult const& blueprints, PreparedQueryResult const& buildings, PreparedQueryResult const& followers, PreparedQueryResult const& abilities, PreparedQueryResult const& missions, PreparedQueryResult const& shipments, PreparedQueryResult const& talents);
-    void SaveToDB(CharacterDatabaseTransaction const& trans);
-    static void DeleteFromDB(ObjectGuid::LowType ownerGuid, CharacterDatabaseTransaction const& trans);
+    void SaveToDB(SQLTransaction const& trans);
+    static void DeleteFromDB(ObjectGuid::LowType ownerGuid, SQLTransaction const& trans);
 
     bool Create(uint32 garrSiteId, bool skip_teleport = false);
     void Delete();
@@ -319,7 +319,7 @@ public:
     bool canStartUpgrade();
     void StartClassHallUpgrade(uint32 tallentID);
     void AddTalentToStore(uint32 talentID, uint32 time, uint32 flags, ObjectDBState DbState = DB_STATE_UNCHANGED);
-    bool hasTallent(uint32 talentID) const;
+    bool hasTalent(uint32 talentID) const;
 
     //Advancement
     bool hasLegionFall() const;

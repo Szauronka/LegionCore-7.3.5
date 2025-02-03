@@ -25,6 +25,9 @@
 #include "DatabaseEnvFwd.h"
 #include <safe_ptr.h>
 
+#include <cds/container/feldman_hashmap_hp.h>
+#include "HashFuctor.h"
+
 enum CriteriaTreeCustomFlags : uint16
 {
     CRITERIA_TREE_CUSTOM_FLAG_QUEST = 0x01,  // custom flags for quest
@@ -313,8 +316,8 @@ typedef std::vector<AchievementReward*> AchievementRewardVector;
 
 struct AchievementRewardLocale
 {
-    std::vector<std::string> subject;
-    std::vector<std::string> text;
+    StringVector subject;
+    StringVector text;
 };
 
 typedef std::unordered_map<uint32, AchievementRewardLocale> AchievementRewardLocales;
@@ -330,7 +333,7 @@ struct CompletedAchievementData
     bool isAccountAchievement;
 };
 
-typedef std::unordered_map<uint32, CriteriaProgress> CriteriaProgressMap;
+typedef cds::container::FeldmanHashMap< cds::gc::HP, uint32, CriteriaProgress, uint32Traits > CriteriaProgressMap;
 typedef std::unordered_map<uint32, CompletedAchievementData> CompletedAchievementMap;
 
 enum CriteriaSort
@@ -341,7 +344,7 @@ enum CriteriaSort
 };
 
 template<class T>
-class TC_GAME_API AchievementMgr
+class AchievementMgr
 {
     public:
         AchievementMgr(T* owner);
@@ -352,7 +355,7 @@ class TC_GAME_API AchievementMgr
         uint32 GetSize();
         static void DeleteFromDB(ObjectGuid lowguid, uint32 accountId = 0);
         void LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult = nullptr, PreparedQueryResult criteriaAccountResult = nullptr);
-        void SaveToDB(CharacterDatabaseTransaction& trans);
+        void SaveToDB(SQLTransaction& trans);
         void ResetAchievementCriteria(CriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, bool evenIfCriteriaComplete = false);
         void UpdateAchievementCriteria(AchievementCachePtr cachePtr, bool init = false);
         void UpdateAchievementCriteria(CriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, uint32 miscValue3 = 0,Unit* unit = nullptr, Player* referencePlayer = nullptr, bool init = false);
@@ -424,7 +427,7 @@ class TC_GAME_API AchievementMgr
         std::vector<uint32*> _timeCriteriaTreesArr;
 };
 
-class TC_GAME_API AchievementGlobalMgr
+class AchievementGlobalMgr
 {
         AchievementGlobalMgr() { }
         ~AchievementGlobalMgr() { }

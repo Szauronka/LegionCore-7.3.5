@@ -1,11 +1,12 @@
 /*
+    http://epicwow.com/
     Dungeon : Iron Docks 93-95
 */
 
+#include "Position.h"
+
 #ifndef IRON_DOCKS_H_
 #define IRON_DOCKS_H_
-
-#define DataHeader "ID"
 
 enum eData
 {

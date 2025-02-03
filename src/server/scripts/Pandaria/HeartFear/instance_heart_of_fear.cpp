@@ -1,4 +1,4 @@
-
+//UWoWCore
 //Heart of Fear
 
 #include "VMapFactory.h"
@@ -22,14 +22,14 @@ public:
     instance_heart_of_fear() : InstanceMapScript("instance_heart_of_fear", 1009) { }
 
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const override
     {
         return new instance_heart_of_fear_InstanceMapScript(map);
     }
 
     struct instance_heart_of_fear_InstanceMapScript : public InstanceScript
     {
-        instance_heart_of_fear_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_heart_of_fear_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         //GameObjects
         ObjectGuid vizierentdoorGuid;
@@ -41,10 +41,9 @@ public:
         ObjectGuid unsokexdoorGuid;
         ObjectGuid empresscocoonGuid;
 
-        std::vector<ObjectGuid> vizierarenadoorGuids;
-        std::vector<ObjectGuid> garaloncdoorGuids;
-        std::vector<ObjectGuid> garalonexdoorGuids;
-        std::vector<ObjectGuid> meljarakWeaponRackGUID;
+        GuidVector vizierarenadoorGuids;
+        GuidVector garaloncdoorGuids;
+        GuidVector garalonexdoorGuids;
 
         //Creature
         ObjectGuid zorlokGuid;
@@ -59,238 +58,223 @@ public:
         ObjectGuid srathik[3];
         ObjectGuid zarthik[3];
         ObjectGuid korthik[3];
-        std::vector<ObjectGuid> meljaraksoldiersGuids;
+        GuidVector meljaraksoldiersGuids;
         
-        //other
-        uint8 stormUnleashed;
-        
-        void Initialize()
+        void Initialize() override
         {
-            SetHeaders(DataHeader);
             SetBossNumber(7);
             LoadDoorData(doorData);
 
             //GameObject
-            vizierentdoorGuid       = ObjectGuid::Empty;
-            vizierexdoorGuid        = ObjectGuid::Empty;
-            tayakexdoorGuid         = ObjectGuid::Empty;
-            garalonentdoorGuid      = ObjectGuid::Empty;
-            meljarakexdoorGuid      = ObjectGuid::Empty;
-            unsokendoorGuid         = ObjectGuid::Empty;
-            unsokexdoorGuid         = ObjectGuid::Empty;
-            empresscocoonGuid       = ObjectGuid::Empty;
+            vizierentdoorGuid.Clear();
+            vizierexdoorGuid.Clear();
+            tayakexdoorGuid.Clear();
+            garalonentdoorGuid.Clear();
+            meljarakexdoorGuid.Clear();
+            unsokendoorGuid.Clear();
+            unsokexdoorGuid.Clear();
+            empresscocoonGuid.Clear();
 
             vizierarenadoorGuids.clear();
             garaloncdoorGuids.clear();
             garalonexdoorGuids.clear();
-            meljarakWeaponRackGUID.clear();
 
             //Creature
-            zorlokGuid              = ObjectGuid::Empty;
-            gascontrollerGuid       = ObjectGuid::Empty;
-            tayakGuid               = ObjectGuid::Empty;
-            garalonGuid             = ObjectGuid::Empty;
-            meljarakGuid            = ObjectGuid::Empty;
-            unsokGuid               = ObjectGuid::Empty;
-            ambermonsterGuid        = ObjectGuid::Empty;
-            shekzeerGuid            = ObjectGuid::Empty;
+            zorlokGuid.Clear();
+            gascontrollerGuid.Clear();
+            tayakGuid.Clear();
+            garalonGuid.Clear();
+            meljarakGuid.Clear();
+            unsokGuid.Clear();
+            ambermonsterGuid.Clear();
+            shekzeerGuid.Clear();
 
             for (uint8 n = 0; n < 3; n++)
             {
-                srathik[n] = ObjectGuid::Empty;
-                zarthik[n] = ObjectGuid::Empty;
-                korthik[n] = ObjectGuid::Empty;
+                srathik[n].Clear();
+                zarthik[n].Clear();
+                korthik[n].Clear();
             }
-            //Other
-            stormUnleashed = 0;
         }
 
-        void OnPlayerLeave(Player* player)
-        {
-            DoRemoveAurasDueToSpellOnPlayers(126159);
-        }
-
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(Creature* creature) override
         {
             switch (creature->GetEntry())
             { 
-                case NPC_VIZIER_ZORLOK:
-                    zorlokGuid = creature->GetGUID();
-                    break;
-                case NPC_GAS_CONTROLLER:
-                    gascontrollerGuid = creature->GetGUID();
-                    break;
-                case NPC_LORD_TAYAK:
-                    tayakGuid = creature->GetGUID();
-                    break;
-                case NPC_GARALON:
-                    garalonGuid = creature->GetGUID();
-                    break;
-                case NPC_MELJARAK:
-                    meljarakGuid = creature->GetGUID();
-                    break;
-                case NPC_SRATHIK:
-                    for (uint8 n = 0; n < 3; n++)
+            case NPC_VIZIER_ZORLOK:
+                zorlokGuid = creature->GetGUID();
+                break;
+            case NPC_GAS_CONTROLLER:
+                gascontrollerGuid = creature->GetGUID();
+                break;
+            case NPC_LORD_TAYAK:
+                tayakGuid = creature->GetGUID();
+                break;
+            case NPC_GARALON:
+                garalonGuid = creature->GetGUID();
+                break;
+            case NPC_MELJARAK:
+                meljarakGuid = creature->GetGUID();
+                break;
+            case NPC_SRATHIK:
+                for (uint8 n = 0; n < 3; n++)
+                {
+                    if (!srathik[n])
                     {
-                        if (srathik[n].IsEmpty())
-                        {
-                            srathik[n] = creature->GetGUID();
-                            meljaraksoldiersGuids.push_back(srathik[n]);
-                            break;
-                        }
+                        srathik[n] = creature->GetGUID();
+                        meljaraksoldiersGuids.push_back(srathik[n]);
+                        break;
                     }
-                    break;
-                case NPC_ZARTHIK:
-                    for (uint8 n = 0; n < 3; n++)
+                }
+                break;
+            case NPC_ZARTHIK:
+                for (uint8 n = 0; n < 3; n++)
+                {
+                    if (!zarthik[n])
                     {
-                        if (zarthik[n].IsEmpty())
-                        {
-                            zarthik[n] = creature->GetGUID();
-                            meljaraksoldiersGuids.push_back(zarthik[n]);
-                            break;
-                        }
+                        zarthik[n] = creature->GetGUID();
+                        meljaraksoldiersGuids.push_back(zarthik[n]);
+                        break;
                     }
-                    break;
-                case NPC_KORTHIK:
-                    for (uint8 n = 0; n < 3; n++)
+                }
+                break;
+            case NPC_KORTHIK:
+                for (uint8 n = 0; n < 3; n++)
+                {
+                    if (!korthik[n])
                     {
-                        if (korthik[n].IsEmpty())
-                        {
-                            korthik[n] = creature->GetGUID();
-                            meljaraksoldiersGuids.push_back(korthik[n]);
-                            break;
-                        }
+                        korthik[n] = creature->GetGUID();
+                        meljaraksoldiersGuids.push_back(korthik[n]);
+                        break;
                     }
-                    break;
-                case NPC_UNSOK:
-                    unsokGuid = creature->GetGUID();
-                    break;
-                case NPC_AMBER_MONSTER:
-                    ambermonsterGuid = creature->GetGUID();
-                    break;
-                case NPC_SHEKZEER:
-                    shekzeerGuid = creature->GetGUID();
-                    break;
+                }
+                break;
+            case NPC_UNSOK:
+                unsokGuid = creature->GetGUID();
+                break;
+            case NPC_AMBER_MONSTER:
+                ambermonsterGuid = creature->GetGUID();
+                break;
+            case NPC_SHEKZEER:
+                shekzeerGuid = creature->GetGUID();
+                break;
             }
         }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObject* go) override
         {
             switch (go->GetEntry())
             {
-                case GO_VIZIER_ENT_DOOR:
-                    vizierentdoorGuid = go->GetGUID();
-                    break;
-                case GO_VIZIER_ARENA_DOOR:
-                    vizierarenadoorGuids.push_back(go->GetGUID());
-                    break;
-                case GO_VIZIER_EX_DOOR:
-                    AddDoor(go, true);
-                    vizierexdoorGuid = go->GetGUID();
-                    break;
-                case GO_TAYAK_EX_DOOR:
-                    AddDoor(go, true);
-                    tayakexdoorGuid = go->GetGUID();
-                    break;
-                case GO_GARALON_ENT_DOOR:
-                    AddDoor(go, true);
-                    garalonentdoorGuid = go->GetGUID();
-                    break;
-                case GO_GARALON_COMBAT_DOOR:
-                    garaloncdoorGuids.push_back(go->GetGUID());
-                    break;
-                case GO_GARALON_EX_DOOR:
-                    AddDoor(go, true);
-                    garalonexdoorGuids.push_back(go->GetGUID());
-                    break;
-                case GO_MELJARAK_EX_DOOR:
-                    AddDoor(go, true);
-                    meljarakexdoorGuid = go->GetGUID();
-                    break;
-                case GO_MELJARAK_WEAPON_RACK:
-                    meljarakWeaponRackGUID.push_back(go->GetGUID());
-                    break;
-                case GO_UNSOK_EN_DOOR:
-                    AddDoor(go, true);
-                    unsokendoorGuid = go->GetGUID();
-                    break;
-                case GO_UNSOK_EX_DOOR:
-                    AddDoor(go, true);
-                    unsokexdoorGuid = go->GetGUID();
-                    break;
-                case GO_EMPRESS_COCOON:
-                    empresscocoonGuid = go->GetGUID();
-                    break;
+            case GO_VIZIER_ENT_DOOR:
+                vizierentdoorGuid = go->GetGUID();
+                break;
+            case GO_VIZIER_ARENA_DOOR:
+                vizierarenadoorGuids.push_back(go->GetGUID());
+                break;
+            case GO_VIZIER_EX_DOOR:
+                AddDoor(go, true);
+                vizierexdoorGuid = go->GetGUID();
+                break;
+            case GO_TAYAK_EX_DOOR:
+                AddDoor(go, true);
+                tayakexdoorGuid = go->GetGUID();
+                break;
+            case GO_GARALON_ENT_DOOR:
+                AddDoor(go, true);
+                garalonentdoorGuid = go->GetGUID();
+                break;
+            case GO_GARALON_COMBAT_DOOR:
+                garaloncdoorGuids.push_back(go->GetGUID());
+                break;
+            case GO_GARALON_EX_DOOR:
+                AddDoor(go, true);
+                garalonexdoorGuids.push_back(go->GetGUID());
+                break;
+            case GO_MELJARAK_EX_DOOR:
+                AddDoor(go, true);
+                meljarakexdoorGuid = go->GetGUID();
+                break;
+            case GO_UNSOK_EN_DOOR:
+                AddDoor(go, true);
+                unsokendoorGuid = go->GetGUID();
+                break;
+            case GO_UNSOK_EX_DOOR:
+                AddDoor(go, true);
+                unsokexdoorGuid = go->GetGUID();
+                break;
+            case GO_EMPRESS_COCOON:
+                empresscocoonGuid = go->GetGUID();
+                break;
             }
         }
 
-        bool SetBossState(uint32 id, EncounterState state)
+        bool SetBossState(uint32 id, EncounterState state) override
         {
             if (!InstanceScript::SetBossState(id, state))
                 return false;
-
+            
             switch (id)
             {
-                case DATA_VIZIER_ZORLOK:
+            case DATA_VIZIER_ZORLOK:
                 {
                     switch (state)
                     {
-                        case NOT_STARTED:
-                            HandleGameObject(vizierentdoorGuid, true);
-                            for (std::vector<ObjectGuid>::const_iterator guid = vizierarenadoorGuids.begin(); guid != vizierarenadoorGuids.end(); guid++)
-                                HandleGameObject(*guid, true);
-                            break;
-                        case DONE:
-                            HandleGameObject(vizierentdoorGuid, true);
-                            HandleGameObject(vizierexdoorGuid, true);
-                            for (std::vector<ObjectGuid>::const_iterator guid = vizierarenadoorGuids.begin(); guid != vizierarenadoorGuids.end(); guid++)
-                                HandleGameObject(*guid, true);
-                            break;
-                        case IN_PROGRESS:
-                            HandleGameObject(vizierentdoorGuid, false);
-                            for (std::vector<ObjectGuid>::const_iterator guid = vizierarenadoorGuids.begin(); guid != vizierarenadoorGuids.end(); guid++)
-                                HandleGameObject(*guid, false);
-                            break;
+                    case NOT_STARTED:
+                        HandleGameObject(vizierentdoorGuid, true);
+                        for (GuidVector::const_iterator guid = vizierarenadoorGuids.begin(); guid != vizierarenadoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
+                        break;
+                    case DONE:
+                        HandleGameObject(vizierentdoorGuid, true);
+                        HandleGameObject(vizierexdoorGuid, true); 
+                        for (GuidVector::const_iterator guid = vizierarenadoorGuids.begin(); guid != vizierarenadoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(vizierentdoorGuid, false);
+                        for (GuidVector::const_iterator guid = vizierarenadoorGuids.begin(); guid != vizierarenadoorGuids.end(); guid++)
+                            HandleGameObject(*guid, false);
+                        break;
                     }
                     break;
                 }
-                case DATA_LORD_TAYAK:
+            case DATA_LORD_TAYAK:
                 {
                     switch (state)
                     {
-                        case NOT_STARTED:
-                            HandleGameObject(vizierexdoorGuid, true);
-                            break;
-                        case DONE:
-                            HandleGameObject(vizierexdoorGuid, true);
-                            HandleGameObject(tayakexdoorGuid, true);
-                            HandleGameObject(garalonentdoorGuid, true);
-                            break;
-                        case IN_PROGRESS:
-                            HandleGameObject(vizierexdoorGuid, false);
-                            break;
+                    case NOT_STARTED:
+                        HandleGameObject(vizierexdoorGuid, true);
+                        break;
+                    case DONE:
+                        HandleGameObject(vizierexdoorGuid, true);
+                        HandleGameObject(tayakexdoorGuid, true);
+                        HandleGameObject(garalonentdoorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(vizierexdoorGuid, false);
+                        break;
                     }
                     break;
                 }
-                case DATA_GARALON:
+            case DATA_GARALON:
                 {
                     switch (state)
                     {
-                        case NOT_STARTED:
-                            for (std::vector<ObjectGuid>::const_iterator guid = garaloncdoorGuids.begin(); guid != garaloncdoorGuids.end(); guid++)
-                                HandleGameObject(*guid, true);
-                            break;
-                        case DONE:
-                            for (std::vector<ObjectGuid>::const_iterator guid = garaloncdoorGuids.begin(); guid != garaloncdoorGuids.end(); guid++)
-                                HandleGameObject(*guid, true);
+                    case NOT_STARTED:
+                        for (GuidVector::const_iterator guid = garaloncdoorGuids.begin(); guid != garaloncdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
+                        break;
+                    case DONE:
+                        for (GuidVector::const_iterator guid = garaloncdoorGuids.begin(); guid != garaloncdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, true);
                         
-                            for (std::vector<ObjectGuid>::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
-                                HandleGameObject(*guids, true);
-                            break;
-                        case IN_PROGRESS:
-                            for (std::vector<ObjectGuid>::const_iterator guid = garaloncdoorGuids.begin(); guid != garaloncdoorGuids.end(); guid++)
-                                HandleGameObject(*guid, false);
-                            break;
+                        for (GuidVector::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
+                            HandleGameObject(*guids, true);
+                        break;
+                    case IN_PROGRESS:
+                        for (GuidVector::const_iterator guid = garaloncdoorGuids.begin(); guid != garaloncdoorGuids.end(); guid++)
+                            HandleGameObject(*guid, false);
+                        break;
                     }
                     break;
                 }
@@ -298,75 +282,73 @@ public:
                 {
                     switch (state)
                     {
-                        case NOT_STARTED:
-                            for (std::vector<ObjectGuid>::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
-                                HandleGameObject(*guids, true);
-                            for (std::vector<ObjectGuid>::const_iterator itr = meljarakWeaponRackGUID.begin(); itr != meljarakWeaponRackGUID.end(); itr++)
-                                if (GameObject* obj = instance->GetGameObject(*itr))
-                                    obj->Respawn();
-                            DoRemoveAurasDueToSpellOnPlayers(122220);
-                            break;
-                        case IN_PROGRESS:
-                            for (std::vector<ObjectGuid>::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
-                                HandleGameObject(*guids, false);
+                    case NOT_STARTED:
+                        for (GuidVector::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
+                            HandleGameObject(*guids, true);
 
-                            for (std::vector<ObjectGuid>::const_iterator guid = meljaraksoldiersGuids.begin(); guid != meljaraksoldiersGuids.end(); guid++)
+                        for (GuidVector::const_iterator guid = meljaraksoldiersGuids.begin(); guid != meljaraksoldiersGuids.end(); guid++)
+                        {
+                            if (Creature* soldier = instance->GetCreature(*guid))
                             {
-                                if (Creature* soldier = instance->GetCreature(*guid))
+                                if (!soldier->isAlive())
                                 {
-                                    if (soldier->IsAlive() && !soldier->isInCombat())
-                                        soldier->AI()->DoZoneInCombat(soldier, 100.0f);
+                                    soldier->Respawn();
+                                    soldier->GetMotionMaster()->MoveTargetedHome();
                                 }
+                                else if (soldier->isAlive() && soldier->isInCombat())
+                                    soldier->AI()->EnterEvadeMode();
                             }
-                            break;
-                        case DONE:
-                            DoRemoveAurasDueToSpellOnPlayers(122220);
-                            HandleGameObject(meljarakexdoorGuid, true);
-                            HandleGameObject(unsokendoorGuid, true);
-                            for (std::vector<ObjectGuid>::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
-                                HandleGameObject(*guids, true);
-                            break;
-                    }
-                    break;
-                }
-                case DATA_UNSOK:
-                {
-                    switch (state)
-                    {
-                        case NOT_STARTED:
-                            DoRemoveAurasDueToSpellOnPlayers(122370);
-                            DoRemoveAurasDueToSpellOnPlayers(122516);
-                            HandleGameObject(unsokendoorGuid, true);
-                            break;
-                        case IN_PROGRESS:
-                            HandleGameObject(unsokendoorGuid, false);
-                            break;
-                        case DONE:
-                            DoRemoveAurasDueToSpellOnPlayers(122370);
-                            DoRemoveAurasDueToSpellOnPlayers(122516);
-                            HandleGameObject(unsokendoorGuid, true);
-                            HandleGameObject(unsokexdoorGuid, true);
+                        }
+                        break;
+                    case IN_PROGRESS:
+                        for (GuidVector::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
+                            HandleGameObject(*guids, false);
+
+                        for (GuidVector::const_iterator guid = meljaraksoldiersGuids.begin(); guid != meljaraksoldiersGuids.end(); guid++)
+                        {
+                            if (Creature* soldier = instance->GetCreature(*guid))
+                            {
+                                if (soldier->isAlive() && !soldier->isInCombat())
+                                    soldier->AI()->DoZoneInCombat(soldier, 100.0f);
+                            }
+                        }
+                        break;
+                    case DONE:
+                        HandleGameObject(meljarakexdoorGuid, true);
+                        HandleGameObject(unsokendoorGuid, true);
+                        for (GuidVector::const_iterator guids = garalonexdoorGuids.begin(); guids != garalonexdoorGuids.end(); guids++)
+                            HandleGameObject(*guids, true);
                         break;
                     }
                     break;
                 }
-                case DATA_SHEKZEER:
+            case DATA_UNSOK:
                 {
                     switch (state)
                     {
                     case NOT_STARTED:
-                        DoRemoveAurasDueToSpellOnPlayers(123713);
-                        break;
-                    case DONE:
-                        HandleGameObject(unsokexdoorGuid, true);
-                        DoRemoveAurasDueToSpellOnPlayers(123713);
+                        HandleGameObject(unsokendoorGuid, true);
                         break;
                     case IN_PROGRESS:
-                        DoRemoveAurasDueToSpellOnPlayers(123713);
-                        HandleGameObject(unsokexdoorGuid, false);
+                        HandleGameObject(unsokendoorGuid, false);
                         break;
-                    case FAIL:
-                        DoRemoveAurasDueToSpellOnPlayers(123713);
+                    case DONE:
+                        HandleGameObject(unsokendoorGuid, true);
+                        HandleGameObject(unsokexdoorGuid, true);
+                        break;
+                    }
+                    break;
+                }
+            case DATA_SHEKZEER:
+                {
+                    switch (state)
+                    {
+                    case NOT_STARTED:
+                    case DONE:
+                        HandleGameObject(unsokexdoorGuid, true);
+                        break;
+                    case IN_PROGRESS:
+                        HandleGameObject(unsokexdoorGuid, false);
                         break;
                     }
                     break;
@@ -375,25 +357,10 @@ public:
             return true;
         }
 
-        void SetData(uint32 type, uint32 data)
-        {
-            switch (type)
-            {
-                case DATA_STORM_UNLEASHED:
-                    stormUnleashed = data;
-                    if (data == NOT_STARTED)
-                        DoRemoveAurasDueToSpellOnPlayers(126159);
-                    break;
-            }
-        }
+        void SetData(uint32 type, uint32 data) override {}
 
         uint32 GetData(uint32 type) const override
         {
-            switch (type)
-            {
-                case DATA_STORM_UNLEASHED:
-                    return stormUnleashed;
-            }
             return 0;
         }
 
@@ -411,7 +378,7 @@ public:
                     return garalonGuid;
                 case NPC_MELJARAK:
                     return meljarakGuid;
-                    //Meljarak Soldiers
+                //Meljarak Soldiers
                 case NPC_SRATHIK_1:
                     return srathik[0];
                 case NPC_SRATHIK_2:
@@ -430,7 +397,7 @@ public:
                     return korthik[1];
                 case NPC_KORTHIK_3:
                     return korthik[2];
-                    //
+                //
                 case NPC_UNSOK:
                     return unsokGuid;
                 case NPC_SHEKZEER:
@@ -439,59 +406,6 @@ public:
                     return empresscocoonGuid;
             }
             return ObjectGuid::Empty;
-        }
-
-        uint64 GetData64(uint32 type) override
-        {
-            ObjectGuid guid = GetGuidData(type);
-            if (!guid.IsEmpty())
-                return guid.GetCounter();
-
-            return 0;
-        }
-
-        void CreatureDies(Creature* cre, Unit* /*killer*/)
-        {
-            switch (cre->GetEntry())
-            {
-                case NPC_SRATHIK:
-                    for (uint8 n = 0; n < 3; n++)
-                        if (srathik[n] == cre->GetGUID())
-                            srathik[n] = ObjectGuid::Empty;
-                    break;
-                case NPC_ZARTHIK:
-                    for (uint8 n = 0; n < 3; n++)
-                        if (zarthik[n] == cre->GetGUID())
-                            zarthik[n] = ObjectGuid::Empty;
-                    break;
-                case NPC_KORTHIK:
-                    for (uint8 n = 0; n < 3; n++)
-                        if (korthik[n] == cre->GetGUID())
-                            korthik[n] = ObjectGuid::Empty;
-                    break;
-            }
-        }
-
-        void OnCreatureRemove(Creature* cre)
-        {
-            switch (cre->GetEntry())
-            {
-                case NPC_SRATHIK:
-                    for (uint8 n = 0; n < 3; n++)
-                        if (srathik[n] == cre->GetGUID())
-                            srathik[n] = ObjectGuid::Empty;
-                    break;
-                case NPC_ZARTHIK:
-                    for (uint8 n = 0; n < 3; n++)
-                        if (zarthik[n] == cre->GetGUID())
-                            zarthik[n] = ObjectGuid::Empty;
-                    break;
-                case NPC_KORTHIK:
-                    for (uint8 n = 0; n < 3; n++)
-                        if (korthik[n] == cre->GetGUID())
-                            korthik[n] = ObjectGuid::Empty;
-                    break;
-            }
         }
 
         bool IsWipe() const override
@@ -508,11 +422,26 @@ public:
                 if (!player)
                     continue;
 
-                if (player->IsAlive() && !player->isGameMaster() && !player->HasAura(115877)) // Aura 115877 = Totally Petrified
+                if (player->isAlive() && !player->isGameMaster() && !player->HasAura(115877)) // Aura 115877 = Totaly Petrified
                     return false;
             }
 
             return true;
+        }
+
+        std::string GetSaveData() override
+        {
+            std::ostringstream saveStream;
+            saveStream << GetBossSaveData() << " ";
+            return saveStream.str();
+        }
+
+        void Load(const char* data) override
+        {
+            std::istringstream loadStream(LoadBossState(data));
+            uint32 buff;
+            for (uint32 i = 0; i < 7; ++i)
+                loadStream >> buff;
         }
     };
 };

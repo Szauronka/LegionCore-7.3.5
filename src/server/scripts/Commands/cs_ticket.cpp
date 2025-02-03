@@ -15,13 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-Name: ticket_commandscript
-%Complete: 100
-Comment: All ticket related commands
-Category: commandscripts
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "Chat.h"
 #include "AccountMgr.h"
@@ -120,7 +113,7 @@ public:
         }
 
         // Assign ticket
-        CharacterDatabaseTransaction trans = CharacterDatabaseTransaction(NULL);
+        SQLTransaction trans = SQLTransaction(NULL);
         ticket->SetAssignedTo(targetGuid, AccountMgr::IsAdminAccount(targetGmLevel));
         ticket->SaveToDB(trans);
         sTicketMgr->UpdateLastChange();
@@ -205,7 +198,7 @@ public:
             return true;
         }
 
-        CharacterDatabaseTransaction trans = CharacterDatabaseTransaction(NULL);
+        SQLTransaction trans = SQLTransaction(NULL);
         ticket->SetComment(comment);
         ticket->SaveToDB(trans);
         sTicketMgr->UpdateLastChange();
@@ -238,7 +231,7 @@ public:
 
         ticket->SetCompleted(true);
 
-        CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
         ticket->SaveToDB(trans);
         CharacterDatabase.CommitTransaction(trans);
 
@@ -391,7 +384,7 @@ public:
             return true;
         }
 
-        CharacterDatabaseTransaction trans = CharacterDatabaseTransaction(NULL);
+        SQLTransaction trans = SQLTransaction(NULL);
         ticket->SetUnassigned();
         ticket->SaveToDB(trans);
         sTicketMgr->UpdateLastChange();
@@ -416,7 +409,7 @@ public:
             return true;
         }
 
-        CharacterDatabaseTransaction trans = CharacterDatabaseTransaction(NULL);
+        SQLTransaction trans = SQLTransaction(NULL);
         ticket->SetViewed();
         ticket->SaveToDB(trans);
 
@@ -455,7 +448,7 @@ public:
             return true;
         }
 
-        CharacterDatabaseTransaction trans = CharacterDatabaseTransaction(NULL);
+        SQLTransaction trans = SQLTransaction(NULL);
         ticket->SetViewed();
         ticket->SaveToDB(trans);
 
@@ -491,7 +484,7 @@ public:
             return true;
         }
 
-        CharacterDatabaseTransaction trans = CharacterDatabaseTransaction(NULL);
+        SQLTransaction trans = SQLTransaction(NULL);
         ticket->AppendResponse(response);
         if (newLine)
             ticket->AppendResponse("\n");

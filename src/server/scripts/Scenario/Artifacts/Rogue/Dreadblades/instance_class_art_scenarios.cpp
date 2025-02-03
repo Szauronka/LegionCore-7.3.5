@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Scenarios Instance Scripts
 */
 
@@ -14,7 +15,8 @@ struct instance_dreadblades : public InstanceScript
 
     WorldLocation* GetClosestGraveYard(float x, float y, float z) override
     {
-        loc_res_pla.WorldRelocate(1545, x, y, z);
+        loc_res_pla.Relocate(x, y, z);
+        loc_res_pla.SetMapId(1545);
 
         uint32 graveyardId = 5299;
 
@@ -33,7 +35,8 @@ struct instance_dreadblades : public InstanceScript
 
         if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
         {
-            loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+            loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+            loc_res_pla.SetMapId(gy->MapID);
         }
         return &loc_res_pla;
     }
@@ -48,13 +51,15 @@ struct instance_violethold_mage : public InstanceScript
 
     WorldLocation* GetClosestGraveYard(float x, float y, float z) override
     {
-        loc_res_pla.WorldRelocate(1494, x, y, z);
+        loc_res_pla.Relocate(x, y, z);
+        loc_res_pla.SetMapId(1494);
 
         uint32 graveyardId = 5294;
 
         if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
         {
-            loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+            loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+            loc_res_pla.SetMapId(gy->MapID);
         }
         return &loc_res_pla;
     }
@@ -69,13 +74,15 @@ struct instance_priest_mage_nexus_art : public InstanceScript
 
     WorldLocation* GetClosestGraveYard(float x, float y, float z) override
     {
-        loc_res_pla.WorldRelocate(1583, x, y, z);
+        loc_res_pla.Relocate(x, y, z);
+        loc_res_pla.SetMapId(1583);
 
         uint32 graveyardId = 5442;
 
         if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
         {
-            loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+            loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+            loc_res_pla.SetMapId(gy->MapID);
         }
         return &loc_res_pla;
     }
@@ -90,13 +97,15 @@ struct instance_nightborne_sunwell : public InstanceScript
 
     WorldLocation* GetClosestGraveYard(float x, float y, float z) override
     {
-        loc_res_pla.WorldRelocate(1840, x, y, z);
+        loc_res_pla.Relocate(x, y, z);
+        loc_res_pla.SetMapId(1840);
 
         uint32 graveyardId = 6303;
 
         if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
         {
-            loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+            loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+            loc_res_pla.SetMapId(gy->MapID);
         }
         return &loc_res_pla;
     }
@@ -111,13 +120,15 @@ struct instance_faronaar_mage : public InstanceScript
 
     WorldLocation* GetClosestGraveYard(float x, float y, float z) override
     {
-        loc_res_pla.WorldRelocate(1616, x, y, z);
+        loc_res_pla.Relocate(x, y, z);
+        loc_res_pla.SetMapId(1616);
 
         uint32 graveyardId = 5511;
 
         if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
         {
-            loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+            loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+            loc_res_pla.SetMapId(gy->MapID);
         }
         return &loc_res_pla;
     }
@@ -132,13 +143,15 @@ struct instance_ruins_of_falanaar_feral : public InstanceScript
 
     WorldLocation* GetClosestGraveYard(float x, float y, float z) override
     {
-        loc_res_pla.WorldRelocate(1612, x, y, z);
+        loc_res_pla.Relocate(x, y, z);
+        loc_res_pla.SetMapId(1612);
 
         uint32 graveyardId = 5514;
 
         if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
         {
-            loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+            loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+            loc_res_pla.SetMapId(gy->MapID);
         }
         return &loc_res_pla;
     }
@@ -174,7 +187,7 @@ struct npc_stormstout_brewer_q45404 : public ScriptedAI
 void AddSC_instance_class_art_scenarios()
 {
     RegisterInstanceScript(instance_dreadblades, 1583);
-    //RegisterInstanceScript(instance_violethold_mage, 1545);
+    RegisterInstanceScript(instance_violethold_mage, 1545);
     RegisterInstanceScript(instance_priest_mage_nexus_art, 1583);
     RegisterInstanceScript(instance_nightborne_sunwell, 1840);
     RegisterInstanceScript(instance_faronaar_mage, 1616);

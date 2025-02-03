@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Shaman: Sharasdal
 */
 
@@ -261,7 +262,7 @@ public:
                 player->SEND_GOSSIP_MENU(28747, creature->GetGUID());
                 break;
         }
-        player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "", GOSSIP_SENDER_MAIN, 0);
+        player->ADD_GOSSIP_ITEM(0, "", GOSSIP_SENDER_MAIN, 0);
         return true;
     }
 

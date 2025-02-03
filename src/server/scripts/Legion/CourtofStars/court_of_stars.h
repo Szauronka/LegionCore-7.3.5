@@ -1,11 +1,10 @@
 /*
+    https://uwow.biz/
     Dungeon : Court of Stars 110
 */
 
 #ifndef COURT_OF_STARS_H_
 #define COURT_OF_STARS_H_
-
-#define DataHeader "COS"
 
 enum eData
 {

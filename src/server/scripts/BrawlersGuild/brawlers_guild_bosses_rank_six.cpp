@@ -602,7 +602,7 @@ public:
 };
 
 
-void AddSC_brawlers_guild_bosses_rank_six()
+void AddSC_the_brawlers_guild_bosses_rank_six()
 {
     new boss_brawguild_topps();
     new boss_brawguild_millie();

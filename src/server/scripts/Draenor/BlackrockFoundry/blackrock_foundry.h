@@ -1,8 +1,6 @@
 #ifndef DEF_BLACKROCK_FOUNDRY_H
 #define DEF_BLACKROCK_FOUNDRY_H
 
-#define DataHeader "BRF"
-
 enum DataTypes
 {
     DataGruul               = 0,

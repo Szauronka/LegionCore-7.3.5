@@ -72,7 +72,7 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Garrison::GarrisonMission
     data << uint32(mission.TravelDuration);
     data << uint32(mission.Duration);
     data << uint32(mission.State);
-    data << uint32(mission.SuccesChance);
+    data << uint32(mission.SuccessChance);
     data << uint32(mission.UnkInt2);
 
     return data;
@@ -110,11 +110,11 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Garrison::GarrisonTalent 
 
 ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Garrison::GarrisonInfo const& garrison)
 {
-    /*
-    TODO:: recheck missions code
+    
+    //TODO:: recheck missions code
     ASSERT(garrison.Missions.size() == garrison.MissionRewards.size());
     ASSERT(garrison.Missions.size() == garrison.MissionOvermaxRewards.size());
-    ASSERT(garrison.Missions.size() == garrison.CanStartMission.size());*/
+    ASSERT(garrison.Missions.size() == garrison.CanStartMission.size());
 
     data << int32(garrison.GarrTypeID);
     data << int32(garrison.GarrSiteID);
@@ -780,7 +780,7 @@ WorldPacket const* WorldPackets::Garrison::QueryGarrisonCreatureNameResponse::Wr
 {
     _worldPacket << InqueKey;
     _worldPacket << NpcGUID;
-    _worldPacket.WriteBit(Name.has_value());
+    _worldPacket.WriteBit(Name.is_initialized());
     _worldPacket.FlushBits();
 
     if (Name)
@@ -807,7 +807,7 @@ void WorldPackets::Garrison::GarrisonGenerateRecruits::Read()
 void WorldPackets::Garrison::GarrisonRenameFollower::Read()
 {
     _worldPacket >> FollowerDBID;
-    FollowerName = _worldPacket.ReadString(_worldPacket.ReadBits(7));
+    _worldPacket.ReadString(7, FollowerName);
 }
 
 void WorldPackets::Garrison::GarrisonSetRecruitmentPreferences::Read()
@@ -917,4 +917,22 @@ WorldPacket const* WorldPackets::Garrison::GarrisonScoutingMapResult::Write()
     _worldPacket.FlushBits();
 
     return &_worldPacket;
+}
+
+void WorldPackets::Garrison::GarrisonGetMissionReward::Read()
+{
+    _worldPacket >> unkint64;
+    _worldPacket >> unkint32;
+}
+
+void WorldPackets::Garrison::GarrisonSetBuildingActive::Read()
+{
+    _worldPacket >> unkint32;
+}
+
+void WorldPackets::Garrison::GarrisonSetFollowerFavorite::Read()
+{
+    _worldPacket >> unkint64;
+    _worldPacket.WriteBit(unkbool);
+    _worldPacket.FlushBits();
 }

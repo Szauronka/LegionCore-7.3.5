@@ -24,11 +24,8 @@ public:
             QUEST = 38690,
         };
 
-        bool GossipHello(Player* player, bool isUse) override
+        bool GossipHello(Player* player) override
         {
-            if (!isUse)
-                return true;
-
             for (int32 i = 0; i < sizeof(q38690); ++i)
             {
                 if (!player->GetReqKillOrCastCurrentCount(QUEST, q38690[i]))
@@ -347,7 +344,7 @@ public:
 
             if (Creature* oAdd = me->FindNearestCreature((me->GetEntry() == 92990 ? 92990 : 97632), 100.0f, true))
             {
-                if (oAdd->IsAlive())
+                if (oAdd->isAlive())
                     return oAdd;
             }
             
@@ -710,11 +707,8 @@ public:
             CREDIT = 100166,
         };
 
-        bool GossipHello(Player* player, bool isUse) override
+        bool GossipHello(Player* player) override
         {
-            if (!isUse)
-                return true;
-
             if (player->GetQuestStatus(QUEST) == QUEST_STATUS_INCOMPLETE)
             {
                 player->CastSpell(player, 226867);
@@ -981,7 +975,8 @@ class spell_199760 : public SpellScriptLoader
                 if (!GetCaster())
                     return;
 
-                Position pos = GetCaster()->GetRandomNearPosition(20.0f);
+                Position pos;
+                GetCaster()->GetRandomNearPosition(pos, 20.0f);
                 WorldLocation* dest = const_cast<WorldLocation*>(GetExplTargetDest());
                 dest->Relocate(pos);
             }
@@ -1008,67 +1003,15 @@ public:
         return new npc_102391AI(creature);
     }
 
-    struct npc_102391AI : public npc_escortAI
+    //! Scripted_NoMovementAI HACK!
+    struct npc_102391AI : public Scripted_NoMovementAI
     {
-        npc_102391AI(Creature* creature) : npc_escortAI(creature) {}
+        npc_102391AI(Creature* creature) : Scripted_NoMovementAI(creature) {}
 
         GuidSet m_player_for_event;
-        ObjectGuid leftAdd;
-        ObjectGuid rightAdd;
-        ObjectGuid bossGUID = ObjectGuid::Create<HighGuid::Creature>(me->GetMapId(), 96680, 365929);
-
-        void IsSummonedBy(Unit* summoner) override
-        {
-            me->RemoveAura(202212);
-            if (summoner->GetTypeId() != TYPEID_PLAYER)
-                return;
-
-            Start(false, true, summoner->GetGUID());
-            if (TempSummon* add = me->SummonCreature(96656, 4445.42f, -679.495f, 117.316f, 5.73285f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 28500))
-            {
-                add->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
-                leftAdd = add->GetGUID();
-            }
-            if (TempSummon* add = me->SummonCreature(96656, 4453.46f, -680.844f, 117.284f, 4.0283f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 28500))
-            {
-                add->AddPlayerInPersonnalVisibilityList(summoner->GetGUID());
-                rightAdd = add->GetGUID();
-            }
-        }
-
-        void WaypointReached(uint32 waypointId) override
-        {
-            switch (waypointId)
-            {
-            case 3:
-                Talk(TEXT_GENERIC_1);
-                break;
-            }
-        }
-
-        void WaypointStart(uint32 waypointId) override
-        {
-            switch (waypointId)
-            {
-            case 1:
-                if (Creature* boss = me->GetCreature(*me, bossGUID))
-                    boss->CastSpell(boss, 202220, true);
-                break;
-            case 4:
-                if (Creature* left = me->GetCreature(*me, leftAdd))
-                    left->GetMotionMaster()->MoveFollow(me, 0.5f, 90.0f);
-                if (Creature* right = me->GetCreature(*me, rightAdd))
-                    right->GetMotionMaster()->MoveFollow(me, 0.5f, 270.0f);
-                break;
-            }
-        }
 
         void MoveInLineOfSight(Unit* who) override
         {
-            // only the static spawn should do this, the summons are for the escape sequence
-            if (me->isSummon())
-                return;
-
             if (who->GetTypeId() != TYPEID_PLAYER || who->IsOnVehicle())
                 return;
 
@@ -1078,88 +1021,16 @@ public:
 
             if (!me->IsWithinDistInMap(who, 50.0f))
                 return;
-
+            
             if (who->ToPlayer()->GetQuestStatus(39684) == QUEST_STATUS_INCOMPLETE)
-                Talk(TEXT_GENERIC_0, who->GetGUID());
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_0, who->ToPlayer()->GetGUID());
+            if (who->ToPlayer()->GetQuestStatus(39684) == QUEST_STATUS_COMPLETE)
+                sCreatureTextMgr->SendChat(me, TEXT_GENERIC_1, who->ToPlayer()->GetGUID());
             
             m_player_for_event.insert(who->GetGUID());
         }
 
     };
-};
-
-class spell_196460 : public SpellScriptLoader
-{
-public:
-    spell_196460() : SpellScriptLoader("spell_196460") { }
-
-    class spell_196460_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_196460_SpellScript);
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            if (!GetCaster())
-                return;
-
-            uint32 missiles = urand(1, 3);
-            float directionX = frand(0.0f, 6.0f);
-            float directionY = 6.0f - directionX;
-            if (urand(0, 1))
-                directionX *= -1.0f;
-            if (urand(0, 1))
-                directionY *= -1.0f;
-
-            Position pos = GetCaster()->GetRandomNearPosition(25.0f);
-            for (int i = 0; i < missiles; i++)
-            {
-                GetCaster()->CastSpellDelay(pos, 196504, true, i * 1000);
-                pos.m_positionX += directionX;
-                pos.m_positionY += directionY;
-            }
-        }
-
-        void Register() override
-        {
-            OnEffectLaunch += SpellEffectFn(spell_196460_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_196460_SpellScript();
-    }
-};
-
-class spell_196462 : public SpellScriptLoader
-{
-public:
-    spell_196462() : SpellScriptLoader("spell_196462") { }
-
-    class spell_196462_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_196462_SpellScript);
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            if (!GetCaster())
-                return;
-
-            Position pos = GetCaster()->GetPosition();
-            pos.SetOrientation(frand(0.0f, 2.0f) * static_cast<float>(M_PI));
-            GetCaster()->CastSpell(pos, 194853, true);
-        }
-
-        void Register() override
-        {
-            OnEffectLaunch += SpellEffectFn(spell_196462_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_196462_SpellScript();
-    }
 };
 
 // 103658 103655
@@ -1423,8 +1294,6 @@ void AddSC_warden_prison()
     new npc_92718();
     new spell_199760();
     new npc_102391();
-    new spell_196460();
-    new spell_196462();
     new npc_q38672();
     new go_244923();
     new npc_96665();

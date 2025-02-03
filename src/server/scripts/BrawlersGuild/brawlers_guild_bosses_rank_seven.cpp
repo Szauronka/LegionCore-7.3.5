@@ -1,6 +1,7 @@
 #include "AchievementMgr.h"
 #include "AreaTriggerAI.h"
 #include "BrawlersGuild.h"
+#include "SpellScript.h"
 
 enum eSpells
 {
@@ -75,7 +76,7 @@ public:
                     case EVENT_2:
                     {
                         Position pos;
-                        me->GetNearPoint2D(pos, 15.0f, frand(float(- M_PI / 3), float(M_PI / 3)));
+                        me->GetNearPoint2D(pos, 15.0f, frand(-M_PI/3, M_PI/3));
                         me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_ACIT_AT);
                         events.RescheduleEvent(EVENT_2, 20000);
                         break;
@@ -515,7 +516,7 @@ public:
     }
 };
 
-void AddSC_brawlers_guild_bosses_rank_seven()
+void AddSC_the_brawlers_guild_bosses_rank_seven()
 {
     new boss_brawguild_nibleah();
     new boss_brawguild_serpent();

@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Neltharions Lair 100-110
     Encounter: Ularogg Cragshaper
     Normal: 100%, Heroic: 100%, Mythic: 100%
@@ -145,19 +146,19 @@ struct boss_ularogg_cragshaper : public BossAI
             case SPELL_STANCE_MOUNTAIN_FILTER:
             {
                 Position pos;
-                pos = me->GetRandomNearPosition(30.0f);
+                me->GetRandomNearPosition(pos, 30.0f);
                 target->CastSpell(pos, SPELL_STANCE_MOUNTAIN_MOVE, true);
                 break;
             }
             case SPELL_STRIKE_MOUNTAIN_2:
             {
                 Position pos;
-                float angle = float(M_PI);
+                float angle = M_PI;
                 for (uint8 i = 0; i < 4; ++i)
                 {
-                    pos = target->GetNearPosition(5.0f, angle);
+                    target->GetNearPosition(pos, 5.0f, angle);
                     target->CastSpell(pos, SPELL_STRIKE_MOUNTAIN_AT, true);
-                    angle += float(M_PI / 2.0f);
+                    angle += M_PI / 2.0f;
                 }
                 break;
             }
@@ -364,7 +365,7 @@ struct npc_nl_understone_drummer : public ScriptedAI
     {
         if (Creature* drums = me->FindNearestCreature(92387, 40.0f, true))
         {
-            if (drums->IsAlive())
+            if (drums->isAlive())
                 events.RescheduleEvent(EVENT_1, 500);
             else
                 events.Reset();
@@ -387,7 +388,7 @@ struct npc_nl_understone_drummer : public ScriptedAI
         {
             if (Creature* drums = me->FindNearestCreature(92387, 40.0f, true))
             {
-                if (drums->IsAlive())
+                if (drums->isAlive())
                 {
                     events.RescheduleEvent(EVENT_1, 1000);
                     drumsMove = false;
@@ -412,7 +413,7 @@ struct npc_nl_understone_drummer : public ScriptedAI
                 {
                     if (Creature* drums = me->FindNearestCreature(92387, 40.0f, true))
                     {
-                        if (drums->IsAlive())
+                        if (drums->isAlive())
                         {
                             pos = me->FindNearestCreature(92387, 40.0f, true)->GetPosition();
                             pos.m_positionX -= 3.0f;

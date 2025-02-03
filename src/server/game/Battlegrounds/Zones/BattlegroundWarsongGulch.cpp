@@ -1,18 +1,19 @@
 /*
- * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #include "BattlegroundWarsongGulch.h"
@@ -253,7 +254,7 @@ void BattlegroundWarsongGulch::StartingEventOpenDoors()
     StartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, BG_EVENT_START_BATTLE);
 
     UpdateWorldState(WorldStates::BG_WS_ENABLE_TIMER, 1);
-    UpdateWorldState(WorldStates::BG_WS_CURRENT_TIMER, int32(GameTime::GetGameTime() + std::chrono::duration_cast<Seconds>(Minutes(15)).count()));
+    UpdateWorldState(WorldStates::BG_WS_CURRENT_TIMER, int32(time(nullptr) + std::chrono::duration_cast<Seconds>(Minutes(15)).count()));
 }
 
 bool BattlegroundWarsongGulch::SetupBattleground()
@@ -278,7 +279,7 @@ bool BattlegroundWarsongGulch::SetupBattleground()
         || !AddObject(BG_WS_OBJECT_DOOR_H_4, BG_OBJECT_DOOR_H_4_WS_ENTRY, 950.7952f, 1459.583f, 342.1523f, 0.05235988f, 0, 0, 0.02617695f, 0.9996573f, RESPAWN_IMMEDIATELY)
         )
     {
-        TC_LOG_ERROR("sql.sql", "BatteGroundWS: Failed to spawn some object Battleground not created!");
+        TC_LOG_ERROR(LOG_FILTER_SQL, "BatteGroundWS: Failed to spawn some object Battleground not created!");
         return false;
     }
 
@@ -287,7 +288,7 @@ bool BattlegroundWarsongGulch::SetupBattleground()
         if (!AddObject(BG_WS_OBJECT_A_FLAG, BG_OBJECT_A_FLAG_WS_ENTRY, 1540.423f, 1481.325f, 351.8284f, 3.089233f, 0.0f, 0.0f, 0.9996573f, 0.02617699f, BG_WS_FLAG_RESPAWN_TIME / 1000) ||
             !AddObject(BG_WS_OBJECT_H_FLAG, BG_OBJECT_H_FLAG_WS_ENTRY, 916.0226f, 1434.405f, 345.413f, 0.01745329f, 0.0f, 0.0f, 0.008726535f, 0.9999619f, BG_WS_FLAG_RESPAWN_TIME / 1000))
         {
-            TC_LOG_ERROR("sql.sql", "BatteGroundWS: Failed to spawn some object Battleground not created!");
+            TC_LOG_ERROR(LOG_FILTER_SQL, "BatteGroundWS: Failed to spawn some object Battleground not created!");
             return false;
         }
     }
@@ -296,7 +297,7 @@ bool BattlegroundWarsongGulch::SetupBattleground()
         if (!AddObject(BG_WS_OBJECT_A_FLAG, BG_OBJECT_A_FLAG_WS_ENTRY, 1357.948f, 1462.004f, 325.2907f, 3.064396f, 0.0f, 0.0f, 0.9996573f, 0.02617699f, BG_WS_FLAG_RESPAWN_TIME / 1000) ||
             !AddObject(BG_WS_OBJECT_H_FLAG, BG_OBJECT_H_FLAG_WS_ENTRY, 1119.123f, 1462.448f, 316.926f, 0.01745246f, 0.0f, 0.0f, 0.008726535f, 0.9999619f, BG_WS_FLAG_RESPAWN_TIME / 1000))
         {
-            TC_LOG_ERROR("sql.sql", "BatteGroundWS: Failed to spawn some object Battleground not created!");
+            TC_LOG_ERROR(LOG_FILTER_SQL, "BatteGroundWS: Failed to spawn some object Battleground not created!");
             return false;
         }
     }
@@ -305,16 +306,16 @@ bool BattlegroundWarsongGulch::SetupBattleground()
         if (!AddObject(BG_WS_OBJECT_A_FLAG, BG_OBJECT_A_FLAG_WS_ENTRY, 1540.423f, 1481.325f, 351.8284f, 3.089233f, 0.0f, 0.0f, 0.9996573f, 0.02617699f, BG_WS_FLAG_RESPAWN_TIME / 1000) ||
             !AddObject(BG_WS_OBJECT_H_FLAG, BG_OBJECT_H_FLAG_WS_ENTRY, 916.0226f, 1434.405f, 345.413f, 0.01745329f, 0.0f, 0.0f, 0.008726535f, 0.9999619f, BG_WS_FLAG_RESPAWN_TIME / 1000))
         {
-            TC_LOG_ERROR("sql.sql", "BatteGroundWS: Failed to spawn some object Battleground not created!");
+            TC_LOG_ERROR(LOG_FILTER_SQL, "BatteGroundWS: Failed to spawn some object Battleground not created!");
             return false;
         }
 
         uint8 i = BG_WS_BRAWL_A_FLAG_2;
         for (auto& pair : brawlObjects)
         {
-            if (!AddObject(i, pair.first, pair.second, Position { }, BG_WS_FLAG_RESPAWN_TIME / 1000))
+            if (!AddObject(i, pair.first, pair.second, {}, BG_WS_FLAG_RESPAWN_TIME / 1000))
             {
-                TC_LOG_ERROR("sql.sql", "BatteGroundWS: Failed to spawn some object Battleground not created!");
+                TC_LOG_ERROR(LOG_FILTER_SQL, "BatteGroundWS: Failed to spawn some object Battleground not created!");
                 return false;
             }
             else if (i - BG_WS_BRAWL_A_FLAG_2 >= 8)
@@ -332,14 +333,14 @@ bool BattlegroundWarsongGulch::SetupBattleground()
     WorldSafeLocsEntry const* sg = sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_MAIN_ALLIANCE);
     if (!sg || !AddSpiritGuide(WS_SPIRIT_MAIN_ALLIANCE, sg->Loc, TEAM_ALLIANCE))
     {
-        TC_LOG_ERROR("sql.sql", "BatteGroundWS: Failed to spawn Alliance spirit guide! Battleground not created!");
+        TC_LOG_ERROR(LOG_FILTER_SQL, "BatteGroundWS: Failed to spawn Alliance spirit guide! Battleground not created!");
         return false;
     }
 
     sg = sWorldSafeLocsStore.LookupEntry(WS_GRAVEYARD_MAIN_HORDE);
     if (!sg || !AddSpiritGuide(WS_SPIRIT_MAIN_HORDE, sg->Loc, TEAM_HORDE))
     {
-        TC_LOG_ERROR("sql.sql", "BatteGroundWS: Failed to spawn Horde spirit guide! Battleground not created!");
+        TC_LOG_ERROR(LOG_FILTER_SQL, "BatteGroundWS: Failed to spawn Horde spirit guide! Battleground not created!");
         return false;
     }
 
@@ -394,7 +395,7 @@ void BattlegroundWarsongGulch::FillInitialWorldStates(WorldPackets::WorldState::
         }
 
         packet.Worldstates.emplace_back(WorldStates::BG_WS_ENABLE_TIMER, 1);
-        packet.Worldstates.emplace_back(WorldStates::BG_WS_CURRENT_TIMER, int32(GameTime::GetGameTime() + std::chrono::duration_cast<Seconds>(Minutes(15) - GetElapsedTime()).count()));
+        packet.Worldstates.emplace_back(WorldStates::BG_WS_CURRENT_TIMER, int32(time(nullptr) + std::chrono::duration_cast<Seconds>(Minutes(15) - GetElapsedTime()).count()));
     }
     else
     {

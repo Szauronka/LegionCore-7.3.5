@@ -150,7 +150,7 @@ public:
                         me->ModifyPower(POWER_MANA, -mana);
 
                         //if this get's us below 10%, then we evocate (the 10th should be summoned now)
-                        if (me->GetPowerPct(POWER_MANA) < 10.f)
+                        if (me->GetPower(POWER_MANA)*100 / me->GetMaxPower(POWER_MANA) < 10)
                         {
                             Talk(SAY_EVOCATE);
                             me->InterruptNonMeleeSpells(false);

@@ -37,7 +37,7 @@ namespace WorldPackets
             uint32 InstanceRealmAddress = 0;
             uint32 AttemptID = 0;
             uint32 CompletionTime = 0;
-            time_t CompletionDate = GameTime::GetGameTime();
+            time_t CompletionDate = time(nullptr);
             uint32 MedalEarned = 0;
             std::vector<Member> Members;
         };
@@ -77,7 +77,7 @@ namespace WorldPackets
             uint32 LastCompletionMilliseconds = 0;
             uint32 CompletedChallengeLevel = 0;
             uint32 ChallengeID = 0;
-            time_t BestMedalDate = GameTime::GetGameTime();
+            time_t BestMedalDate = time(nullptr);
             std::vector<uint16> BestSpecID;
             std::array<uint32, 3> Affixes;
         };
@@ -101,8 +101,8 @@ namespace WorldPackets
 
             uint32 MapId = 0;
             uint32 ChallengeID = 0;
-            time_t LastGuildUpdate = GameTime::GetGameTime();
-            time_t LastRealmUpdate = GameTime::GetGameTime();
+            time_t LastGuildUpdate = time(nullptr);
+            time_t LastRealmUpdate = time(nullptr);
         };
 
         class RequestLeadersResult final : public ServerPacket
@@ -114,8 +114,8 @@ namespace WorldPackets
 
             uint32 MapID = 0;
             uint32 ChallengeID = 0;
-            time_t LastGuildUpdate = GameTime::GetGameTime();
-            time_t LastRealmUpdate = GameTime::GetGameTime();
+            time_t LastGuildUpdate = time(nullptr);
+            time_t LastRealmUpdate = time(nullptr);
             std::vector<ModeAttempt> GuildLeaders;
             std::vector<ModeAttempt> RealmLeaders;
         };

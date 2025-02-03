@@ -1,19 +1,19 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #ifndef BATTLEFIELD_WG_
@@ -41,11 +41,10 @@ typedef std::set<WGWorkshop*> Workshop;
 typedef std::set<Group*> GroupSet;
 //typedef std::set<WintergraspCapturePoint *> CapturePointSet; unused ?
 
-static float constexpr POS_X_CENTER = 5100.f;
-
 enum WintergrastData
 {
     WG_MARK_OF_HONOR                             = 43589,
+    POS_X_CENTER                                 = 5100,
     BATTLEFIELD_WG_ZONEID                        = 4197,             // Wintergrasp
     BATTLEFIELD_WG_MAPID                         = 571               // Northrend
 };
@@ -103,8 +102,8 @@ enum WGQuestCredit
 
 enum Wintergrasp_Sounds
 {
-    OutdoorPvP_WG_SOUND_WORKSHOP_Horde          = 6205, // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
-    OutdoorPvP_WG_SOUND_WORKSHOP_ALLIANCE       = 6298, // пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+    OutdoorPvP_WG_SOUND_WORKSHOP_Horde          = 6205, // время убивать орда
+    OutdoorPvP_WG_SOUND_WORKSHOP_ALLIANCE       = 6298, // к оружию альянс
 };
 
 enum WintergraspData
@@ -1275,7 +1274,7 @@ struct BfWGGameObjectBuilding
                 if (m_WG->GetRelic())
                     m_WG->GetRelic()->RemoveFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_IN_USE);
                 else
-                    TC_LOG_ERROR("misc", "BattlefieldWG: Relic not found.");
+                    TC_LOG_ERROR(LOG_FILTER_GENERAL, "BattlefieldWG: Relic not found.");
                 break;
         }
 
@@ -1396,7 +1395,8 @@ struct BfWGGameObjectBuilding
             // Spawn Turret bottom
             for (uint8 i = 0; i < TowerCannon[towerid].nbTowerCannonBottom; i++)
             {
-                Position turretPos = TowerCannon[towerid].TowerCannonBottom[i].GetPosition();
+                Position turretPos;
+                TowerCannon[towerid].TowerCannonBottom[i].GetPosition(&turretPos);
                 if (Creature* turret = m_WG->SpawnCreature(NPC_WINTERGRASP_TOWER_CANNON, turretPos, TEAM_ALLIANCE))
                 {
                     m_TowerCannonBottomList.insert(turret->GetGUID());
@@ -1421,7 +1421,8 @@ struct BfWGGameObjectBuilding
             // Spawn Turret top
             for (uint8 i = 0; i < TowerCannon[towerid].nbTurretTop; i++)
             {
-                Position towerCannonPos = TowerCannon[towerid].TurretTop[i].GetPosition();
+                Position towerCannonPos;
+                TowerCannon[towerid].TurretTop[i].GetPosition(&towerCannonPos);
                 if (Creature *turret = m_WG->SpawnCreature(28366, towerCannonPos, TeamId(0)))
                 {
                     m_TurretTopList.insert(turret->GetGUID());

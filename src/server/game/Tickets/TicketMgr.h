@@ -77,7 +77,7 @@ enum LagReportType
     LAG_REPORT_TYPE_SPELL = 6
 };
 
-class TC_GAME_API GmTicket
+class GmTicket
 {
 public:
     GmTicket();
@@ -123,7 +123,7 @@ public:
     void SetMessage(std::string const& message)
     {
         _message = message;
-        _lastModifiedTime = uint64(GameTime::GetGameTime());
+        _lastModifiedTime = uint64(time(nullptr));
     }
     void SetComment(std::string const& comment) { _comment = comment; }
     void SetViewed() { _viewed = true; }
@@ -133,7 +133,7 @@ public:
     void AppendResponse(std::string const& response) { _response += response; }
 
     bool LoadFromDB(Field* fields);
-    void SaveToDB(CharacterDatabaseTransaction& trans) const;
+    void SaveToDB(SQLTransaction& trans) const;
     void DeleteFromDB();
 
     void TeleportTo(Player* player) const;
@@ -159,14 +159,18 @@ private:
 };
 typedef std::map<uint32, GmTicket*> GmTicketList;
 
-class TC_GAME_API TicketMgr
+class TicketMgr
 {
 private:
     TicketMgr();
     ~TicketMgr();
 
 public:
-    static TicketMgr* instance();
+    static TicketMgr* instance()
+    {
+        static TicketMgr instance;
+        return &instance;
+    }
 
     void LoadTickets();
     void LoadSurveys();
@@ -202,7 +206,7 @@ public:
     void SetStatus(bool status) { _status = status; }
 
     uint64 GetLastChange() const { return _lastChange; }
-    void UpdateLastChange() { _lastChange = uint64(GameTime::GetGameTime()); }
+    void UpdateLastChange() { _lastChange = uint64(time(nullptr)); }
 
     uint32 GenerateTicketId() { return ++_lastTicketId; }
     uint32 GetOpenTicketCount() const { return _openTicketCount; }

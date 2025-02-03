@@ -1,18 +1,19 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #include "Challenge.h"
@@ -26,7 +27,7 @@
 #include "MiscPackets.h"
 #include "WorldStatePackets.h"
 
-Challenge::Challenge(InstanceMap* map, Player* player, uint32 instanceID, Scenario* scenario) : InstanceScript(map), _instanceScript(nullptr), _challengeEntry(nullptr), _isKeyDepleted(false), _scenario(scenario)
+Challenge::Challenge(Map* map, Player* player, uint32 instanceID, Scenario* scenario) : InstanceScript(map), _instanceScript(nullptr), _challengeEntry(nullptr), _isKeyDepleted(false), _scenario(scenario)
 {
     if (!player)
     {
@@ -126,6 +127,9 @@ void Challenge::OnPlayerEnterForScript(Player* player)
         return;
 
     player->CastSpell(player, ChallengersBurden, true);
+
+    player->RemoveAurasDueToSpell(SPELL_BALDAZZAR_BUFF);
+    player->CastSpell(player, SPELL_BALDAZZAR_BUFF, true);
 }
 
 void Challenge::OnPlayerLeaveForScript(Player* player)
@@ -281,11 +285,9 @@ void Challenge::Update(uint32 diff)
             keyOwner->ChallengeKeyCharded(_item, _challengeLevel);
         else
         {
-            keyOwner = ObjectAccessor::FindPlayer(m_ownerGuid);
-            if (keyOwner)
+            if (keyOwner = ObjectAccessor::FindPlayer(m_ownerGuid))
             {
-                _item = keyOwner->GetItemByGuid(m_itemGuid);
-                if (_item)
+                if (_item = keyOwner->GetItemByGuid(m_itemGuid))
                     keyOwner->ChallengeKeyCharded(_item, _challengeLevel);
                 else
                     CharacterDatabase.PQuery("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u", m_ownerGuid.GetGUIDLow());
@@ -346,6 +348,9 @@ void Challenge::Start()
 
     m_Functions.AddFunction([this]() -> void
     {
+        if (!this)
+            return;
+
         _challengeTimer = 0;
         SendStartElapsedTimer();
 
@@ -416,11 +421,9 @@ void Challenge::Complete()
     }
     else
     {
-        keyOwner = ObjectAccessor::FindPlayer(m_ownerGuid);
-        if (keyOwner)
+        if (keyOwner = ObjectAccessor::FindPlayer(m_ownerGuid))
         {
-            _item = keyOwner->GetItemByGuid(m_itemGuid);
-            if (_item)
+            if (_item = keyOwner->GetItemByGuid(m_itemGuid))
                 keyOwner->ChallengeKeyCharded(_item, _challengeLevel);
             else
                 CharacterDatabase.PQuery("UPDATE challenge_key SET KeyIsCharded = 0, InstanceID = 0 WHERE guid = %u", m_ownerGuid.GetGUIDLow());
@@ -433,7 +436,7 @@ void Challenge::Complete()
     challengeData->ID = sObjectMgr->GetGenerator<HighGuid::Scenario>()->Generate();
     challengeData->MapID = _mapID;
     challengeData->RecordTime = _challengeTimer;
-    challengeData->Date = GameTime::GetGameTime();
+    challengeData->Date = time(nullptr);
     challengeData->ChallengeLevel = _challengeLevel;
     challengeData->TimerLevel = _rewardLevel;
     challengeData->ChallengeID = _challengeEntry ? _challengeEntry->ID : 0;
@@ -451,7 +454,7 @@ void Challenge::Complete()
         ChallengeMember member;
         member.guid = player->GetGUID();
         member.specId = player->GetUInt32Value(PLAYER_FIELD_CURRENT_SPEC_ID);
-        member.Date = GameTime::GetGameTime();
+        member.Date = time(nullptr);
         member.ChallengeLevel = _challengeLevel;
         if (InstanceScript* script = GetInstanceScript())
             member.ChestID = script->_challengeChest.GetEntry();
@@ -474,6 +477,12 @@ void Challenge::Complete()
         player->RemoveAura(ChallengersBurden);
         player->CastSpell(player, SPELL_CHALLENGE_ANTIKICK, true);
         player->KilledMonsterCredit(542180); // for daily event quest
+		
+		if (_challengeLevel >= 15 && player->GetMap()->GetDifficultyID() == DIFFICULTY_MYTHIC_DUNGEON)
+            if (!player->HasAchieved(11162))
+               if (auto ArtKey = sAchievementStore.LookupEntry(11162))
+                player->CompletedAchievement(ArtKey);
+
     });
 
     if (GetChallengeTimer() < 9 * MINUTE)

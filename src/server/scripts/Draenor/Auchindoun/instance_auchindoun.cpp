@@ -9,6 +9,7 @@
 #include "ScriptMgr.h"
 #include "InstanceScript.h"
 #include "auchindoun.hpp"
+#include <GridNotifiers.h>
 
 class instance_auchindoun : public InstanceMapScript
 {
@@ -18,9 +19,8 @@ public:
 
     struct instance_auchindoun_InstanceMapScript : InstanceScript
     {
-        instance_auchindoun_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_auchindoun_InstanceMapScript(Map* map) : InstanceScript(map)
         {
-            SetHeaders(DataHeader);
             m_KaatharDied = false;
             m_TuulaniSummoned = true;
         }
@@ -63,7 +63,7 @@ public:
         {
             m_KaatharDied = false;
 
-            //instance->SetObjectVisibility(150.0f);
+            instance->SetObjectVisibility(150.0f);
 
             SetBossNumber(DataMaxBosses);
         }
@@ -274,9 +274,9 @@ public:
 
                     /// Curtain flames achievement, No Tags Backs! (9552)
                     UnitList targets;
-                    //Trinity::AnyUnitHavingBuffInObjectRangeCheck u_check(creature, creature, 100, 153392, true);
-                    //Trinity::UnitListSearcher<Trinity::AnyUnitHavingBuffInObjectRangeCheck> searcher(creature, targets, u_check);
-                    //creature->VisitNearbyObject(100, searcher);
+                    Trinity::AnyUnitHavingBuffInObjectRangeCheck u_check(creature, creature, 100, 153392, true);
+                    Trinity::UnitListSearcher<Trinity::AnyUnitHavingBuffInObjectRangeCheck> searcher(creature, targets, u_check);
+                    creature->VisitNearbyObject(100, searcher);
 
                     if (!targets.empty())
                         DoCompleteAchievement(AchievementNoTagBacks);

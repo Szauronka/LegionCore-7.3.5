@@ -19,7 +19,10 @@
 #ifndef DEF_SCHOLOMANCE_H
 #define DEF_SCHOLOMANCE_H
 
-#define DataHeader "SC"
+#include "SpellScript.h"
+#include "Map.h"
+#include "Creature.h"
+#include "CreatureAIImpl.h"
 
 enum DataTyped
 { 

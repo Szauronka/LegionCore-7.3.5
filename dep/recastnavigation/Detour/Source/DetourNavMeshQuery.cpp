@@ -100,7 +100,7 @@ inline float dtQueryFilter::getCost(const float* pa, const float* pb,
 }
 #endif	
 	
-static const float H_SCALE = 2.0f; // Search heuristic scale.
+static const float H_SCALE = 0.999f; // Search heuristic scale.
 
 
 dtNavMeshQuery* dtAllocNavMeshQuery()
@@ -321,7 +321,7 @@ dtStatus dtNavMeshQuery::findRandomPointAroundCircle(dtPolyRef startRef, const f
 	// Validate input
 	if (!startRef || !m_nav->isValidPolyRef(startRef))
 		return DT_FAILURE | DT_INVALID_PARAM;
-
+	
 	const dtMeshTile* startTile = 0;
 	const dtPoly* startPoly = 0;
 	m_nav->getTileAndPolyByRefUnsafe(startRef, &startTile, &startPoly);
@@ -506,7 +506,6 @@ dtStatus dtNavMeshQuery::findRandomPointAroundCircle(dtPolyRef startRef, const f
 dtStatus dtNavMeshQuery::closestPointOnPoly(dtPolyRef ref, const float* pos, float* closest, bool* posOverPoly) const
 {
 	dtAssert(m_nav);
-
 	const dtMeshTile* tile = 0;
 	const dtPoly* poly = 0;
 	if (dtStatusFailed(m_nav->getTileAndPolyByRef(ref, &tile, &poly)))
@@ -603,7 +602,7 @@ dtStatus dtNavMeshQuery::closestPointOnPoly(dtPolyRef ref, const float* pos, flo
 dtStatus dtNavMeshQuery::closestPointOnPolyBoundary(dtPolyRef ref, const float* pos, float* closest) const
 {
 	dtAssert(m_nav);
-
+	
 	const dtMeshTile* tile = 0;
 	const dtPoly* poly = 0;
 	if (dtStatusFailed(m_nav->getTileAndPolyByRef(ref, &tile, &poly)))
@@ -1037,7 +1036,7 @@ dtStatus dtNavMeshQuery::findPath(dtPolyRef startRef, dtPolyRef endRef,
 		*pathCount = 1;
 		return DT_SUCCESS;
 	}
-
+	
 	m_nodePool->clear();
 	m_openList->clear();
 	
@@ -1326,7 +1325,7 @@ dtStatus dtNavMeshQuery::updateSlicedFindPath(const int maxIter, int* doneIters)
 
 	dtRaycastHit rayHit;
 	rayHit.maxPath = 0;
-
+		
 	int iter = 0;
 	while (iter < maxIter && !m_openList->empty())
 	{
@@ -2266,7 +2265,7 @@ dtStatus dtNavMeshQuery::getPortalPoints(dtPolyRef from, dtPolyRef to, float* le
 										 unsigned char& fromType, unsigned char& toType) const
 {
 	dtAssert(m_nav);
-
+	
 	const dtMeshTile* fromTile = 0;
 	const dtPoly* fromPoly = 0;
 	if (dtStatusFailed(m_nav->getTileAndPolyByRef(from, &fromTile, &fromPoly)))
@@ -2759,7 +2758,7 @@ dtStatus dtNavMeshQuery::findPolysAroundCircle(dtPolyRef startRef, const float* 
 	int n = 0;
 	
 	const float radiusSqr = dtSqr(radius);
-
+	
 	while (!m_openList->empty())
 	{
 		dtNode* bestNode = m_openList->pop();
@@ -3304,7 +3303,7 @@ dtStatus dtNavMeshQuery::getPolyWallSegments(dtPolyRef ref, const dtQueryFilter*
 	dtAssert(m_nav);
 	
 	*segmentCount = 0;
-
+	
 	const dtMeshTile* tile = 0;
 	const dtPoly* poly = 0;
 	if (dtStatusFailed(m_nav->getTileAndPolyByRef(ref, &tile, &poly)))
@@ -3474,7 +3473,7 @@ dtStatus dtNavMeshQuery::findDistanceToWall(dtPolyRef startRef, const float* cen
 	float radiusSqr = dtSqr(maxRadius);
 	
 	dtStatus status = DT_SUCCESS;
-
+	
 	while (!m_openList->empty())
 	{
 		dtNode* bestNode = m_openList->pop();

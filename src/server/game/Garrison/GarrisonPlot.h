@@ -10,7 +10,7 @@ struct Building
     bool CanActivate() const;
 
     ObjectGuid Guid;
-    ObjectGuid FinalizerGuid;
+	ObjectGuid FinalizerGuid;
     GuidUnorderedSet Spawns;
     Optional<WorldPackets::Garrison::GarrisonBuildingInfo> PacketInfo;
 };

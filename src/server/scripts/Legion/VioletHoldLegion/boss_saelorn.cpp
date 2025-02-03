@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Violet Hold Legion 100-110
     Encounter: Saelorn
     Normal: 100%, Heroic: 100%, Mythic: 100%
@@ -133,7 +134,8 @@ public:
                     case EVENT_PHASE_SPIDER:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
                         {
-                            Position pos = target->GetRandomNearPosition(5.0f);
+                            Position pos;
+                            target->GetRandomNearPosition(pos, 5.0f);
                             me->SummonCreature(NPC_PHASE_SPIDER, pos);
                         }
                         break;
@@ -234,7 +236,7 @@ public:
                                     me->ClearUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED);
                             }
                         }
-                        else if (!me->getVictim() || !me->getVictim()->IsAlive())
+                        else if (!me->getVictim() || !me->getVictim()->isAlive())
                             events.RescheduleEvent(EVENT_1, 1000);
                         events.RescheduleEvent(EVENT_2, 500);
                         break;

@@ -1,11 +1,10 @@
 /*
+    http://uwow.biz
     Dungeon : Seat Of The Triumvirate 110
 */
 
 #ifndef SEAT_OF_THE_TRIUMVIRATE_H_
 #define SEAT_OF_THE_TRIUMVIRATE_H_
-
-#define DataHeader "SOTT"
 
 enum eData
 {

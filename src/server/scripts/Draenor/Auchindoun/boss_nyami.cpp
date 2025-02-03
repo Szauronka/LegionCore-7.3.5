@@ -11,6 +11,7 @@
 #include "ScriptedCreature.h"
 #include "SpellScript.h"
 #include "auchindoun.hpp"
+#include <GridNotifiers.h>
 
 enum eNyamiSpells
 {
@@ -456,29 +457,29 @@ public:
             {
                 if (m_SpellDiff <= diff)
                 {
-                    //std::list<Player*> playerList;
-                    //Trinity::AnyPlayerInObjectRangeCheck check(me, 20.0f);
-                    //Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, playerList, check);
-                    //me->VisitNearbyObject(12.0f, searcher);
-                    //if (!playerList.empty())
-                    //{
-                    //    for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
-                    //    {
-                    //        if (!*itr)
-                    //            continue;
+                    std::list<Player*> playerList;
+                    Trinity::AnyPlayerInObjectRangeCheck check(me, 20.0f);
+                    Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, playerList, check);
+                    me->VisitNearbyObject(12.0f, searcher);
+                    if (!playerList.empty())
+                    {
+                        for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+                        {
+                            if (!*itr)
+                                continue;
 
-                    //        if ((*itr)->IsWithinDistInMap(me, 4.0f))
-                    //        {
-                    //            if (!(*itr)->HasAura(SpellSoulBubbleBuff))
-                    //                me->AddAura(SpellSoulBubbleBuff, *itr);
-                    //        }
-                    //        else
-                    //        {
-                    //            if ((*itr)->HasAura(SpellSoulBubbleBuff))
-                    //                (*itr)->RemoveAura(SpellSoulBubbleBuff);
-                    //        }
-                    //    }
-                    //}
+                            if ((*itr)->IsWithinDistInMap(me, 4.0f))
+                            {
+                                if (!(*itr)->HasAura(SpellSoulBubbleBuff))
+                                    me->AddAura(SpellSoulBubbleBuff, *itr);
+                            }
+                            else
+                            {
+                                if ((*itr)->HasAura(SpellSoulBubbleBuff))
+                                    (*itr)->RemoveAura(SpellSoulBubbleBuff);
+                            }
+                        }
+                    }
 
                     Position l_Source(me->m_positionX, me->m_positionY, me->m_positionZ);
                     Position l_Dest(1652.273f, 3008.761f, 36.79123f);
@@ -670,8 +671,8 @@ public:
                     m_Radiant = true;
                     m_RadiantDiff = 200;
 
-                    float l_X = me->GetPositionX() + 30 * cos(me->GetOrientation());
-                    float l_Y = me->GetPositionY() + 30 * sin(me->GetOrientation());
+                    float l_X = me->GetPositionX() + 30 * cos(me->m_orientation);
+                    float l_Y = me->GetPositionY() + 30 * sin(me->m_orientation);
                     me->GetMotionMaster()->MoveJump(l_X, l_Y, me->GetPositionZ(), 20.0f, 7.0f, 10.0f);
 
                     events.RescheduleEvent(EventRadiantFuryStop, 6 * IN_MILLISECONDS);
@@ -791,7 +792,8 @@ public:
             {
                 if (Creature* l_Trigger = GetCaster()->FindNearestCreature(CreatureCorpsesNyamiFight, 100.0f, true))
                 {
-                    Position position = l_Trigger->GetRandomNearPosition(4.0f);
+                    Position position;
+                    l_Trigger->GetRandomNearPosition(position, 4.0f);
 
                     for (uint32 entry : l_Entries)
                         caster->SummonCreature(entry, position, TEMPSUMMON_MANUAL_DESPAWN);
@@ -911,7 +913,7 @@ void AddSC_boss_nyami()
     new auchindoun_nyami_mob_spiteful_arbitrer();       ///< 76284
     new auchindoun_nyami_mob_twisted_magus();           ///< 76296
     new auchindoun_nyami_mob_warden_cosmetic();         ///< 76572
-    //new auchindoun_nyami_mob_bubble();                  ///< 342652
+    new auchindoun_nyami_mob_bubble();                  ///< 342652
     new auchindoun_nyami_spell_soul_vessel();           ///< 153994
     new auchindoun_nyami_spell_torn_spirits();          ///< 154187
     new auchindoun_nyami_spell_soul_vessel_dummy();     ///< 155327

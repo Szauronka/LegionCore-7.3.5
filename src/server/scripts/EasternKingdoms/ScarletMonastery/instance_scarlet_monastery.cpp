@@ -38,7 +38,7 @@ public:
 
     struct instance_scarlet_monastery_InstanceMapScript : public InstanceScript
     {
-        instance_scarlet_monastery_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_scarlet_monastery_InstanceMapScript(Map* map) : InstanceScript(map) 
         {
             SetBossNumber(MAX_ENCOUNTER);
         }
@@ -56,7 +56,6 @@ public:
 
         void Initialize()
         {
-            SetHeaders(DataHeader);
             LoadDoorData(doorData);
             memset(&encounter, 0, sizeof(encounter));
 
@@ -136,7 +135,7 @@ public:
                     for (GuidSet::const_iterator itr = HorsemanAdds.begin(); itr != HorsemanAdds.end(); ++itr)
                     {
                         Creature* add = instance->GetCreature(*itr);
-                        if (add && add->IsAlive())
+                        if (add && add->isAlive())
                             add->Kill(add);
                     }
                     HorsemanAdds.clear();

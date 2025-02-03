@@ -16,13 +16,12 @@
  */
 
 #include "ScenarioPackets.h"
-#include "ScenarioMgr.h"
 
 void WorldPackets::Scenario::QueryScenarioPOI::Read()
 {
     MissingScenarioPOITreeIDs.resize(_worldPacket.read<uint32>());
-    for (uint32& scenarioPOI : MissingScenarioPOITreeIDs)
-        _worldPacket >> scenarioPOI;
+    for (size_t i = 0; i < MissingScenarioPOITreeIDs.size(); i++)
+        MissingScenarioPOITreeIDs.push_back(_worldPacket.read<uint32>());
 }
 
 WorldPacket const* WorldPackets::Scenario::ScenarioPOIs::Write()
@@ -31,8 +30,8 @@ WorldPacket const* WorldPackets::Scenario::ScenarioPOIs::Write()
     for (auto const& map : PoiInfos)
     {
         _worldPacket << map.CriteriaTreeID;
-        _worldPacket << static_cast<uint32>(map.ScenarioPOIs->size());
-        for (auto const& blob : *map.ScenarioPOIs)
+        _worldPacket << static_cast<uint32>(map.BlobDatas.size());
+        for (auto const& blob : map.BlobDatas)
         {
             _worldPacket << blob.BlobID;
             _worldPacket << blob.MapID;
@@ -42,11 +41,11 @@ WorldPacket const* WorldPackets::Scenario::ScenarioPOIs::Write()
             _worldPacket << blob.Flags;
             _worldPacket << blob.WorldEffectID;
             _worldPacket << blob.PlayerConditionID;
-            _worldPacket << static_cast<uint32>(blob.points.size());
-            for (auto const& point : blob.points)
+            _worldPacket << static_cast<uint32>(blob.Points.size());
+            for (auto const& point : blob.Points)
             {
-                _worldPacket << point.x;
-                _worldPacket << point.y;
+                _worldPacket << point.X;
+                _worldPacket << point.Y;
             }
         }
     }

@@ -19,8 +19,6 @@
 #ifndef DEF_SUNWELLPLATEAU_H
 #define DEF_SUNWELLPLATEAU_H
 
-#define DataHeader "SWP"
-
 /*** Encounters ***/
 enum Data
 {

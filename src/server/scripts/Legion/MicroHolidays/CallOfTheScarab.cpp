@@ -1,10 +1,11 @@
 /*
+    http://uwow.biz
 */
 
 #include "OutdoorPvP.h"
 #include "Packets/WorldStatePackets.h"
 #include "World.h"
-#include "ScriptPCH.h"
+#include "PrecompiledHeaders/ScriptPCH.h"
 
 enum Misc
 {
@@ -125,7 +126,7 @@ public:
 
                 if (AllianceScore > HordeScore)
                 {
-                    WorldDatabase.PExecute("UPDATE game_event SET start_time=null WHERE eventEntry = 76");
+                    WorldDatabase.PExecute("UPDATE game_event SET start_time='0000-00-00 00:00:00' WHERE eventEntry = 76");
                     WorldDatabase.PExecute("UPDATE game_event SET start_time=NOW() WHERE eventEntry = 77");
 
                     if (sGameEventMgr->IsActiveEvent(EVENT_HORDE_FLAG))
@@ -136,7 +137,7 @@ public:
                 }
                 else if (HordeScore > AllianceScore)
                 {
-                    WorldDatabase.PExecute("UPDATE game_event SET start_time=null WHERE eventEntry = 77");
+                    WorldDatabase.PExecute("UPDATE game_event SET start_time='0000-00-00 00:00:00' WHERE eventEntry = 77");
                     WorldDatabase.PExecute("UPDATE game_event SET start_time=NOW() WHERE eventEntry = 76");
 
                     if (sGameEventMgr->IsActiveEvent(EVENT_ALLIANCE_FLAG))
@@ -350,7 +351,7 @@ class spell_silithyst : public AuraScript
 
 void AddSC_CallOfTheScarab()
 {
-    //new OutdoorPvP_Silithus();
+    new OutdoorPvP_Silithus();
     new go_wind_stone();
     RegisterCreatureAI(npc_sillithis_colossus);
     RegisterAuraScript(spell_silithyst);

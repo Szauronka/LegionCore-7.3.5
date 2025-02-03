@@ -751,7 +751,7 @@ class npc_bethtilac_cinderweb_spiderling : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_CHECK_DRONE:
-                            if (!pDrone || !pDrone->IsAlive())
+                            if (!pDrone || !pDrone->isAlive())
                             {
                                 if (Creature* pTarget = me->FindNearestCreature(NPC_CINDERWEB_DRONE, 500.0f))
                                 {
@@ -988,5 +988,5 @@ void AddSC_boss_bethtilac()
     new spell_bethtilac_smoldering_devastation();
     new spell_bethtilac_ember_flare();
     new spell_bethtilac_burning_acid();
-    //new achievement_death_from_above();
+    new achievement_death_from_above();
 }

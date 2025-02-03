@@ -741,7 +741,7 @@ public:
                                 if (pRandomPlayer)
                                     DoCast(pRandomPlayer, SPELL_LEGION_LIGHTNING, false);
                                 else
-                                    TC_LOG_ERROR("scripts", "try to cast SPELL_LEGION_LIGHTNING on invalid target");
+                                    TC_LOG_ERROR(LOG_FILTER_TSCR, "try to cast SPELL_LEGION_LIGHTNING on invalid target");
 
                                 Timer[TIMER_LEGION_LIGHTNING] = (Phase == PHASE_SACRIFICE) ? 18000 : 30000; // 18 seconds in PHASE_SACRIFICE
                                 Timer[TIMER_SOUL_FLAY] = 2500;
@@ -1203,7 +1203,7 @@ public:
                 bPointReached = false;
                 uiCheckTimer = 1000;
                 me->GetMotionMaster()->MovePoint(1, x, y, SHIELD_ORB_Z);
-                c += float(M_PI / 32);
+                c += M_PI/32;
                 if (c >= 2*M_PI) c = 0;
             }
             else
@@ -1397,7 +1397,7 @@ public:
                     DoMeleeAttackIfReady();
                     break;
                 }
-                TC_LOG_DEBUG("scripts", "Sinister-Timer");
+                TC_LOG_DEBUG(LOG_FILTER_TSCR, "Sinister-Timer");
                 for (uint8 i = 0; i < 3; ++i)
                     uiTimer[i] -= diff;
             }

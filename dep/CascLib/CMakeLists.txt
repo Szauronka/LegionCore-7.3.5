@@ -54,8 +54,6 @@ target_include_directories(casc
       ${CMAKE_SOURCE_DIR}/dep)
 
 target_link_libraries(casc
-  PRIVATE
-    trinity-dependency-interface
   PUBLIC
     zlib)
 

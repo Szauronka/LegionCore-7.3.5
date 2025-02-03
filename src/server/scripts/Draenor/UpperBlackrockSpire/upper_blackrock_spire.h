@@ -1,11 +1,12 @@
 /*
+    http://epicwow.com/
     Dungeon : Upper Blackrock Spire 90-100
 */
 
+#include "Position.h"
+
 #ifndef UPPER_BLACKROCK_SPIRE_H_
 #define UPPER_BLACKROCK_SPIRE_H_
-
-#define DataHeader "UBRS"
 
 enum eData
 {

@@ -40,21 +40,20 @@
 #include "SpellAuraEffects.h"
 #include "GuildMgr.h"
 
-// Lazy loading of the command table cache from commands and the
-// ScriptMgr should be thread safe since the player commands,
-// cli commands and ScriptMgr updates are all dispatched one after
-// one inside the world update loop.
-static Optional<std::vector<ChatCommand>> commandTableCache;
+bool ChatHandler::load_command_table = true;
 
 std::vector<ChatCommand> const& ChatHandler::getCommandTable()
 {
-    if (!commandTableCache)
-    {
-        // We need to initialize this at top since SetDataForCommandInTable
-        // calls getCommandTable() recursively.
-        commandTableCache = sScriptMgr->GetChatCommands();
+static std::vector<ChatCommand> commandTableCache;
 
-        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_COMMANDS);
+    if (LoadCommandTable())
+    {
+        SetLoadCommandTable(false);
+
+        std::vector<ChatCommand> cmds = sScriptMgr->GetChatCommands();
+        commandTableCache.swap(cmds);
+
+        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_COMMANDS);
         PreparedQueryResult result = WorldDatabase.Query(stmt);
         if (result)
         {
@@ -63,18 +62,13 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
                 Field* fields = result->Fetch();
                 std::string name = fields[0].GetString();
 
-                SetDataForCommandInTable(*commandTableCache, name.c_str(), fields[1].GetUInt8(), fields[2].GetString(), name);
+                SetDataForCommandInTable(commandTableCache, name.c_str(), fields[1].GetUInt8(), fields[2].GetString(), name);
 
             } while (result->NextRow());
         }
     }
 
-    return *commandTableCache;
-}
-
-void ChatHandler::invalidateCommandTable()
-{
-    commandTableCache.reset();
+    return commandTableCache;
 }
 
 const char *ChatHandler::GetTrinityString(int32 entry) const
@@ -268,23 +262,56 @@ bool ChatHandler::ExecuteCommandInTable(std::vector<ChatCommand> const& table, c
         // must be available and have handler
         if (!table[i].Handler || !isAvailable(table[i]))
             continue;
-
+		
+		
         SetSentErrorMessage(false);
         // table[i].Name == "" is special case: send original command to handler
         if ((table[i].Handler)(this, table[i].Name[0] != '\0' ? text : oldtext))
         {
+			if (!m_session) // ignore console
+				return true;
+
+			Player* player = m_session->GetPlayer();
+
             if (!AccountMgr::IsPlayerAccount(table[i].SecurityLevel))
             {
-                // chat case
-                if (m_session)
-                {
-                    Player* p = m_session->GetPlayer();
-                    ObjectGuid sel_guid = p->GetSelection();
+				ObjectGuid sel_guid = player->GetSelection();
 
-                    /*sLog->outCommand(m_session->GetAccountId(), "Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected: %s (GUID: %u)]",
-                        fullcmd.c_str(), p->GetName(), m_session->GetAccountId(), p->GetPositionX(), p->GetPositionY(), p->GetPositionZ(), p->GetMapId(),
-                        sel_guid.GetTypeName(), (p->GetSelectedUnit()) ? p->GetSelectedUnit()->GetName() : "", sel_guid.GetCounter());*/
-                }
+				uint32 areaId = player->GetAreaId();
+				std::string areaName = "Unknown";
+				std::string zoneName = "Unknown";
+				if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(areaId))
+				{
+					int32 locale = GetSessionDbcLocale();
+					areaName = area->AreaName->Str[locale];
+					if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(area->ParentAreaID))
+						zoneName = zone->AreaName->Str[locale];
+				}
+
+				Unit* target = player->GetSelectedUnit();
+				Player* playerTarget = target ? target->ToPlayer() : nullptr;
+
+				uint8 index = 0;
+		
+				PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOG_GM_COMMAND);
+				stmt->setUInt32(index++, player->GetSession()->GetAccountId());
+				stmt->setString(index++, player->GetSession()->GetAccountName());
+				stmt->setUInt32(index++, player->GetGUID().GetCounter());
+				stmt->setString(index++, player->GetName());
+				stmt->setString(index++, player->GetSession()->GetRemoteAddress());
+				stmt->setUInt32(index++, !playerTarget ? 0 : playerTarget->GetSession()->GetAccountId());
+				stmt->setString(index++, !playerTarget ? "" : playerTarget->GetSession()->GetAccountName());
+				stmt->setUInt32(index++, !playerTarget ? 0 : playerTarget->GetGUID().GetCounter());
+				stmt->setString(index++, !playerTarget ? "" : playerTarget->GetName());
+				stmt->setString(index++, !playerTarget ? "" : playerTarget->GetSession()->GetRemoteAddress());
+				stmt->setString(index++, Trinity::StringFormat("Command: %s [X: %f Y: %f Z: %f Map: %u (%s) Area: %u (%s) Zone: %s Selected: %s (%s)]",
+					fullcmd.c_str(),
+					player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetMapId(),
+					player->FindMap() ? player->FindMap()->GetMapName() : "Unknown",
+					areaId, areaName.c_str(), zoneName.c_str(),
+					target ? target->GetName() : "",
+					sel_guid.ToString().c_str()));
+				CharacterDatabase.Execute(stmt);
             }
         }
         // some commands have custom error messages. Don't send the default one in these cases.
@@ -333,12 +360,12 @@ bool ChatHandler::SetDataForCommandInTable(std::vector<ChatCommand>& table, char
         // expected subcommand by full name DB content
         else if (*text)
         {
-            TC_LOG_ERROR("sql.sql", "Table `command` have unexpected subcommand '%s' in command '%s', skip.", text, fullcommand.c_str());
+            TC_LOG_ERROR(LOG_FILTER_SQL, "Table `command` have unexpected subcommand '%s' in command '%s', skip.", text, fullcommand.c_str());
             return false;
         }
 
         // if (table[i].SecurityLevel != permission)
-            // TC_LOG_DEBUG("misc", "Table `command` overwrite for command '%s' default security (%u) by %u", fullcommand.c_str(), table[i].SecurityLevel, security);
+            // TC_LOG_DEBUG(LOG_FILTER_GENERAL, "Table `command` overwrite for command '%s' default security (%u) by %u", fullcommand.c_str(), table[i].SecurityLevel, security);
 
         table[i].SecurityLevel = permission;
         table[i].Help = help;
@@ -349,9 +376,9 @@ bool ChatHandler::SetDataForCommandInTable(std::vector<ChatCommand>& table, char
     if (!cmd.empty())
     {
         if (&table == &getCommandTable())
-            TC_LOG_ERROR("sql.sql", "Table `command` have not existed command '%s', skip.", cmd.c_str());
+            TC_LOG_ERROR(LOG_FILTER_SQL, "Table `command` have not existed command '%s', skip.", cmd.c_str());
         else
-            TC_LOG_ERROR("sql.sql", "Table `command` have not existed subcommand '%s' in command '%s', skip.", cmd.c_str(), fullcommand.c_str());
+            TC_LOG_ERROR(LOG_FILTER_SQL, "Table `command` have not existed subcommand '%s' in command '%s', skip.", cmd.c_str(), fullcommand.c_str());
     }
 
     return false;
@@ -364,7 +391,7 @@ int ChatHandler::ParseCommands(const char* text)
 
     std::string fullcmd = text;
 
-    if (m_session && AccountMgr::IsPlayerAccount(m_session->GetSecurity()) && !sWorld->getBoolConfig(CONFIG_ALLOW_PLAYER_COMMANDS))
+    if (m_session && AccountMgr::IsPlayerAccount(m_session->GetSecurity()) && !sWorld->getBoolConfig(CONFIG_ALLOW_PLAYER_COMMANDS) && !(text[1] == 'd' && text[2] == 'o' && text[3] == 'n')) // If the config, players can still use .donate
         return 0;
 
     /// chat case (.command or !command format)
@@ -828,6 +855,13 @@ bool ChatHandler::ShowHelpForCommand(std::vector<ChatCommand> const& table, cons
     return ShowHelpForSubCommands(table, "", cmd);
 }
 
+Player* ChatHandler::getPlayer()
+{
+    if (!m_session)
+        return nullptr;
+    return m_session->GetPlayer();
+}
+
 Player* ChatHandler::getSelectedPlayer()
 {
     if (!m_session)
@@ -839,6 +873,17 @@ Player* ChatHandler::getSelectedPlayer()
         return m_session->GetPlayer();
 
     return ObjectAccessor::FindPlayer(guid);
+}
+
+Player* ChatHandler::getSelectedPlayerOrSelf()
+{
+    if (!m_session)
+        return nullptr;
+    ObjectGuid selected = m_session->GetPlayer()->GetSelection();
+    Player* targetPlayer = ObjectAccessor::FindPlayer(selected);
+    if (!targetPlayer)
+        targetPlayer = m_session->GetPlayer();
+    return targetPlayer;
 }
 
 Unit* ChatHandler::getSelectedUnit()

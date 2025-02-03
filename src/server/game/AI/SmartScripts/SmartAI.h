@@ -35,10 +35,13 @@ enum SmartEscortState
     SMART_ESCORT_PAUSED     = 0x004                         //will not proceed with waypoints before state is removed
 };
 
-static float constexpr SMART_ESCORT_MAX_PLAYER_DIST = 50;
-static float constexpr SMART_MAX_AID_DIST = SMART_ESCORT_MAX_PLAYER_DIST / 2.f;
+enum SmartEscortVars
+{
+    SMART_ESCORT_MAX_PLAYER_DIST        = 50,
+    SMART_MAX_AID_DIST    = SMART_ESCORT_MAX_PLAYER_DIST / 2,
+};
 
-class TC_GAME_API SmartAI : public CreatureAI
+class SmartAI : public CreatureAI
 {
     public:
         ~SmartAI();
@@ -144,6 +147,9 @@ class TC_GAME_API SmartAI : public CreatureAI
         // Called when creature gets charmed by another unit
         void OnCharmed(bool apply) override;
 
+        // Called when victim is in line of sight
+        bool CanAIAttack(const Unit* who) const override;
+
         // Used in scripts to share variables
         void DoAction(const int32 param = 0) override;
 
@@ -216,7 +222,7 @@ class TC_GAME_API SmartAI : public CreatureAI
         uint32 mWPPauseTimer;
         WayPoint* mLastWP;
         Position mLastOOCPos;//set on enter combat
-        uint32 GetWPCount();
+        uint32 GetWPCount() const;
         bool mCanRepeatPath;
         bool mRun;
         bool mEvadeDisabled;
@@ -246,7 +252,7 @@ class SmartGameObjectAI : public GameObjectAI
         SmartScript* GetScript();
         static int Permissible(const GameObject* g);
 
-        bool GossipHello(Player* player, bool isUse) override;
+        bool GossipHello(Player* player) override;
         bool GossipSelect(Player* player, uint32 sender, uint32 action) override;
         bool GossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) override;
         bool QuestAccept(Player* player, Quest const* quest) override;
@@ -263,7 +269,6 @@ class SmartGameObjectAI : public GameObjectAI
         SmartScript mScript;
 };
 
-/// Registers scripts required by the SAI scripting system
-void AddSC_SmartScripts();
+void AddSC_SmartSCripts();
 
 #endif

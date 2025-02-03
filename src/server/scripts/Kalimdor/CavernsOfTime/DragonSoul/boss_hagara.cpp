@@ -1872,7 +1872,8 @@ class spell_hagara_the_stormbinder_icy_tomb : public SpellScriptLoader
 
             void OnApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
-                Position pos = aurEff->GetBase()->GetOwner()->GetPosition();
+                Position pos;
+                aurEff->GetBase()->GetOwner()->GetPosition(&pos);
                 if (!GetCaster())
                     return;
                 if (TempSummon* summon = GetCaster()->SummonCreature(NPC_ICY_TOMB, pos))
@@ -2106,7 +2107,7 @@ class spell_hagara_the_stormbinder_lightning_conduit : public SpellScriptLoader
                         if (u->HasAura(SPELL_LIGHTNING_CONDUIT_DUMMY_1))
                             return false;
 
-                        if (!u->IsAlive())
+                        if (!u->isAlive())
                             return false;
 
                         if (!_obj->IsWithinDistInMap(u, _range))

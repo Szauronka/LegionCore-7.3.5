@@ -55,6 +55,7 @@ void ThreadPoolMap::wait()
 
 void ThreadPoolMap::threadFunc()
 {
+    cds::threading::Manager::attachThread();
     FunctorType f;
     while (queue_.pop(f)) {
         f();
@@ -62,4 +63,5 @@ void ThreadPoolMap::threadFunc()
         if (--requestCount_ == 0)
             waitCond_.notify_all();
     }
+    cds::threading::Manager::detachThread();
 }

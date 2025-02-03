@@ -1,9 +1,13 @@
 /*
+    http://epicwow.com/
     Dungeon : Skyreach 97 - 99
     Encounter: Rukhran
 */
 
 #include "skyreach.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
 
 enum Spells
 {

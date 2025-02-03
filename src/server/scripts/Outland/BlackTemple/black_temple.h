@@ -19,8 +19,6 @@
 #ifndef DEF_BLACK_TEMPLE_H
 #define DEF_BLACK_TEMPLE_H
 
-#define DataHeader "BT"
-
 enum eTypes
 {
     DATA_AKAMA                      = 1,

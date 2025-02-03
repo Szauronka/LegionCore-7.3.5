@@ -361,6 +361,7 @@ public:
             finalEvent = false;
 
             me->SetDisableGravity(true);
+            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
             // TO DO: find what in core is making boss slower than in retail (when correct speed data) or find missing movement flag update or forced spline change
             me->SetSpeed(MOVE_FLIGHT, _flySpeed * 0.25f);
             if (_despawned)
@@ -463,7 +464,8 @@ public:
                     break;
                 case ACTION_LIFT_IN_AIR:
                 {
-                    Position pos = me->GetPosition();
+                    Position pos;
+                    me->GetPosition(&pos);
                     if (_phase == PHASE_ONE)
                     {
                         pos.m_positionZ += 20.0f;
@@ -1623,7 +1625,8 @@ public:
                 me->DespawnOrUnsummon(2050);
                 me->SetOrientation(2.5f);
                 me->SetSpeed(MOVE_FLIGHT, 1.0f, true);
-                Position pos = me->GetPosition();
+                Position pos;
+                me->GetPosition(&pos);
                 pos.m_positionX += 10.0f;
                 pos.m_positionY += 10.0f;
                 pos.m_positionZ += 12.0f;

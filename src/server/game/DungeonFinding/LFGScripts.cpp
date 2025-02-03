@@ -38,8 +38,15 @@ void LFGPlayerScript::OnLogout(Player* player)
     if (!sLFGMgr->isOptionEnabled(LFG_OPTION_ENABLE_DUNGEON_FINDER | LFG_OPTION_ENABLE_RAID_BROWSER))
         return;
 
+	if (!player->GetGroup())
+		sLFGMgr->LeaveLfg(player->GetGUID());
+
     if (!player->GetGroup())
         sLFGMgr->LeaveLfg(player->GetGUID());
+	// Arreglo temporal dado que logear en Cronoviaje tufa las stadisticas
+	//if (player->GetMap()->GetLootDifficulty() == DIFFICULTY_TIMEWALKING || player->GetMap()->GetLootDifficulty() == DIFFICULTY_TIMEWALKING_RAID)
+	//	player->SavePositionInDB(player->m_homebindMapId, player->m_homebindX, player->m_homebindY, player->m_homebindZ, 1.0f, player->m_homebindAreaId, player->GetGUID());
+
 }
 
 void LFGPlayerScript::OnLogin(Player* player)
@@ -57,8 +64,8 @@ void LFGPlayerScript::OnLogin(Player* player)
         sLFGMgr->SetupGroupMember(guid, group->GetGUID());
     }
 
-    if (LFGDungeonData const* dungeonData = sLFGMgr->GetLFGDungeon(sLFGMgr->GetDungeon(gguid)))
-        player->EnterInTimeWalk(dungeonData->dbc, true);
+	if (LFGDungeonData const* dungeonData = sLFGMgr->GetLFGDungeon(sLFGMgr->GetDungeon(gguid)))
+       player->EnterInTimeWalk(dungeonData->dbc, true);
     /// @todo - Restore LfgPlayerData and send proper status to player if it was in a group
 }
 
@@ -79,7 +86,7 @@ void LFGPlayerScript::OnMapChanged(Player* player)
             sLFGMgr->LeaveLfg(player->GetGUID(), queueId);
             player->RemoveAurasDueToSpell(LFG_SPELL_LUCK_OF_THE_DRAW);
             player->TeleportTo(player->m_homebindMapId, player->m_homebindX, player->m_homebindY, player->m_homebindZ, 0.0f);
-            TC_LOG_ERROR("lfg", "LFGPlayerScript::OnMapChanged, Player %s (%u) is in LFG dungeon map but does not have a valid group! Teleporting to homebind.", player->GetName(), player->GetGUIDLow());
+            TC_LOG_ERROR(LOG_FILTER_LFG, "LFGPlayerScript::OnMapChanged, Player %s (%u) is in LFG dungeon map but does not have a valid group! Teleporting to homebind.", player->GetName(), player->GetGUIDLow());
             return;
         }
 
@@ -113,14 +120,14 @@ void LFGGroupScript::OnAddMember(Group* group, ObjectGuid const& guid)
 
     if (leader == guid)
     {
-        TC_LOG_DEBUG("lfg", "LFGScripts::OnAddMember [%s]: added [%s] leader [%s]", gguid.ToString().c_str(), guid.ToString().c_str(), leader.ToString().c_str());
+        TC_LOG_DEBUG(LOG_FILTER_LFG, "LFGScripts::OnAddMember [%s]: added [%s] leader [%s]", gguid.ToString().c_str(), guid.ToString().c_str(), leader.ToString().c_str());
         sLFGMgr->SetLeader(gguid, guid);
     }
     else
     {
         LfgState gstate = sLFGMgr->GetState(gguid, queueId);
         LfgState state = sLFGMgr->GetState(guid, queueId);
-        TC_LOG_DEBUG("lfg", "LFGScripts::OnAddMember [%s]: added [%s] leader [%s] gstate: %u, state: %u", gguid.ToString().c_str(), guid.ToString().c_str(), leader.ToString().c_str(), gstate, state);
+        TC_LOG_DEBUG(LOG_FILTER_LFG, "LFGScripts::OnAddMember [%s]: added [%s] leader [%s] gstate: %u, state: %u", gguid.ToString().c_str(), guid.ToString().c_str(), leader.ToString().c_str(), gstate, state);
 
         if (state == LFG_STATE_QUEUED)
             sLFGMgr->LeaveLfg(guid, queueId);
@@ -140,7 +147,7 @@ void LFGGroupScript::OnRemoveMember(Group* group, ObjectGuid const& guid, Remove
 
     ObjectGuid gguid = group->GetGUID();
 
-    TC_LOG_DEBUG("lfg", "LFGScripts::OnRemoveMember [%s]: remove [%s] Method: %d Kicker: [%s] Reason: %s", gguid.ToString().c_str(), guid.ToString().c_str(), method, kicker.ToString().c_str(), (reason ? reason : ""));
+    TC_LOG_DEBUG(LOG_FILTER_LFG, "LFGScripts::OnRemoveMember [%s]: remove [%s] Method: %d Kicker: [%s] Reason: %s", gguid.ToString().c_str(), guid.ToString().c_str(), method, kicker.ToString().c_str(), (reason ? reason : ""));
 
     uint32 queueId = sLFGMgr->GetQueueId(gguid);
 
@@ -198,7 +205,7 @@ void LFGGroupScript::OnDisband(Group* group)
         return;
 
     ObjectGuid gguid = group->GetGUID();
-    TC_LOG_DEBUG("lfg", "LFGScripts::OnDisband %s", gguid.ToString().c_str());
+    TC_LOG_DEBUG(LOG_FILTER_LFG, "LFGScripts::OnDisband %s", gguid.ToString().c_str());
 
     sLFGMgr->RemoveGroupData(gguid);
 }
@@ -210,7 +217,7 @@ void LFGGroupScript::OnChangeLeader(Group* group, ObjectGuid const& newLeaderGui
 
     ObjectGuid gguid = group->GetGUID();
 
-    TC_LOG_DEBUG("lfg", "LFGScripts::OnChangeLeader %s: old %s new %s", gguid.ToString().c_str(), newLeaderGuid.ToString().c_str(), oldLeaderGuid.ToString().c_str());
+    TC_LOG_DEBUG(LOG_FILTER_LFG, "LFGScripts::OnChangeLeader %s: old %s new %s", gguid.ToString().c_str(), newLeaderGuid.ToString().c_str(), oldLeaderGuid.ToString().c_str());
     sLFGMgr->SetLeader(gguid, newLeaderGuid);
 }
 
@@ -222,18 +229,12 @@ void LFGGroupScript::OnInviteMember(Group* group, ObjectGuid const& guid)
     ObjectGuid gguid = group->GetGUID();
     ObjectGuid leader = group->GetLeaderGUID();
     uint32 queueId = sLFGMgr->GetQueueId(gguid);
-    TC_LOG_DEBUG("lfg", "LFGScripts::OnInviteMember %s: invite %s leader %s", gguid.ToString().c_str(), guid.ToString().c_str(), leader.ToString().c_str());
+    TC_LOG_DEBUG(LOG_FILTER_LFG, "LFGScripts::OnInviteMember %s: invite %s leader %s", gguid.ToString().c_str(), guid.ToString().c_str(), leader.ToString().c_str());
     // No gguid ==  new group being formed
     // No leader == after group creation first invite is new leader
     // leader and no gguid == first invite after leader is added to new group (this is the real invite)
     if (!leader.IsEmpty() && gguid.IsEmpty())
         sLFGMgr->LeaveLfg(leader, queueId);
-}
-
-void AddSC_LFGScripts()
-{
-    new LFGPlayerScript();
-    new LFGGroupScript();
 }
 
 } // namespace lfg

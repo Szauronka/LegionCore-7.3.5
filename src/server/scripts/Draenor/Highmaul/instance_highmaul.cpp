@@ -62,10 +62,8 @@ public:
 
     struct instance_highmaul_InstanceMapScript : public InstanceScript
     {
-        instance_highmaul_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_highmaul_InstanceMapScript(Map* map) : InstanceScript(map)
         {
-            SetHeaders(DataHeader);
-
             m_ArenaElevatorActivated = false;
             m_BrackensporeAchievement = false;
             m_DrunkenBileslingerCount = 0;
@@ -731,7 +729,8 @@ public:
 
             if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
             {
-                loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                loc_res_pla.SetMapId(gy->MapID);
             }
 
             return &loc_res_pla;

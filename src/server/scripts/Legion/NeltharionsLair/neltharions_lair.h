@@ -1,11 +1,10 @@
 /*
+    http://uwow.biz
     Dungeon : Neltharions Lair 100-110
 */
 
 #ifndef NELTHARIONS_LAIR_H_
 #define NELTHARIONS_LAIR_H_
-
-#define DataHeader "NL"
 
 enum eData
 {

@@ -21,15 +21,14 @@
 */
 
 #include "Weather.h"
-#include "GameTime.h"
-#include "Log.h"
-#include "MiscPackets.h"
-#include "ObjectMgr.h"
-#include "Player.h"
-#include "ScriptMgr.h"
-#include "Util.h"
-#include "World.h"
 #include "WorldPacket.h"
+#include "Player.h"
+#include "World.h"
+#include "Log.h"
+#include "ObjectMgr.h"
+#include "Util.h"
+#include "ScriptMgr.h"
+#include "MiscPackets.h"
 
 Weather::Weather(uint32 zone, WeatherData const* weatherChances) : m_zone(zone), m_weatherChances(weatherChances)
 {
@@ -37,7 +36,7 @@ Weather::Weather(uint32 zone, WeatherData const* weatherChances) : m_zone(zone),
     m_type = WEATHER_TYPE_FINE;
     m_grade = 0;
 
-    TC_LOG_DEBUG("misc", "WORLD: Starting weather system for zone %u (change every %u minutes).", m_zone, (uint32)(m_timer.GetInterval() / (MINUTE*IN_MILLISECONDS)));
+    TC_LOG_DEBUG(LOG_FILTER_GENERAL, "WORLD: Starting weather system for zone %u (change every %u minutes).", m_zone, (uint32)(m_timer.GetInterval() / (MINUTE*IN_MILLISECONDS)));
 }
 
 bool Weather::Update(uint32 diff)
@@ -84,14 +83,14 @@ bool Weather::ReGenerate()
 
     //78 days between January 1st and March 20nd; 365/4=91 days by season
     // season source http://aa.usno.navy.mil/data/docs/EarthSeasons.html
-    time_t gtime = GameTime::GetGameTime();
+    time_t gtime = sWorld->GetGameTime();
     struct tm ltime;
     localtime_r(&gtime, &ltime);
     uint32 season = ((ltime.tm_yday - 78 + 365) / 91) % 4;
 
     static char const* seasonName[WEATHER_SEASONS] = {"spring", "summer", "fall", "winter"};
 
-    TC_LOG_DEBUG("misc", "Generating a change in %s weather for zone %u.", seasonName[season], m_zone);
+    TC_LOG_DEBUG(LOG_FILTER_GENERAL, "Generating a change in %s weather for zone %u.", seasonName[season], m_zone);
 
     if ((u < 60) && (m_grade < 0.33333334f))                // Get fair
     {
@@ -246,7 +245,7 @@ bool Weather::UpdateWeather()
             wthstr = "fine";
             break;
     }
-    TC_LOG_DEBUG("misc", "Change the weather of zone %u to %s.", m_zone, wthstr);
+    TC_LOG_DEBUG(LOG_FILTER_GENERAL, "Change the weather of zone %u to %s.", m_zone, wthstr);
 
     sScriptMgr->OnWeatherChange(this, state, m_grade);
     return true;

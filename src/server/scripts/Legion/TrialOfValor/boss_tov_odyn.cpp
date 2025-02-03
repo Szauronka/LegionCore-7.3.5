@@ -1,7 +1,11 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "trial_of_valor.h"
 #include "ScriptUtils.h"
 #include "AreaTriggerAI.h"
-#include "ScriptPCH.h"
+#include "PrecompiledHeaders/ScriptPCH.h"
 
 namespace
 {
@@ -1388,7 +1392,7 @@ struct npc_tov_spear_of_light : ScriptedAI
         {
             Position pos;
             float angle = 6.28f / (IsLfrRaid() ? 3 : 5) * i;
-            pos = me->GetNearPosition(3.0f, angle);
+            me->GetNearPosition(pos, 3.0f, angle);
 
             if (auto odyn = instance->instance->GetCreature(instance->GetGuidData(Data::Creatures::Odyn)))
             {

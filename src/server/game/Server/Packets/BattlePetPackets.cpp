@@ -89,7 +89,7 @@ WorldPacket const* WorldPackets::BattlePet::QueryResponse::Write()
 {
     _worldPacket << BattlePetID;
     _worldPacket << CreatureID;
-    _worldPacket.AppendPackedTime(Timestamp);
+    _worldPacket << MS::Utilities::WowTime::Encode(Timestamp);
     if (!_worldPacket.WriteBit(Allow))
         return &_worldPacket;
 
@@ -380,8 +380,8 @@ WorldPacket const* WorldPackets::BattlePet::PetBattleQueueStatus::Write()
     for (auto const& map : Msg.SlotResult)
         _worldPacket << map;
 
-    _worldPacket.WriteBit(Msg.ClientWaitTime.has_value());
-    _worldPacket.WriteBit(Msg.AverageWaitTime.has_value());
+    _worldPacket.WriteBit(Msg.ClientWaitTime.is_initialized());
+    _worldPacket.WriteBit(Msg.AverageWaitTime.is_initialized());
     _worldPacket.FlushBits();
 
     if (Msg.ClientWaitTime)

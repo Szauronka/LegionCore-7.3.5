@@ -1,4 +1,5 @@
 /*==============
+    uwow.biz
 ==============*/
 
 #include "gate_setting_sun.h"
@@ -188,9 +189,9 @@ struct npc_krikthik : public ScriptedAI
     void SelectNextWaypoint(float& x, float& y)
     {
         if (direction)
-            actualAngle -= float(M_PI / 8);
+            actualAngle -= M_PI / 8;
         else
-            actualAngle += float(M_PI / 8);
+            actualAngle += M_PI / 8;
 
         x = CenterPos.GetPositionX() + (me->GetObjectSize() + RADIUS_CIRCLE) * std::cos(actualAngle);
         y = CenterPos.GetPositionY() + (me->GetObjectSize() + RADIUS_CIRCLE) * std::sin(actualAngle);

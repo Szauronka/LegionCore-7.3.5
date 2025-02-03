@@ -88,7 +88,7 @@ Location MoveSpline::ComputePosition() const
     }
     else
     {
-        if (!splineflags.hasFlag(MoveSplineFlag::OrientationFixed | MoveSplineFlag::Falling | MoveSplineFlag::Unknown_0x8))
+        if (!splineflags.hasFlag(MoveSplineFlag::OrientationFixed | MoveSplineFlag::Falling | MoveSplineFlag::Unknown0))
         {
             G3D::Vector3 hermite;
             spline.evaluate_derivative(point_Idx, u, hermite);
@@ -210,7 +210,7 @@ void MoveSpline::init_spline(const MoveSplineInitArgs& args)
     // TODO: what to do in such cases? problem is in input data (all points are at same coords)
     if (spline.length() < minimal_duration)
     {
-        TC_LOG_DEBUG("misc", "MoveSpline::init_spline: zero length spline, wrong input data?");
+        TC_LOG_DEBUG(LOG_FILTER_GENERAL, "MoveSpline::init_spline: zero length spline, wrong input data?");
         spline.set_length(spline.last(), spline.isCyclic() ? 1000 : 1);
     }
     point_Idx = spline.first();
@@ -249,7 +249,6 @@ void MoveSpline::Initialize(const MoveSplineInitArgs& args)
     point_Idx_offset = args.path_Idx_offset;
     initialOrientation = args.initialOrientation;
     spell_effect_extra = args.spellEffectExtra;
-    anim_tier = args.animTier;
     splineIsFacingOnly = args.path.size() == 2 && args.facing.type != MONSTER_MOVE_NORMAL && ((args.path[1] - args.path[0]).length() < 0.1f);
 
     onTransport = false;
@@ -307,7 +306,7 @@ bool MoveSplineInitArgs::Validate() const
 #define CHECK(exp) \
     if (!(exp))\
     {\
-        /* TC_LOG_DEBUG("misc", "MoveSplineInitArgs::Validate: expression '%s' failed", #exp); */\
+        /* TC_LOG_DEBUG(LOG_FILTER_GENERAL, "MoveSplineInitArgs::Validate: expression '%s' failed", #exp); */\
         return false;\
     }
 #define CHECK_V(exp) \

@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Violet Hold Legion 100-110
     Encounter: Anubesset
     Normal: 100%, Heroic: 100%, Mythic: 100%
@@ -116,7 +117,7 @@ public:
                 for(uint16 i = 0; i < 120; i++)
                 {
                     float angle = frand(-0.2f, 0.2f);
-                    pos = me->GetNearPosition(dist, angle);
+                    me->GetNearPosition(pos, dist, angle);
                     me->CastSpell(pos, SPELL_IMPALE_TRIG, true);
                     dist += 2;
                 }
@@ -124,7 +125,7 @@ public:
             if (spell->Id == SPELL_SUM_BEETLE_FILTER)
             {
                 Position pos;
-                pos = target->GetNearPosition(7.0f, frand(0.0f, 3.0f));
+                target->GetNearPosition(pos, 7.0f, frand(0.0f, 3.0f));
                 me->CastSpell(pos, SPELL_SUM_OOZING_BEETLE, true);
             }
         }
@@ -219,7 +220,7 @@ public:
                     case EVENT_2:
                     {
                         Position pos;
-                        pos = me->GetRandomNearPosition(40.0f);
+                        me->GetRandomNearPosition(pos, 40.0f);
                         me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_BURROW, true);
                         events.RescheduleEvent(EVENT_2, 16000);
                         break;

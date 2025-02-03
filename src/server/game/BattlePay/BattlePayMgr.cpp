@@ -1,23 +1,6 @@
-/*
-* Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
-* Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
-*
-* This program is free software; you can redistribute it and/or modify it
-* under the terms of the GNU General Public License as published by the
-* Free Software Foundation; either version 2 of the License, or (at your
-* option) any later version.
-*
-* This program is distributed in the hope that it will be useful, but WITHOUT
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
-* more details.
-*
-* You should have received a copy of the GNU General Public License along
-* with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
-
 #include "Common.h"
 #include "ObjectMgr.h"
+#include "Chat.h"
 #include "BattlePayMgr.h"
 #include "WorldSession.h"
 #include "Player.h"
@@ -31,16 +14,19 @@
 #include "BattlePetData.h"
 #include "CharacterService.h"
 #include "CollectionMgr.h"
-#include "Chat.h"
+#include "Guild.h"
+#include "GuildPackets.h"
+#include "GuildMgr.h"
 
 using namespace Battlepay;
 
 BattlepayManager::BattlepayManager(WorldSession* session)
 {
     _session = session;
-    _walletName = "Donation points";
+    _walletName = "Battle Coins";
     _purchaseIDCount = 0;
     _distributionIDCount = 0;
+    _isInGameStore = true;
 }
 
 BattlepayManager::~BattlepayManager() = default;
@@ -78,10 +64,10 @@ BattlePayCurrency BattlepayManager::GetShopCurrency() const
 
 bool BattlepayManager::IsAvailable() const
 {
-    if (AccountMgr::IsModeratorAccount(_session->GetSecurity()))
+    if (AccountMgr::IsPlayerAccount(_session->GetSecurity()))
         return true;
 
-    return sWorld->getBoolConfig(CONFIG_FEATURE_SYSTEM_BPAY_STORE_ENABLED);
+    return sWorld->getBoolConfig(CONFIG_PURCHASE_SHOP_ENABLED);
 }
 
 std::string Product::Serialize() const
@@ -121,25 +107,63 @@ std::string Product::Serialize() const
     return res;
 }
 
-void BattlepayManager::ProcessDelivery(Purchase* purchase)
+void BattlepayManager::SavePurchase(Purchase * purchase)
+{
+    auto const& product = sBattlePayDataStore->GetProduct(purchase->ProductID);
+
+    auto stm = CharacterDatabase.GetPreparedStatement(CHAR_INS_PURCHASE);
+    stm->setUInt32(0, _session->GetAccountId());
+    stm->setUInt32(1, realm.Id.Realm);
+    stm->setUInt32(2, _session->GetPlayer() ? _session->GetPlayer()->GetGUIDLow() : 0);
+    stm->setString(3, product.Serialize());
+    stm->setUInt32(4, purchase->CurrentPrice);
+    stm->setString(5, _session->GetRemoteAddress());
+
+    _session->_queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stm).WithPreparedCallback([this](PreparedQueryResult result) -> void
+        {
+            OnPrepareStatementCallbackEvent(CallbackEvent::SavePurchase);
+        }));
+}
+
+void BattlepayManager::OnPrepareStatementCallbackEvent(uint8 callbackEvent)
+{
+    switch (callbackEvent)
+    {
+    case CallbackEvent::SavePurchase:
+        SendPointsBalance();
+        break;
+    default:
+        break;
+    }
+}
+
+void BattlepayManager::ProcessDelivery(Purchase * purchase)
 {
     // _existProducts.insert
     auto player = _session->GetPlayer(); // atm only ingame shop -_-
 
-    auto const* product = sBattlePayDataStore->GetProduct(purchase->ProductID);
-    if (!product)
-        return;
-
-    switch (product->WebsiteType)
+    auto const& product = sBattlePayDataStore->GetProduct(purchase->ProductID);
+    switch (product.WebsiteType)
     {
     case Battlepay::Item:
-        for (auto const& itr : product->Items)
+        for (auto const& itr : product.Items)
             if (player)
-                player->AddItem(itr.ItemID, itr.Quantity);
+            {
+                // Check if the item is heirloom we unlock in collectionmgr instead of adding it
+                if (HeirloomEntry const* heirloom = sDB2Manager.FindHeirloom(itr.ItemID))
+                {
+                    player->GetCollectionMgr()->AddHeirloom(heirloom->ItemID, 0);
+
+                    // We also upgrade it to 110lvl cuz we are cool
+                    player->GetCollectionMgr()->UpgradeHeirloom(heirloom->ItemID, heirloom->UpgradeItemID[2]);
+                }
+                else
+                    player->AddItem(itr.ItemID, itr.Quantity);
+            }
         break;
     case Battlepay::BattlePet:
         if (player)
-            for (auto const& itr : product->Items)
+            for (auto const& itr : product.Items)
                 player->AddBattlePetByCreatureId(itr.ItemID, true, true);
         break;
     case Rename:
@@ -157,32 +181,361 @@ void BattlepayManager::ProcessDelivery(Purchase* purchase)
         if (player)
             sCharacterService->Customize(player);
         break;
+    case AppareanceArtifact:
+        if (player)
+            sCharacterService->AppareanceArtifact(player);
+        break;
     case Race:
         if (player)
             sCharacterService->ChangeRace(player);
         break;
+    case CategoryGold:
+        if (player)
+
+            break;
+    
     case CharacterBoost:
     {
-        if (_session->HasAuthFlag(AT_AUTH_FLAG_90_LVL_UP)) //@send error?
+        if (_session->HasAuthFlag(AT_AUTH_FLAG_20_LVL_UP)) //@send error?
             break;
 
         //SendBattlePayDistribution(purchase->ProductID, DistributionStatus::BATTLE_PAY_DIST_STATUS_AVAILABLE, 1);
 
-        //if (player)
-        //    sCharacterService->Boost(player);
+        /* if (player)
+           sCharacterService->Boost(player);
         break;
+		*/
     }
-
+    //case Gold:
+    //    break;
     //case Category:
     //    break;
     //case Battlepay::Spell:
     //    break;
     //case Currency:
     //    break;
-    //case GuildRename:
-    //    break;
-    //case Gold:
-    //    break;
+    case Gold1:
+        if (player)
+            sCharacterService->Gold20k(player);
+        break;
+    case Gold2:
+        if (player)
+            sCharacterService->Gold50k(player);
+        break;
+    case Gold3:
+        if (player)
+            sCharacterService->Gold100k(player);
+        break;
+    case Gold4:
+        if (player)
+            sCharacterService->Gold250k(player);
+        break;
+    case Gold5:
+        if (player)
+            sCharacterService->Gold500k(player);
+        break;
+    case Gold6:
+        if (player)
+            sCharacterService->Gold1000k(player);
+        break;
+    case ProfPriAlchemy:
+        if (player)
+            sCharacterService->ProfPriAlchemy(player);
+        break;
+    case ProfPriSastre:
+        if (player)
+            sCharacterService->ProfPriSastre(player);
+        break;
+    case ProfPriJoye:
+        if (player)
+            sCharacterService->ProfPriJoye(player);
+        break;
+    case ProfPriHerre:
+        if (player)
+            sCharacterService->ProfPriHerre(player);
+        break;
+    case ProfPriPele:
+        if (player)
+            sCharacterService->ProfPriPele(player);
+        break;
+    case ProfPriInge:
+        if (player)
+            sCharacterService->ProfPriInge(player);
+        break;
+    case ProfPriInsc:
+        if (player)
+            sCharacterService->ProfPriInsc(player);
+        break;
+    case ProfPriEncha:
+        if (player)
+            sCharacterService->ProfPriEncha(player);
+        break;
+    case ProfPriDesu:
+        if (player)
+            sCharacterService->ProfPriDesu(player);
+        break;
+    case ProfPriMing:
+        if (player)
+            sCharacterService->ProfPriMing(player);
+        break;
+    case ProfPriHerb:
+        if (player)
+            sCharacterService->ProfPriHerb(player, _session);
+        break;
+    case ProfSecCoci:
+        if (player)
+            sCharacterService->ProfSecCoci(player);
+        break;
+    case ProfSecArque:
+        if (player)
+            sCharacterService->ProfSecArque(player);
+        break;
+    case ProfSecPrau:
+        if (player)
+            sCharacterService->ProfSecPrau(player);
+        break;
+    case ProfSecFish:
+        if (player)
+            sCharacterService->ProfSecFish(player);
+        break;
+    case RepClassic:
+        if (player)
+            sCharacterService->RepClassic(player);
+        break;
+    case RepBurnig:
+        if (player)
+            sCharacterService->RepBurnig(player);
+        break;
+    case RepTLK:
+        if (player)
+            sCharacterService->RepTLK(player);
+        break;
+    case RepCata:
+        if (player)
+            sCharacterService->RepCata(player);
+        break;
+    case RepPanda:
+        if (player)
+            sCharacterService->RepPanda(player);
+        break;
+    case RepDraenor:
+        if (player)
+            sCharacterService->RepDraenor(player);
+        break;
+    case RepLegion:
+        if (player)
+            sCharacterService->RepLegion(player);
+        break;
+    case Unbinall:
+        if (player)
+            sCharacterService->Unbinall(player);
+        break;
+    case RacesAlliedHighmountainTauren:
+        if (player)
+            sCharacterService->RacesAlliedHighmountainTauren(player);
+        break;
+
+    case RacesAlliedNightborne:
+        if (player)
+            sCharacterService->RacesAlliedNightborne(player);
+        break;
+
+    case RacesAlliedVoidElf:
+        if (player)
+            sCharacterService->RacesAlliedVoidElf(player);
+        break;
+
+    case RacesAlliedLighForgedDraenei:
+        if (player)
+            sCharacterService->RacesAlliedLighForgedDraenei(player);
+        break;
+  
+    case GuildRename:
+    {
+        if (!product.ScriptName.compare("battlepay_service_guildrename"));
+        {
+            Guild* guild = player->GetGuild();
+            if (!guild)
+            {
+                Guild::SendCommandResult(player->GetSession(), GUILD_PROMOTE_SS, ERR_GUILD_PLAYER_NOT_IN_GUILD);
+                return;
+            }
+
+            if (guild->GetLeaderGUID() != player->GetGUID())
+            {
+                Guild::SendCommandResult(player->GetSession(), GUILD_PROMOTE_SS, ERR_GUILD_PERMISSIONS);
+                return;
+            }
+
+            guild->SetRename(true);
+        }
+    }
+    break;
+   	case MOPChallengeModeTransmog:
+		if (player)
+			sCharacterService->UnlockMOPChallengeModeTransmog(player);
+		break;
+
+	case WODChallengeModeTransmog:
+		if (player)
+			for (uint32 tmogid : WODChallengeTransmogIDs)
+			{
+				if (!player->GetCollectionMgr()->HasTransmog(tmogid))
+					player->GetCollectionMgr()->AddTransmog(tmogid, 0);
+			}
+		break;
+
+	case WarglaivesOfAzzinothTransmog:
+		if (player)
+		{
+			player->CompletedAchievement(sAchievementStore.LookupEntry(11869));
+			player->GetCollectionMgr()->AddTransmogSet(1347);
+		}
+		break;
+
+	case HeritageHighmountainTauren:
+		if (player)
+			player->GetCollectionMgr()->AddTransmogSet(1522);
+		break;
+
+	case HeritageLightforgedDraenei:
+		if (player)
+			player->GetCollectionMgr()->AddTransmogSet(1525);
+		break;
+
+	case HeritageNightborne:
+		if (player)
+			player->GetCollectionMgr()->AddTransmogSet(1523);
+		break;
+
+	case HeritageVoidElf:
+		if (player)
+			player->GetCollectionMgr()->AddTransmogSet(1524);
+		break;
+		//case PremadeCharacter:
+		//    break;
+		//case RealmTransfer:
+		//    break;
+		//case ExpansionTransfer:
+		//    break;
+		//case Premium:
+		//    break;
+		//case PackItems:
+		//    break;
+		//case ItemProfession:
+		//    break;	
+		//case Transmogrification:
+		//    break;
+		//case CategoryProfession:
+		//    break;
+		//case CategoryPremade:
+		//    break;
+		//case ItemMount:
+		//    break;
+		//case CategoryCharacterManagement:
+		//    break;
+		//case CategoryRealmTransfer:
+		//    break;
+		//case CategoryExpansionTransfer:
+		//    break;
+    case Gold:
+    {
+        if (!player)
+            break;
+
+        if (!product.ScriptName.compare("battlepay_nethershard_1k"))
+        {
+            player->ModifyCurrency(1226, 1000);
+            break;
+        }
+        else if (!product.ScriptName.compare("battlepay_resources_1k"))
+        {
+            player->ModifyCurrency(1220, 1000);
+            break;
+        }
+        else if (!product.ScriptName.compare("battlepay_supplies_1k"))
+        {
+            player->ModifyCurrency(1342, 1000);
+            break;
+        }
+        else if (!product.ScriptName.compare("battlepay_badge_1k"))
+        {
+            player->ModifyCurrency(1166, 1000);
+            break;
+        }
+        else if (!product.ScriptName.compare("battlepay_garrison_200"))
+        {
+            player->ModifyCurrency(824, 200);
+            break;
+        }
+        else if (!product.ScriptName.compare("battlepay_crystal_5k"))
+        {
+            player->ModifyCurrency(823, 5000);
+            break;
+        }
+        else if (!product.ScriptName.compare("battlepay_timeless_5k"))
+        {
+            player->ModifyCurrency(777, 5000);
+            break;
+        }
+        else if (!product.ScriptName.compare("battlepay_argunite_2k"))
+        {
+            player->ModifyCurrency(1508, 2000);
+            break;
+        }
+        else if (!product.ScriptName.compare("battlepay_sightless_1k"))
+        {
+            player->ModifyCurrency(1149, 1000);
+            break;
+        }
+        else if (!product.ScriptName.compare("battlepay_echoes of battle_1k"))
+        {
+            player->ModifyCurrency(1356, 100);
+            break;
+        }
+        else if (!product.ScriptName.compare("battlepay_echoes of domination_1k"))
+        {
+            player->ModifyCurrency(1357, 100);
+            break;
+        }
+        else if (!product.ScriptName.compare("battlepay_essence_1k"))
+        {
+            player->ModifyCurrency(1533, 1000);
+            break;
+        }
+        else if (!product.ScriptName.compare("goblin_hunter"))
+        {
+            player->AddItem(3000203, 1);
+            break;
+        }
+        else if (!product.ScriptName.compare("goblin_warrior"))
+        {
+            player->AddItem(3000202, 1);
+            break;
+        }
+        else if (!product.ScriptName.compare("goblin_fist"))
+        {
+            player->AddItem(3000204, 1);
+            break;
+        }
+        else if (!product.ScriptName.compare("goblin_grit"))
+        {
+            player->AddItem(3000205, 1);
+            break;
+        }
+        else if (!product.ScriptName.compare("wod_pathfinder"))
+        {
+            player->learnSpell(191645, true);
+            break;
+        }
+        else if (!product.ScriptName.compare("legion_pathfinder"))
+        {
+            player->learnSpell(226342, true);
+            player->learnSpell(233368, true);
+            break;
+        }
+    }
+    break;
     //case Level:
     //    break;
     //case PremadeCharacter:
@@ -212,13 +565,32 @@ void BattlepayManager::ProcessDelivery(Purchase* purchase)
     //case CategoryExpansionTransfer:
     //    break;
     //case CategoryGold:
-    //    break;
+    //   break;
     default:
         break;
     }
 
-    if (!product->ScriptName.empty())
+    if (!product.ScriptName.empty())
         sScriptMgr->OnBattlePayProductDelivery(_session, product);
+
+    if (!IsInGameStore())
+    {
+        auto flags = player->GetAtLoginFlags();
+        _session->SendCharacterEnum(false, flags, player->GetGUID().GetCounter());
+        _session->LogoutPlayer(false);
+    }
+}
+
+
+void BattlepayManager::OnPaymentSucess(uint32 newBalance)
+{
+    auto player = _session->GetPlayer();
+    if (!player)
+        return;
+
+    std::ostringstream data;
+    data << newBalance;
+    player->SendCustomMessage(GetCustomMessage(CustomMessage::StoreBalance), data);
 }
 
 bool BattlepayManager::AlreadyOwnProduct(uint32 itemId) const
@@ -243,6 +615,21 @@ bool BattlepayManager::AlreadyOwnProduct(uint32 itemId) const
 
     return false;
 }
+
+auto GroupFilterForSession = [](uint32 groupId) -> bool
+{
+    switch (groupId)
+    {
+    case ProductGroups::Mount:
+    case ProductGroups::Pets:
+    case ProductGroups::Services:
+    case ProductGroups::Boosts:
+    case ProductGroups::Heirlooms:
+        return true;
+    default:
+        return false;
+    }
+};
 
 auto BattlepayManager::ProductFilter(Product product) -> bool
 {
@@ -361,17 +748,14 @@ void BattlepayManager::SendProductList()
 
     for (auto& itr : sBattlePayDataStore->GetProductGroups())
     {
-        if (!player && itr.IngameOnly)
-            continue;
-
-        if (itr.OwnsTokensOnly && _session->GetTokenBalance(itr.TokenType) <= 0)
+        if (!player && !GroupFilterForSession(itr.GroupID))
             continue;
 
         WorldPackets::BattlePay::BattlePayProductGroup pGroup;
         pGroup.GroupID = itr.GroupID;
         pGroup.IconFileDataID = itr.IconFileDataID;
         pGroup.Ordering = itr.Ordering;
-        pGroup.Flags = itr.Flags;
+        pGroup.UnkInt = 0;
         pGroup.IsAvailableDescription = "";
         pGroup.DisplayType = itr.DisplayType;
 
@@ -384,14 +768,7 @@ void BattlepayManager::SendProductList()
 
     for (auto const& itr : sBattlePayDataStore->GetShopEntries())
     {
-        Battlepay::ProductGroup* productGroup = sBattlePayDataStore->GetProductGroup(itr.GroupID);
-        if (!productGroup)
-            continue;
-
-        if (!player && productGroup->IngameOnly)
-            continue;
-
-        if (productGroup->OwnsTokensOnly && _session->GetTokenBalance(productGroup->TokenType) <= 0)
+        if (!player && !GroupFilterForSession(itr.GroupID))
             continue;
 
         WorldPackets::BattlePay::BattlePayShopEntry sEntry;
@@ -405,7 +782,7 @@ void BattlepayManager::SendProductList()
         auto data = WriteDisplayInfo(itr.DisplayInfoID, localeIndex);
         if (std::get<0>(data))
         {
-            sEntry.DisplayInfo.emplace();
+            sEntry.DisplayInfo = boost::in_place();
             sEntry.DisplayInfo = std::get<1>(data);
         }
 
@@ -418,15 +795,7 @@ void BattlepayManager::SendProductList()
         if (!ProductFilter(product))
             continue;
 
-        Battlepay::ProductGroup* productGroup = sBattlePayDataStore->GetProductGroupForProductId(product.ProductID);
-        if (!productGroup)
-            continue;
-
-        if (!player && productGroup->IngameOnly)
-            continue;
-
-        int64 tokenBalance = _session->GetTokenBalance(productGroup->TokenType);
-        if (productGroup->OwnsTokensOnly && tokenBalance <= 0)
+        if (!player && !GroupFilterForSession(sBattlePayDataStore->GetProductGroupId(product.ProductID)))
             continue;
 
         WorldPackets::BattlePay::ProductInfoStruct pInfo;
@@ -441,14 +810,9 @@ void BattlepayManager::SendProductList()
         auto dataPI = WriteDisplayInfo(product.DisplayInfoID, localeIndex);
         if (std::get<0>(dataPI))
         {
-            pInfo.DisplayInfo.emplace();
+            pInfo.DisplayInfo = boost::in_place();
             pInfo.DisplayInfo = std::get<1>(dataPI);
         }
-
-        bool hideProductPrice = false;
-        if (pInfo.DisplayInfo.has_value() && pInfo.DisplayInfo->Flags.has_value())
-            hideProductPrice = *pInfo.DisplayInfo->Flags & BattlepayDisplayInfoFlag::HidePrice;
-        bool hasEnoughTokens = tokenBalance >= product.CurrentPriceFixedPoint;
 
         response.ProductList.ProductInfo.emplace_back(pInfo);
 
@@ -474,17 +838,13 @@ void BattlepayManager::SendProductList()
             //pItem.UnkInt1 = 0;
             //pItem.UnkInt2 = 0;
             //pItem.UnkByte = 0;
-
-            // if the product is already owned disable the buy button
-            // also disable the button if we don't show the price for a product
-            // and the player does not have enough tokens to pay for the product
-            pItem.HasPet = AlreadyOwnProduct(item.ItemID) || (hideProductPrice && !hasEnoughTokens);
+            pItem.HasPet = AlreadyOwnProduct(item.ItemID);
             pItem.PetResult = item.PetResult;
 
             auto dataP = WriteDisplayInfo(item.DisplayInfoID, localeIndex);
             if (std::get<0>(dataP))
             {
-                pItem.DisplayInfo.emplace();
+                pItem.DisplayInfo = boost::in_place();
                 pItem.DisplayInfo = std::get<1>(dataP);
             }
 
@@ -494,7 +854,7 @@ void BattlepayManager::SendProductList()
         auto dataP = WriteDisplayInfo(product.DisplayInfoID, localeIndex);
         if (std::get<0>(dataP))
         {
-            pProduct.DisplayInfo.emplace();
+            pProduct.DisplayInfo = boost::in_place();
             pProduct.DisplayInfo = std::get<1>(dataP);
         }
 
@@ -506,7 +866,7 @@ void BattlepayManager::SendProductList()
 
 std::tuple<bool, WorldPackets::BattlePay::ProductDisplayInfo> BattlepayManager::WriteDisplayInfo(uint32 displayInfoID, LocaleConstant localeIndex, uint32 productId /*= 0*/)
 {
-    auto GeneratePackDescription = [localeIndex](Product const* product) -> std::string
+    auto GeneratePackDescription = [localeIndex](Product const& product) -> std::string
     {
         auto getQualityColor = [](uint32 quality) -> std::string
         {
@@ -534,7 +894,7 @@ std::tuple<bool, WorldPackets::BattlePay::ProductDisplayInfo> BattlepayManager::
         };
 
         std::string res;
-        for (auto itr : product->Items)
+        for (auto itr : product.Items)
             if (auto itemTemplate = sObjectMgr->GetItemTemplate(itr.ItemID))
                 res += getQualityColor(itemTemplate->GetQuality()) + itemTemplate->GetName()->Get(localeIndex) + "\n";
         return res;
@@ -562,7 +922,7 @@ std::tuple<bool, WorldPackets::BattlePay::ProductDisplayInfo> BattlepayManager::
     if (productId)
     {
         auto product = sBattlePayDataStore->GetProduct(productId);
-        if (!product->Items.empty())
+        if (!product.Items.empty())
             info.Name3 = GeneratePackDescription(product);
     }
     else if (displayLocale)
@@ -604,25 +964,19 @@ std::tuple<bool, WorldPackets::BattlePay::ProductDisplayInfo> BattlepayManager::
 
 void BattlepayManager::SendPointsBalance()
 {
-    ChatHandler chatHandler(_session);
-    if (!_session->GetPlayer())
+    auto player = _session->GetPlayer();
+
+    if (!player)
         return;
 
-    chatHandler.PSendSysMessage("Account name: %s", _session->GetAccountName());
-
-    for (auto& tokenType : sBattlePayDataStore->GetTokenTypes())
-    {
-        int64 balance = _session->GetTokenBalance(tokenType.first);
-        if (balance || tokenType.second.listIfNone)
-            chatHandler.PSendSysMessage("%s: %d", tokenType.second.name, balance);
-    }
+    ChatHandler(player->GetSession()).PSendSysMessage("|cff7ebff1 | Account: (%u) %s | Credits: %u |", player->GetSession()->GetAccountId(), player->GetSession()->GetAccountName().c_str(), player->GetDonateTokens());
 }
 
 void BattlepayManager::SendBattlePayDistribution(uint32 productId, uint8 status, uint64 distributionId, ObjectGuid targetGuid)
 {
     WorldPackets::BattlePay::DistributionUpdate distributionBattlePay;
     auto product = sBattlePayDataStore->GetProduct(productId);
-    if (!product || !product->ProductID)
+    if (!product.ProductID)
         return;
 
     auto const& localeIndex = _session->GetSessionDbLocaleIndex();
@@ -640,14 +994,14 @@ void BattlepayManager::SendBattlePayDistribution(uint32 productId, uint8 status,
 
     WorldPackets::BattlePay::BattlePayProduct productData;
 
-    for (auto const& item : product->Items)
+    for (auto const& item : product.Items)
     {
         WorldPackets::BattlePay::ProductItem productItem;
 
         auto dataP = WriteDisplayInfo(item.DisplayInfoID, localeIndex);
         if (std::get<0>(dataP))
         {
-            productItem.DisplayInfo.emplace();
+            productItem.DisplayInfo = boost::in_place();
             productItem.DisplayInfo = std::get<1>(dataP);
         }
 
@@ -657,30 +1011,29 @@ void BattlepayManager::SendBattlePayDistribution(uint32 productId, uint8 status,
         productItem.Quantity = item.Quantity;
         productItem.UnkInt1 = item.DisplayInfoID;
         productItem.UnkInt2 = 0;
-        productItem.PetResult = 0;
+        productItem.PetResult = 0;;
         productItem.HasPet = item.HasPet;
         productData.Items.emplace_back(productItem);
     }
 
-    auto dataP = WriteDisplayInfo(product->DisplayInfoID, localeIndex);
+    auto dataP = WriteDisplayInfo(product.DisplayInfoID, localeIndex);
     if (std::get<0>(dataP))
     {
-        productData.DisplayInfo.emplace();
+        productData.DisplayInfo = boost::in_place();
         productData.DisplayInfo = std::get<1>(dataP);
     }
 
     //productData.UnkBits       Optional<uint16> ;
-    productData.ProductID = product->ProductID;
-    productData.Flags = product->Flags;
+    productData.ProductID = product.ProductID;
+    productData.Flags = product.Flags;
     productData.UnkInt1 = 0;
-    productData.DisplayId = product->DisplayInfoID;
+    productData.DisplayId = product.DisplayInfoID;
     productData.ItemId = 0;
     productData.UnkInt4 = 0;
     productData.UnkInt5 = 0;
     productData.UnkString = "";
     productData.Type = 0;
     productData.UnkBit = false;
-
     distributionBattlePay.DistributionObject.Product = std::move(productData);
     _session->SendPacket(distributionBattlePay.Write());
 }
@@ -706,15 +1059,13 @@ void BattlepayManager::AssignDistributionToCharacter(ObjectGuid const& targetCha
 void BattlepayManager::Update(uint32 diff)
 {
     auto& data = _actualTransaction;
-    auto product = sBattlePayDataStore->GetProduct(data.ProductID);
-    if (!product)
-        return;
+    auto& product = sBattlePayDataStore->GetProduct(data.ProductID);
 
     switch (data.Status)
     {
     case DistributionStatus::BATTLE_PAY_DIST_STATUS_ADD_TO_PROCESS:
     {
-        switch (product->WebsiteType)
+        switch (product.WebsiteType)
         {
         case CharacterBoost:
         {
@@ -738,7 +1089,7 @@ void BattlepayManager::Update(uint32 diff)
     }
     case DistributionStatus::BATTLE_PAY_DIST_STATUS_PROCESS_COMPLETE: //send SMSG_BATTLE_PAY_VAS_PURCHASE_STARTED
     {
-        switch (product->WebsiteType)
+        switch (product.WebsiteType)
         {
         case CharacterBoost:
         {
@@ -753,7 +1104,7 @@ void BattlepayManager::Update(uint32 diff)
     }
     case DistributionStatus::BATTLE_PAY_DIST_STATUS_FINISHED:
     {
-        switch (product->WebsiteType)
+        switch (product.WebsiteType)
         {
         case CharacterBoost:
             SendBattlePayDistribution(data.ProductID, data.Status, data.DistributionId, data.TargetCharacter);

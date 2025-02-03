@@ -1,6 +1,7 @@
-
 #include "AchievementMgr.h"
 #include "BrawlersGuild.h"
+#include "ScriptedGossip.h"
+#include "SpellScript.h"
 
 // 68408, 67267
 class npc_brawlers_guild_queue : public CreatureScript
@@ -12,13 +13,13 @@ public:
     {
         if (player)
         {
-            auto ok = true;
+            // auto ok = true;
 
-            if (player->GetTeamId() == TEAM_ALLIANCE && !player->HasAchieved(ACHIEVEMENT_FIRST_RULE_A))
-                ok = false;
+            // if (player->GetTeamId() == TEAM_ALLIANCE && !player->HasAchieved(ACHIEVEMENT_FIRST_RULE_A))
+                // ok = false;
 
-            if (player->GetTeamId() == TEAM_HORDE && !player->HasAchieved(ACHIEVEMENT_FIRST_RULE_H))
-                ok = false;
+            // if (player->GetTeamId() == TEAM_HORDE && !player->HasAchieved(ACHIEVEMENT_FIRST_RULE_H))
+                // ok = false;
 
             if (player->HasAchieved(ACHIEVEMENT_FIRST_RULE_H) || player->HasAchieved(ACHIEVEMENT_FIRST_RULE_A))
             {
@@ -353,11 +354,11 @@ public:
     }
 };
 
-void AddSC_brawlers_guild()
+void AddSC_the_brawlers_guild()
 {
     new npc_brawlers_guild_queue();
     new npc_bizmo();
     new npc_bossy();
-    //new spell_queued_for_brawl();
+    new spell_queued_for_brawl();
     new brawl_invitation_item();
 }

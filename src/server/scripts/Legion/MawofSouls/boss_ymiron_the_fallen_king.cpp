@@ -1,11 +1,12 @@
 /*
+    http://uwow.biz
     Dungeon : Maw of Souls 100-110
     Encounter: Ymiron the fallen king
     Normal: 100%, Heroic: 100%, Mythic: 100%
 */
 
 #include "maw_of_souls.h"
-#include "ScriptPCH.h"
+#include "PrecompiledHeaders/ScriptPCH.h"
 
 enum Says
 {
@@ -203,7 +204,7 @@ struct boss_ymiron_the_fallen_king : public BossAI
                 {
                     instance->instance->ApplyOnEveryPlayer([&](Player* player)
                     {
-                        if (player->IsAlive() && player->getHostileRefManager().HasTarget(me))
+                        if (player->isAlive() && player->getHostileRefManager().HasTarget(me))
                         {
                             if (listAT.empty())
                                 return;
@@ -212,7 +213,8 @@ struct boss_ymiron_the_fallen_king : public BossAI
                             if (!at)
                                 return;
 
-                            Position targetPos = player->GetRandomNearPosition(5.0f);
+                            Position targetPos;
+                            player->GetRandomNearPosition(targetPos, 5.0f);
                             me->PlayOrphanSpellVisual(at->GetPosition(), 0.0f, targetPos, 50259, 1.7f, ObjectGuid::Empty, true);
                             me->CastSpellDelay(targetPos, SPELL_ARISE_FALLEN_SUM, true, 2000);
                             at->Despawn();
@@ -393,7 +395,7 @@ struct npc_ymiron_risen_warrior : public ScriptedAI
 
         AddDelayedEvent(3000, [=] () -> void
         {
-            if (me && me->IsAlive() && me->isInCombat())
+            if (me && me->isAlive() && me->isInCombat())
             {
                 me->SetReactState(REACT_AGGRESSIVE);
                 DoZoneInCombat(me, 100.0f);
@@ -415,7 +417,7 @@ struct npc_ymiron_risen_warrior : public ScriptedAI
 
     void DoAction(int32 const actionId)
     {
-        if (me->IsAlive())
+        if (me->isAlive())
             me->Kill(me);
     }
 
@@ -548,7 +550,7 @@ struct npc_ymiron_seacursed_slaver : public ScriptedAI
 
             if (auto prisoner = Creature::GetCreature(*me, prisonerGUID))
             {
-                if (prisoner->IsAlive() && !prisoner->isInCombat() && me->GetDistance(prisoner) < 30.0f)
+                if (prisoner->isAlive() && !prisoner->isInCombat() && me->GetDistance(prisoner) < 30.0f)
                 {
                     Talk(1);
                     me->StopAttack();
@@ -558,13 +560,13 @@ struct npc_ymiron_seacursed_slaver : public ScriptedAI
 
                     AddDelayedEvent(2000, [this, prisoner] () -> void
                     {
-                        if (me && me->IsAlive())
+                        if (me && me->isAlive())
                         {
                             me->SetReactState(REACT_AGGRESSIVE);
                             me->AI()->DoZoneInCombat(me, 30.0f);
                         }
 
-                        if (prisoner && prisoner->IsAlive() && !prisoner->isInCombat())
+                        if (prisoner && prisoner->isAlive() && !prisoner->isInCombat())
                         {
                             if (auto go = prisoner->FindNearestGameObject(245064, 20.0f))
                                 go->SetGoState(GO_STATE_ACTIVE);
@@ -589,7 +591,7 @@ struct npc_ymiron_seacursed_slaver : public ScriptedAI
             Position pos;
             for (uint8 itr = 0; itr < 25; ++itr)
             {
-                pos = me->GetNearPosition(itr, 0.0f);
+                me->GetNearPosition(pos, itr, 0.0f);
                 me->CastSpellDelay(pos, 198891, true, itr * 50);
             }
         }
@@ -751,7 +753,8 @@ struct npc_mos_runecarver_slave : public ScriptedAI
     {
         if (spell->Id == 202408)
         {
-            Position pos = target->GetRandomNearPosition(5.0f);
+            Position pos;
+            target->GetRandomNearPosition(pos, 5.0f);
             for (uint8 itr = 0; itr < 8; ++itr)
                 me->CastSpell(pos, 199087, true);
         }
@@ -843,13 +846,13 @@ class spell_ymiron_bane : public AuraScript
         {
             for (int8 i = 0; i < 4; ++i)
             {
-                pos = GetCaster()->GetNearPosition(frand(20.0f, 40.0f), frand(0.0f, 6.28f));
+                GetCaster()->GetNearPosition(pos, frand(20.0f, 40.0f), frand(0.0f, 6.28f));
                 GetCaster()->CastSpell(pos, GetSpellInfo()->Effects[EFFECT_0]->TriggerSpell, true);
             }
         }
         else
         {
-            pos = GetCaster()->GetNearPosition(frand(20.0f, 40.0f), frand(0.0f, 6.28f));
+            GetCaster()->GetNearPosition(pos, frand(20.0f, 40.0f), frand(0.0f, 6.28f));
             GetCaster()->CastSpell(pos, GetSpellInfo()->Effects[EFFECT_0]->TriggerSpell, true);
         }
     }

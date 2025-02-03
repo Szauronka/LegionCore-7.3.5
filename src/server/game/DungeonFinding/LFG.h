@@ -124,6 +124,37 @@ enum LfgState
     LFG_STATE_WAITE                                        // Waiting
 };
 
+/// Determines the type of instance
+enum LfgType
+{
+    LFG_TYPE_NONE = 0,
+    LFG_TYPE_DUNGEON = 1,
+    LFG_TYPE_RAID = 2,
+    LFG_TYPE_ZONE = 4, // Shard related ?
+    LFG_TYPE_RANDOM = 6
+};
+
+
+enum LfgFlags
+{
+    LFG_FLAG_UNK1 = 0x1,
+    LFG_FLAG_UNK2 = 0x2,
+    LFG_FLAG_SEASONAL = 0x4,
+    LFG_FLAG_UNK3 = 0x8,
+    LFG_FLAG_TIMEWALKER = 0x2000,
+};
+
+
+enum LfgSubType
+{
+    LFG_SUBTYPE_DUNGEON = 1,
+    LFG_SUBTYPE_LFR = 2,
+    LFG_SUBTYPE_SCENARIO = 3,
+    LFG_SUBTYPE_TIMEWALKING_RAID = 4,
+    LFG_SUBTYPE_BATTLEFIELD = 5,
+    LFG_SUBTYPE_BATTLEGROUND = 6,
+};
+
 /// Instance lock types
 enum LfgLockStatusType
 {
@@ -186,14 +217,11 @@ typedef std::map<ObjectGuid, LfgLockMap> LfgLockPartyMap;
 typedef std::map<ObjectGuid, uint8> LfgRolesMap;
 typedef std::map<ObjectGuid, ObjectGuid> LfgGroupsMap;
 
-TC_GAME_API std::string ConcatenateDungeons(LfgDungeonSet const& dungeons);
-TC_GAME_API std::string GetRolesString(uint8 roles);
-TC_GAME_API std::string GetStateString(LfgState state);
+std::string ConcatenateDungeons(LfgDungeonSet const& dungeons);
+std::string GetRolesString(uint8 roles);
+std::string GetStateString(LfgState state);
 float GetShortagePercent();
 
-// allow implicit enum to int conversions for formatting
-inline int32 format_as(LfgUpdateType e) { return e; }
-inline uint8 format_as(LfgState e) { return e; }
 } // namespace lfg
 
 #endif

@@ -22,8 +22,6 @@
 #include "MoveSplineFlag.h"
 #include "ObjectGuid.h"
 
-enum class AnimTier : uint8;
-
 namespace Movement
 {
     typedef std::vector<G3D::Vector3> PointsArray;
@@ -52,12 +50,6 @@ namespace Movement
         uint32 ParabolicCurveId = 0;
     };
 
-    struct AnimTierTransition
-    {
-        uint32 TierTransitionId = 0;
-        ::AnimTier AnimTier = ::AnimTier(0);
-    };
-
     struct MoveSplineInitArgs
     {
         MoveSplineInitArgs(size_t path_capacity = 16);
@@ -72,7 +64,6 @@ namespace Movement
         float time_perc;
         uint32 splineId;
         float initialOrientation;
-        Optional<AnimTierTransition> animTier;
         bool walk;
         bool HasVelocity;
         bool TransformForTransport;

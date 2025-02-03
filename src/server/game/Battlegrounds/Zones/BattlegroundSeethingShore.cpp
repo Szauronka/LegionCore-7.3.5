@@ -1,3 +1,20 @@
+/*
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
+ */
 
 #include "BattlegroundSeethingShore.h"
 #include "BattlegroundPackets.h"
@@ -196,7 +213,6 @@ void BattlegroundSeethingShore::PostUpdateImpl(uint32 diff)
 
     if (GetStatus() == STATUS_IN_PROGRESS)
         for (uint8 i = 0; i < 2; ++i)
-        {
             if (m_boxesTimers[i] <= diff)
             {
                 m_boxesTimers[i] = urand(180, 300) * 1000;
@@ -213,16 +229,13 @@ void BattlegroundSeethingShore::PostUpdateImpl(uint32 diff)
                     capitan->AI()->DoAction(5);
             }
             else
-            {
                 m_boxesTimers[i] -= diff;
-            }
-        }
 }
 
 void BattlegroundSeethingShore::TeleportToStart(Player * player)
 {
     float x = 0, y = 0, z = 0;
-    if (auto gunship = sTransportMgr->CreateTransport(player->GetBGTeamId() == TEAM_HORDE ? 279254 : 278407, UI64LIT(0), GetBgMap()))
+    if (auto gunship = sTransportMgr->GetTransport(GetBgMap(), player->GetBGTeamId() == TEAM_HORDE ? 279254 : 278407))
     {
         gunship->CalculatePassengerPosition(x, y, z);
         player->TeleportTo(1803, x, y, z + (player->GetBGTeamId() == TEAM_ALLIANCE ? 25.0f : 40.0f), 0.f);
@@ -410,8 +423,8 @@ bool BattlegroundSeethingShore::SetupBattleground()
             return false;
     }
 
-    _gunship[TEAM_HORDE] = sTransportMgr->CreateTransport(GameObjects::HordeTransport, UI64LIT(0), GetBgMap());
-    _gunship[TEAM_ALLIANCE] = sTransportMgr->CreateTransport(GameObjects::AllianceTransport, UI64LIT(0), GetBgMap());
+    _gunship[TEAM_HORDE] = sTransportMgr->GetTransport(GetBgMap(), GameObjects::HordeTransport);
+    _gunship[TEAM_ALLIANCE] = sTransportMgr->GetTransport(GetBgMap(), GameObjects::AllianceTransport);
 
     for (auto gunship : _gunship)
         if (!gunship)
@@ -700,25 +713,25 @@ struct npc_bgss_capitains : ScriptedAI
             firstAzeritDone = true;
 
             sCreatureTextMgr->SendChat(me, 4, target, CHAT_MSG_ADDON, LANG_ADDON, TEXT_RANGE_MAP, 0, me->GetEntry() == 131773 ? HORDE : ALLIANCE);
-            lastTimeWas = GameTime::GetGameTime();
+            lastTimeWas = time(NULL);
             textCooldown = urand(20, 40);
             break;
         case 11: // sometimes tell about new azerit
             if (!firstAzeritDone)
                 return;
 
-            if (GameTime::GetGameTime() - lastTimeWas < textCooldown)
+            if (time(NULL) - lastTimeWas < textCooldown)
                 return;
 
             sCreatureTextMgr->SendChat(me, urand(0, 1) == 1 ? 6 : 4, target, CHAT_MSG_ADDON, LANG_ADDON, TEXT_RANGE_MAP, 0, me->GetEntry() == 131773 ? HORDE : ALLIANCE);
-            lastTimeWas = GameTime::GetGameTime();
+            lastTimeWas = time(NULL);
             textCooldown = urand(30, 80);
             break;
         case 9: // resurrect
-            if (GameTime::GetGameTime() - lastTimeWasRes < 10)
+            if (time(NULL) - lastTimeWasRes < 10)
                 return;
 
-            lastTimeWasRes = GameTime::GetGameTime();
+            lastTimeWasRes = time(NULL);
             sCreatureTextMgr->SendChat(me, 9, target, CHAT_MSG_ADDON, LANG_ADDON, TEXT_RANGE_NORMAL, 0, me->GetEntry() == 131773 ? HORDE : ALLIANCE);
             break;
         }

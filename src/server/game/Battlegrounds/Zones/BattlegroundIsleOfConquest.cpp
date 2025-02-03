@@ -1,19 +1,19 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #include "Player.h"
@@ -163,7 +163,7 @@ void BattlegroundIsleOfConquest::PostUpdateImpl(uint32 diff)
                     {
                         if (Creature* catapult = GetBGCreature(u))
                         {
-                            if (!catapult->IsAlive())
+                            if (!catapult->isAlive())
                                 catapult->Respawn(true);
                         }
                     }
@@ -173,7 +173,7 @@ void BattlegroundIsleOfConquest::PostUpdateImpl(uint32 diff)
                     {
                         if (Creature* glaiveThrower = GetBGCreature(u))
                         {
-                            if (!glaiveThrower->IsAlive())
+                            if (!glaiveThrower->isAlive())
                                 glaiveThrower->Respawn(true);
                         }
                     }
@@ -194,7 +194,7 @@ void BattlegroundIsleOfConquest::PostUpdateImpl(uint32 diff)
 
                     if (Creature* siege = GetBGCreature(siegeType)) // this always should be true
                     {
-                        if (siege->IsAlive())
+                        if (siege->isAlive())
                         {
                             if (siege->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE| UNIT_FLAG_CANNOT_SWIM |UNIT_FLAG_IMMUNE_TO_PC))
                                 // following sniffs the vehicle always has UNIT_FLAG_CANNOT_SWIM
@@ -211,7 +211,7 @@ void BattlegroundIsleOfConquest::PostUpdateImpl(uint32 diff)
                     {
                         if (Creature* demolisher = GetBGCreature(u))
                         {
-                            if (!demolisher->IsAlive())
+                            if (!demolisher->isAlive())
                                 demolisher->Respawn(true);
                         }
                     }
@@ -319,7 +319,7 @@ void BattlegroundIsleOfConquest::StartingEventOpenDoors()
             BG_IC_Teleporters[i].x, BG_IC_Teleporters[i].y,
             BG_IC_Teleporters[i].z, BG_IC_Teleporters[i].o,
             0, 0, 0, 0, RESPAWN_ONE_DAY))
-            TC_LOG_ERROR("bg.battleground", "Isle of Conquest | Starting Event Open Doors: There was an error spawning gameobject %u", BG_IC_Teleporters[i].entry);
+            TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "Isle of Conquest | Starting Event Open Doors: There was an error spawning gameobject %u", BG_IC_Teleporters[i].entry);
     }
 }
 
@@ -429,7 +429,7 @@ bool BattlegroundIsleOfConquest::SetupBattleground()
             BG_IC_ObjSpawnlocs[i].z, BG_IC_ObjSpawnlocs[i].o,
             0, 0, 0, 0, RESPAWN_ONE_DAY))
         {
-            TC_LOG_ERROR("bg.battleground", "Isle of Conquest: There was an error spawning gameobject %u", BG_IC_ObjSpawnlocs[i].entry);
+            TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "Isle of Conquest: There was an error spawning gameobject %u", BG_IC_ObjSpawnlocs[i].entry);
             return false;
         }
     }
@@ -441,7 +441,7 @@ bool BattlegroundIsleOfConquest::SetupBattleground()
             BG_IC_NpcSpawnlocs[i].z, BG_IC_NpcSpawnlocs[i].o,
             RESPAWN_ONE_DAY))
         {
-            TC_LOG_ERROR("bg.battleground", "Isle of Conquest: There was an error spawning creature %u", BG_IC_NpcSpawnlocs[i].entry);
+            TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "Isle of Conquest: There was an error spawning creature %u", BG_IC_NpcSpawnlocs[i].entry);
             return false;
         }
     }
@@ -451,16 +451,16 @@ bool BattlegroundIsleOfConquest::SetupBattleground()
         !AddSpiritGuide(BG_IC_NPC_SPIRIT_GUIDE_1 + 5, BG_IC_SpiritGuidePos[7], TEAM_ALLIANCE) ||
         !AddSpiritGuide(BG_IC_NPC_SPIRIT_GUIDE_1 + 6, BG_IC_SpiritGuidePos[8], TEAM_HORDE))
     {
-        TC_LOG_ERROR("bg.battleground", "Isle of Conquest: Failed to spawn initial spirit guide!");
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "Isle of Conquest: Failed to spawn initial spirit guide!");
         return false;
     }
 
-    gunshipHorde = sTransportMgr->CreateTransport(GO_HORDE_GUNSHIP, UI64LIT(0), GetBgMap());
-    gunshipAlliance = sTransportMgr->CreateTransport(GO_ALLIANCE_GUNSHIP, UI64LIT(0), GetBgMap());
+    gunshipHorde = sTransportMgr->GetTransport(GetBgMap(), GO_HORDE_GUNSHIP);
+    gunshipAlliance = sTransportMgr->GetTransport(GetBgMap(), GO_ALLIANCE_GUNSHIP);
 
     if (!gunshipAlliance || !gunshipHorde)
     {
-        TC_LOG_ERROR("bg.battleground", "Isle of Conquest: There was an error creating gunships!");
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "Isle of Conquest: There was an error creating gunships!");
         return false;
     }
 
@@ -645,7 +645,7 @@ uint32 BattlegroundIsleOfConquest::GetNextBanner(ICNodePoint* nodePoint, uint32 
         return nodePoint->last_entry;
 
     // we should never be here...
-    TC_LOG_ERROR("bg.battleground", "Isle Of Conquest: Unexpected return in GetNextBanner function");
+    TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "Isle Of Conquest: Unexpected return in GetNextBanner function");
     return 0;
 }
 
@@ -689,7 +689,7 @@ void BattlegroundIsleOfConquest::HandleCapturedNodes(ICNodePoint* nodePoint, boo
     if (nodePoint->nodeType != NODE_TYPE_REFINERY && nodePoint->nodeType != NODE_TYPE_QUARRY)
     {
         if (!AddSpiritGuide(BG_IC_NPC_SPIRIT_GUIDE_1 + nodePoint->nodeType - 2, BG_IC_SpiritGuidePos[nodePoint->nodeType], static_cast<TeamId>(nodePoint->faction)))
-            TC_LOG_ERROR("bg.battleground", "Isle of Conquest: Failed to spawn spirit guide! point: %u, team: %u, ", nodePoint->nodeType, nodePoint->faction);
+            TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "Isle of Conquest: Failed to spawn spirit guide! point: %u, team: %u, ", nodePoint->nodeType, nodePoint->faction);
     }
 
     switch (nodePoint->gameobject_type)
@@ -742,7 +742,7 @@ void BattlegroundIsleOfConquest::HandleCapturedNodes(ICNodePoint* nodePoint, boo
                         nodePoint->faction, RESPAWN_ONE_DAY, nodePoint->faction == TEAM_ALLIANCE ? gunshipAlliance : gunshipHorde);
             }
 
-            //TC_LOG_ERROR("bg.battleground", "BG_IC_GO_HANGAR_BANNER CAPTURED Faction: %u", nodePoint->faction);
+            //TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BG_IC_GO_HANGAR_BANNER CAPTURED Faction: %u", nodePoint->faction);
 
             (nodePoint->faction == TEAM_ALLIANCE ? gunshipAlliance : gunshipHorde)->EnableMovement(true);
             // we should spawn teleporters
@@ -793,7 +793,7 @@ void BattlegroundIsleOfConquest::HandleCapturedNodes(ICNodePoint* nodePoint, boo
             {
                 uint8 type = (nodePoint->faction == TEAM_ALLIANCE ? BG_IC_NPC_GLAIVE_THROWER_1_A : BG_IC_NPC_GLAIVE_THROWER_1_H)+i;
 
-                if (GetBGCreature(type) && GetBGCreature(type)->IsAlive())
+                if (GetBGCreature(type) && GetBGCreature(type)->isAlive())
                     continue;
 
                 if (AddCreature(nodePoint->faction == TEAM_ALLIANCE ? NPC_GLAIVE_THROWER_A : NPC_GLAIVE_THROWER_H, type, nodePoint->faction,
@@ -808,7 +808,7 @@ void BattlegroundIsleOfConquest::HandleCapturedNodes(ICNodePoint* nodePoint, boo
             {
                 uint8 type = (nodePoint->faction == TEAM_ALLIANCE ? BG_IC_NPC_CATAPULT_1_A : BG_IC_NPC_CATAPULT_1_H)+i;
 
-                if (GetBGCreature(type) && GetBGCreature(type)->IsAlive())
+                if (GetBGCreature(type) && GetBGCreature(type)->isAlive())
                     continue;
 
                 if (AddCreature(NPC_CATAPULT, type, nodePoint->faction,
@@ -843,7 +843,7 @@ void BattlegroundIsleOfConquest::HandleCapturedNodes(ICNodePoint* nodePoint, boo
                     {
                         uint8 type = (nodePoint->faction == TEAM_ALLIANCE ? BG_IC_NPC_DEMOLISHER_1_A : BG_IC_NPC_DEMOLISHER_1_H)+i;
 
-                        if (GetBGCreature(type) && GetBGCreature(type)->IsAlive())
+                        if (GetBGCreature(type) && GetBGCreature(type)->isAlive())
                             continue;
 
                         if (AddCreature(NPC_DEMOLISHER, type, nodePoint->faction,
@@ -867,7 +867,7 @@ void BattlegroundIsleOfConquest::HandleCapturedNodes(ICNodePoint* nodePoint, boo
                     }
 
                     uint8 siegeType = (nodePoint->faction == TEAM_ALLIANCE ? BG_IC_NPC_SIEGE_ENGINE_A : BG_IC_NPC_SIEGE_ENGINE_H);
-                    if (!GetBGCreature(siegeType) || !GetBGCreature(siegeType)->IsAlive())
+                    if (!GetBGCreature(siegeType) || !GetBGCreature(siegeType)->isAlive())
                     {
                         AddCreature((nodePoint->faction == TEAM_ALLIANCE ? NPC_SIEGE_ENGINE_A : NPC_SIEGE_ENGINE_H), siegeType, nodePoint->faction,
                             BG_IC_WorkshopVehicles[4].GetPositionX(), BG_IC_WorkshopVehicles[4].GetPositionY(),
@@ -953,12 +953,12 @@ void BattlegroundIsleOfConquest::DestroyGate(Player* player, GameObject* go)
     if (go->GetEntry() == GO_HORDE_GATE_1 || go->GetEntry() == GO_HORDE_GATE_2 || go->GetEntry() == GO_HORDE_GATE_3)
     {
         if (!GetBgMap()->GetCreature(BgCreatures[BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].type]) && !AddCreature(BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].entry, BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].type, BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].team, BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].x, BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].y, BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].z, BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].o, RESPAWN_ONE_DAY))
-            TC_LOG_ERROR("bg.battleground", "Isle of Conquest: There was an error spawning creature %u", BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].entry);
+            TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "Isle of Conquest: There was an error spawning creature %u", BG_IC_NpcSpawnlocs[BG_IC_NPC_OVERLORD_AGMAR].entry);
     }
     else if (go->GetEntry() == GO_ALLIANCE_GATE_1 || go->GetEntry() == GO_ALLIANCE_GATE_2 || go->GetEntry() == GO_ALLIANCE_GATE_3)
     {
         if (!GetBgMap()->GetCreature(BgCreatures[BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].type]) && !AddCreature(BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].entry, BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].type, BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].team, BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].x, BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].y, BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].z, BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].o, RESPAWN_ONE_DAY))
-            TC_LOG_ERROR("bg.battleground", "Isle of Conquest: There was an error spawning creature %u", BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].entry);
+            TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "Isle of Conquest: There was an error spawning creature %u", BG_IC_NpcSpawnlocs[BG_IC_NPC_HIGH_COMMANDER_HALFORD_WYRMBANE].entry);
     }
 
     SendBroadcastText(textId, msgType);

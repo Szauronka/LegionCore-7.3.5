@@ -146,9 +146,8 @@ public:
 
     struct instance_naxxramas_InstanceMapScript : public InstanceScript
     {
-        instance_naxxramas_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_naxxramas_InstanceMapScript(Map* map) : InstanceScript(map)
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_BOSS_NUMBER);
             LoadDoorData(doorData);
             LoadMinionData(minionData);
@@ -445,7 +444,7 @@ public:
                 }
                 else if (value == DONE)
                 {
-                    time_t now = GameTime::GetGameTime();
+                    time_t now = time(NULL);
 
                     if (minHorsemenDiedTime == 0)
                         minHorsemenDiedTime = now;
@@ -510,7 +509,8 @@ public:
                 case BOSS_MAEXXNA:
                     if (Creature* pMaexxna = instance->GetCreature(uiMaexxna))
                     {
-                        Position pos = pMaexxna->GetPosition();
+                        Position pos;
+                        pMaexxna->GetPosition(&pos);
                         if (Creature *pTrigger = pMaexxna->SummonCreature(TRIGGER_NPC_KELTHUZAD, pos, TEMPSUMMON_TIMED_DESPAWN, 5*IN_MILLISECONDS))
                         {
                             pTrigger->SetName("Kel'Thuzad");
@@ -527,7 +527,8 @@ public:
                 case BOSS_HORSEMEN:
                     if (Creature* pSir = instance->GetCreature(uiSir))
                     {
-                        Position pos = pSir->GetPosition();
+                        Position pos;
+                        pSir->GetPosition(&pos);
                         if (Creature *pTrigger = pSir->SummonCreature(TRIGGER_NPC_KELTHUZAD, pos, TEMPSUMMON_TIMED_DESPAWN, 5*IN_MILLISECONDS))
                         {
                             pTrigger->SetName("Kel'Thuzad");
@@ -556,7 +557,8 @@ public:
                     }*/
                     if (Creature* pThaddius = instance->GetCreature(uiThaddius))
                     {
-                        Position pos = pThaddius->GetPosition();
+                        Position pos;
+                        pThaddius->GetPosition(&pos);
                         if (Creature *pTrigger = pThaddius->SummonCreature(TRIGGER_NPC_KELTHUZAD, pos, TEMPSUMMON_TIMED_DESPAWN, 5*IN_MILLISECONDS))
                         {
                             pTrigger->SetName("Kel'Thuzad");
@@ -573,7 +575,8 @@ public:
                 case BOSS_LOATHEB:
                     if (Creature* pLoatheb = instance->GetCreature(uiLoatheb))
                     {
-                        Position pos = pLoatheb->GetPosition();
+                        Position pos;
+                        pLoatheb->GetPosition(&pos);
                         if (Creature *pTrigger = pLoatheb->SummonCreature(TRIGGER_NPC_KELTHUZAD, pos, TEMPSUMMON_TIMED_DESPAWN, 5*IN_MILLISECONDS))
                         {
                             pTrigger->SetName("Kel'Thuzad");
@@ -703,17 +706,22 @@ public:
         return false;
     }
 
-    void WriteSaveDataMore(std::ostringstream& data) override
+    std::string GetSaveData() override
     {
-        data << gothikDoorState << " " << bImmortal;
+        std::ostringstream saveStream;
+        saveStream << GetBossSaveData() << " " << gothikDoorState << " " << bImmortal;
+        return saveStream.str();
     }
 
-    void ReadSaveDataMore(std::istringstream& data) override
+    void Load(const char * data) override
     {
+        std::istringstream loadStream(LoadBossState(data));
         uint32 buff;
-        data >> buff;
+        for (uint32 i=0; i<MAX_BOSS_NUMBER; ++i)
+            loadStream >> buff;
+        loadStream >> buff;
         gothikDoorState = GOState(buff);
-        data >> bImmortal;
+        loadStream >> bImmortal;
     }
 
     void Update(uint32 diff) override

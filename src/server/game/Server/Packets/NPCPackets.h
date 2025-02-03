@@ -22,8 +22,6 @@
 #include "ItemPackets.h"
 #include "Creature.h"
 
-enum class GossipOptionNpc : uint8;
-
 namespace WorldPackets
 {
     namespace NPC
@@ -49,7 +47,7 @@ namespace WorldPackets
             int32 OptionCost = 0;
             std::string Text;
             std::string Confirm;
-            GossipOptionNpc OptionNPC = GossipOptionNpc(0);
+            uint8 OptionNPC = 0;
             uint8 OptionFlags = 0;
         };
 
@@ -205,7 +203,7 @@ namespace WorldPackets
             ObjectGuid Healer;
         };
 
-        class TC_GAME_API SpiritHealerConfirm final : public ServerPacket
+        class SpiritHealerConfirm final : public ServerPacket
         {
         public:
             SpiritHealerConfirm() : ServerPacket(SMSG_SPIRIT_HEALER_CONFIRM, 16) { }

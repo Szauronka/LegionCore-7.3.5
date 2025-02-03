@@ -18,8 +18,6 @@
 #ifndef DEF_AHNKAHET_H
 #define DEF_AHNKAHET_H
 
-#define DataHeader "AKH"
-
 enum Data64
 {
     DATA_ELDER_NADOX,

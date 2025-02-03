@@ -109,9 +109,11 @@ public:
 
                 if (victim)
                 {
-                    Position pos = me->GetRandomNearPosition(float(urand(5, 80)));
+                    Position pos;
+                    victim->GetPosition(&pos);
+                    me->GetRandomNearPosition(pos, float(urand(5, 80)));
                     me->SummonCreature(NPC_POISONOUS_MUSHROOM, pos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 30*IN_MILLISECONDS);
-                    pos = me->GetRandomNearPosition(float(urand(5, 80)));
+                    me->GetRandomNearPosition(pos, float(urand(5, 80)));
                     me->SummonCreature(NPC_HEALTHY_MUSHROOM, pos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 30*IN_MILLISECONDS);
                 }
             }

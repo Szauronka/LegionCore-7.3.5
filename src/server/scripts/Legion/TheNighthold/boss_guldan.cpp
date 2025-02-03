@@ -1,3 +1,7 @@
+/*
+https://uwow.biz/
+*/
+
 #include "AreaTriggerAI.h"
 #include "the_nighthold.h"
 #include "WaypointManager.h"
@@ -445,7 +449,7 @@ public:
             
             me->AddDelayedEvent(12 * MINUTE*IN_MILLISECONDS, [this]() -> void
             {
-                if (me->IsAlive() && me->isInCombat())
+                if (me->isAlive() && me->isInCombat())
                     me->CastSpell(me, SPELL_BERSERK);
 
             });
@@ -902,7 +906,7 @@ public:
                     case 2:
                         damage = 0;
 
-                        if (GameTime::GetGameTime() - lastTimeDestroyer > 10)
+                        if (time(NULL) - lastTimeDestroyer > 10)
                         {
                             healthEventMythic = 0;
                             isDead = true;
@@ -1234,7 +1238,7 @@ public:
                         Talk(SAY_STORM);
                         DoCast(SPELL_STORM_OF_THE_DESTROYER);
                         
-                        lastTimeDestroyer = GameTime::GetGameTime();
+                        lastTimeDestroyer = time(NULL);
                         DoVisualCircle(0.0f, 10.0f);
                         
                         events.RescheduleEvent(EVENT_STORM_OF_DESTROYER, stormTimer.popAndSafeLast());
@@ -1713,7 +1717,7 @@ public:
             {
             case SPELL_SOULSEVER:
                 DoCast(target, SPELL_SHARED_SOUL);
-                for (float angle = float(- M_PI / 6); angle < M_PI / 6; angle += M_PI / 24)
+                for (float angle = -M_PI / 6; angle < M_PI / 6; angle += M_PI / 24)
                     me->CastSpell({ target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), me->GetOrientation() + angle }, SPELL_SOULSEVER_AT, false);
                 break;
             case SPELL_SHARED_SOUL:
@@ -2200,7 +2204,7 @@ public:
         {
             if (spell->Id == SPELL_EYE_OF_GULDAN_COPY && me->GetAnyOwner())
             {
-                me->SetPower(me->GetPowerType(), 0);
+                me->SetPower(me->getPowerType(), 0);
 
                 if (Creature* new_eye = me->GetAnyOwner()->SummonCreature(me->GetEntry(), me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation()))
                 {
@@ -2740,7 +2744,7 @@ class areatrigger_guldan_visual_charging : public AreaTriggerScript
                 return false;
             
             for (auto cur_point = WP_path->begin(); cur_point != WP_path->end(); ++cur_point)
-                path.push_back({(*cur_point).x, (*cur_point).y, (*cur_point).z, (*cur_point).orientation});
+                path.push_back({(*cur_point)->x, (*cur_point)->y, (*cur_point)->z, (*cur_point)->orientation});
             
             if (need_reverse)
                 std::reverse(path.begin(), path.end());

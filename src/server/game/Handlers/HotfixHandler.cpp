@@ -16,11 +16,10 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Containers.h"
-#include "DB2Store.h"
-#include "GameTime.h"
-#include "HotfixPackets.h"
 #include "WorldSession.h"
+#include "Containers.h"
+#include "HotfixPackets.h"
+#include "DB2Store.h"
 
 void WorldSession::HandleHotfixRequest(WorldPackets::Hotfix::HotfixRequest& packet)
 {
@@ -40,7 +39,7 @@ void WorldSession::HandleHotfixRequest(WorldPackets::Hotfix::HotfixRequest& pack
             hotfixData.RecordID = *hotfix;
             if (storage->HasRecord(hotfixData.RecordID))
             {
-                hotfixData.Data.emplace();
+                hotfixData.Data = boost::in_place();
                 storage->WriteRecord(hotfixData.RecordID, GetSessionDbcLocale(), *hotfixData.Data);
             }
 
@@ -56,7 +55,7 @@ void WorldSession::HandleDBQueryBulk(WorldPackets::Hotfix::DBQueryBulk& packet)
     auto store = sDB2Manager.GetStorage(packet.TableHash);
     if (!store)
     {
-        TC_LOG_DEBUG("misc", "DBQueryBulk:: client requested unused db2 storage: %u; can by finded in DB2Hashes", packet.TableHash);
+        TC_LOG_DEBUG(LOG_FILTER_GENERAL, "DBQueryBulk:: client requested unused db2 storage: %u; can by finded in DB2Hashes", packet.TableHash);
         return;
     }
 
@@ -69,11 +68,11 @@ void WorldSession::HandleDBQueryBulk(WorldPackets::Hotfix::DBQueryBulk& packet)
         if (store->HasRecord(rec.RecordID))
         {
             response.Allow = true;
-            response.Timestamp = GameTime::GetGameTime();
+            response.Timestamp = sWorld->GetGameTime();
             store->WriteRecord(rec.RecordID, GetSessionDbcLocale(), response.Data);
         }
         else
-            response.Timestamp = GameTime::GetGameTime();
+            response.Timestamp = time(nullptr);
 
         SendPacket(response.Write());
     }

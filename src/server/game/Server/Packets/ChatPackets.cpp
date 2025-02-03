@@ -99,6 +99,23 @@ DisplayTime(chat.DisplayTime), HideChatLog(chat.HideChatLog), FakeSenderName(cha
 {
 }
 
+void ModifyMessageForPlayer(WorldObject const* sender, std::string& message, ChatMsg chatType)
+{
+    if (chatType == CHAT_MSG_SAY  || chatType == CHAT_MSG_PARTY ||
+        chatType == CHAT_MSG_RAID || chatType == CHAT_MSG_GUILD ||
+        chatType == CHAT_MSG_YELL || chatType == CHAT_MSG_WHISPER || chatType == CHAT_MSG_CHANNEL)
+        {
+            if (Player const* playerSender = sender->ToPlayer())
+            {
+                std::string const& logo = playerSender->getSelectedChatLogo();
+                if (logo.empty())
+                    return;
+                
+                message = logo + message;
+            }
+        }
+}
+
 void WorldPackets::Chat::Chat::Initialize(ChatMsg chatType, Language language, WorldObject const* sender, WorldObject const* receiver, std::string message,
     uint32 achievementId /*= 0*/, std::string channelName /*= ""*/, LocaleConstant locale /*= DEFAULT_LOCALE*/, std::string addonPrefix /*= ""*/)
 {
@@ -129,7 +146,64 @@ void WorldPackets::Chat::Chat::Initialize(ChatMsg chatType, Language language, W
     _Channel = std::move(channelName);
     Prefix = std::move(addonPrefix);
     
+    if (sender)
+        ModifyMessageForPlayer(sender, message, chatType); //custom
+    
     ChatText = std::move(message);
+    // ChatTextCode = CodeChatMessage(ChatText, _Language);
+}
+
+uint32 GetWordWeight(std::string const& word)
+{
+    uint32 weight = 0;
+    for (size_t i = 0; i < word.size(); ++i)
+        weight += static_cast<uint8>(word[i]);
+    return weight;
+}
+
+bool isCaps(std::wstring wstr)
+{
+    if (wstr.empty())
+        return false;
+
+    uint32 upperCount = 0;
+    for (size_t i = 0; i < wstr.size(); ++i)
+        if (iswupper(wstr[i]))
+            ++upperCount;
+
+    return upperCount * 2 >= wstr.size();
+}
+
+std::string WorldPackets::Chat::Chat::CodeChatMessage(std::string text, uint32 lang_id)
+{
+    auto const* wordMap = sDB2Manager.GetLanguageWordMap(lang_id);
+    if (!wordMap)
+        return "";
+
+    std::string convertedMessage;
+
+    Tokenizer t(text, ' ');
+    for (size_t i = 0; i < t.size(); ++i)
+    {
+        std::string word = t[i];
+        std::wstring wword;
+        if (!Utf8toWStr(word, wword))
+            continue;
+
+        if (wword.empty())
+            continue;
+
+        if (StringVector const* wordVector = sDB2Manager.GetLanguageWordsBySize(lang_id, wword.size()))
+        {
+            std::string replacer = (*wordVector)[GetWordWeight(t[i]) % wordVector->size()];
+            if (isCaps(wword))
+                std::transform(replacer.begin(), replacer.end(), replacer.begin(), toupper);
+
+            convertedMessage += replacer + " ";
+        }
+    }
+
+    return convertedMessage;
 }
 
 void WorldPackets::Chat::Chat::SetSender(WorldObject const* sender, LocaleConstant locale)

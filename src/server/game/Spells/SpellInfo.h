@@ -386,10 +386,11 @@ private:
     static StaticData _data[TOTAL_SPELL_TARGETS];
 };
 
-class TC_GAME_API SpellEffectInfo
+class SpellEffectInfo
 {
     SpellInfo const* _spellInfo;
 public:
+	Trinity::AnyData Variables;
     uint32    Effect;
     uint8     EffectIndex;
     uint32    ApplyAuraName;
@@ -520,7 +521,7 @@ struct AuraInterruptFlagIndex<SpellAuraInterruptFlags2>
     static std::size_t constexpr value = 1;
 };
 
-class TC_GAME_API SpellInfo
+class SpellInfo
 {
 public:
     uint32 Id;
@@ -758,7 +759,6 @@ public:
     bool IsPositive() const;
     bool IsPositiveEffect(uint8 effIndex, bool caster = false) const;
     bool IsChanneled() const;
-    bool IsMoveAllowedChannel() const;
     bool IsBreakingStealth() const;
     bool IsRangedWeaponSpell() const;
     bool IsRangedSpell() const;

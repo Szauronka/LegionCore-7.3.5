@@ -25,8 +25,8 @@
 # include "MoveSplineInit.h"
 # include "LFGMgr.h"
 # include "Group.h"
-#include "ScriptPCH.h"
-#include "MapManager.h"
+#include "PrecompiledHeaders/ScriptPCH.h"
+# include "MapManager.h"
 #include "SpellAuraEffects.h"
 
 class OutdoorPvPAshran;

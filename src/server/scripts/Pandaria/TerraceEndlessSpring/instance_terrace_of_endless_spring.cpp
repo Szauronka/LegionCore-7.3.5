@@ -34,7 +34,7 @@ class instance_terrace_of_endless_spring : public InstanceMapScript
 
         struct instance_terrace_of_endless_spring_InstanceMapScript : public InstanceScript
         {
-            instance_terrace_of_endless_spring_InstanceMapScript(InstanceMap* map) : InstanceScript(map) { }
+            instance_terrace_of_endless_spring_InstanceMapScript(Map* map) : InstanceScript(map) { }
 
             bool ritualOfPurification;
             bool introDone;
@@ -68,7 +68,6 @@ class instance_terrace_of_endless_spring : public InstanceMapScript
 
             void Initialize()
             {
-                SetHeaders(DataHeader);
                 SetBossNumber(DATA_MAX_BOSS_DATA);
 
                 ritualOfPurification        = true;
@@ -251,7 +250,7 @@ class instance_terrace_of_endless_spring : public InstanceMapScript
                     if (!player)
                         continue;
 
-                    if (player->IsAlive() && !player->isGameMaster() && !player->HasAura(115877)) // Aura 115877 = Totally Petrified
+                    if (player->isAlive() && !player->isGameMaster() && !player->HasAura(115877)) // Aura 115877 = Totally Petrified
                         return false;
                 }
 

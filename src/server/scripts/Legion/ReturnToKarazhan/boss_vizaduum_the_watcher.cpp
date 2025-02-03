@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "return_to_karazhan.h"
 
 enum Says
@@ -608,7 +612,9 @@ public:
     }
 };
 
-
+//115493
+//После убийства босса должен появиться портал который отправляет к боссу, в сниффе не нашел как это сделано.
+//https://youtu.be/SwmrrZUI-7Q?t=18m20s
 class npc_vizaduum_demonic_portal : public CreatureScript
 {
 public:
@@ -743,7 +749,7 @@ class spell_vizaduum_demonic_portal : public SpellScriptLoader
                     {
                         if (Creature* boss = instance->instance->GetCreature(instance->GetGuidData(NPC_VIZADUUM_THE_WATCHER)))
                         {
-                            if (boss->IsAlive())
+                            if (boss->isAlive())
                                 eventPhaseHP = boss->GetAI()->GetData(DATA_VIZADUUM_HP_PHASE);
                             else
                                 alive = false;

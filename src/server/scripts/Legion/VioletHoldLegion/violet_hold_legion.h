@@ -1,11 +1,10 @@
 /*
+    http://uwow.biz
     Dungeon : Violet Hold Legion 100-110
 */
 
 #ifndef VIOLET_HOLD_LEGION_H_
 #define VIOLET_HOLD_LEGION_H_
-
-#define DataHeader "VHL"
 
 enum eData
 {

@@ -1,5 +1,15 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "antorus.h"
 #include "AreaTriggerAI.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "SpellScript.h"
+#include "SpellAuraEffects.h"
+#include "GridNotifiers.h"
 
 enum Says
 {
@@ -277,7 +287,7 @@ struct boss_felhounds_encounters : public BossAI
 
     void SoulTouched(bool first = false)
     {
-        if (!me->IsAlive())
+        if (!me->isAlive())
             return;
 
         for (auto guid : GroupA)
@@ -328,7 +338,7 @@ struct npc_felhounds_shatug : public boss_felhounds_encounters
     {
         boss_felhounds_encounters::EnterCombat(who);
 
-        me->SetPower(me->GetPowerType(), 86);
+        me->SetPower(me->getPowerType(), 86);
         events.RescheduleEvent(EVENT_CORRUPTING, 11000);
     }
 
@@ -497,7 +507,7 @@ struct npc_felhounds_fharg : public boss_felhounds_encounters
         boss_felhounds_encounters::EnterCombat(who);
 
         DoCast(me, SPELL_FHARG_START_LEAP, true);
-        me->SetPower(me->GetPowerType(), 62);
+        me->SetPower(me->getPowerType(), 62);
         events.RescheduleEvent(EVENT_BURNING_MAW, 9000);
     }
 
@@ -646,7 +656,7 @@ struct npc_felhounds_fharg : public boss_felhounds_encounters
                     if (auto shatug = instance->instance->GetCreature(instance->GetGuidData(NPC_SHATUG)))
                     {
                         Position pos;
-                        pos = me->GetNearPosition(10.0f, me->GetRelativeAngle(shatug));
+                        me->GetNearPosition(pos, 10.0f, me->GetRelativeAngle(shatug));
                         if (auto summon = me->SummonCreature(NPC_MOLTEN_TOUCH, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ() + 10.0f, pos.GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 15 * IN_MILLISECONDS))
                         {
                             me->AddDelayedCombat(1800, [this, summon]() -> void
@@ -694,7 +704,8 @@ class spell_felhounds_consuming_sphere : public SpellScript
         if (!GetCaster())
             return;
 
-        WorldLocation pos = WorldLocation(GetCaster()->GetMapId(), GetCaster()->GetNearPosition(50.0f, GetCaster()->GetRelativeAngle(GetExplTargetDest())));
+        WorldLocation pos;
+        GetCaster()->GetNearPosition(pos, 50.0f, GetCaster()->GetRelativeAngle(GetExplTargetDest()));
         GetSpell()->destAtTarget = pos;
 
         if (GetCaster()->GetMap()->IsMythicRaid())
@@ -1193,7 +1204,7 @@ class spell_felhounds_destroyers_boon_energize : public AuraScript
                 }
             }
 
-            powerCount = caster->GetPower(caster->GetPowerType());
+            powerCount = caster->GetPower(caster->getPowerType());
 
             if (caster->GetEntry() == NPC_SHATUG)
             {
@@ -1207,7 +1218,7 @@ class spell_felhounds_destroyers_boon_energize : public AuraScript
 
             if (powerCount < 100)
             {
-                caster->SetPower(caster->GetPowerType(), ++powerCount);
+                caster->SetPower(caster->getPowerType(), ++powerCount);
             
                 if (!specialAbility_33 && powerCount >= 33)
                 {
@@ -1223,7 +1234,7 @@ class spell_felhounds_destroyers_boon_energize : public AuraScript
             }
             else
             {
-                caster->SetPower(caster->GetPowerType(), 0);
+                caster->SetPower(caster->getPowerType(), 0);
                 caster->GetAI()->DoAction(ACTION_2);
                 specialAbility_33 = false;
                 specialAbility_66 = false;
@@ -1404,7 +1415,7 @@ struct at_felhounds_consuming_sphere : AreaTriggerAI
                     player->SendMovementForce(windAt[despawn ? tempId : oldId]); //Disable ForceMove
                     player->SendMovementForce(windAt2[despawn ? tempId : oldId]); //Disable ForceMove
 
-                    if (player->IsAlive() && !despawn)
+                    if (player->isAlive() && !despawn)
                     {
                         if (windAt[newId])
                             player->SendMovementForce(windAt[newId], *windAt[newId], 3.0f, 1, true);
@@ -1422,6 +1433,7 @@ void AddSC_boss_felhounds()
 {
     RegisterCreatureAI(npc_felhounds_shatug);
     RegisterCreatureAI(npc_felhounds_fharg);
+
     RegisterSpellScript(spell_felhounds_destroyers_boon_energy_type);
     RegisterSpellScript(spell_felhounds_consuming_sphere);
     RegisterSpellScript(spell_felhounds_desolate_path);
@@ -1439,6 +1451,7 @@ void AddSC_boss_felhounds()
     RegisterAuraScript(spell_felhounds_destroyers_boon_energize);
     RegisterAuraScript(spell_felhounds_sargeras_blessing);
     RegisterAuraScript(spell_felhounds_decay_or_smouldering);
+
     RegisterAreaTriggerAI(at_felhounds_weight_of_darkness);
     RegisterAreaTriggerAI(at_felhounds_consuming_sphere);
 }

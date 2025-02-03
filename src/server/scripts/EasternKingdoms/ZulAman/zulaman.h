@@ -1,8 +1,6 @@
 #ifndef DEF_ZULAMAN_H
 #define DEF_ZULAMAN_H
 
-#define DataHeader "ZA"
-
 enum Data
 {
     DATA_AKILZON            = 0,

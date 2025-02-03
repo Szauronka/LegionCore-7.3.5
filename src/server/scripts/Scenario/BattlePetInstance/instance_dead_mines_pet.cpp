@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
 */
 
 #include "ScriptMgr.h"
@@ -16,7 +17,7 @@ public:
 
     struct instance_dead_mines_per_InstanceMapScript : public InstanceScript
     {
-        instance_dead_mines_per_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_dead_mines_per_InstanceMapScript(Map* map) : InstanceScript(map) {}
         
         ObjectGuid first_step{}, third_step{};
         

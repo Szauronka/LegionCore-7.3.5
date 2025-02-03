@@ -83,10 +83,10 @@ enum eSpells
     //
     SPELL_ORB_OF_LIGHT              = 145345, //Orb of Light
 
-    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ       145215
-    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ  145299
-    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ          72569 - пїЅпїЅпїЅпїЅ 145684 AnimKitID: 1615
-    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ           73972 - пїЅпїЅпїЅпїЅ 149027
+    //Изгнание аура на игрока       145215
+    //Создание сферы для лабиринта  145299
+    //Осквернённый осколок          72569 - аура 145684 AnimKitID: 1615
+    //Бестелесная скверна           73972 - аура 149027
 };
 
 Position const Sha_of_pride_taranzhu  = {748.1805f, 1058.264f, 356.1557f, 5.566918f };
@@ -212,7 +212,7 @@ class boss_sha_of_pride : public CreatureScript
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_NORTH);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_CORRUPTED_PRISON_SOUTH);
                 me->RemoveAurasDueToSpell(SPELL_UNLEASHED);
-                me->SetPowerType(POWER_ENERGY);
+                me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
                 bPhaseLowHp = false;
@@ -268,7 +268,7 @@ class boss_sha_of_pride : public CreatureScript
                 if (!PlayerList.isEmpty())
                     for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
                         if (Player* player = Itr->getSource())
-                            if (player->IsAlive())
+                            if (player->isAlive())
                                 DoCast(player, SPELL_PRIDE, true);
             }
 
@@ -926,18 +926,6 @@ class go_sha_of_pride_corupted_prison_button : public GameObjectScript
                     go->EnableOrDisableGo(true, true);
             }
 
-            float GetDegreesAngle(Position const& pos, float x, float y, bool relative) const
-            {
-                float angel = relative ? pos.GetRelativeAngle(x, y) : pos.GetAngle(x, y);
-                return pos.NormalizeOrientation(angel) * M_RAD;
-            }
-
-            bool IsInDegreesRange(Position const& pos, float x, float y, float degresA, float degresB, bool relative/* = false*/) const
-            {
-                float angel = GetDegreesAngle(pos, x, y, relative);
-                return angel >= degresA && angel <= degresB;
-            }
-
             void UpdateAI(uint32 diff) 
             {
                 events.Update(diff);
@@ -954,7 +942,7 @@ class go_sha_of_pride_corupted_prison_button : public GameObjectScript
                     for(std::list<Player*>::iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
                     {
                         if (go->GetDistance(*itr) > 5.5f && go->GetDistance(*itr) < 7.5f 
-                            && IsInDegreesRange(go->GetPosition(), (*itr)->GetPositionX(), (*itr)->GetPositionY(), 170.0f, 250.0f, true))
+                            && go->IsInDegreesRange((*itr)->GetPositionX(), (*itr)->GetPositionY(), 170.0f, 250.0f, true))
                             find = true;
                     }
 
@@ -1274,7 +1262,8 @@ public:
                     {
                         if (Player* plr = GetCaster()->GetPlayer(*GetCaster(), *_itr))
                         {
-                            Position pos = plr->GetPosition();
+                            Position pos;
+                            plr->GetPosition(&pos);
                             GetCaster()->SummonCreature(NPC_REFLECTION, pos, TEMPSUMMON_DEAD_DESPAWN);
                         }
                     }

@@ -24,6 +24,10 @@ WorldStateMgr::WorldStateMgr()
     m_nextSave = sWorld->getIntConfig(CONFIG_INTERVAL_SAVE);
 }
 
+WorldStateMgr::~WorldStateMgr()
+{
+}
+
 WorldStateMgr& WorldStateMgr::Instance()
 {
     static WorldStateMgr instance;
@@ -68,13 +72,6 @@ void WorldStateMgr::Initialize()
     AddTemplate(WorldStates::WS_PVP_ARENA_ENABLED, WorldStatesData::Types::World, 0, 1 << WorldStatesData::Flags::InitialState, sWorld->getBoolConfig(CONFIG_ARENA_SEASON_IN_PROGRESS));
     AddTemplate(WorldStates::WS_ARENA_SEASON_ID, WorldStatesData::Types::World, 0, 1 << WorldStatesData::Flags::InitialState, sWorld->getIntConfig(CONFIG_ARENA_SEASON_ID));
     AddTemplate(WorldStates::WS_RATED_BG_ENABLED, WorldStatesData::Types::World, 0, 1 << WorldStatesData::Flags::InitialState, sWorld->getBoolConfig(CONFIG_ARENA_SEASON_IN_PROGRESS));
-}
-
-void WorldStateMgr::Unload()
-{
-    for (auto state : _worldStateV)
-        if (state)
-            state->Unload();
 }
 
 WorldStateTemplate const* WorldStateMgr::FindTemplate(uint32 variableID)
@@ -176,7 +173,7 @@ void WorldStateMgr::LoadTemplatesFromDBC()
         }
         else
         {
-            TC_LOG_INFO("misc", "WorldStateMgr::LoadTemplatesFromDBC unhandled template %u!", stateId);
+            TC_LOG_INFO(LOG_FILTER_GENERAL, "WorldStateMgr::LoadTemplatesFromDBC unhandled template %u!", stateId);
             continue;
         }
 
@@ -206,7 +203,7 @@ void WorldStateMgr::LoadTemplatesFromDBC()
 
         ++count;
     }
-    TC_LOG_INFO("misc", ">> Loaded static DBC templates for %u WorldStates", count);
+    TC_LOG_INFO(LOG_FILTER_GENERAL, ">> Loaded static DBC templates for %u WorldStates", count);
 }
 
 void WorldStateMgr::LoadTemplatesFromDB()
@@ -225,7 +222,7 @@ void WorldStateMgr::LoadTemplatesFromDB()
         AddTemplate(variableID, fields[1].GetUInt32(), fields[2].GetUInt32(), fields[3].GetUInt32(), fields[4].GetUInt32());
     } while (result->NextRow());
 
-    TC_LOG_INFO("misc", "%s >> Loaded %zu templates", __FUNCTION__, _worldStateTemplates.size());
+    TC_LOG_INFO(LOG_FILTER_GENERAL, "%s >> Loaded %u templates", __FUNCTION__, _worldStateTemplates.size());
 }
 
 void WorldStateMgr::LoadTemplatesFromObjectTemplateDB()
@@ -303,7 +300,7 @@ void WorldStateMgr::LoadTemplatesFromObjectTemplateDB()
         while (result->NextRow());
     }
 
-    TC_LOG_INFO("misc", ">> Loaded static templates for %u GAMEOBJECT_TYPE_CAPTURE_POINT linked WorldStates", count);
+    TC_LOG_INFO(LOG_FILTER_GENERAL, ">> Loaded static templates for %u GAMEOBJECT_TYPE_CAPTURE_POINT linked WorldStates", count);
 }
 
 void WorldStateMgr::LoadFromDB()
@@ -376,7 +373,7 @@ void WorldStateMgr::SaveToDB()
 {
     m_nextSave = sWorld->getIntConfig(CONFIG_INTERVAL_SAVE);
 
-    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
     for (auto iter = _worldState.begin(); iter != _worldState.end(); ++iter)
         if (!iter->second.HasFlag(WorldStatesData::Flags::Saved))

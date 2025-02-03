@@ -23,7 +23,7 @@
 class instance_greenstone_village : public InstanceMapScript
 {
 public:
-    instance_greenstone_village() : InstanceMapScript("instance_greenstone_village", 1144) { }
+    instance_greenstone_village() : InstanceMapScript("instance_greenstone_village", 1024) { }
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const override
     {
@@ -32,7 +32,7 @@ public:
 
     struct instance_greenstone_village_InstanceMapScript : public InstanceScript
     {
-        instance_greenstone_village_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_greenstone_village_InstanceMapScript(Map* map) : InstanceScript(map)
         { }
 
         void Initialize() override
@@ -77,5 +77,5 @@ public:
 
 void AddSC_instance_greenstone_village()
 {
-    //new instance_greenstone_village();
+    new instance_greenstone_village();
 }

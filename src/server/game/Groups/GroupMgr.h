@@ -20,14 +20,18 @@
 
 #include "Group.h"
 
-class TC_GAME_API GroupMgr
+class GroupMgr
 {
 private:
     GroupMgr();
     ~GroupMgr();
 
 public:
-    static GroupMgr* instance();
+    static GroupMgr* instance()
+    {
+        static GroupMgr instance;
+        return &instance;
+    }
 
     typedef std::map<ObjectGuid::LowType, Group*> GroupContainer;
     typedef std::vector<Group*>      GroupDbContainer;

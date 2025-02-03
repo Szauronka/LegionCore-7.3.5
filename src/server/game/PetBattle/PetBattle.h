@@ -269,17 +269,17 @@ enum ePetBattleAbilities
     PETBATTLE_ABILITY_TURN0_PROC_ON_NONE = 0xFF      /// Custom value
 };
 
-class TC_GAME_API BattlePet
+class BattlePet
 {
 public:
     virtual ~BattlePet() = default;
 
     void Load(Field* fields);
     void CloneFrom(std::shared_ptr<BattlePet> & p_BattlePet);
-    void Save(CharacterDatabaseTransaction& trans);
+    void Save(SQLTransaction& trans);
 
     ObjectGuid::LowType AddToPlayer(Player* player);
-    void AddToPlayer(Player* player, CharacterDatabaseTransaction& trans);
+    void AddToPlayer(Player* player, SQLTransaction& trans);
     void Remove(Player* player);
     void UpdateAbilities();
     void UpdateStats();
@@ -309,7 +309,7 @@ public:
 
 class PetBattle;
 
-class TC_GAME_API BattlePetInstance : public BattlePet
+class BattlePetInstance : public BattlePet
 {
 public:
     BattlePetInstance();
@@ -543,7 +543,7 @@ public:
     bool isRun;                                             ///< Team is ready to run
 };
 
-class TC_GAME_API PetBattle
+class PetBattle
 {
 public:
     PetBattle();

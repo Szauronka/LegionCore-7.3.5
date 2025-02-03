@@ -25,13 +25,11 @@
 
 struct CreatureData;
 
-class TC_GAME_API Transport : public GameObject, public TransportBase
+class Transport : public GameObject, public TransportBase
 {
         friend Transport* TransportMgr::CreateTransport(uint32, ObjectGuid::LowType, Map*);
 
     public:
-        typedef std::set<WorldObject*> PassengerSet;
-
         Transport();
         ~Transport();
 
@@ -44,7 +42,9 @@ class TC_GAME_API Transport : public GameObject, public TransportBase
 
         void AddPassenger(WorldObject* passenger);
         void RemovePassenger(WorldObject* passenger);
-        PassengerSet const& GetPassengers() const { return _passengers; }
+		void UnloadNonStaticPassengers();
+        Creature* AddNPCPassengerInInstance(uint32 entry, float x, float y, float z, float o, uint32 anim = 0);
+        WorldObjectSet& GetPassengers() { return _passengers; }
 
         Creature* CreateNPCPassenger(ObjectGuid::LowType guid, CreatureData const* data);
         GameObject* CreateGOPassenger(ObjectGuid::LowType guid, GameObjectData const* data);
@@ -98,9 +98,9 @@ class TC_GAME_API Transport : public GameObject, public TransportBase
         void SetDelayedAddModelToMap() { _delayedAddModel = true; }
 
         TransportTemplate const* GetTransportTemplate() const { return _transportInfo; }
-        PassengerSet _passengers;
-        PassengerSet _staticPassengers;
-        void UpdatePassengerPositions(PassengerSet& passengers);
+        WorldObjectSet _passengers;
+        WorldObjectSet _staticPassengers;
+        void UpdatePassengerPositions(WorldObjectSet& passengers);
 
         uint32 GetPathProgress() const override;
 
@@ -108,6 +108,7 @@ class TC_GAME_API Transport : public GameObject, public TransportBase
 
         bool IsMoving() const override { return _isMoving; }
         void SetMoving(bool val) override { _isMoving = val; }
+		void SetPendingStop(bool val) { _pendingStop = val; }
 
     private:
         void MoveToNextWaypoint();
@@ -131,7 +132,7 @@ class TC_GAME_API Transport : public GameObject, public TransportBase
         bool _delayedAddModel;
 };
 
-class TC_GAME_API StaticTransport : public Transport
+class StaticTransport : public Transport
 {
     public:
         StaticTransport();

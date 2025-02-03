@@ -52,17 +52,17 @@ enum ConditionTypes
     CONDITION_TITLE                 = 18,                   // title id         0              0                  true if player has title
     CONDITION_SPAWNMASK             = 19,                   // spawnMask        0              0
     CONDITION_GENDER                = 20,                   // gender           0              0                  true if player's gender is equal to gender
-    CONDITION_UNUSED_21             = 21,                   //
+    CONDITION_UNIT_STATE            = 21,                   // unitState        0              0                  true if unit has unitState
     CONDITION_MAPID                 = 22,                   // map_id           0              0                  true if in map_id
     CONDITION_AREAID                = 23,                   // area_id          0              0                  true if in area_id
-    CONDITION_UNUSED_24             = 24,                   //
+    CONDITION_CREATURE_TYPE         = 24,                   // cinfo.type       0              0                  true if creature_template.type = value1
     CONDITION_SPELL                 = 25,                   // spell_id         0              0                  true if player has learned spell
-    CONDITION_PHASEMASK             = 26,                   // phasemask        0              0                  true if object is in phasemask
+    CONDITION_PHASEID               = 26,                   // phaseid          0              0                  true if object is in phaseid
     CONDITION_LEVEL                 = 27,                   // level            ComparisonType 0                  true if unit's level is equal to param1 (param2 can modify the statement)
     CONDITION_QUEST_COMPLETE        = 28,                   // quest_id         0              0                  true if player has quest_id with all objectives complete, but not yet rewarded
     CONDITION_NEAR_CREATURE         = 29,                   // creature entry   distance       0                  true if there is a creature of entry in range
     CONDITION_NEAR_GAMEOBJECT       = 30,                   // gameobject entry distance       0                  true if there is a gameobject of entry in range
-    CONDITION_OBJECT_ENTRY          = 31,                   // TypeID           entry          0                  true if object is type TypeID and the entry is 0 or matches entry of the object
+    CONDITION_OBJECT_ENTRY_GUID     = 31,                   // TypeID           entry          guid               true if object is type TypeID and the entry is 0 or matches entry of the object or matches guid of the object
     CONDITION_TYPE_MASK             = 32,                   // TypeMask         0              0                  true if object is type object's TypeMask matches provided TypeMask
     CONDITION_RELATION_TO           = 33,                   // ConditionTarget  RelationType   0                  true if object is in given relation with object specified by ConditionTarget
     CONDITION_REACTION_TO           = 34,                   // ConditionTarget  rankMask       0                  true if object's reaction matches rankMask object specified by ConditionTarget
@@ -99,7 +99,17 @@ enum ConditionTypes
     CONDITION_GET_AMOUNT_STACK_AURA = 65,                   // spell_id         stack          0                  true if player (or target) has aura of spell_id with stack amount 
     CONDITION_TIMEWALKING           = 66,                   // 0                0              0                  true if player is in timewalking.
     CONDITION_ACOUNT_QUEST          = 67,                   // quest_id         0              0                  true if quest_id was rewarded on any char account
-    CONDITION_MAX                   = 68                    // MAX
+    CONDITION_DAILY_QUEST_DONE      = 68,                   // quest id         0              0                  true if daily quest has been completed for the day
+    CONDITION_CHARMED               = 69,                   // 0                0              0                  true if unit is currently charmed
+    CONDITION_PET_TYPE              = 70,                   // mask             0              0                  true if player has a pet of given type(s)
+    CONDITION_TAXI                  = 71,                   // 0                0              0                  true if player is on taxi
+    CONDITION_QUESTSTATE            = 72,                   // quest_id         state_mask     0                  true if player is in any of the provided quest states for the quest (1 = not taken, 2 = completed, 8 = in progress, 32 = failed, 64 = rewarded)
+    CONDITION_DIFFICULTY_ID         = 73,                   // Difficulty       0              0                  true is map has difficulty id
+    CONDITION_HAS_GROUP             = 74,                   // 0                0              0                  true if player is in group
+    CONDITION_WEEKLY_QUEST_DONE     = 75,                   // quest            0              0                  true if weekly quest has been completed for the week  
+    CONDITION_REPUTATION_VALUE      = 76,                   // faction_id       rep_value      0                  true if reputation value more or equal than rep_value 
+    
+    CONDITION_MAX                   = 77                    // MAX
 };
 
 /*! Documentation on implementing a new ConditionSourceType:
@@ -248,7 +258,7 @@ typedef std::map<uint32 /*itemId*/, ConditionTypeContainer> ItemLootConditionCon
 
 typedef std::map<uint32, ConditionList> ConditionReferenceContainer;//only used for references
 
-class TC_GAME_API ConditionMgr
+class ConditionMgr
 {
         ConditionMgr();
         ~ConditionMgr();
@@ -264,7 +274,7 @@ class TC_GAME_API ConditionMgr
         uint32 GetSearcherTypeMaskForConditionList(ConditionList const& conditions);
         bool IsObjectMeetToConditions(WorldObject* object, ConditionList const& conditions);
         bool IsObjectMeetToConditions(WorldObject* object1, WorldObject* object2, ConditionList const& conditions);
-        bool IsObjectMeetToConditions(ConditionSourceInfo& sourceInfo, ConditionList const& conditions) const;
+        bool IsObjectMeetToConditions(ConditionSourceInfo& sourceInfo, ConditionList const& conditions);
         bool CanHaveSourceGroupSet(ConditionSourceType sourceType) const;
         bool CanHaveSourceIdSet(ConditionSourceType sourceType) const;
         ConditionList GetConditionsForNotGroupedEntry(ConditionSourceType sourceType, uint32 entry);
@@ -286,7 +296,7 @@ class TC_GAME_API ConditionMgr
         bool addToGossipMenus(Condition* cond);
         bool addToGossipMenuItems(Condition* cond);
         bool addToSpellImplicitTargetConditions(Condition* cond);
-        bool IsObjectMeetToConditionList(ConditionSourceInfo& sourceInfo, ConditionList const& conditions) const;
+        bool IsObjectMeetToConditionList(ConditionSourceInfo& sourceInfo, ConditionList const& conditions);
 
         void Clean(); // free up resources
         std::list<Condition*> AllocatedMemoryStore; // some garbage collection :)

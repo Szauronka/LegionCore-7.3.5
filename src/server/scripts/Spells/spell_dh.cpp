@@ -991,7 +991,7 @@ class spell_dh_reverse_magic : public SpellScriptLoader
                     if (!aura)
                         continue;
                     Unit* casterBuff = aura->GetCaster();
-                    if (casterBuff && caster->GetDistance(casterBuff) <= GetSpellInfo()->Effects[EFFECT_0]->BasePoints)
+                    if (casterBuff /*&& caster->GetDistance(casterBuff) <= GetSpellInfo()->Effects[EFFECT_0]->BasePoints*/)
                     {
                         if (Aura* targetAura = casterBuff->AddAura(aura->GetSpellInfo()->Id, casterBuff, NULL, aura->GetStackAmount(), aura->GetDuration(), aura->GetDuration()))
                         {
@@ -1119,41 +1119,6 @@ public:
     {
         return new spell_dh_mana_break_SpellScript();
     }
-};
-
-// Mana Rift (Honor Talent) - 235904
-class spell_dh_mana_rift : public SpellScriptLoader
-{
-    public:
-        spell_dh_mana_rift() : SpellScriptLoader("spell_dh_mana_rift") { }
-
-        class spell_dh_mana_rift_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dh_mana_rift_SpellScript);
-
-            void HandleDamage(SpellEffIndex effIndex)
-            {
-                if (Unit* target = GetHitUnit())
-                    SetHitDamage(target->CountPctFromMaxHealth(GetSpellInfo()->Effects[effIndex]->CalcValue(GetCaster())));
-            }
-
-            void HandleMana(SpellEffIndex effIndex)
-            {
-                if (Unit* target = GetHitUnit())
-                    SetEffectValue(target->CountPctFromMaxMana(GetSpellInfo()->Effects[effIndex]->CalcValue(GetCaster())));
-            }
-
-            void Register() override
-            {
-                OnEffectLaunchTarget += SpellEffectFn(spell_dh_mana_rift_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-                OnEffectLaunchTarget += SpellEffectFn(spell_dh_mana_rift_SpellScript::HandleMana, EFFECT_1, SPELL_EFFECT_POWER_BURN);
-            }
-        };
-
-        SpellScript* GetSpellScript() const override
-        {
-            return new spell_dh_mana_rift_SpellScript();
-        }
 };
 
 // Anguish - 202443
@@ -1739,7 +1704,6 @@ void AddSC_demonhunter_spell_scripts()
     new spell_dh_eye_of_leotheras();
     new spell_dh_mana_break();
     new spell_dh_illidans_grasp_throw();
-    new spell_dh_mana_rift();
     new spell_dh_anguish();
     new spell_dh_anguish_damage();
     new spell_dh_empower_wards();

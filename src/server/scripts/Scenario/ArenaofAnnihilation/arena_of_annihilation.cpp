@@ -171,7 +171,7 @@ public:
         void Reset() override
         {
             events.Reset();
-            me->SetPowerType(POWER_ENERGY);
+            me->setPowerType(POWER_ENERGY);
             me->SetMaxPower(POWER_ENERGY, 100);
             me->SetPower(POWER_ENERGY, 100);
             me->SetReactState(REACT_PASSIVE);
@@ -660,7 +660,7 @@ void AddSC_arena_of_annihilation()
     new boss_cloudbender_kobo();
     new boss_maki_waterblade();
     new npc_kobo_twister();
-    //new go_gong_temple_tiger();
-    //new at_enter_arena_annihilation();
+    new go_gong_temple_tiger();
+    new at_enter_arena_annihilation();
     new spell_jade_lightning_strike();
 }

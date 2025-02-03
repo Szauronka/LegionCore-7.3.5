@@ -39,9 +39,10 @@ target_include_directories(shared
 
 target_link_libraries(shared
   PRIVATE
-    trinity-core-interface
+    process
   PUBLIC
-    database
+    mysql
+    cds
     boost
     fmt
     g3dlib
@@ -59,20 +60,8 @@ add_dependencies(shared revision_data.h)
 
 set_target_properties(shared
     PROPERTIES
-      DEFINE_SYMBOL TRINITY_API_EXPORT_SHARED
-      FOLDER "server")
-
-if( BUILD_SHARED_LIBS )
-  if( UNIX )
-    install(TARGETS shared
-      LIBRARY
-        DESTINATION lib)
-  elseif( WIN32 )
-    install(TARGETS shared
-      RUNTIME
-        DESTINATION "${CMAKE_INSTALL_PREFIX}")
-  endif()
-endif()
+      FOLDER
+        "server")
 
 # Generate precompiled header
 if (USE_COREPCH)

@@ -80,14 +80,13 @@ enum UnitBytes2Offsets : uint8
     UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM = 3,
 };
 
-// UNIT_FIELD_BYTES_1 (UNIT_BYTES_1_OFFSET_ANIM_TIER)
-enum class AnimTier : uint8
+// byte flags value (UNIT_FIELD_BYTES_1, 3) ((cainfo->bytes1 >> 24) & 0xFF)
+enum UnitBytes1_Flags
 {
-    Ground      = 0, // plays ground tier animations
-    Swim        = 1, // falls back to ground tier animations, not handled by the client, should never appear in sniffs, will prevent tier change animations from playing correctly if used
-    Hover       = 2, // plays flying tier animations or falls back to ground tier animations, automatically enables hover clientside when entering visibility with this value
-    Fly         = 3, // plays flying tier animations
-    Submerged   = 4
+    UNIT_BYTE1_FLAG_ALWAYS_STAND    = 0x01,
+    UNIT_BYTE1_FLAG_HOVER           = 0x02,
+    UNIT_BYTE1_FLAG_UNK_3           = 0x04,
+    UNIT_BYTE1_FLAG_ALL             = 0xFF
 };
 
 // low byte (0 from 0..3) of UNIT_FIELD_BYTES_2
@@ -152,7 +151,7 @@ enum UnitFlags : uint32
     UNIT_FLAG_SKINNABLE             = 0x04000000,
     UNIT_FLAG_MOUNT                 = 0x08000000,
     UNIT_FLAG_PREVENT_KNEELING_WHEN_LOOTING = 0x10000000,
-    UNIT_FLAG_PREVENT_EMOTES        = 0x20000000,           // used in Feign Death spell
+    UNIT_FLAG_PREVENT_EMOTES        = 0x20000000,           // used in Feing Death spell
     UNIT_FLAG_SHEATHE               = 0x40000000,
     UNIT_FLAG_UNK_31                = 0x80000000
 };
@@ -246,6 +245,14 @@ enum NPCFlags : uint64
     UNIT_NPC_FLAG_VAULTKEEPER           = 0x20000000,       // 29 void storage
     UNIT_NPC_FLAG_WILD_BATTLE_PET       = 0x40000000,       // 30 wild battle pet
     UNIT_NPC_FLAG_BLACK_MARKET          = 0x80000000,       // 31 black market
+	UNIT_NPC_FLAG_ITEM_UPGRADE_MASTER   = 0x00100000000,
+    UNIT_NPC_FLAG_GARRISON_ARCHITECT    = 0x00200000000,
+    UNIT_NPC_FLAG_STEERING              = 0x00400000000,
+    UNIT_NPC_FLAG_SHIPMENT_CRAFTER      = 0x01000000000,
+    UNIT_NPC_FLAG_GARRISON_MISSION_NPC  = 0x02000000000,
+    UNIT_NPC_FLAG_TRADESKILL_NPC        = 0x04000000000,
+    UNIT_NPC_FLAG_BLACK_MARKET_VIEW     = 0x08000000000,
+    UNIT_NPC_FLAG_CONTRIBUTION_COLLECTOR = 0x40000000000,
 };
 
 enum NPCFlags2
@@ -297,8 +304,6 @@ enum MovementFlags : uint32
     MOVEMENTFLAG_FEATHER_FALL          = 0x08000000,               // active rogue safe fall spell (passive)
     MOVEMENTFLAG_HOVER                 = 0x10000000,               // hover, cannot jump
     MOVEMENTFLAG_DISABLE_COLLISION     = 0x20000000,
-
-    MOVEMENTFLAG_ONTRANSPORT = MOVEMENTFLAG_DISABLE_GRAVITY,       // TC calls 0x200 MOVEMENTFLAG_ONTRANSPORT
 
     // TODO: Check if PITCH_UP and PITCH_DOWN really belong here..
     MOVEMENTFLAG_MASK_MOVING =

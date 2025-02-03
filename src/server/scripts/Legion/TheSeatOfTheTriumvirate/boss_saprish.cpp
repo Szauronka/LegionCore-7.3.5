@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     The Seat of the Triumvirate: Saprish [heroic & mythic]
 
 */
@@ -382,7 +383,7 @@ public:
             portsummoned = 0;
             me->SetDisableGravity(true);
             eventact = false;
-            if (!me->IsAlive())
+            if (!me->isAlive())
                 if (Creature* saprish = instance->instance->GetCreature(instance->GetGuidData(NPC_SAPRISH)))
                     saprish->SetVisible(true);
             if (instance->GetBossState(DATA_SAPRISH) == DONE || instance->GetData(SAPRISH_PORTALS) == DONE)

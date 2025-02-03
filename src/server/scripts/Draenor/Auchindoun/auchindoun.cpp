@@ -6,9 +6,13 @@
 ///  Coded by Davethebrave
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "SpellScript.h"
 #include "auchindoun.hpp"
 #include "Object.h"
+#include "ScriptMgr.h"
+#include <SpellScript.h>
 
 Position const g_PositionKaatharCrystalPosition = {1909.75f, 3188.70f, 66.786f, 5.401960f};
 
@@ -117,23 +121,21 @@ public:
                                 /*
                                 std::list<Creature*> l_ListCreatures;
                                 uint32 l_Entries[7] = { CreatureSoulBinderTuulani ,CreatureSoulBinderNyami, BossKaathar,CreatureSargeriZealot, CreatureSargeriSoulBinder, CreatureSargeriRitualist, CreatureSargeiHoplite };
-
                                 for (uint8 l_I = 0; l_I < 7; l_I++)
                                 {
                                     l_Tuulina->GetCreatureListWithEntryInGrid(l_ListCreatures, l_Entries[l_I], 200.0f);
                                 }
-
                                 if (!l_ListCreatures.empty())
                                 {
                                     for (Creature* itr : l_ListCreatures)
                                     {
                                         if (!itr)
                                             continue;
-
                                         itr->SetPhaseMask(4, true);
                                     }
                                 }
                                 */
+                                
 
                                 std::list<Player*> playerList;
                                 l_Tuulina->GetPlayerListInGrid(playerList, 600.0f/*, true*/);
@@ -165,12 +167,12 @@ public:
                             }
                             case 13:
                             {
-                                //l_Tuulina->AI()->Talk(TUULANITALK7);
+                                l_Tuulina->AI()->Talk(TUULANITALK7);
                                 l_Tuulina->AddUnitMovementFlag(MOVEMENTFLAG_ROOT);
                                 l_Tuulina->AddAura(SpellTuulaniCapturedVoidPrison, l_Tuulina);
                                 l_Tuulina->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL);
                                 l_Tuulina->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_DISABLE_TURN);
-                                //l_Tuulina->m_Events.AddEvent(new EventTuulaniIntroduction(l_Tuulina, 15, m_InstanceScript), l_Tuulina->m_Events.CalculateTime(7 * IN_MILLISECONDS));
+                                l_Tuulina->m_Events.AddEvent(new EventTuulaniIntroduction(l_Tuulina, 15, m_InstanceScript), l_Tuulina->m_Events.CalculateTime(7 * IN_MILLISECONDS));
                                 break;
                             }
                             case 15:
@@ -178,58 +180,58 @@ public:
                                 /*
                                 std::list<Creature*> l_ListCreatures;
                                 uint32 l_Entries[7] = { CreatureSoulBinderTuulani, CreatureSoulBinderNyami, BossKaathar, CreatureSargeriZealot, CreatureSargeriSoulBinder, CreatureSargeriRitualist, CreatureSargeiHoplite };
-
                                 for (uint8 l_I = 0; l_I < 7; l_I++)
                                 {
                                     l_Tuulina->GetCreatureListWithEntryInGrid(l_ListCreatures, l_Entries[l_I], 200.0f);
                                 }
-
                                 if (!l_ListCreatures.empty())
                                 {
                                     for (Creature* itr : l_ListCreatures)
                                     {
                                         if (!itr)
                                             continue;
-
                                         itr->SetPhaseMask(1, true);
                                     }
                                 }
                                 */
+                                
 
                                 break;
                             }
-                            /*
-                            case 16:
-                            {
-                            l_Nyami->AI()->Talk(NYAMITALK2);
-                            l_Tuulina->m_Events.AddEvent(new EventTuulaniIntroduction(l_Tuulina, 17, m_InstanceScript), l_Tuulina->m_Events.CalculateTime(9 * IN_MILLISECONDS));
-                            break;
+                            
+                            
+                             case 16:
+                             {
+                             l_Nyami->AI()->Talk(NYAMITALK2);
+                             l_Tuulina->m_Events.AddEvent(new EventTuulaniIntroduction(l_Tuulina, 17, m_InstanceScript), l_Tuulina->m_Events.CalculateTime(9 * IN_MILLISECONDS));
+                             break;
+                             }
+                             case 17:
+                             {
+                             l_Nyami->AI()->Talk(NYAMITALK3);
+                             l_Tuulina->m_Events.AddEvent(new EventTuulaniIntroduction(l_Tuulina, 18, m_InstanceScript), l_Tuulina->m_Events.CalculateTime(9 * IN_MILLISECONDS));
+                             break;
+                             }
+                             case 18:
+                             {
+                             l_Nyami->AI()->Talk(NYAMITALK4);
+                             l_Tuulina->m_Events.AddEvent(new EventTuulaniIntroduction(l_Tuulina, 19, m_InstanceScript), l_Tuulina->m_Events.CalculateTime(9 * IN_MILLISECONDS));
+                             break;
+                             }
+                             case 19:
+                             {
+                             l_Tuulina->AI()->Talk(TUULANITALK8);
+                             l_Tuulina->m_Events.AddEvent(new EventTuulaniIntroduction(l_Tuulina, 20, m_InstanceScript), l_Tuulina->m_Events.CalculateTime(9 * IN_MILLISECONDS));
+                             break;
+                             }
+                             case 20:
+                             {
+                             l_Nyami->AI()->Talk(NYAMITALK5);
+                             l_Tuulina->m_Events.AddEvent(new EventTuulaniIntroduction(l_Tuulina, 21, m_InstanceScript), l_Tuulina->m_Events.CalculateTime(9 * IN_MILLISECONDS));
+                             break;
                             }
-                            case 17:
-                            {
-                            l_Nyami->AI()->Talk(NYAMITALK3);
-                            l_Tuulina->m_Events.AddEvent(new EventTuulaniIntroduction(l_Tuulina, 18, m_InstanceScript), l_Tuulina->m_Events.CalculateTime(9 * IN_MILLISECONDS));
-                            break;
-                            }
-                            case 18:
-                            {
-                            l_Nyami->AI()->Talk(NYAMITALK4);
-                            l_Tuulina->m_Events.AddEvent(new EventTuulaniIntroduction(l_Tuulina, 19, m_InstanceScript), l_Tuulina->m_Events.CalculateTime(9 * IN_MILLISECONDS));
-                            break;
-                            }
-                            case 19:
-                            {
-                            l_Tuulina->AI()->Talk(TUULANITALK8);
-                            l_Tuulina->m_Events.AddEvent(new EventTuulaniIntroduction(l_Tuulina, 20, m_InstanceScript), l_Tuulina->m_Events.CalculateTime(9 * IN_MILLISECONDS));
-                            break;
-                            }
-                            case 20:
-                            {
-                            l_Nyami->AI()->Talk(NYAMITALK5);
-                            l_Tuulina->m_Events.AddEvent(new EventTuulaniIntroduction(l_Tuulina, 21, m_InstanceScript), l_Tuulina->m_Events.CalculateTime(9 * IN_MILLISECONDS));
-                            break;
-                            }
-                            */
+                            
+                            
                             default:
                                 break;
                         }
@@ -278,14 +280,15 @@ public:
             me->SetSpeed(MOVE_WALK, 1.2f, true);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC);
 
-            AddDelayedEvent(4 * IN_MILLISECONDS, [this]() -> void
+            AddDelayedEvent(static_cast<uint64>(4) * IN_MILLISECONDS, [this]() -> void
             {
-                me->GetMotionMaster()->MovePoint(MovementInformTuulani01, g_PositionTuulaniMovements[0]);
+               me->GetMotionMaster()->MovePoint(eAuchindounMovementInforms::MovementInformTuulani01, g_PositionTuulaniMovements[0]);
             });
         }
 
         void UpdateAI(uint32 /*diff*/) override
         {
+        
         }
 
         void MovementInform(uint32 /*moveType*/, uint32 id) override
@@ -388,7 +391,7 @@ public:
             {
                 if (Creature* l_Kaathar = m_Instance->instance->GetCreature(m_Instance->GetGuidData(DataBossKathaar)))
                 {
-                    if (l_Kaathar->IsAlive() && l_Kaathar->IsAIEnabled)
+                    if (l_Kaathar->isAlive() && l_Kaathar->IsAIEnabled)
                         l_Kaathar->AI()->DoAction(ActionCountPre1StBossKill);
                 }
             }
@@ -473,7 +476,7 @@ public:
             {
                 if (Creature* l_Kaathar = m_Instance->instance->GetCreature(m_Instance->GetGuidData(DataBossKathaar)))
                 {
-                    if (l_Kaathar->IsAlive() && l_Kaathar->IsAIEnabled)
+                    if (l_Kaathar->isAlive() && l_Kaathar->IsAIEnabled)
                         l_Kaathar->AI()->DoAction(ActionCountPre1StBossKill);
                 }
             }
@@ -561,7 +564,7 @@ public:
             {
                 if (Creature* l_Kaathar = m_Instance->instance->GetCreature(m_Instance->GetGuidData(DataBossKathaar)))
                 {
-                    if (l_Kaathar->IsAlive() && l_Kaathar->IsAIEnabled)
+                    if (l_Kaathar->isAlive() && l_Kaathar->IsAIEnabled)
                         l_Kaathar->AI()->DoAction(ActionCountPre1StBossKill);
                 }
             }
@@ -640,7 +643,7 @@ public:
             {
                 if (Creature* Kaathar = m_Instance->instance->GetCreature(m_Instance->GetGuidData(DataBossKathaar)))
                 {
-                    if (Kaathar->IsAlive() && Kaathar->IsAIEnabled)
+                    if (Kaathar->isAlive() && Kaathar->IsAIEnabled)
                         Kaathar->AI()->DoAction(ActionCountPre1StBossKill);
                 }
             }
@@ -725,7 +728,7 @@ public:
             {
                 if (Creature* l_Kaathar = m_Instance->instance->GetCreature(m_Instance->GetGuidData(DataBossKathaar)))
                 {
-                    if (l_Kaathar->IsAlive() && l_Kaathar->IsAIEnabled)
+                    if (l_Kaathar->isAlive() && l_Kaathar->IsAIEnabled)
                         l_Kaathar->AI()->DoAction(ActionCountPre1StBossKill);
                 }
             }
@@ -814,7 +817,7 @@ public:
             {
                 if (Creature* l_Kaathar = m_Instance->instance->GetCreature(m_Instance->GetGuidData(DataBossKathaar)))
                 {
-                    if (l_Kaathar->IsAlive() && l_Kaathar->IsAIEnabled)
+                    if (l_Kaathar->isAlive() && l_Kaathar->IsAIEnabled)
                         l_Kaathar->AI()->DoAction(ActionCountPre1StBossKill);
                 }
             }
@@ -1387,7 +1390,7 @@ public:
             if (m_Instance)
             {
                 if (Creature* l_Azzakel = m_Instance->instance->GetCreature(m_Instance->GetGuidData(DataBossAzzakael)))
-                    if (l_Azzakel->isInCombat() && l_Azzakel->IsAlive() && l_Azzakel->IsAIEnabled)
+                    if (l_Azzakel->isInCombat() && l_Azzakel->isAlive() && l_Azzakel->IsAIEnabled)
                         l_Azzakel->GetAI()->DoAction(ActionDemonSoulsAchievement);
 
                 if (Creature* l_Trigger = m_Instance->instance->GetCreature(m_Instance->GetGuidData(DataTriggerAzzakelController)))
@@ -1468,7 +1471,7 @@ public:
             if (m_Instance)
             {
                 if (Creature* l_Azzakel = m_Instance->instance->GetCreature(m_Instance->GetGuidData(DataBossAzzakael)))
-                    if (l_Azzakel->isInCombat() && l_Azzakel->IsAlive() && l_Azzakel->IsAIEnabled)
+                    if (l_Azzakel->isInCombat() && l_Azzakel->isAlive() && l_Azzakel->IsAIEnabled)
                         l_Azzakel->GetAI()->DoAction(ActionDemonSoulsAchievement);
             }
         }
@@ -1547,7 +1550,7 @@ public:
             if (m_Instance)
             {
                 if (Creature* l_Azzakel = m_Instance->instance->GetCreature(m_Instance->GetGuidData(DataBossAzzakael)))
-                    if (l_Azzakel->isInCombat() && l_Azzakel->IsAlive() && l_Azzakel->IsAIEnabled)
+                    if (l_Azzakel->isInCombat() && l_Azzakel->isAlive() && l_Azzakel->IsAIEnabled)
                         l_Azzakel->GetAI()->DoAction(ActionDemonSoulsAchievement);
 
                 if (Creature* l_Trigger = m_Instance->instance->GetCreature(m_Instance->GetGuidData(DataTriggerAzzakelController)))

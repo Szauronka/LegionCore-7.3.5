@@ -495,7 +495,7 @@ class spell_rog_killing_spree : public SpellScriptLoader
                 if (Unit* caster = GetCaster())
                 {
                     caster->CastSpell(caster, 61851, true);
-                    pos = caster->GetPosition();
+                    caster->GetPosition(&pos);
                 }
             }
 
@@ -1364,7 +1364,8 @@ class spell_rog_death_from_above_jump : public SpellScript
         {
             if (auto target = GetExplTargetUnit())
             {
-                Position pos = GetCaster()->GetPosition();
+                Position pos;
+                GetCaster()->GetPosition(&pos);
                 pos.m_positionZ = GetCaster()->GetHeight(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
                 GetCaster()->MovePositionToFirstCollision(pos, GetCaster()->GetExactDist2d(target) - target->GetObjectSize(), GetCaster()->GetRelativeAngle(target));
                 GetSpell()->destTarget->Relocate(pos);
@@ -1442,6 +1443,36 @@ class spell_rog_shadowy_duel_main : public SpellScript
     }
 };
 
+// 212219 Control is King
+class spell_rog_control_is_king_proc : public AuraScript
+{
+	PrepareAuraScript(spell_rog_control_is_king_proc);
+
+	void OnProc(AuraEffect const* /*aurEff*/, ProcEventInfo& eventInfo)
+	{
+		if (Unit* caster = GetCaster())
+		{
+			if (Unit* target = eventInfo.GetProcTarget())
+			{
+				target->MonsterSay("Me dieron stun",LANG_UNIVERSAL,ObjectGuid::Empty);
+			}
+		}
+	}
+
+	void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
+	{
+		if (Unit* caster = GetCaster())
+		{
+			caster->MonsterSay("Te aplique el proc", LANG_UNIVERSAL, ObjectGuid::Empty);
+		}
+	}
+	void Register() override
+	{
+		OnEffectProc += AuraEffectProcFn(spell_rog_control_is_king_proc::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+		AfterEffectApply += AuraEffectApplyFn(spell_rog_control_is_king_proc::HandleEffectApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+	}
+};
+
 void AddSC_rogue_spell_scripts()
 {
     new spell_rog_cheat_death();
@@ -1474,4 +1505,5 @@ void AddSC_rogue_spell_scripts()
     RegisterSpellScript(spell_rog_death_from_above_jump);
     RegisterAuraScript(spell_rog_curse_of_the_dreadblades_proc);
     RegisterSpellScript(spell_rog_shadowy_duel_main);
+	RegisterAuraScript(spell_rog_control_is_king_proc);
 }

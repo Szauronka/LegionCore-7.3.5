@@ -1,4 +1,5 @@
 /*=============
+    uwow.biz
 ==============*/
 
 enum eBoss
@@ -329,10 +330,10 @@ struct boss_wase_mari : public BossAI
                     break;
 
                 float facing = me->GetOrientation();
-                facing += float(M_PI / 48);
+                facing += M_PI / 48;
 
                 if (facing > M_PI * 2)
-                    facing -= float(M_PI * 2);
+                    facing -= M_PI * 2;
 
                 me->SetOrientation(facing);
                 me->SetFacingTo(facing);
@@ -346,10 +347,10 @@ struct boss_wase_mari : public BossAI
                     break;
 
                 float facing = me->GetOrientation();
-                facing += float(M_PI / 48);
+                facing += M_PI / 48;
 
                 if (facing > M_PI * 2)
-                    facing -= float(M_PI * 2);
+                    facing -= M_PI * 2;
 
                 me->SetOrientation(facing);
                 me->SetFacingTo(facing);
@@ -376,7 +377,7 @@ struct mob_corrupt_living_water : public ScriptedAI
         for (uint8 i = 0; i < 3; ++i)
         {
             Position pos;
-            pos = me->GetRandomNearPosition(4.0f);
+            me->GetRandomNearPosition(pos, 4.0f);
 
             if (auto droplet = me->SummonCreature(CREATURE_CORRUPT_DROPLET, pos))
                 if (auto unit = SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))

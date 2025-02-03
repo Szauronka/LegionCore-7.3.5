@@ -556,6 +556,7 @@ class boss_the_lich_king : public CreatureScript
                 _JustDied();
                 DoCastAOE(SPELL_PLAY_MOVIE, false);
                 me->SetDisableGravity(false);
+                me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                 me->GetMotionMaster()->MoveFall();
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
                 if (Creature* frostmourne = me->FindNearestCreature(NPC_FROSTMOURNE_TRIGGER, 50.0f))
@@ -1153,6 +1154,7 @@ class boss_the_lich_king : public CreatureScript
                             sCreatureTextMgr->SendSound(me, SOUND_PAIN, CHAT_MSG_MONSTER_YELL, ObjectGuid::Empty, TEXT_RANGE_NORMAL, TEAM_OTHER, false);
                             // set flight
                             me->SetDisableGravity(true);
+                            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                             me->GetMotionMaster()->MovePoint(POINT_LK_OUTRO_2, OutroFlying);
                             break;
                         case EVENT_OUTRO_TALK_7:
@@ -1729,7 +1731,8 @@ class npc_strangulate_vehicle : public CreatureScript
                             {
                                 if (me->GetExactDist(lichKing) > 10.0f)
                                 {
-                                    Position pos = lichKing->GetNearPosition(float(rand_norm()) * 5.0f  + 7.5f, lichKing->GetAngle(me));
+                                    Position pos;
+                                    lichKing->GetNearPosition(pos, float(rand_norm()) * 5.0f  + 7.5f, lichKing->GetAngle(me));
                                     me->GetMotionMaster()->MovePoint(0, pos);
                                 }
                             }
@@ -1808,7 +1811,7 @@ class npc_terenas_menethil : public CreatureScript
             void EnterEvadeMode() override
             {
                 // no running back home
-                if (!me->IsAlive())
+                if (!me->isAlive())
                     return;
 
                 me->DeleteThreatList();
@@ -3487,7 +3490,7 @@ void AddSC_boss_the_lich_king()
     new npc_lich_king_trap();
     new spell_the_lich_king_infest();
     new spell_the_lich_king_necrotic_plague();
-    //new spell_the_lich_king_necrotic_plague_jump();
+    new spell_the_lich_king_necrotic_plague_jump();
     new spell_the_lich_king_shadow_trap_visual();
     new spell_the_lich_king_shadow_trap_periodic();
     new spell_the_lich_king_quake();
@@ -3515,6 +3518,6 @@ void AddSC_boss_the_lich_king()
     new spell_the_lich_king_jump_remove_aura();
     new spell_trigger_spell_from_caster("spell_the_lich_king_mass_resurrection", SPELL_MASS_RESURRECTION_REAL);
     new spell_the_lich_king_play_movie();
-    //new achievement_been_waiting_long_time();
+    new achievement_been_waiting_long_time();
     new achievement_neck_deep_in_vile();
 }

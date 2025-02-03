@@ -20,7 +20,7 @@
 #define _WARDEN_WIN_H
 
 #include <map>
-#include "Cryptography/ARC4.h"
+#include "ARC4.h"
 #include "BigNumber.h"
 #include "ByteBuffer.h"
 #include "Warden.h"

@@ -1,8 +1,11 @@
 /*
+    http://epicwow.com/
     Dungeon : Shadowmoon Burial Grounds 100
 */
 
 #include "shadowmoon_burial_grounds.h"
+#include "ScriptMgr.h"
+#include "InstanceScript.h"
 
 DoorData const doorData[] =
 {
@@ -25,9 +28,8 @@ public:
 
     struct instance_shadowmoon_burial_grounds_InstanceMapScript : public InstanceScript
     {
-        instance_shadowmoon_burial_grounds_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_shadowmoon_burial_grounds_InstanceMapScript(Map* map) : InstanceScript(map) 
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 

@@ -58,7 +58,7 @@ struct PlayerFloodInfo
     std::set<size_t> mailFoundedBadWords{};
 };
 
-class TC_GAME_API WordFilterMgr
+class WordFilterMgr
 {
     WordFilterMgr();
     ~WordFilterMgr();

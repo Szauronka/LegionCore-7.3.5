@@ -1,19 +1,19 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 // TODO: Implement proper support for vehicle+player teleportation
@@ -66,7 +66,7 @@ bool BattlefieldWG::SetupBattlefield()
 
     m_tenacityStack = 0;
 
-    KickPosition.Relocate(5728.117f, 2714.346f, 697.733f, 0.0f);
+    KickPosition.Relocate(5728.117f, 2714.346f, 697.733f, 0.0f, 0.0f);
     KickPosition.m_mapId = m_MapId;
 
     RegisterZone(m_AreaID);
@@ -161,7 +161,8 @@ bool BattlefieldWG::SetupBattlefield()
     // Spawn turrets and hide them per default
     for (uint8 i = 0; i < WG_MAX_TURRET; i++)
     {
-        Position towerCannonPos = WGTurret[i].GetPosition();
+        Position towerCannonPos;
+        WGTurret[i].GetPosition(&towerCannonPos);
         if (Creature* creature = SpawnCreature(NPC_TOWER_CANNON, towerCannonPos, TEAM_ALLIANCE))
         {
             CanonList.insert(creature->GetGUID());
@@ -243,7 +244,7 @@ void BattlefieldWG::OnBattleStart()
         m_titansRelic->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_IN_USE);
     }
     else
-        TC_LOG_ERROR("bg.battlefield", "WG: Failed to spawn titan relic.");
+        TC_LOG_ERROR(LOG_FILTER_BATTLEFIELD, "WG: Failed to spawn titan relic.");
 
 
     // Update tower visibility and update faction
@@ -572,7 +573,7 @@ uint8 BattlefieldWG::GetSpiritGraveyardId(uint32 areaId) const
         case AREA_THE_CHILLED_QUAGMIRE:
             return BATTLEFIELD_WG_GY_HORDE;
         default:
-            TC_LOG_ERROR("bg.battlefield", "BattlefieldWG::GetSpiritGraveyardId: Unexpected Area Id %u", areaId);
+            TC_LOG_ERROR(LOG_FILTER_BATTLEFIELD, "BattlefieldWG::GetSpiritGraveyardId: Unexpected Area Id %u", areaId);
             break;
     }
 
@@ -868,7 +869,7 @@ void BattlefieldWG::OnPlayerJoinWar(Player* player)
     player->PlayDirectSound(BG_SOUND_START); // START Battle
 
     // resurect dead plr
-    if(!player->IsAlive())
+    if(!player->isAlive())
         player->ResurrectPlayer(1.0f);
 
     if (player->GetTeamId() == GetDefenderTeam())
@@ -968,8 +969,8 @@ void BattlefieldWG::FillInitialWorldStates(WorldPackets::WorldState::InitWorldSt
     packet.Worldstates.emplace_back(WorldStates::BATTLEFIELD_WG_WORLD_STATE_ACTIVE, IsWarTime()? 0 : 1); // Note: cleanup these two, their names look awkward
     packet.Worldstates.emplace_back(WorldStates::BATTLEFIELD_WG_WORLD_STATE_SHOW_WORLDSTATE, IsWarTime() ? 1 : 0);
 
-    packet.Worldstates.emplace_back(static_cast<WorldStates>(ClockWorldState[0]), IsWarTime() ? (uint32(GameTime::GetGameTime() + (m_Timer / 1000))) : 0);
-    packet.Worldstates.emplace_back(static_cast<WorldStates>(ClockWorldState[1]), !IsWarTime() ? (uint32(GameTime::GetGameTime() + (m_Timer / 1000))) : 0);
+    packet.Worldstates.emplace_back(static_cast<WorldStates>(ClockWorldState[0]), IsWarTime() ? (uint32(time(nullptr) + (m_Timer / 1000))) : 0);
+    packet.Worldstates.emplace_back(static_cast<WorldStates>(ClockWorldState[1]), !IsWarTime() ? (uint32(time(nullptr) + (m_Timer / 1000))) : 0);
 
     packet.Worldstates.emplace_back(WorldStates::BATTLEFIELD_WG_WORLD_STATE_VEHICLE_H, GetData(BATTLEFIELD_WG_DATA_VEHICLE_H));
     packet.Worldstates.emplace_back(WorldStates::BATTLEFIELD_WG_WORLD_STATE_MAX_VEHICLE_H, GetData(BATTLEFIELD_WG_DATA_MAX_VEHICLE_H));
@@ -1217,7 +1218,7 @@ void BattlefieldWG::RewardMarkOfHonor(Player *plr, uint32 count)
 
     if (msg == EQUIP_ERR_ITEM_NOT_FOUND)
     {
-        TC_LOG_ERROR("bg.battlefield", "Wintergrasp reward item (Entry %u) not exist in `item_template`.", WG_MARK_OF_HONOR);
+        TC_LOG_ERROR(LOG_FILTER_BATTLEFIELD, "Wintergrasp reward item (Entry %u) not exist in `item_template`.", WG_MARK_OF_HONOR);
         return;
     }
 

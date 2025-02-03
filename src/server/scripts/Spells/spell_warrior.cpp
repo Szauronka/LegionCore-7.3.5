@@ -58,7 +58,7 @@ public:
             {
                 if (Unit* target = GetOriginalTarget())
                 {
-                    if (target->IsAlive())
+                    if (target->isAlive())
                         SetEffectValue(CalculatePct(caster->GetPowerCost(POWER_RAGE), GetSpellInfo()->Effects[EFFECT_4]->BasePoints));
                 }
             }
@@ -379,25 +379,29 @@ class spell_warr_charge_drop_fire : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warr_charge_drop_fire_AuraScript);
 
-            Position savePos;
+			enum MiscSpells
+			{
+				SPELL_VISUAL_BLAZING_CHARGE = 26423,
+			};
             void OnTick(AuraEffect const* aurEff)
             {
-                if(Unit* caster = GetCaster())
-                {
-                    float distance = caster->GetDistance(savePos);
-                    float angle = caster->GetAngle(&savePos);
-                    if (uint32 count = uint32(distance))
-                    {
-                        for(uint32 j = 1; j < count + 1; ++j)
-                        {
-                            uint32 distanceNext = j;
-                            float destx = caster->GetPositionX() + distanceNext * std::cos(angle);
-                            float desty = caster->GetPositionY() + distanceNext * std::sin(angle);
-                            savePos.Relocate(destx, desty, caster->GetPositionZ());
-                            caster->SendSpellCreateVisual(GetSpellInfo(), &savePos);
-                        }
-                    }
-                }
+				if (Unit* caster = GetCaster())
+				{
+					float distance = caster->GetDistance(savePos);
+					float angle = caster->GetAngle(&savePos);
+					if (uint32 count = uint32(distance))
+					{
+						for(uint32 j = 1; j < count + 1; ++j)
+						{
+							uint32 distanceNext = j;
+							float destx = caster->GetPositionX() + distanceNext * std::cos(angle);
+							float desty = caster->GetPositionY() + distanceNext * std::sin(angle);
+							savePos.Relocate(destx, desty, caster->GetPositionZ());
+							//caster->SendSpellCreateVisual(GetSpellInfo(), &savePos);
+							caster->PlaySpellVisual(savePos, SPELL_VISUAL_BLAZING_CHARGE, 2.0f, ObjectGuid::Empty, false);
+						}
+					}
+				}
             }
 
             void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -411,6 +415,10 @@ class spell_warr_charge_drop_fire : public SpellScriptLoader
                 OnEffectApply += AuraEffectApplyFn(spell_warr_charge_drop_fire_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_warr_charge_drop_fire_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
             }
+		private:
+
+			Position savePos;
+			bool chargehasfinish = false;
         };
 
         AuraScript* GetAuraScript() const override
@@ -615,7 +623,8 @@ class spell_warr_charge_check_cast : public SpellScriptLoader
                     return SPELL_CAST_OK;
 
                 float angle = target->GetRelativeAngle(caster);
-                Position pos = target->GetFirstCollisionPosition(target->GetObjectSize(), angle);
+                Position pos;
+                target->GetFirstCollisionPosition(pos, target->GetObjectSize(), angle);
                 float limit = GetSpellInfo()->GetMaxRange(true, caster) + 1.0f;
                 PathGenerator* m_path = new PathGenerator(caster);
                 bool result = m_path->CalculatePath(pos.m_positionX, pos.m_positionY, pos.m_positionZ, false);
@@ -632,10 +641,15 @@ class spell_warr_charge_check_cast : public SpellScriptLoader
 
                 return SPELL_CAST_OK;
             }
-
+			void HandleDummy(SpellEffIndex /*effIndex*/)
+			{
+				if (GetCaster()->HasAura(123779)) // Blazzing Tail Glyph
+					GetCaster()->CastSpell(GetHitUnit(), 126661, true);
+			}
             void Register() override
             {
                 OnCheckCast += SpellCheckCastFn(spell_warr_charge_check_cast_SpellScript::CheckCast);
+				OnEffectHitTarget += SpellEffectFn(spell_warr_charge_check_cast_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
             }
         };
 
@@ -643,6 +657,33 @@ class spell_warr_charge_check_cast : public SpellScriptLoader
         {
             return new spell_warr_charge_check_cast_SpellScript();
         }
+};
+
+// Charge damage - 126664
+class spell_warr_charge_damage : public SpellScriptLoader
+{
+public:
+	spell_warr_charge_damage() : SpellScriptLoader("spell_warr_charge_damage") { }
+
+	class spell_warr_charge_damage_SpellScript : public SpellScript
+	{
+		PrepareSpellScript(spell_warr_charge_damage_SpellScript);
+
+		void HandleDummy(SpellEffIndex /*effIndex*/)
+		{
+			if (GetCaster()->HasAura(126661)) // Warrior Charge Drop Fire Periodic
+				GetCaster()->RemoveAurasDueToSpell(126661);
+		}
+		void Register() override
+		{
+			OnEffectHitTarget += SpellEffectFn(spell_warr_charge_damage_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+		}
+	};
+
+	SpellScript* GetSpellScript() const override
+	{
+		return new spell_warr_charge_damage_SpellScript();
+	}
 };
 
 // Ravager - 227876
@@ -1178,4 +1219,5 @@ void AddSC_warrior_spell_scripts()
     new spell_warr_rampage();
     new spell_warr_shield_visual();
     new spell_warr_mortal_strike();
+	new spell_warr_charge_damage();
 }

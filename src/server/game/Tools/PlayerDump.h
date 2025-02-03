@@ -22,6 +22,7 @@
 enum DumpTableType
 {
     DTT_CHARACTER,      //                                  // characters
+    DTT_DONA_TABLE,     // <- guids owner                   // character_donate
 
     DTT_CHAR_TABLE,     //                                  // character_achievement, character_achievement_progress,
                                                             // character_action, character_aura, character_homebind,
@@ -49,10 +50,11 @@ enum DumpTableType
 
     DTT_PET,            //    -> pet guids collection       // character_pet
     DTT_PET_TABLE,      // <- pet guids                     // pet_aura, pet_spell, pet_spell_cooldown
-
+    DTT_QUEST_TABLE,    // <- guids and account             // character_queststatus, character_queststatus_rewarded
     DTT_CHAR_VS_FOLLOW, // character_garrison_followers
     DTT_FOLLOW,         // character_garrison_followers
     DTT_CHAR_VS_SHIP,   // character_garrison_shipment
+    DTT_LOGIN,          // store_history
 };
 
 enum DumpReturn
@@ -71,7 +73,7 @@ class PlayerDump
         PlayerDump() {}
 };
 
-class TC_GAME_API PlayerDumpWriter : public PlayerDump
+class PlayerDumpWriter : public PlayerDump
 {
     public:
         PlayerDumpWriter() {}
@@ -92,7 +94,7 @@ class TC_GAME_API PlayerDumpWriter : public PlayerDump
         GUIDs follower;
 };
 
-class TC_GAME_API PlayerDumpReader : public PlayerDump
+class PlayerDumpReader : public PlayerDump
 {
     public:
         PlayerDumpReader() {}

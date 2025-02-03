@@ -1,4 +1,5 @@
 /*
+https://uwow.biz/
 
 Event Boss Ahune Base Script
 

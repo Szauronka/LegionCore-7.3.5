@@ -229,7 +229,7 @@ class mob_corrupted_soul_fragment : public CreatureScript
             {
                 if (Creature* Br = me->ToTempSummon()->GetSummoner()->ToCreature())
                 {
-                    if (Br && Br->IsAlive())
+                    if (Br && Br->isAlive())
                     {
                         me->GetMotionMaster()->MoveFollow(Br, 0.0f, 0.0f);
                         CheckDist = 1000;
@@ -245,7 +245,7 @@ class mob_corrupted_soul_fragment : public CreatureScript
                     {
                         if (Creature* Br = me->ToTempSummon()->GetSummoner()->ToCreature())
                         {
-                            if (Br && Br->IsAlive())
+                            if (Br && Br->isAlive())
                             {
                                 if (me->GetDistance(Br) <= 1.0f)
                                 {
@@ -271,7 +271,7 @@ class mob_corrupted_soul_fragment : public CreatureScript
             {
                 if (Creature* Br = me->ToTempSummon()->GetSummoner()->ToCreature())
                 {
-                    if (Br && Br->IsAlive())
+                    if (Br && Br->isAlive())
                         Br->AI()->DoAction(ACTION_DESPAWN_SOUL);
                 }
             }
@@ -297,7 +297,7 @@ class spell_bronjahm_magic_bane : public SpellScriptLoader
 
             void RecalculateDamage()
             {
-                if (GetHitUnit()->GetPowerType() != POWER_MANA)
+                if (GetHitUnit()->getPowerType() != POWER_MANA)
                     return;
 
                 const int32 maxDamage = GetCaster()->GetMap()->GetSpawnMode() == 1 ? 15000 : 10000;

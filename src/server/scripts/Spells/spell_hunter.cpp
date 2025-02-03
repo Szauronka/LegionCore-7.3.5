@@ -62,7 +62,7 @@ class spell_hun_dire_beast : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         // 213466 - charges to target
-                        _player->CastSpell(_player, 120694, true); // Energize
+                        _player->AddAura(120694, _player); // Energize
 
                         // Summon's skin is different function of Map or Zone ID
                         switch (_player->GetCurrentZoneID())
@@ -362,7 +362,7 @@ class spell_hun_kill_command : public SpellScriptLoader
 
                             if (caster->HasAura(191384)) // Aspect of the Beast
                             {
-                                switch (((Pet*)pet)->GetSpecialization())
+                                switch (((Pet*)pet)->GetSpecializationId())
                                 {
                                     case SPEC_PET_ADAPTATION_FEROCITY:
                                     case SPEC_PET_FEROCITY:
@@ -512,83 +512,53 @@ class spell_hun_pet_heart_of_the_phoenix : public SpellScriptLoader
 // Tame Beast - 1515 
 class spell_hun_tame_beast : public SpellScriptLoader
 {
-    public:
-        spell_hun_tame_beast() : SpellScriptLoader("spell_hun_tame_beast") { }
+public:
+    spell_hun_tame_beast() : SpellScriptLoader("spell_hun_tame_beast") { }
 
-        class spell_hun_tame_beast_SpellScript : public SpellScript
+    class spell_hun_tame_beast_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_hun_tame_beast_SpellScript);
+
+        SpellCastResult CheckCast()
         {
-            PrepareSpellScript(spell_hun_tame_beast_SpellScript);
+            Unit* caster = GetCaster();
+            if (caster->GetTypeId() != TYPEID_PLAYER)
+                return SPELL_FAILED_DONT_REPORT;
 
-            static constexpr uint32 CallPetSpellIds[MAX_ACTIVE_PETS] =
+            if (!GetExplTargetUnit())
+                return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
+
+            if (Creature* target = GetExplTargetUnit()->ToCreature())
             {
-                883,
-                83242,
-                83243,
-                83244,
-                83245,
-            };
+                if (target->getLevel() > caster->getLevel())
+                    return SPELL_FAILED_HIGHLEVEL;
 
-            SpellCastResult CheckCast()
-            {
-                Player* caster = GetCaster()->ToPlayer();
-                if (!caster)
-                    return SPELL_FAILED_DONT_REPORT;
+                // use SMSG_PET_TAME_FAILURE?
+                if (!target->GetCreatureTemplate()->isTameable(caster->ToPlayer()))
+                    return SPELL_FAILED_BAD_TARGETS;
 
-                if (!GetExplTargetUnit())
-                    return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
+                if (!caster->GetPetGUID().IsEmpty())
+                    return SPELL_FAILED_ALREADY_HAVE_SUMMON;
 
-                if (Creature* target = GetExplTargetUnit()->ToCreature())
-                {
-                    if (target->getLevel() > caster->getLevel())
-                        return SPELL_FAILED_HIGHLEVEL;
-
-                    if (!target->GetCreatureTemplate()->isTameable(caster->ToPlayer()))
-                        return SPELL_FAILED_BAD_TARGETS;
-
-                    if (PetStable const* petStable = caster->GetPetStable())
-                    {
-                        if (petStable->CurrentPetIndex)
-                            return SPELL_FAILED_ALREADY_HAVE_SUMMON;
-
-                        auto freeSlotItr = std::find_if(petStable->ActivePets.begin(), petStable->ActivePets.end(), [](Optional<PetStable::PetInfo> const& petInfo)
-                        {
-                            return !petInfo.has_value();
-                        });
-
-                        if (freeSlotItr == petStable->ActivePets.end())
-                        {
-                            caster->SendPetTameResult(PetTameResult::TooMany);
-                            return SPELL_FAILED_DONT_REPORT;
-                        }
-
-                        // Check for known Call Pet X spells
-                        std::size_t freeSlotIndex = std::distance(petStable->ActivePets.begin(), freeSlotItr);
-                        if (!caster->HasSpell(CallPetSpellIds[freeSlotIndex]))
-                        {
-                            caster->SendPetTameResult(PetTameResult::TooMany);
-                            return SPELL_FAILED_DONT_REPORT;
-                        }
-                    }
-
-                    if (!caster->GetCharmGUID().IsEmpty())
-                        return SPELL_FAILED_ALREADY_HAVE_CHARM;
-                }
-                else
-                    return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
-
-                return SPELL_CAST_OK;
+                if (!caster->GetCharmGUID().IsEmpty())
+                    return SPELL_FAILED_ALREADY_HAVE_CHARM;
             }
+            else
+                return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
 
-            void Register() override
-            {
-                OnCheckCast += SpellCheckCastFn(spell_hun_tame_beast_SpellScript::CheckCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const override
-        {
-            return new spell_hun_tame_beast_SpellScript();
+            return SPELL_CAST_OK;
         }
+
+        void Register() override
+        {
+            OnCheckCast += SpellCheckCastFn(spell_hun_tame_beast_SpellScript::CheckCast);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_hun_tame_beast_SpellScript();
+    }
 };
 
 // Fetch - 125050
@@ -738,7 +708,7 @@ class spell_hun_flanking_strike : public SpellScriptLoader
 
                 if (caster->HasAura(191384)) // Aspect of the Beast
                 {
-                    switch (pet->GetSpecialization())
+                    switch (pet->GetSpecializationId())
                     {
                         case SPEC_PET_ADAPTATION_FEROCITY:
                         case SPEC_PET_FEROCITY:
@@ -1212,7 +1182,7 @@ class spell_hun_blink_strikes : public SpellScriptLoader
                     if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(130392)) // Blink Strikes
                     {
                         caster->CastSpell(target, 130393, true);
-                        caster->_AddCreatureSpellCooldown(130393, GameTime::GetGameTime() + time_t(spellInfo->Effects[EFFECT_3]->BasePoints));
+                        caster->_AddCreatureSpellCooldown(130393, time(NULL) + time_t(spellInfo->Effects[EFFECT_3]->BasePoints));
                     }
                 }
             }
@@ -1554,7 +1524,11 @@ class spell_hun_hatis_bond : public SpellScriptLoader
                 {
                     update = 0;
                     Unit* caster = GetCaster();
-                    if (!caster || !caster->IsAlive())
+                    if (!caster || !caster->isAlive())
+                        return;
+
+                    Player* _player = caster->ToPlayer();
+                    if (!_player)
                         return;
 
                     bool findHati = false;
@@ -1573,7 +1547,7 @@ class spell_hun_hatis_bond : public SpellScriptLoader
                                 case 106550:
                                 case 106551:
                                     findHati = true;
-									if (creature->IsAlive())
+									if (creature->isAlive())
 									{
 										hati = creature;
 										if (Player* player = caster->ToPlayer())
@@ -1596,6 +1570,20 @@ class spell_hun_hatis_bond : public SpellScriptLoader
                         hati->DespawnOrUnsummon(1000);
                     else if (hati && caster->GetDistance(hati) > 100.0f)
                         hati->DespawnOrUnsummon(1000);
+
+                    // Send Hati to the right position
+                    if (hati && !hati->isInCombat() && (hati->GetFollowAngle() != PET_FOLLOW_ANGLE * 3))
+                        hati->SetFollowAngle(PET_FOLLOW_ANGLE * 3);
+
+                    // if hati is transformed set his displayid
+                    if (!hatiData.first)
+                        hatiData = _player->GetHatiModel();
+
+                    if (hati && hatiData.first > 0 && hati->GetDisplayId() != hatiData.first)
+                    {
+                        hati->SetDisplayId(hatiData.first);
+                        hati->SetObjectScale(hatiData.second);
+                    }
                 }
             }
 
@@ -1605,6 +1593,9 @@ class spell_hun_hatis_bond : public SpellScriptLoader
                 AfterEffectRemove += AuraEffectRemoveFn(spell_hun_hatis_bond_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
                 OnEffectUpdate += AuraEffectUpdateFn(spell_hun_hatis_bond_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_DUMMY);
             }
+
+            private:
+                std::pair<uint32, float> hatiData;
         };
 
         AuraScript* GetAuraScript() const override
@@ -1630,7 +1621,7 @@ class spell_hun_broken_bond : public SpellScriptLoader
                     return;
 
                 Unit* caster = GetCaster();
-                if (!caster || !caster->IsAlive())
+                if (!caster || !caster->isAlive())
                     return;
 
                 for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
@@ -1644,7 +1635,7 @@ class spell_hun_broken_bond : public SpellScriptLoader
                             case 106549:
                             case 106550:
                             case 106551:
-                                if (creature->IsAlive())
+                                if (creature->isAlive())
                                     return;
                                 else
                                     creature->DespawnOrUnsummon(1000);
@@ -2294,6 +2285,84 @@ public:
 	}
 };
 
+// 135299 - Tar Trap Aura
+class spell_hunter_tar_trap_aura : public SpellScriptLoader
+{
+public:
+	spell_hunter_tar_trap_aura() : SpellScriptLoader("spell_hunter_tar_trap_aura") { }
+
+	class spell_hunter_tar_trap_aura_AuraScript : public AuraScript
+	{
+		PrepareAuraScript(spell_hunter_tar_trap_aura_AuraScript);
+
+		uint32 update = 0;
+
+		void OnUpdate(uint32 diff, AuraEffect* aurEff)
+		{
+			update += diff;
+
+			if (update >= 1000)
+			{
+				if (!GetCaster() || !GetOwner())
+					return;
+
+				if (Unit* target = GetOwner()->ToUnit())
+				{
+					//                Expert Trapper            Super Sticky Tar
+					if (GetCaster()->HasAura(199543) && !target->HasAura(201158))   
+					{
+						if (roll_chance_i(20))
+							GetCaster()->CastSpell(target, 201158, true);
+					}
+				}
+				update = 0;
+			}
+		}
+
+		void Register() override
+		{
+			OnEffectUpdate += AuraEffectUpdateFn(spell_hunter_tar_trap_aura_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_MOD_DECREASE_SPEED);
+		}
+	};
+
+	AuraScript* GetAuraScript() const override
+	{
+		return new spell_hunter_tar_trap_aura_AuraScript();
+	}
+};
+
+// 233022 - Spider Sting
+class spell_hun_spider_sting_silence : public SpellScriptLoader
+{
+public:
+	spell_hun_spider_sting_silence() : SpellScriptLoader("spell_hun_spider_sting_silence") { }
+
+	class spell_hun_spider_sting_silence_SpellScript : public SpellScript
+	{
+		PrepareSpellScript(spell_hun_spider_sting_silence_SpellScript)
+
+		void HandleAfterCast()
+		{
+			if (Unit* caster = GetCaster())
+				if (Aura* aura = caster->GetAura(202914)) // 202914 Spider Sting
+				{
+					caster->RemoveAurasDueToSpell(202914);
+					//caster->CastSpell(caster, 202933, true); // 202933 Spider Sting silence
+				}
+		}
+
+		void Register() override
+		{
+			AfterCast += SpellCastFn(spell_hun_spider_sting_silence_SpellScript::HandleAfterCast);
+		}
+	};
+
+	SpellScript* GetSpellScript() const override
+	{
+		return new spell_hun_spider_sting_silence_SpellScript();
+	}
+};
+
 void AddSC_hunter_spell_scripts()
 {
     new spell_hun_dire_beast();
@@ -2338,4 +2407,6 @@ void AddSC_hunter_spell_scripts()
     RegisterSpellScript(spell_hun_explosive_trap);
     RegisterAreaTriggerAI(areatrigger_hun_windburst);
 	new spell_hun_bestial_wrath();
+	new spell_hunter_tar_trap_aura();
+	new spell_hun_spider_sting_silence();
 }

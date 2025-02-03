@@ -19,8 +19,6 @@
 #ifndef DEF_SERPENT_SHRINE_H
 #define DEF_SERPENT_SHRINE_H
 
-#define DataHeader "SSC"
-
 enum WaterEventState
 {
     WATERSTATE_NONE                 = 0,

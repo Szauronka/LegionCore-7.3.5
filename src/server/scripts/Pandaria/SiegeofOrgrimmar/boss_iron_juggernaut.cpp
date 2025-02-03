@@ -121,7 +121,7 @@ class boss_iron_juggernaut : public CreatureScript
                 phase = PHASE_ONE;
                 events.SetPhase(PHASE_ONE);
                 me->SetReactState(REACT_DEFENSIVE);
-                me->SetPowerType(POWER_ENERGY);
+                me->setPowerType(POWER_ENERGY);
                 me->SetPower(POWER_ENERGY, 0);
                 me->RemoveAurasDueToSpell(SPELL_SEISMIC_ACTIVITY);
                 me->RemoveAurasDueToSpell(SPELL_BERSERK);
@@ -291,7 +291,7 @@ class boss_iron_juggernaut : public CreatureScript
                     {
                         DoCast(me, SPELL_BORER_DRILL_B_VISUAL, true);
                         Position pos;
-                        pos = me->GetNearPosition(12.5f, 5.32f);
+                        me->GetNearPosition(pos, 12.5f, 5.32f);
                         std::list<Player*> pllist;
                         pllist.clear();
                         GetPlayerListInGrid(pllist, me, 100.0f);
@@ -895,7 +895,7 @@ void AddSC_boss_iron_juggernaut()
     new npc_cutter_laser();
     new npc_explosive_tar();
     new npc_borer_drill();
-    //new npc_mortar_barrage();
+    new npc_mortar_barrage();
     new spell_cutter_laser_target();
     new spell_seismic_activity();
     new spell_mortar_barrage();

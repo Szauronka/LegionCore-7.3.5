@@ -15,20 +15,12 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-Name: go_commandscript
-%Complete: 100
-Comment: All go related commands
-Category: commandscripts
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "ObjectMgr.h"
 #include "MapManager.h"
 #include "TicketMgr.h"
 #include "Chat.h"
 #include "DatabaseEnv.h"
-#include "QuestData.h"
 
 class go_commandscript : public CommandScript
 {
@@ -43,7 +35,6 @@ public:
             { "graveyard",      SEC_MODERATOR,      false, &HandleGoGraveyardCommand,         ""},
             { "grid",           SEC_MODERATOR,      false, &HandleGoGridCommand,              ""},
             { "object",         SEC_MODERATOR,      false, &HandleGoObjectCommand,            ""},
-            { "quest",          SEC_MODERATOR,      false, &HandleGoQuestCommand,             ""},
             { "taxinode",       SEC_MODERATOR,      false, &HandleGoTaxinodeCommand,          ""},
             { "trigger",        SEC_MODERATOR,      false, &HandleGoTriggerCommand,           ""},
             { "zonexy",         SEC_MODERATOR,      false, &HandleGoZoneXYCommand,            ""},
@@ -112,7 +103,7 @@ public:
             {
                 std::string name = param1;
                 WorldDatabase.EscapeString(name);
-                whereClause << ", creature_template_wdb WHERE creature.id = creature_template_wdb.Entry AND creature_template_wdb.Name1 LIKE '" << name << '\'';
+                whereClause << ", creature_template_wdb WHERE creature.id = creature_template_wdb.Entry AND creature_template_wdb.Name1 " _LIKE_ " '" << name << '\'';
             }
             else
                 whereClause <<  "WHERE guid = '" << guid << '\'';
@@ -356,65 +347,6 @@ public:
             player->SaveRecallPosition();
 
         player->TeleportTo(node->ContinentID, node->Pos.X, node->Pos.Y, node->Pos.Z, player->GetOrientation());
-        return true;
-    }
-
-    static bool HandleGoQuestCommand(ChatHandler* handler, char const* args)
-    {
-        if (!*args)
-            return false;
-        Player* player = handler->GetSession()->GetPlayer();
-        char* id = handler->extractKeyFromLink((char*)args, "Hquest");
-        if (!id)
-            return false;
-        uint32 questID = atoi(id);
-        if (!questID)
-            return false;
-        if (!sQuestDataStore->GetQuestTemplate(questID))
-        {
-            handler->PSendSysMessage(LANG_COMMAND_QUEST_NOTFOUND, questID);
-            handler->SetSentErrorMessage(true);
-            return false;
-        }
-        float x, y, z;
-        uint32 mapId;
-        if (QuestPOIVector const* poiData = sQuestDataStore->GetQuestPOIVector(questID))
-        {
-            for (auto data = poiData->begin(); data != poiData->end(); ++data)
-            {
-                mapId = data->MapID;
-                for (auto points = data->points.begin(); points != data->points.end(); ++points)
-                {
-                    x = points->X;
-                    y = points->Y;
-                    if (Map const* map = sMapMgr->CreateBaseMap(mapId))
-                        z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
-                    break;
-                }
-            }
-        }
-        else
-        {
-            handler->PSendSysMessage(LANG_COMMAND_QUEST_NOTFOUND, questID);
-            handler->SetSentErrorMessage(true);
-            return false;
-        }
-        if (!MapManager::IsValidMapCoord(mapId, x, y, z) || sObjectMgr->IsTransportMap(mapId))
-        {
-            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, x, y, mapId);
-            handler->SetSentErrorMessage(true);
-            return false;
-        }
-        // stop flight if need
-        if (player->isInFlight())
-        {
-            player->GetMotionMaster()->MovementExpired();
-            player->CleanupAfterTaxiFlight();
-        }
-        // save only in non-flight case
-        else
-            player->SaveRecallPosition();
-        player->TeleportTo(mapId, x, y, z, 0.0f);
         return true;
     }
 

@@ -1,5 +1,14 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "AreaTriggerAI.h"
 #include "antorus.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "SpellScript.h"
+#include "SpellAuraEffects.h"
 
 enum Says
 {
@@ -262,7 +271,7 @@ struct boss_worldbreaker : BossAI
 
             events.Reset();
             me->StopAttack(true, true);
-            me->SetFacingTo(me->GetHomePosition().GetOrientation());
+            me->SetFacingTo(me->GetHomePosition().m_orientation);
             Talk(SAY_WARN_APOCALYPSE_DRIVE);
             Talk(SAY_APOCALYPSE_DRIVE);
             me->CastSpell(me, SPELL_APOCALYPSE_DRIVE_AURA, true);
@@ -702,7 +711,7 @@ struct npc_worldbreaker_surging_fel_trigger : public ScriptedAI
             DoCast(me, SPELL_SURGING_FEL_VISUAL, true);
 
             Position pos;
-            pos = me->GetNearPosition(90.0f, 0.0f);
+            me->GetNearPosition(pos, 90.0f, 0.0f);
             me->GetMotionMaster()->MovePoint(1, pos, false);
         }
     }
@@ -1046,6 +1055,7 @@ void AddSC_boss_worldbreaker()
     RegisterCreatureAI(npc_worldbreaker_annihilation_trigger);
     RegisterCreatureAI(npc_worldbreaker_surging_fel_trigger);
     RegisterCreatureAI(npc_atbt_annihilator);
+
     RegisterSpellScript(spell_worldbreaker_annihilation_dmg);
     RegisterSpellScript(spell_worldbreaker_eradication);
     RegisterSpellScript(spell_worldbreaker_decimation_filter);
@@ -1053,5 +1063,6 @@ void AddSC_boss_worldbreaker()
     RegisterAuraScript(spell_worldbreaker_fel_bombardment);
     RegisterAuraScript(spell_worldbreaker_apocalypse_drive);
     RegisterAuraScript(spell_worldbreaker_carnage);
+
     RegisterAreaTriggerAI(at_worldbreaker_annihilation);
 }

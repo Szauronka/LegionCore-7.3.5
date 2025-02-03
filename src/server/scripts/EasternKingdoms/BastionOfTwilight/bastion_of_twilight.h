@@ -1,7 +1,6 @@
 #ifndef DEF_BASTION_OF_TWILIGHT_H
 #define DEF_BASTION_OF_TWILIGHT_H
 
-#define DataHeader "BT"
 #define BTScriptName "instance_bastion_of_twilight"
 
 enum Data

@@ -1,11 +1,12 @@
 /*
+    http://uwow.biz
     Dungeon : Maw of Souls 100-110
     Encounter: Helya
     Normal: 100%, Heroic: 100%, Mythic: 100%
 */
 
 #include "maw_of_souls.h"
-#include "ScriptPCH.h"
+#include "PrecompiledHeaders/ScriptPCH.h"
 
 enum Says
 {
@@ -345,15 +346,18 @@ struct boss_helya : public BossAI
         if (!who->IsPlayer() || who->ToPlayer()->isGameMaster())
             return;
 
-        if (instance->GetBossState(DATA_YMIRON) != DONE || instance->GetBossState(DATA_HARBARON) != DONE || instance->GetBossState(DATA_SKJAL) != DONE)
-            return;
+        if (!sWorld->getBoolConfig(CONFIG_IS_TEST_SERVER))
+        {
+            if (instance->GetBossState(DATA_YMIRON) != DONE || instance->GetBossState(DATA_HARBARON) != DONE || instance->GetBossState(DATA_SKJAL) != DONE)
+                return;
+        }
 
         if (me->GetDistance(who) < 140.0f && !introSpawn)
         {
             introSpawn = true;
             eventDelay = true;
             me->RemoveStandStateFlags(UNIT_STAND_STATE_SUBMERGED);
-            me->SendPlaySpellVisualKit(VISUAL_KIT_1, 0);
+            me->SendPlaySpellVisualKit(0, VISUAL_KIT_1);
             AddDelayedEvent(5000, [=]() -> void { eventDelay = false; });
             return;
         }
@@ -362,7 +366,7 @@ struct boss_helya : public BossAI
         {
             introEvent = true;
             Talk(SAY_INTRO); //You ALL will regret trespassing in my realm.
-            me->SendPlaySpellVisualKit(VISUAL_KIT_2, 0);
+            me->SendPlaySpellVisualKit(0, VISUAL_KIT_2);
             events.RescheduleEvent(EVENT_INTRO, 5000);
         }
     }
@@ -655,7 +659,7 @@ struct boss_helya : public BossAI
             switch (eventId)
             {
                 case EVENT_INTRO:
-                    me->SendPlaySpellVisualKit(VISUAL_KIT_3, 0);
+                    me->SendPlaySpellVisualKit(0, VISUAL_KIT_3);
                     DoCast(me, SPELL_SOULLESS_SCREAM, true);
                     DoCast(me, SPELL_INTERFERE_TARGETTING, true);
                     SummonGrasping(true);
@@ -1325,7 +1329,7 @@ class spell_helya_swirling_water : public SpellScript
 
             caster->AddDelayedEvent(100, [caster]() -> void
             {
-                if (caster && caster->IsAlive() && caster->GetPositionZ() < 512.0f)
+                if (caster && caster->isAlive() && caster->GetPositionZ() < 512.0f)
                 {
                     float x, y, z;
                     caster->GetClosePoint(x, y, z, caster->GetObjectSize(), 5.0f, frand(0.0f, 6.28f));
@@ -1373,7 +1377,8 @@ class spell_helya_turbulent_waters : public SpellScript
         if (!GetCaster())
             return;
 
-        Position pos = GetCaster()->GetRandomNearPosition(30.0f);
+        Position pos;
+        GetCaster()->GetRandomNearPosition(pos, 30.0f);
         WorldLocation* dest = const_cast<WorldLocation*>(GetExplTargetDest());
         dest->Relocate(pos);
     }
@@ -1483,7 +1488,7 @@ class spell_whirpool_of_souls : public AuraScript
         PreventDefaultAction();
         for (uint8 itr = 0; itr < 3; ++itr)
         {
-            pos = GetCaster()->GetNearPosition(2.0f, frand(0.0f, 360.0f));
+            GetCaster()->GetNearPosition(pos, 2.0f, frand(0.0f, 360.0f));
             GetCaster()->CastSpell(pos, 199516, true);
         }
     }

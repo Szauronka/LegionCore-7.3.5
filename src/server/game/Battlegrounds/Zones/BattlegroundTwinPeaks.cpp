@@ -1,18 +1,19 @@
 /*
- * Copyright (C) 2008-2013 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #include "BattlegroundTwinPeaks.h"
@@ -65,7 +66,7 @@ void BattlegroundTwinPeaks::PostUpdateImpl(uint32 diff)
         if (GetElapsedTime() >= Minutes(17))
             Battleground::BattlegroundTimedWin(2);
         //else if (GetElapsedTime() > Minutes(3))
-        //    UpdateWorldState(WorldStates::BG_WS_CURRENT_TIMER, int32(GameTime::GetGameTime() + std::chrono::duration_cast<Seconds>(Minutes(15) - GetElapsedTime()).count()));
+        //    UpdateWorldState(WorldStates::BG_WS_CURRENT_TIMER, int32(time(nullptr) + std::chrono::duration_cast<Seconds>(Minutes(15) - GetElapsedTime()).count()));
 
         for (uint8 team = TEAM_ALLIANCE; team < MAX_TEAMS; ++team)
         {
@@ -90,7 +91,7 @@ void BattlegroundTwinPeaks::PostUpdateImpl(uint32 diff)
                         if (GameObject* obj = GetBgMap()->GetGameObject(_droppedFlagGUID[team]))
                             obj->Delete();
                         else
-                            TC_LOG_ERROR("bg.battleground", "BattlegroundTwinPeaks: An error has occurred in PostUpdateImpl: Unknown dropped flag GUID: %lu", _droppedFlagGUID[team].GetCounter());
+                            TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattlegroundTwinPeaks: An error has occurred in PostUpdateImpl: Unknown dropped flag GUID: %u", _droppedFlagGUID[team].GetCounter());
 
                         _droppedFlagGUID[team].Clear();
 
@@ -199,7 +200,7 @@ void BattlegroundTwinPeaks::StartingEventOpenDoors()
     StartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, BG_EVENT_START_BATTLE);
 
     UpdateWorldState(WorldStates::BG_WS_ENABLE_TIMER, 1);
-    UpdateWorldState(WorldStates::BG_WS_CURRENT_TIMER, int32(GameTime::GetGameTime() + std::chrono::duration_cast<Seconds>(Minutes(15)).count()));
+    UpdateWorldState(WorldStates::BG_WS_CURRENT_TIMER, int32(time(nullptr) + std::chrono::duration_cast<Seconds>(Minutes(15)).count()));
 }
 
 bool BattlegroundTwinPeaks::SetupBattleground()
@@ -223,7 +224,7 @@ bool BattlegroundTwinPeaks::SetupBattleground()
         || !AddObject(BG_TP_OBJECT_DOOR_H_3, BG_OBJECT_DOOR_H_3_TP_ENTRY, 1558.088f, 372.7654f, 1.723727f, 6.178466f, 0, 0, 0, 0, RESPAWN_IMMEDIATELY)
         )
     {
-        TC_LOG_ERROR("misc", "BattegroundTP: Failed to spawn some objects. Battleground not created!");
+        TC_LOG_ERROR(LOG_FILTER_GENERAL, "BattegroundTP: Failed to spawn some objects. Battleground not created!");
         return false;
     }
 
@@ -235,13 +236,13 @@ bool BattlegroundTwinPeaks::SetupBattleground()
             uint8 team = i % 2; ///< If 0 team == TEAM_ALLIANCE else TEAM_HORDE
             if (!AddSpiritGuide(team == TEAM_ALLIANCE ? TP_SPIRIT_ALLIANCE : TP_SPIRIT_HORDE, grave->Loc, TeamId(team)))
             {
-                TC_LOG_ERROR("misc", "BatteGroundTP: Failed to spawn spirit guide id: %u. Battleground not created!", grave->ID);
+                TC_LOG_ERROR(LOG_FILTER_GENERAL, "BatteGroundTP: Failed to spawn spirit guide id: %u. Battleground not created!", grave->ID);
                 return false;
             }
         }
         else
         {
-            TC_LOG_ERROR("misc", "BatteGroundTP: Failed to load spirit guide. Battleground not created!");
+            TC_LOG_ERROR(LOG_FILTER_GENERAL, "BatteGroundTP: Failed to load spirit guide. Battleground not created!");
             return false;
         }
     }
@@ -293,7 +294,7 @@ void BattlegroundTwinPeaks::FillInitialWorldStates(WorldPackets::WorldState::Ini
         }
 
         packet.Worldstates.emplace_back(WorldStates::BG_WS_ENABLE_TIMER, 1);
-        packet.Worldstates.emplace_back(WorldStates::BG_WS_CURRENT_TIMER, int32(GameTime::GetGameTime() + std::chrono::duration_cast<Seconds>(Minutes(15) - GetElapsedTime()).count()));
+        packet.Worldstates.emplace_back(WorldStates::BG_WS_CURRENT_TIMER, int32(time(nullptr) + std::chrono::duration_cast<Seconds>(Minutes(15) - GetElapsedTime()).count()));
     }
     else
     {
@@ -623,7 +624,7 @@ void BattlegroundTwinPeaks::RemovePlayer(Player* player, ObjectGuid guid, uint32
                         pl->RemoveAurasDueToSpell(SPELL_BG_BRUTAL_ASSAULT);
                 }
                 else
-                    TC_LOG_ERROR("bg.battleground", "BattlegroundTwinPeaks: An error has occurred in RemovePlayer: player with GUID: %lu haven't been found. (_bothflagsKept is TRUE).", _flagKeepers[team].GetCounter());
+                    TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattlegroundTwinPeaks: An error has occurred in RemovePlayer: player with GUID: %u haven't been found. (_bothflagsKept is TRUE).", _flagKeepers[team].GetCounter());
             }
 
             _bothFlagsKept = false;

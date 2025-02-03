@@ -19,6 +19,7 @@
 #include "GameTables.h"
 #include "ScenarioMgr.h"
 #include "ScriptMgr.h"
+#include <SpellScript.h>
 
 /// 206150 - Challenger's Might
 class spell_challengers_might : public AuraScript
@@ -317,7 +318,7 @@ class spell_challengers_burden : public AuraScript
     // Grievous
     void OnTick(AuraEffect const* aurEff)
     {
-        if (!aurEff->GetAmount() || !GetUnitOwner() || !GetUnitOwner()->IsAlive())
+        if (!aurEff->GetAmount() || !GetUnitOwner() || !GetUnitOwner()->isAlive())
             return;
 
         if (GetUnitOwner()->HealthBelowPct(90))

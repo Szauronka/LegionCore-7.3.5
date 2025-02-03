@@ -21,7 +21,6 @@
 #include "GameObjectModel.h"
 #include "Log.h"
 #include "MapTree.h"
-#include "ModelIgnoreFlags.h"
 #include "ModelInstance.h"
 #include "RegularGrid.h"
 #include "Timer.h"
@@ -146,7 +145,7 @@ struct DynamicTreeIntersectionCallback
 
     bool operator()(G3D::Ray const& r, GameObjectModel const& obj, float& distance)
     {
-        _didHit = obj.intersectRay(r, distance, true, _phases, _otherUsePlayerPhasingRules, VMAP::ModelIgnoreFlags::Nothing);
+        _didHit = obj.intersectRay(r, distance, true, _phases, _otherUsePlayerPhasingRules);
         if (_didHit)
         {
             if (obj.owner->IsDoor()) // Collision for door
@@ -171,7 +170,7 @@ struct DynamicTreeisInLineOfSightCallback
 
     bool operator()(G3D::Ray const& r, GameObjectModel const& obj, float& distance)
     {
-        _didHit = obj.intersectRay(r, distance, true, _phases, _otherUsePlayerPhasingRules, VMAP::ModelIgnoreFlags::Nothing);
+        _didHit = obj.intersectLine(r, distance, true, _phases, _otherUsePlayerPhasingRules);
         if (_didHit)
             _go = const_cast<GameObject*>(obj.owner->GetOwner());
         return _didHit;

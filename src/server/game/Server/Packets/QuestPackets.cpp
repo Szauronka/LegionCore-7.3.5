@@ -25,7 +25,7 @@ void WorldPackets::Quest::QuestGiverStatusQuery::Read()
 WorldPacket const* WorldPackets::Quest::QuestGiverStatus::Write()
 {
     _worldPacket << QuestGiver.Guid;
-    _worldPacket << uint32(QuestGiver.Status);
+    _worldPacket << QuestGiver.Status;
 
     return &_worldPacket;
 }
@@ -36,7 +36,7 @@ WorldPacket const* WorldPackets::Quest::QuestGiverStatusMultiple::Write()
     for (QuestGiverInfo const& questGiver : QuestGiver)
     {
         _worldPacket << questGiver.Guid;
-        _worldPacket << uint32(questGiver.Status);
+        _worldPacket << questGiver.Status;
     }
 
     return &_worldPacket;
@@ -363,11 +363,6 @@ void WorldPackets::Quest::QuestGiverCompleteQuest::Read()
     FromScript = _worldPacket.ReadBit();
 }
 
-void WorldPackets::Quest::QuestGiverCloseQuest::Read()
-{
-    _worldPacket >> QuestID;
-}
-
 WorldPacket const* WorldPackets::Quest::QuestGiverQuestDetails::Write()
 {
     _worldPacket << QuestGiverGUID;
@@ -540,8 +535,6 @@ WorldPacket const* WorldPackets::Quest::QuestConfirmAcceptResponse::Write()
     _worldPacket << InitiatedBy;
 
     _worldPacket.WriteBits(QuestTitle.size(), 10);
-    _worldPacket.FlushBits();
-
     _worldPacket.WriteString(QuestTitle);
 
     return &_worldPacket;
@@ -677,7 +670,7 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Quest::PlayerChoiceRespon
     data.WriteBits(playerChoiceResponse.Header.length(), 9);
     data.WriteBits(playerChoiceResponse.Description.length(), 11);
     data.WriteBits(playerChoiceResponse.Confirmation.length(), 7);
-    data.WriteBit(playerChoiceResponse.Reward.has_value());
+    data.WriteBit(playerChoiceResponse.Reward.is_initialized());
     data.FlushBits();
 
     if (playerChoiceResponse.Reward)

@@ -27,11 +27,10 @@ public:
 
     struct instance_bloodmaul_slag_mines_InstanceScript : public InstanceScript
     {
-        instance_bloodmaul_slag_mines_InstanceScript(InstanceMap* map) : InstanceScript(map) { }
+        instance_bloodmaul_slag_mines_InstanceScript(Map* map) : InstanceScript(map) { }
 
         void Initialize()
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
             crushtoEvent = 0;
             gogduhEvent = 0;

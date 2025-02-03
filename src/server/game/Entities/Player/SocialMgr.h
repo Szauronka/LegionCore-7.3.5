@@ -22,6 +22,7 @@
 #include "DatabaseEnv.h"
 #include "Common.h"
 #include "ObjectGuid.h"
+#include "HashFuctor.h"
 
 class SocialMgr;
 class PlayerSocial;
@@ -61,7 +62,7 @@ struct FriendInfo
     uint8 Flags;
 };
 
-typedef std::map<ObjectGuid, FriendInfo> PlayerSocialMap;
+typedef cds::container::FeldmanHashMap< cds::gc::HP, ObjectGuid, FriendInfo, guidTraits > PlayerSocialMap;
 typedef std::map<ObjectGuid, PlayerSocial> SocialMap;
 
 /// Results of friend related commands
@@ -124,6 +125,7 @@ class PlayerSocial
         void SetPlayerGUID(ObjectGuid const& guid) { m_playerGUID = guid; }
         uint32 GetNumberOfSocialsWithFlag(SocialFlag flag);
 
+        std::recursive_mutex m_social_lock;
     private:
         bool _HasContact(ObjectGuid const& guid, SocialFlag flags);
 
@@ -131,7 +133,7 @@ class PlayerSocial
         ObjectGuid m_playerGUID;
 };
 
-class TC_GAME_API SocialMgr
+class SocialMgr
 {
         SocialMgr();
         ~SocialMgr();

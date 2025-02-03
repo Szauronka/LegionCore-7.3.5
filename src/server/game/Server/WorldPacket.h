@@ -23,7 +23,7 @@
 #include "Opcodes.h"
 #include "ByteBuffer.h"
 
-class TC_GAME_API WorldPacket : public ByteBuffer
+class WorldPacket : public ByteBuffer
 {
     public:
         WorldPacket() : ByteBuffer(0), m_opcode(MAX_OPCODE), _connection(CONNECTION_TYPE_DEFAULT) { }

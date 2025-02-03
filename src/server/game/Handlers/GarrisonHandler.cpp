@@ -78,7 +78,7 @@ void WorldSession::HandleGarrisonMissionBonusRoll(WorldPackets::Garrison::Garris
         if (mission->PacketInfo.State != MISSION_STATE_WAITING_BONUS && mission->PacketInfo.State != MISSION_STATE_WAITING_OWERMAX_BONUS)
             return false;
 
-        if (mission->PacketInfo.StartTime + mission->PacketInfo.Duration > GameTime::GetGameTime())
+        if (mission->PacketInfo.StartTime + mission->PacketInfo.Duration > time(nullptr))
             return false;
 
         return true;
@@ -145,7 +145,7 @@ void WorldSession::HandleGarrisonCompleteMission(WorldPackets::Garrison::Garriso
             if (mission->PacketInfo.State != MISSION_STATE_IN_PROGRESS)
                 return;
 
-            if (mission->PacketInfo.StartTime + mission->PacketInfo.Duration <= GameTime::GetGameTime())
+            if (mission->PacketInfo.StartTime + mission->PacketInfo.Duration <= time(nullptr))
                 mission->Complete(_player);
         }
     }
@@ -188,7 +188,6 @@ void WorldSession::HandleGarrisonOpenMissionNpc(WorldPackets::Garrison::Garrison
         WorldPackets::Garrison::GarrisonOpenMissionNpc response;
         response.GarrTypeID = GARRISON_TYPE_GARRISON;
         //response.PreventXmlOpenMissionEvent = true;
-
         if (Garrison* garrison = _player->GetGarrison())
         {
             for (const std::pair<uint64, Mission>& mission : garrison->GetMissions(GARRISON_TYPE_GARRISON))
@@ -269,6 +268,9 @@ void WorldSession::HandleGetTrophyList(WorldPackets::Garrison::GetTrophyList& /*
 
 void WorldSession::HandleGarrisonSetFollowerInactive(WorldPackets::Garrison::GarrisonSetFollowerInactive& packet)
 {
+    if (!_player->HasEnoughMoney(int64(2500000)))
+        return;
+
     if (Garrison* garrison = _player->GetGarrison())
     {
         if (auto follower = garrison->GetFollower(packet.FollowerDBID))
@@ -292,9 +294,6 @@ void WorldSession::HandleGarrisonSetFollowerInactive(WorldPackets::Garrison::Gar
             }
             else
             {
-                if (!_player->HasEnoughMoney(int64(2500000)))
-                    return;
-
                 if (!(follower->PacketInfo.FollowerStatus & GarrisonConst::GarrisonFollowerFlags::FOLLOWER_STATUS_INACTIVE))
                     return;
 
@@ -309,9 +308,9 @@ void WorldSession::HandleGarrisonSetFollowerInactive(WorldPackets::Garrison::Gar
                 packetResult.Amount = 0;
                 packetResult.UnkInt = 0;
                 _player->SendDirectMessage(packetResult.Write());
-                _player->ModifyMoney(-int64(2500000));
             }
             follower->DbState = DB_STATE_CHANGED;
+            _player->ModifyMoney(-int64(2500000));
         }
     }
 }
@@ -335,4 +334,13 @@ void WorldSession::HandleGarrisonRenameFollower(WorldPackets::Garrison::Garrison
 { }
 
 void WorldSession::HandleGarrisonSetRecruitmentPreferences(WorldPackets::Garrison::GarrisonSetRecruitmentPreferences& /*packet*/)
+{ }
+
+void WorldSession::HandleGarrisonGetMissionReward(WorldPackets::Garrison::GarrisonGetMissionReward& /*packet*/)
+{ }
+
+void WorldSession::HandleGarrisonSetBuildingActive(WorldPackets::Garrison::GarrisonSetBuildingActive& /*packet*/)
+{ }
+
+void WorldSession::HandleGarrisonSetFollowerFavorite(WorldPackets::Garrison::GarrisonSetFollowerFavorite& /*packet*/)
 { }

@@ -1,19 +1,19 @@
 /*
- * Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #include "Battlefield.h"
@@ -92,7 +92,7 @@ void Battlefield::HandlePlayerEnterZone(ObjectGuid guid, uint32 /*zone*/)
             InvitePlayerToWar(player);
         else
         {
-            m_PlayersWillBeKick[player->GetTeamId()][player->GetGUID()] = GameTime::GetGameTime() + 10;
+            m_PlayersWillBeKick[player->GetTeamId()][player->GetGUID()] = time(nullptr) + 10;
             InvitePlayerToQueue(player);
         }
     }
@@ -185,7 +185,7 @@ bool Battlefield::Update(uint32 diff)
         //            next = itr;
         //            ++next;
 
-        //            if ((*itr).second <= GameTime::GetGameTime())
+        //            if ((*itr).second <= time(nullptr))
         //                KickPlayerFromBattlefield((*itr).first);
         //        }
 
@@ -195,7 +195,7 @@ bool Battlefield::Update(uint32 diff)
         //        {
         //            next = itr;
         //            ++next;
-        //            if ((*itr).second <= GameTime::GetGameTime())
+        //            if ((*itr).second <= time(nullptr))
         //                KickPlayerFromBattlefield((*itr).first);
         //        }
 
@@ -279,7 +279,7 @@ void Battlefield::InvitePlayersInZoneToWar()
                 if (m_PlayersInWar[player->GetTeamId()].size() + m_InvitedPlayers[player->GetTeamId()].size() < m_MaxPlayer)
                     InvitePlayerToWar(player);
                 else // Battlefield is full of players
-                    m_PlayersWillBeKick[player->GetTeamId()][player->GetGUID()] = GameTime::GetGameTime() + 10;
+                    m_PlayersWillBeKick[player->GetTeamId()][player->GetGUID()] = time(nullptr) + 10;
             }
         }
 }
@@ -301,7 +301,7 @@ void Battlefield::InvitePlayerToWar(Player* player)
     if (player->getLevel() < m_MinLevel)
     {
         if (m_PlayersWillBeKick[player->GetTeamId()].count(player->GetGUID()) == 0)
-            m_PlayersWillBeKick[player->GetTeamId()][player->GetGUID()] = GameTime::GetGameTime() + 10;
+            m_PlayersWillBeKick[player->GetTeamId()][player->GetGUID()] = time(nullptr) + 10;
 
         return;
     }
@@ -310,7 +310,7 @@ void Battlefield::InvitePlayerToWar(Player* player)
         return;
 
     m_PlayersWillBeKick[player->GetTeamId()].erase(player->GetGUID());
-    m_InvitedPlayers[player->GetTeamId()][player->GetGUID()] = GameTime::GetGameTime() + m_TimeForAcceptInvite;
+    m_InvitedPlayers[player->GetTeamId()][player->GetGUID()] = time(nullptr) + m_TimeForAcceptInvite;
     player->GetSession()->SendBfInvitePlayerToWar(GetQueueID(), m_AreaID, m_TimeForAcceptInvite);
 }
 
@@ -319,7 +319,7 @@ void Battlefield::InitStalker(uint32 entry, float x, float y, float z, float o)
     if (Creature* creature = SpawnCreature(entry, x, y, z, o, TEAM_NEUTRAL))
         StalkerGuid = creature->GetGUID();
     else
-        TC_LOG_ERROR("bg.battlefield", "Battlefield::InitStalker: could not spawn Stalker (Creature entry %u), zone messeges will be un-available", entry);
+        TC_LOG_ERROR(LOG_FILTER_BATTLEFIELD, "Battlefield::InitStalker: could not spawn Stalker (Creature entry %u), zone messeges will be un-available", entry);
 }
 
 void Battlefield::KickAfkPlayers()
@@ -568,7 +568,7 @@ void Battlefield::ShowNpc(Creature* creature, bool aggressive)
     creature->SetPhaseMask(305, true);
     creature->SetVisible(true);
     creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-    if (!creature->IsAlive())
+    if (!creature->isAlive())
         creature->Respawn(true);
     if (aggressive)
         creature->SetReactState(REACT_AGGRESSIVE);
@@ -654,7 +654,7 @@ BfGraveyard* Battlefield::GetGraveyardById(uint32 id)
         if ((*itr) && (*itr)->GetTypeId() == id)
             return *itr;
 
-    TC_LOG_ERROR("bg.battlefield", "Battlefield::GetGraveyardById Id:%u cant be found", id);
+    TC_LOG_ERROR(LOG_FILTER_BATTLEFIELD, "Battlefield::GetGraveyardById Id:%u cant be found", id);
     return nullptr;
 }
 
@@ -747,7 +747,7 @@ void BfGraveyard::SetSpirit(Creature* spirit, TeamId team)
 {
     if (!spirit)
     {
-        TC_LOG_ERROR("bg.battlefield", "BfGraveyard::SetSpirit: Invalid Spirit.");
+        TC_LOG_ERROR(LOG_FILTER_BATTLEFIELD, "BfGraveyard::SetSpirit: Invalid Spirit.");
         return;
     }
 
@@ -855,35 +855,35 @@ void BfGraveyard::RelocateDeadPlayers()
 // ********************** Misc ***************************
 // *******************************************************
 
-Creature* Battlefield::SpawnCreature(uint32 entry, float x, float y, float z, float o, TeamId team)
+Creature* Battlefield::SpawnCreature(uint32 entry, Position pos, TeamId team)
 {
-    return SpawnCreature(entry, Position(x, y, z, o), team);
+    return SpawnCreature(entry, pos.m_positionX, pos.m_positionY, pos.m_positionZ, pos.m_orientation, team);
 }
 
-Creature* Battlefield::SpawnCreature(uint32 entry, Position const& pos, TeamId team)
+Creature* Battlefield::SpawnCreature(uint32 entry, float x, float y, float z, float o, TeamId team)
 {
     //Get map object
     Map* map = const_cast <Map*>(sMapMgr->CreateBaseMap(m_MapId));
     if (!map)
     {
-        TC_LOG_ERROR("bg.battlefield", "Battlefield::SpawnCreature: Can't create creature entry: %u map not found", entry);
+        TC_LOG_ERROR(LOG_FILTER_BATTLEFIELD, "Battlefield::SpawnCreature: Can't create creature entry: %u map not found", entry);
         return nullptr;
     }
 
     Creature* creature = new Creature;
-    if (!creature->Create(sObjectMgr->GetGenerator<HighGuid::Creature>()->Generate(), map, PHASEMASK_NORMAL, entry, 0, team, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation()))
+    if (!creature->Create(sObjectMgr->GetGenerator<HighGuid::Creature>()->Generate(), map, PHASEMASK_NORMAL, entry, 0, team, x, y, z, o))
     {
-        TC_LOG_ERROR("bg.battlefield", "Battlefield::SpawnCreature: Can't create creature entry: %u", entry);
+        TC_LOG_ERROR(LOG_FILTER_BATTLEFIELD, "Battlefield::SpawnCreature: Can't create creature entry: %u", entry);
         delete creature;
         return nullptr;
     }
 
-    creature->SetHomePosition(pos);
+    creature->SetHomePosition(x, y, z, o);
 
     CreatureTemplate const* cinfo = sObjectMgr->GetCreatureTemplate(entry);
     if (!cinfo)
     {
-        TC_LOG_ERROR("bg.battlefield", "Battlefield::SpawnCreature: entry %u does not exist.", entry);
+        TC_LOG_ERROR(LOG_FILTER_BATTLEFIELD, "Battlefield::SpawnCreature: entry %u does not exist.", entry);
         return nullptr;
     }
     // force using DB speeds -- do we really need this?
@@ -898,12 +898,12 @@ Creature* Battlefield::SpawnCreature(uint32 entry, Position const& pos, TeamId t
     return creature;
 }
 
-GameObject* Battlefield::SpawnGameObject(uint32 entry, float x, float y, float z, float o)
+GameObject* Battlefield::SpawnGameObject(uint32 entry, Position const pos)
 {
-    return SpawnGameObject(entry, Position(x, y, z, o));
+    return SpawnGameObject(entry, pos.m_positionX, pos.m_positionY, pos.m_positionZ, pos.m_orientation);
 }
 
-GameObject* Battlefield::SpawnGameObject(uint32 entry, Position const& pos)
+GameObject* Battlefield::SpawnGameObject(uint32 entry, float x, float y, float z, float o)
 {
     // Get map object
     Map* map = const_cast<Map*>(sMapMgr->CreateBaseMap(m_MapId)); // *vomits*
@@ -912,10 +912,10 @@ GameObject* Battlefield::SpawnGameObject(uint32 entry, Position const& pos)
 
     // Create gameobject
     GameObject* go = sObjectMgr->IsStaticTransport(entry) ? new StaticTransport : new GameObject;
-    if (!go->Create(sObjectMgr->GetGenerator<HighGuid::GameObject>()->Generate(), entry, map, PHASEMASK_NORMAL, pos, G3D::Quat(), 100, GO_STATE_READY))
+    if (!go->Create(sObjectMgr->GetGenerator<HighGuid::GameObject>()->Generate(), entry, map, PHASEMASK_NORMAL, Position(x, y, z, o), G3D::Quat(), 100, GO_STATE_READY))
     {
-        TC_LOG_ERROR("bg.battlefield", "Battlefield::SpawnGameObject: Gameobject template %u not found in database! Battlefield not created!", entry);
-        TC_LOG_ERROR("bg.battlefield", "Battlefield::SpawnGameObject: Cannot create gameobject template %u! Battlefield not created!", entry);
+        TC_LOG_ERROR(LOG_FILTER_BATTLEFIELD, "Battlefield::SpawnGameObject: Gameobject template %u not found in database! Battlefield not created!", entry);
+        TC_LOG_ERROR(LOG_FILTER_BATTLEFIELD, "Battlefield::SpawnGameObject: Cannot create gameobject template %u! Battlefield not created!", entry);
         delete go;
         return nullptr;
     }
@@ -1026,14 +1026,14 @@ bool BfCapturePoint::SetCapturePointData(GameObject* capturePoint)
 {
     ASSERT(capturePoint);
 
-    TC_LOG_DEBUG("bg.battlefield", "Creating capture point %u", capturePoint->GetEntry());
+    TC_LOG_DEBUG(LOG_FILTER_BATTLEFIELD, "Creating capture point %u", capturePoint->GetEntry());
 
     m_capturePoint = capturePoint;
 
     GameObjectTemplate const* goinfo = capturePoint->GetGOInfo();
     if (goinfo->type != GAMEOBJECT_TYPE_CONTROL_ZONE)
     {
-        TC_LOG_ERROR("misc", "OutdoorPvP: GO %u is not capture point!", capturePoint->GetEntry());
+        TC_LOG_ERROR(LOG_FILTER_GENERAL, "OutdoorPvP: GO %u is not capture point!", capturePoint->GetEntry());
         return false;
     }
 
@@ -1046,7 +1046,7 @@ bool BfCapturePoint::SetCapturePointData(GameObject* capturePoint)
     m_maxSpeed = m_maxValue / (goinfo->controlZone.minTime ? goinfo->controlZone.minTime : 60);
     m_State = m_value == 50.0f ? BF_CAPTUREPOINT_OBJECTIVESTATE_NEUTRAL : (m_value == 0.0f ? BF_CAPTUREPOINT_OBJECTIVESTATE_ALLIANCE : BF_CAPTUREPOINT_OBJECTIVESTATE_HORDE);
 
-    TC_LOG_ERROR("misc", "m_maxValue %f; m_minValue %f; m_neutralValuePct %u; m_value %f; m_maxSpeed %f; m_State %u",
+    TC_LOG_ERROR(LOG_FILTER_GENERAL, "m_maxValue %u; m_minValue %u; m_neutralValuePct %u; m_value %f; m_maxSpeed %u; m_State %u",
         m_maxValue, m_minValue, m_neutralValuePct, m_value, m_maxSpeed, m_State);
 
     return true;
@@ -1172,7 +1172,7 @@ bool BfCapturePoint::Update(uint32 diff)
 
     if (m_OldState != m_State)
     {
-        TC_LOG_ERROR("misc", "m_OldState %u-> m_State %u", m_OldState, m_State);
+        TC_LOG_ERROR(LOG_FILTER_GENERAL, "m_OldState %u-> m_State %u", m_OldState, m_State);
         if (oldTeam != m_team)
         {
             ChangeTeam(oldTeam);

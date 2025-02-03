@@ -1,3 +1,7 @@
+/*
+https://uwow.biz/
+*/
+
 #include "AreaTriggerAI.h"
 #include "tomb_of_sargeras.h"
 
@@ -474,7 +478,7 @@ struct boss_tos_kiljaeden : BossAI
         else if (id == 4)
         {
             SetFlyMode(false);
-            me->SetAnimTier(AnimTier::Ground);
+            me->SetAnimTier(0);
             me->GetMotionMaster()->MoveFall();
             me->RemoveAurasDueToSpell(SPELL_NETHER_GALE);
             me->SetReactState(REACT_AGGRESSIVE, 3000);
@@ -499,6 +503,7 @@ struct boss_tos_kiljaeden : BossAI
                 DefaultEvents();
                 me->StopAttack(true);
                 SetFlyMode(true);
+                me->SetAnimTier(3);
                 me->SetSpeed(MOVE_FLIGHT, 3.0f, true);
                 me->GetMotionMaster()->MovePoint(1, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 10.0f, false);
                 DoCast(me, SPELL_WINGSPAN_SOUND, true);
@@ -881,7 +886,7 @@ struct npc_tos_erupting_reflection : public ScriptedAI
         {
             if (auto target = Player::GetPlayer(*me, targetGUID))
             {
-                if (target->IsAlive())
+                if (target->isAlive())
                     if (auto owner = me->GetAnyOwner())
                         owner->CastSpell(target, SPELL_LINGERING_ERUPTION, true);
             }
@@ -931,7 +936,7 @@ struct npc_tos_wailing_reflection : public ScriptedAI
 
         if (auto target = Player::GetPlayer(*me, targetGUID))
         {
-            if (target->IsAlive())
+            if (target->isAlive())
                 if (auto owner = me->GetAnyOwner())
                     owner->CastSpell(target, SPELL_LINGERING_WAIL, true);
         }
@@ -1189,7 +1194,7 @@ struct npc_tos_demonic_obelisk : public ScriptedAI
                 {
                     me->GetNearPoint2D(x, y, 1.0f, angle);
                     me->CastSpell(x, y, me->GetPositionZ(), SPELL_DEMONIC_OBELISK_DMG, true);
-                    angle += float(M_PI / 2);
+                    angle += M_PI / 2;
                 }
                 me->PlayOneShotAnimKit(OBELISK_ANIM_2);
                 me->DespawnOrUnsummon(500);
@@ -1295,7 +1300,7 @@ struct npc_tos_flaming_orb : public ScriptedAI
                 startMovingTimer = 500;
 
                 auto target = Player::GetPlayer(*me, targetGUID);
-                if (!target || !target->IsAlive())
+                if (!target || !target->isAlive())
                 {
                     startMovingTimer = 2000;
                     DoCast(me, SPELL_ORG_FIXATE, true);
@@ -1518,9 +1523,9 @@ class spell_tos_lingering_eruption : public AuraScript
             float angle = 0.5f;
             for (uint8 i = 0; i < 3; ++i)
             {
-                pos = GetUnitOwner()->GetNearPosition(5.0f, angle);
+                GetUnitOwner()->GetNearPosition(pos, 5.0f, angle);
                 GetUnitOwner()->CastSpell(pos, SPELL_ERUPTING_ORB_AT, true);
-                pos = GetUnitOwner()->GetNearPosition(5.0f, -angle);
+                GetUnitOwner()->GetNearPosition(pos, 5.0f, -angle);
                 GetUnitOwner()->CastSpell(pos, SPELL_ERUPTING_ORB_AT, true);
                 angle += 1.0f;
             }

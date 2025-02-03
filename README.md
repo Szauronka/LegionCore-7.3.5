@@ -1,65 +1,133 @@
-# LegionCore
 
-#### Table of Contents
-* [Introduction](#introduction)
-* [Requirements](#requirements)
-* [Install](#install)
-* [Data Files](#data-files)
-* [Common Issues](#common-issues)
-* [Reporting issues](#reporting-issues)
-* [Submitting fixes](#submitting-fixes)
-* [Thank you](#thank-you)
+# HeronCore 
 
-#### Introduction
-LegionCore is a **MMORPG** framework for WOW Legion *(Build 26972)*. This core is based off of the UWOW core leak of 2020. Which was derived from an old version of [TrinityCore](https://github.com/TrinityCore/TrinityCore). LegionCore is completely opensource and is developed by the community. To submit a pull request please follow this template [here](submitting-fixes).
+Version 7.3.5 26972
 
-If you want you can join the community discord: [here](https://discord.gg/rft8Jv459p).
+Systems:
+- Garrison/Class Hall (WIP)
+- World Quests
+- Challenge Mode (Mythic+)
+- Mercenary battleground system
+- Rated Arenas
+- TimeWalkers (BC/WotLK/Cataclsym/MoP)
+- Personnal/Master loots
 
-# Requirements
- 
-[Windows specific](https://www.trinitycore.info/en/install/requirements/windows)
-  
-[Linux specific](https://www.trinitycore.info/en/install/requirements/linux)
+Zones:
+Argus quest-line 3-3 (tested player alliance)
+Azsuna quest-line 5-5 (tested player alliance)
+Val shara quest-line 7-7 (tested player alliance)
+Highmountain quest-line 7-7 (tested player alliance)
+Stormheim quest-line 8-8 (tested player alliance)
+Suramar quest-line 11-11 (tested player alliance)
+Broken Shore quest-line: ? (not tested)
+DH zones 2-2 (tested player alliance)
 
-[Mac specific](https://www.trinitycore.info/en/install/requirements/macos)
+Legion scripts:
+Dungeons:
+- Black Rook Hold Dungeon
+- Cathedral of Eternal Night
+- Court of Stars
+- Dark Heart Thicket
+- Eye of Azshara
+- Halls of Valor
+- Maw of Souls
+- Neltharions Lair
+- Return To Karazhan
+- The Arcway
+- The Seat of The Triumvirate
+- Vault of the Wardens
+- Violet Hold Legion
+Raids:
+- Antorus The Burning Throne
+- Tomb of Sargeras
+- Trial of Valor
+- The Nighthold
+- The Emerald Nightmare
+Misc:
+- Invasion point Argus
+- Invasion point world bosses
+- World bosses legion
+- Micro Holidays
 
-# Install
-Most of the install steps are the same as the TrinityCore ones [here](https://www.trinitycore.info/en/install/Core-Installation).
 
-# Data Files
-This core has been updated with tools to generate all required data files.
+Draenor
+- Auchindoun
+- Blackrock Foundry
+- Bloodmaul Slag Mines
+- Hellfire Citadel
+- Highmaul
+- Iron Docks
+- Shadowmoon Burial Grounds
+- Skyreach
+- The Everbloom
+- Upper Blackrock Spire
+- Dark Portal
+- Forstfire Ridge
+- Shadowmoon Valley
+- World Bosses Draenor
 
-Run the tools in the following order, using client build 26972:
+Pandaria
+- Gate Setting Sun
+- Heart of Fear
+- Mogu'shan Palace
+- Mogu'shan Vault
+- Shado-pan Monastery
+- Siege of Niuzao Temple
+- Siege of Orgrimmar
+- Stormstout Brewery
+- Temple of the Jade Serpent
+- Terrace of Endless Spring
+- Throne of Thunder
+- Timeless isle
+- Kun-Lai Summit
+- Valley of the Four Winds
+- Wandering Island
+- Krasarang Wilds
+- Boss Galion
+- Boss Nalak
+- Boss Oondasta
+- Boss Sha of Anger
 
-1. `mapextractor`
-2. `vmap4extractor`
-3. `vmap4assembler`
-4. `mmaps_generator`
 
-The generated folders `dbc`, `maps`, `vmaps`, `mmaps`, `cameras` and `gt` are all required.
+Artifact Scenarios:
+- Paladin
+- Druid
+- Hunter
+- Warrior
+- Dh
+- DK
+- Shaman
+- Mage
+- Monk
+- Warlock
+- Rogue
+- Priest
 
-# Common issues
-TODO
-
-# Reporting issues
-Issues can be reported via the [Github issue tracker](https://github.com/The-Legion-Preservation-Project/LegionCore-7.3.5/issues).
-
-Please take the time to review existing issues before submitting your own to
-prevent duplicates.
-
-In addition, thoroughly read through the [issue tracker guide](https://community.trinitycore.org/topic/37-the-trinitycore-issuetracker-and-you/) to ensure
-your report contains the required information. Incorrect or poorly formed
-reports are wasteful and are subject to deletion.
-
-Note that the issue tracker guide is from TrinityCore, but it also applies for this core.
-
-# Submitting fixes
-C++ fixes are submitted as pull requests via Github. For more information on how to
-properly submit a pull request, read the [how-to: maintain a remote fork](https://community.trinitycore.org/topic/9002-howto-maintain-a-remote-fork-for-pull-requests-tortoisegit/).
-For SQL only fixes, open a ticket; if a bug report exists for the bug, post on an existing ticket.
-
-### Thank you
-- [TrinityCore Authors](https://github.com/TrinityCore/TrinityCore/blob/master/AUTHORS)
-- [LegionCore Contributors](https://github.com/dufernst/LegionCore-7.3.5/graphs/contributors)
-
-> **License: GPL 2.0** read [COPYING](COPYING).
+Scenarios
+- A Brewing Storm
+- A Little Patience
+- Arena of Annihilation
+- Army Training
+- Artifacts
+- Assault on Broken Shore (tested player alliance)
+- Assault on Zan'vess
+- Battle on the High Seas
+- Battle Pet Instance
+- Blood in the Snow
+- Brewmoon Festival
+- Broken Islands (Work alliance and horde)
+- The Celestial Tournament
+- Crypt of Forgotten Kings
+- Dagger in the Dark
+- Dark Heart of Pandaria
+- Domination Point
+- Fall of Shan Bu
+- Greenstone Village
+- Legion Invasion
+- Lion's Landing
+- Proving Grounds
+- Pursuing the Black Harvest
+- The Secrets of Ragefire
+- The Thunder Forge
+- Troves of the Thunder King
+- Unga Ingoo

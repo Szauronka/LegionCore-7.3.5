@@ -48,10 +48,10 @@ namespace WorldPackets
         struct QuestGiverInfo
         {
             QuestGiverInfo() = default;
-            QuestGiverInfo(ObjectGuid const& guid, ::QuestGiverStatus status) : Guid(guid), Status(status) { }
+            QuestGiverInfo(ObjectGuid const& guid, uint32 status) : Guid(guid), Status(status) { }
 
             ObjectGuid Guid;
-            ::QuestGiverStatus Status = ::QuestGiverStatus::None;
+            uint32 Status = DIALOG_STATUS_NONE;
         };
 
         class QuestGiverStatus final : public ServerPacket
@@ -349,16 +349,6 @@ namespace WorldPackets
             ObjectGuid QuestGiverGUID;
             int32 QuestID = 0;
             bool FromScript = false;
-        };
-
-        class QuestGiverCloseQuest final : public ClientPacket
-        {
-        public:
-            QuestGiverCloseQuest(WorldPacket&& packet) : ClientPacket(CMSG_QUEST_GIVER_CLOSE_QUEST, std::move(packet)) { }
-
-            void Read() override;
-
-            int32 QuestID = 0;
         };
 
         struct QuestObjectiveSimple

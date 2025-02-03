@@ -23,6 +23,7 @@
 #include "Common.h"
 #include "Player.h"
 #include "SharedDefines.h"
+#include "Unit.h"
 #include "World.h"
 #include "Weather.h"
 #include "ObjectMgr.h"
@@ -48,7 +49,6 @@ class InstanceMap;
 class InstanceScript;
 class Item;
 class Map;
-class ModuleReference;
 class OutdoorPvP;
 class Player;
 class Quest;
@@ -70,11 +70,12 @@ struct ConditionSourceInfo;
 struct Condition;
 struct ItemTemplate;
 struct OutdoorPvPData;
+struct QuestObjective;
 
 #define VISIBLE_RANGE       166.0f                          //MAX visible range (size of grid)
 
 // Generic scripting text function.
-TC_GAME_API void DoScriptText(int32 textEntry, WorldObject* pSource, Unit* target = nullptr);
+void DoScriptText(int32 textEntry, WorldObject* pSource, Unit* target = nullptr);
 
 class ScriptObject
 {
@@ -83,11 +84,14 @@ class ScriptObject
 
 public:
 
+    // Do not override this in scripts; it should be overridden by the various script type classes. It indicates
+    // whether or not this script type must be assigned in the database.
+    virtual bool IsDatabaseBound() const { return false; }
     std::string const& GetName() const { return _name; }
 
 protected:
-    ScriptObject(std::string name);
-    virtual ~ScriptObject();
+    ScriptObject(std::string name) : _name(name) { }
+    virtual ~ScriptObject() = default;
 };
 
 template<class TObject>
@@ -101,13 +105,15 @@ public:
     virtual void OnUpdate(TObject* /*obj*/, uint32 /*diff*/) { }
 };
 
-class TC_GAME_API SpellScriptLoader : public ScriptObject
+class SpellScriptLoader : public ScriptObject
 {
     protected:
 
         SpellScriptLoader(std::string name);
 
     public:
+
+        bool IsDatabaseBound() const override { return true; }
 
         // Should return a fully valid SpellScript pointer.
         virtual SpellScript* GetSpellScript() const { return nullptr; }
@@ -116,7 +122,7 @@ class TC_GAME_API SpellScriptLoader : public ScriptObject
         virtual AuraScript* GetAuraScript() const { return nullptr; }
 };
 
-class TC_GAME_API WorldScript : public ScriptObject
+class WorldScript : public ScriptObject
 {
     protected:
 
@@ -149,7 +155,7 @@ class TC_GAME_API WorldScript : public ScriptObject
         virtual void OnShutdown() { }
 };
 
-class TC_GAME_API FormulaScript : public ScriptObject
+class FormulaScript : public ScriptObject
 {
     protected:
 
@@ -179,31 +185,49 @@ class TC_GAME_API FormulaScript : public ScriptObject
         virtual void OnGroupRateCalculation(float& /*rate*/, uint32 /*count*/, bool /*isRaid*/) { }
 };
 
+class AllMapScript : public ScriptObject
+{
+protected:
+
+    AllMapScript(std::string name);
+
+public:
+
+    // Called when a player enters any Map
+    virtual void OnPlayerEnterAll(Map* /*map*/, Player* /*player*/) { }
+
+    // Called when a player leave any Map
+    virtual void OnPlayerLeaveAll(Map* /*map*/, Player* /*player*/) { }
+};
+
 namespace Battlepay
 {
     struct Product;
 }
 
-class TC_GAME_API BattlePayProductScript : public ScriptObject
+class BattlePayProductScript : public ScriptObject
 {
 protected:
     explicit BattlePayProductScript(std::string scriptName);
-
 public:
-    virtual void OnProductDelivery(WorldSession* /*session*/, Battlepay::Product const* /*product*/) { }
+    virtual void OnProductDelivery(WorldSession* /*session*/, Battlepay::Product const& /*product*/) { }
     virtual bool CanShow(WorldSession* /*session*/, Battlepay::Product const& /*product*/) { return true; }
-    virtual bool CanBuy(WorldSession* /*session*/, Battlepay::Product const* /*product*/, std::string& /*reason*/) { return true; }
+    virtual bool CanBuy(WorldSession* /*session*/, Battlepay::Product const& /*product*/, std::string& /*reason*/) { return true; }
     virtual std::string GetCustomData(Battlepay::Product const& /*product*/) { return ""; }
 };
 
 template<class TMap>
-class TC_GAME_API MapScript : public UpdatableScript<TMap>
+class MapScript : public UpdatableScript<TMap>
 {
     MapEntry const* _mapEntry;
 
     protected:
 
-        MapScript(MapEntry const* mapEntry) : _mapEntry(mapEntry) { }
+        MapScript(uint32 mapId) : _mapEntry(sMapStore.LookupEntry(mapId))
+        {
+            if (!_mapEntry)
+                TC_LOG_ERROR(LOG_FILTER_TSCR, "Invalid MapScript for %u; no such map ID.", mapId);
+        }
 
     public:
 
@@ -232,14 +256,14 @@ class TC_GAME_API MapScript : public UpdatableScript<TMap>
         virtual void OnUpdate(TMap* /*map*/, uint32 /*diff*/) { }
 };
 
-class TC_GAME_API WorldMapScript : public ScriptObject, public MapScript<Map>
+class WorldMapScript : public ScriptObject, public MapScript<Map>
 {
     protected:
 
         WorldMapScript(std::string name, uint32 mapId);
 };
 
-class TC_GAME_API InstanceMapScript : public ScriptObject, public MapScript<InstanceMap>
+class InstanceMapScript : public ScriptObject, public MapScript<InstanceMap>
 {
     protected:
 
@@ -247,24 +271,28 @@ class TC_GAME_API InstanceMapScript : public ScriptObject, public MapScript<Inst
 
     public:
 
+        bool IsDatabaseBound() const override { return true; }
+
         // Gets an InstanceScript object for this instance.
         virtual InstanceScript* GetInstanceScript(InstanceMap* /*map*/) const { return nullptr; }
 };
 
-class TC_GAME_API BattlegroundMapScript : public ScriptObject, public MapScript<BattlegroundMap>
+class BattlegroundMapScript : public ScriptObject, public MapScript<BattlegroundMap>
 {
     protected:
 
         BattlegroundMapScript(std::string name, uint32 mapId);
 };
 
-class TC_GAME_API ItemScript : public ScriptObject
+class ItemScript : public ScriptObject
 {
     protected:
 
         ItemScript(std::string name);
 
     public:
+
+        bool IsDatabaseBound() const override { return true; }
 
         // Called when a dummy spell effect is triggered on the item.
         virtual bool OnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, SpellEffIndex /*effIndex*/, Item* /*target*/) { return false; }
@@ -278,16 +306,53 @@ class TC_GAME_API ItemScript : public ScriptObject
         // Called when the item expires (is destroyed).
         virtual bool OnExpire(Player* /*player*/, ItemTemplate const* /*proto*/) { return false; }
 
+        // Called when the item is destroyed.
+        virtual bool OnRemove(Player* /*player*/, Item* /*item*/) { return false; }
+
+        // Called when create the item 
         virtual bool OnCreate(Player* /*player*/, Item* /*item*/) { return false; }
+
+        // Called before casting a combat spell from this item (chance on hit spells of item template, can be used to prevent cast if returning false)
+        virtual bool OnCastItemCombatSpell(Player* /*player*/, Unit* /*victim*/, SpellInfo const* /*spellInfo*/, Item* /*item*/) { return true; }
 };
 
-class TC_GAME_API CreatureScript : public ScriptObject, public UpdatableScript<Creature>
+class UnitScript : public ScriptObject, public UpdatableScript<Unit>
+{
+protected:
+
+    UnitScript(std::string name);
+
+public:
+
+    // Called when a unit deals healing to another unit
+    virtual void OnHeal(Unit* healer, Unit* receiver, uint32& gain) { }
+
+    // Called when a unit deals damage to another unit
+    virtual void OnDamage(Unit* attacker, Unit* victim, uint32& damage) { }
+
+    // Called when DoT's Tick Damage is being Dealt
+    virtual void ModifyPeriodicDamageAurasTick(Unit* target, Unit* attacker, float& damage) { }
+
+    // Called when Melee Damage is being Dealt
+    virtual void ModifyMeleeDamage(Unit* target, Unit* attacker, uint32& damage) { }
+
+    // Called when Spell Damage is being Dealt
+    virtual void ModifySpellDamageTaken(Unit* target, Unit* attacker, float& damage) { }
+
+    // Called when heal is received
+    virtual void ModifyHealReceived(Unit* /*target*/, Unit* /*attacker*/, float& /*amount*/) { }
+};
+
+
+class CreatureScript : public ScriptObject, public UpdatableScript<Creature>
 {
     protected:
 
         CreatureScript(std::string name);
 
     public:
+
+        bool IsDatabaseBound() const override { return true; }
 
         // Called when a dummy spell effect is triggered on the creature.
         virtual bool OnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, SpellEffIndex /*effIndex*/, Creature* /*target*/) { return false; }
@@ -314,7 +379,7 @@ class TC_GAME_API CreatureScript : public ScriptObject, public UpdatableScript<C
         virtual bool OnQuestReward(Player* /*player*/, Creature* /*creature*/, Quest const* /*quest*/, uint32 /*opt*/) { return false; }
 
         // Called when the dialog status between a player and the creature is requested.
-        virtual Optional<QuestGiverStatus> GetDialogStatus(Player* /*player*/, Creature* /*creature*/) { return {}; }
+        virtual uint32 GetDialogStatus(Player* /*player*/, Creature* /*creature*/) { return 100; }
 
         // Called when a CreatureAI object is needed for the creature.
         virtual CreatureAI* GetAI(Creature* /*creature*/) const { return nullptr; }
@@ -330,13 +395,15 @@ CreatureAI* GetAIForInstance(Creature* creature, const char *Name)
     return nullptr;
 }
 
-class TC_GAME_API GameObjectScript : public ScriptObject, public UpdatableScript<GameObject>
+class GameObjectScript : public ScriptObject, public UpdatableScript<GameObject>
 {
     protected:
 
         GameObjectScript(std::string name);
 
     public:
+
+        bool IsDatabaseBound() const override { return true; }
 
         // Called when a dummy spell effect is triggered on the gameobject.
         virtual bool OnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, SpellEffIndex /*effIndex*/, GameObject* /*target*/) { return false; }
@@ -357,7 +424,7 @@ class TC_GAME_API GameObjectScript : public ScriptObject, public UpdatableScript
         virtual bool OnQuestReward(Player* /*player*/, GameObject* /*go*/, Quest const* /*quest*/, uint32 /*opt*/) { return false; }
 
         // Called when the dialog status between a player and the gameobject is requested.
-        virtual Optional<QuestGiverStatus> GetDialogStatus(Player* /*player*/, GameObject* /*go*/) { return {}; }
+        virtual uint32 GetDialogStatus(Player* /*player*/, GameObject* /*go*/) { return 100; }
 
         // Called when the game object is destroyed (destructible buildings only).
         virtual void OnDestroyed(GameObject* /*go*/, Player* /*player*/) { }
@@ -375,41 +442,24 @@ class TC_GAME_API GameObjectScript : public ScriptObject, public UpdatableScript
         virtual GameObjectAI* GetAI(GameObject* /*go*/) const { return nullptr; }
 };
 
-class TC_GAME_API AreaTriggerScript : public ScriptObject
+class AreaTriggerScript : public ScriptObject
 {
     protected:
 
-        explicit AreaTriggerScript(std::string name);
+        AreaTriggerScript(std::string name);
 
     public:
 
-        ~AreaTriggerScript();
+        bool IsDatabaseBound() const override { return true; }
 
         // Called when the area trigger is activated by a player.
-        virtual bool OnTrigger(Player* /*player*/, AreaTriggerEntry const* /*trigger*/, bool /*enter*/) { return false; }
+        virtual bool OnTrigger(Player* /*player*/, AreaTriggerEntry const* /*trigger*/, bool /*entered*/) { return false; }
 
         // Called when a AreaTriggerAI object is needed for the areatrigger.
         virtual AreaTriggerAI* GetAI(AreaTrigger* /*at*/) const { return nullptr; }
 };
 
-class TC_GAME_API OnlyOnceAreaTriggerScript : public AreaTriggerScript
-{
-        using AreaTriggerScript::AreaTriggerScript;
-
-    public:
-
-        ~OnlyOnceAreaTriggerScript();
-
-        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger, bool enter) final;
-
-    protected:
-        // returns true if the trigger was successfully handled, false if we should try again next time
-        virtual bool TryHandleOnce(Player* player, AreaTriggerEntry const* trigger) = 0;
-        void ResetAreaTriggerDone(InstanceScript* instance, uint32 triggerId);
-        void ResetAreaTriggerDone(Player const* player, AreaTriggerEntry const* trigger);
-};
-
-class TC_GAME_API SceneTriggerScript : public ScriptObject
+class SceneTriggerScript : public ScriptObject
 {
 protected:
 
@@ -417,11 +467,13 @@ protected:
 
 public:
 
+    bool IsDatabaseBound() const override { return true; }
+
     // Called when the scene event trigger by call CMSG_SCENE_TRIGGER_EVENT
     virtual bool OnTrigger(Player* /*player*/, SpellScene const* /*trigger*/, std::string /*triggername*/) { return false; }
 };
 
-class TC_GAME_API EventObjectScript : public ScriptObject
+class EventObjectScript : public ScriptObject
 {
 protected:
 
@@ -429,11 +481,16 @@ protected:
 
 public:
 
+    bool IsDatabaseBound() const override { return true; }
+
+    // Called when the EventObject by ?
     virtual bool IsTriggerMeets(Player* /*player*/, EventObject* /*trigger*/) { return true; }
+
+    // Called when the EventObject is activated by a player.
     virtual bool OnTrigger(Player* /*player*/, EventObject* /*trigger*/, bool /*enter*/) { return false; }
 };
 
-class TC_GAME_API BattlegroundScript : public ScriptObject
+class BattlegroundScript : public ScriptObject
 {
     protected:
 
@@ -441,11 +498,13 @@ class TC_GAME_API BattlegroundScript : public ScriptObject
 
     public:
 
+        bool IsDatabaseBound() const override { return true; }
+
         // Should return a fully valid Battleground object for the type ID.
         virtual Battleground* GetBattleground() const = 0;
 };
 
-class TC_GAME_API OutdoorPvPScript : public ScriptObject
+class OutdoorPvPScript : public ScriptObject
 {
     protected:
 
@@ -453,11 +512,13 @@ class TC_GAME_API OutdoorPvPScript : public ScriptObject
 
     public:
 
+        bool IsDatabaseBound() const override { return true; }
+
         // Should return a fully valid OutdoorPvP object for the type ID.
         virtual OutdoorPvP* GetOutdoorPvP() const = 0;
 };
 
-class TC_GAME_API CommandScript : public ScriptObject
+class CommandScript : public ScriptObject
 {
     protected:
 
@@ -469,7 +530,7 @@ class TC_GAME_API CommandScript : public ScriptObject
         virtual std::vector<ChatCommand> GetCommands() const = 0;
 };
 
-class TC_GAME_API WeatherScript : public ScriptObject, public UpdatableScript<Weather>
+class WeatherScript : public ScriptObject, public UpdatableScript<Weather>
 {
     protected:
 
@@ -477,11 +538,13 @@ class TC_GAME_API WeatherScript : public ScriptObject, public UpdatableScript<We
 
     public:
 
+        bool IsDatabaseBound() const override { return true; }
+
         // Called when the weather changes in the zone this script is associated with.
         virtual void OnChange(Weather* /*weather*/, WeatherState /*state*/, float /*grade*/) { }
 };
 
-class TC_GAME_API AuctionHouseScript : public ScriptObject
+class AuctionHouseScript : public ScriptObject
 {
     protected:
 
@@ -502,7 +565,7 @@ class TC_GAME_API AuctionHouseScript : public ScriptObject
         virtual void OnAuctionExpire(AuctionHouseObject* /*ah*/, AuctionEntry* /*entry*/) { }
 };
 
-class TC_GAME_API ConditionScript : public ScriptObject
+class ConditionScript : public ScriptObject
 {
     protected:
 
@@ -510,17 +573,21 @@ class TC_GAME_API ConditionScript : public ScriptObject
 
     public:
 
+        bool IsDatabaseBound() const override { return true; }
+
         // Called when a single condition is checked for a player.
         virtual bool OnConditionCheck(Condition* /*condition*/, ConditionSourceInfo& /*sourceInfo*/) { return true; }
 };
 
-class TC_GAME_API VehicleScript : public ScriptObject
+class VehicleScript : public ScriptObject
 {
     protected:
 
         VehicleScript(std::string name);
 
     public:
+
+        bool IsDatabaseBound() const override { return true; }
 
         // Called after a vehicle is installed.
         virtual void OnInstall(Vehicle* /*veh*/) { }
@@ -544,20 +611,22 @@ class TC_GAME_API VehicleScript : public ScriptObject
         virtual CreatureAI* GetAI(Creature* /*creature*/) const { return nullptr; }
 };
 
-class TC_GAME_API DynamicObjectScript : public ScriptObject, public UpdatableScript<DynamicObject>
+class DynamicObjectScript : public ScriptObject, public UpdatableScript<DynamicObject>
 {
     protected:
 
         DynamicObjectScript(std::string name);
 };
 
-class TC_GAME_API TransportScript : public ScriptObject, public UpdatableScript<Transport>
+class TransportScript : public ScriptObject, public UpdatableScript<Transport>
 {
     protected:
 
         TransportScript(std::string name);
 
     public:
+
+        bool IsDatabaseBound() const override { return true; }
 
         // Called when a player boards the transport.
         virtual void OnAddPassenger(Transport* /*transport*/, Player* /*player*/) { }
@@ -572,7 +641,7 @@ class TC_GAME_API TransportScript : public ScriptObject, public UpdatableScript<
         virtual void OnRelocate(Transport* /*transport*/, uint32 /*waypointId*/, uint32 /*mapId*/, float /*x*/, float /*y*/, float /*z*/) { }
 };
 
-class TC_GAME_API AchievementCriteriaScript : public ScriptObject
+class AchievementCriteriaScript : public ScriptObject
 {
     protected:
 
@@ -580,11 +649,13 @@ class TC_GAME_API AchievementCriteriaScript : public ScriptObject
 
     public:
 
+        bool IsDatabaseBound() const override { return true; }
+
         // Called when an additional criteria is checked.
         virtual bool OnCheck(Player* source, Unit* target) = 0;
 };
 
-class TC_GAME_API AchievementRewardScript : public ScriptObject
+class AchievementRewardScript : public ScriptObject
 {
     protected:
 
@@ -592,12 +663,14 @@ class TC_GAME_API AchievementRewardScript : public ScriptObject
 
     public:
 
+        bool IsDatabaseBound() const override { return true; }
+
         // Called ow handling reward
         virtual bool OnGet(Player* /*source*/, AchievementReward const* /*data*/) {  return false; };
         virtual uint32 SelectItem(Player* /*source*/, AchievementReward const* /*data*/) { return 0; };
 };
 
-class TC_GAME_API PlayerScript : public ScriptObject
+class PlayerScript : public ScriptObject
 {
     protected:
 
@@ -606,41 +679,7 @@ class TC_GAME_API PlayerScript : public ScriptObject
     public:
 
         // Called when a player kills another player
-		virtual void OnPVPKill(Player* killer, Player* killed)
-		{
-			uint32 killerlvl = killer->getLevel();
-			uint32 killedlvl = killed->getLevel();
-			int32 diff = killerlvl - killedlvl;
-			uint32 XPLow = (killedlvl * 5 + 45)*(1 + 0.05*diff);
-			uint32 XPHigh = (killedlvl * 5 + 45)*(1 + 0.05*diff);
-			uint32 minusgold = killer->GetMoney() - (diff * 10000);
-			uint32 plusgold = killed->GetMoney() + (diff * 10000);
-			uint32 killergold = killer->GetMoney();
-			uint32 killedgold = killed->GetMoney();
-			uint32 plusgold2 = killedgold + killergold;
-
-			if (killerlvl < killedlvl + 1)
-				killer->GiveXP(XPHigh, killed);
-			else
-				if (diff > 10)
-					if (killergold > minusgold)
-					{
-						killer->SetMoney(minusgold);
-						killed->SetMoney(plusgold);
-					}
-					else
-					{
-						killed->SetMoney(plusgold2);
-						killer->SetMoney(0);
-					}
-				else
-					if (0 < diff && diff < 10)
-						killer->GiveXP(XPLow, killed);
-			return;
-		}
-
-        // Called when player completes some quest
-        virtual void OnQuestComplete(Player* /*player*/, Quest const* /*quest*/) { }
+        virtual void OnPVPKill(Player* /*killer*/, Player* /*killed*/) { }
 
         // Called when a player kills a creature
         virtual void OnCreatureKill(Player* /*killer*/, Creature* /*killed*/) { }
@@ -648,8 +687,11 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Called when a player is killed by a creature
         virtual void OnPlayerKilledByCreature(Creature* /*killer*/, Player* /*killed*/) { }
 
+        // Called when a player die
+        virtual void OnDeath(Player* /*player*/) { }
+
         // Called when a player's level changes (right before the level is applied)
-        virtual void OnLevelChanged(Player* /*player*/, uint8 /*oldLevel*/) { }
+        virtual void OnLevelChanged(Player* /*player*/, uint8 /*newLevel*/) { }
 
         // Called when a player's free talent points change (right before the change is applied)
         virtual void OnFreeTalentPointsChanged(Player* /*player*/, uint32 /*points*/) { }
@@ -713,23 +755,37 @@ class TC_GAME_API PlayerScript : public ScriptObject
         // Called when a player switches to a new zone
         virtual void OnUpdateZone(Player* /*player*/, uint32 /*newZone*/, uint32 /*newArea*/) { }
 
+		// Called when a player switches to a new area
+		virtual void OnUpdateArea(Player* /*player*/, uint32 /*newArea*/) { }
+
+        // Called when a player presses release when he died
+        virtual void OnPlayerRepop(Player* /*player*/) { }
+
+        // Called when a player pet battle finish
         virtual void OnPetBattleFinish(Player* /*player*/) { }
 
         // Called when a player changes to a new map (after moving to new map)
         virtual void OnMapChanged(Player* /*player*/) { }
 
+        // Called when a player movement inform
         virtual void OnMovementInform(Player* /*player*/, uint32 /*moveType*/, uint32 /*ID*/) { }
 
+        // Called when a player Update
         virtual void OnUpdate(Player* /*player*/, uint32 /*diff*/) { }
 
+        // Called when a player learn spell
         virtual void OnSpellLearned(Player* /*player*/, uint32 /*spellID*/) { }
         
+        // Called when a player call who list
         virtual void OnWhoListCall(Player* /*player*/, const std::set<ObjectGuid>& /*players*/ ) { }
         
+        // Called when a player send mail
         virtual void OnSendMail(Player* /*player*/, std::string& subject, std::string& body, ObjectGuid receiver) {}
         
+        // Called when a player reward quest
         virtual void OnQuestReward(Player* player, Quest const* quest) {}
 
+        // Called when a player enter combat
         virtual void OnEnterCombat(Player* player, Unit* target) {}
 		
         //After looting item
@@ -740,9 +796,12 @@ class TC_GAME_API PlayerScript : public ScriptObject
 
         //After receiving item as a quest reward
         virtual void OnQuestRewardItem(Player* player, Item* item, uint32 count) { }
+
+        // Called when a player completes a movie
+        virtual void OnMovieComplete(Player* /*player*/, uint32 /*movieId*/) { }
 };
 
-class TC_GAME_API SessionScript : public ScriptObject
+class SessionScript : public ScriptObject
 {
     protected:
 
@@ -754,13 +813,15 @@ class TC_GAME_API SessionScript : public ScriptObject
         virtual void OnLogin(WorldSession* /*session*/) { }
 };
 
-class TC_GAME_API GuildScript : public ScriptObject
+class GuildScript : public ScriptObject
 {
     protected:
 
         GuildScript(std::string name);
 
     public:
+
+        bool IsDatabaseBound() const override { return false; }
 
         // Called when a member is added to the guild.
         virtual void OnAddMember(Guild* /*guild*/, Player* /*player*/, uint8& /*plRank*/) { }
@@ -795,13 +856,15 @@ class TC_GAME_API GuildScript : public ScriptObject
         virtual void OnBankEvent(Guild* /*guild*/, uint8 /*eventType*/, uint8 /*tabId*/, uint32 /*playerGuid*/, uint32 /*itemOrMoney*/, uint16 /*itemStackCount*/, uint8 /*destTabId*/) { }
 };
 
-class TC_GAME_API GroupScript : public ScriptObject
+class GroupScript : public ScriptObject
 {
     protected:
 
         GroupScript(std::string name);
 
     public:
+
+        bool IsDatabaseBound() const override { return false; }
 
         // Called when a member is added to a group.
         virtual void OnAddMember(Group* /*group*/, ObjectGuid const& /*guid*/) { }
@@ -820,36 +883,67 @@ class TC_GAME_API GroupScript : public ScriptObject
 };
 
 
-class TC_GAME_API WorldStateScript : public ScriptObject
+class WorldStateScript : public ScriptObject
 {
 protected:
     WorldStateScript(std::string name);
 
 public:
 
+    bool IsDatabaseBound() const override { return false; }
+
+    // Called when a WorldState is create.
     virtual void OnCreate(uint32 /*variableID*/, uint32 /*value*/, uint8 /*type*/) { }
+
+    // Called when a WorldState is delete.
     virtual void OnDelete(uint32 /*variableID*/, uint8 /*type*/) { }
 };
 
+class QuestScript : public ScriptObject
+{
+protected:
+
+    QuestScript(std::string name);
+
+public:
+
+    bool IsDatabaseBound() const override { return true; }
+
+    // Called when a quest status change
+    virtual void OnQuestStatusChange(Player* /*player*/, Quest const* /*quest*/, QuestStatus /*oldStatus*/, QuestStatus /*newStatus*/) { }
+
+    // Called when a quest objective data change
+    virtual void OnQuestObjectiveChange(Player* /*player*/, Quest const* /*quest*/, QuestObjective const* /*objective*/, int32 /*oldAmount*/, int32 /*newAmount*/) { }
+};
+
+// Placed here due to ScriptRegistry::AddScript dependency.
+#define sScriptMgr ScriptMgr::instance()
+
+typedef std::list<std::string> UnusedScriptNamesContainer;
+extern UnusedScriptNamesContainer UnusedScriptNames;
+
 // Manages registration, loading, and execution of scripts.
-class TC_GAME_API ScriptMgr
+class ScriptMgr
 {
     friend class ScriptObject;
 
         ScriptMgr();
         virtual ~ScriptMgr();
 
-        void FillSpellSummary();
-        void LoadDatabase();
-
-        void IncreaseScriptCount() { ++_scriptCount; }
-        void DecreaseScriptCount() { --_scriptCount; }
-
     public: /* Initialization */
-        static ScriptMgr* instance();
+        static ScriptMgr* instance()
+        {
+            static ScriptMgr instance;
+            return &instance;
+        }
 
         void Initialize();
+        void LoadDatabase();
+        void FillSpellSummary();
 
+        const char* ScriptsVersion() const { return "Integrated Trinity Scripts"; }
+
+        void IncrementScriptCount() { ++_scriptCount; }
         uint32 GetScriptCount() const { return _scriptCount; }
 
         typedef void(*ScriptLoaderCallbackType)();
@@ -861,33 +955,7 @@ class TC_GAME_API ScriptMgr
             _script_loader_callback = script_loader_callback;
         }
 
-    public: /* Script contexts */
-        /// Set the current script context, which allows the ScriptMgr
-        /// to accept new scripts in this context.
-        /// Requires a SwapScriptContext() call afterwards to load the new scripts.
-        void SetScriptContext(std::string const& context);
-
-        /// Returns the current script context.
-        std::string const& GetCurrentScriptContext() const { return _currentContext; }
-
-        /// Releases all scripts associated with the given script context immediately.
-        /// Requires a SwapScriptContext() call afterwards to finish the unloading.
-        void ReleaseScriptContext(std::string const& context);
-
-        /// Executes all changed introduced by SetScriptContext and ReleaseScriptContext.
-        /// It is possible to combine multiple SetScriptContext and ReleaseScriptContext
-        /// calls for better performance (bulk changes).
-        void SwapScriptContext(bool initialize = false);
-
-        /// Returns the context name of the static context provided by the worldserver
-        static std::string const& GetNameOfStaticContext();
-
-        /// Acquires a strong module reference to the module containing the given script name,
-        /// which prevents the shared library which contains the script from unloading.
-        /// The shared library is lazy unloaded as soon as all references to it are released.
-        std::shared_ptr<ModuleReference> AcquireModuleReferenceOfScriptName(std::string const& scriptname) const;
-
-    public: /* Unloading */
+        /* Unloading */
         void Unload();
 
         /* SpellScriptLoader */
@@ -929,7 +997,9 @@ class TC_GAME_API ScriptMgr
         bool OnQuestAccept(Player* player, Item* item, Quest const* quest);
         bool OnItemUse(Player* player, Item* item, SpellCastTargets const& targets);
         bool OnItemExpire(Player* player, ItemTemplate const* proto);
+        bool OnItemRemove(Player* player, Item* item);
         bool OnItemCreate(Player* player, ItemTemplate const* proto, Item* item);
+        bool OnCastItemCombatSpell(Player* player, Unit* victim, SpellInfo const* spellInfo, Item* item);
 
         /* CreatureScript */
         bool OnDummyEffect(Unit* caster, uint32 spellId, SpellEffIndex effIndex, Creature* target);
@@ -940,7 +1010,7 @@ class TC_GAME_API ScriptMgr
         bool OnQuestSelect(Player* player, Creature* creature, Quest const* quest);
         bool OnQuestComplete(Player* player, Creature* creature, Quest const* quest);
         bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 opt);
-        Optional<QuestGiverStatus> GetDialogStatus(Player* player, Creature* creature);
+        uint32 GetDialogStatus(Player* player, Creature* creature);
         CreatureAI* GetCreatureAI(Creature* creature);
 
         /* GameObjectScript */
@@ -950,7 +1020,7 @@ class TC_GAME_API ScriptMgr
         bool OnGossipSelectCode(Player* player, GameObject* go, uint32 sender, uint32 action, const char* code);
         bool OnQuestAccept(Player* player, GameObject* go, Quest const* quest);
         bool OnQuestReward(Player* player, GameObject* go, Quest const* quest, uint32 opt);
-        Optional<QuestGiverStatus> GetDialogStatus(Player* player, GameObject* go);
+        uint32 GetDialogStatus(Player* player, GameObject* go);
         void OnGameObjectDestroyed(GameObject* go, Player* player);
         void OnGameObjectDamaged(GameObject* go, Player* player);
         void OnGameObjectLootStateChanged(GameObject* go, uint32 state, Unit* unit);
@@ -1014,9 +1084,9 @@ class TC_GAME_API ScriptMgr
 
         /* PlayerScript */
         void OnPVPKill(Player* killer, Player* killed);
-        void OnQuestComplete(Player* player, const Quest* quest);
         void OnCreatureKill(Player* killer, Creature* killed);
         void OnPlayerKilledByCreature(Creature* killer, Player* killed);
+        void OnPlayerDeath(Player* player);
         void OnPlayerLevelChanged(Player* player, uint8 oldLevel);
         void OnPlayerFreeTalentPointsChanged(Player* player, uint32 newPoints);
         void OnPlayerTalentsReset(Player* player, bool noCost);
@@ -1040,6 +1110,7 @@ class TC_GAME_API ScriptMgr
         void OnPlayerDelete(ObjectGuid const& guid);
         void OnPlayerBindToInstance(Player* player, Difficulty difficulty, uint32 mapid, bool permanent);
         void OnPlayerUpdateZone(Player* player, uint32 newZone, uint32 newArea);
+		void OnPlayerUpdateArea(Player* player, uint32 newArea);
         void OnPetBattleFinish(Player* player);
         void OnMovementInform(Player* player, uint32 moveType, uint32 ID);
         void OnUpdate(Player* player, uint32 diff);
@@ -1051,6 +1122,8 @@ class TC_GAME_API ScriptMgr
         void OnLootItem(Player* player, Item* item, uint32 count);
         void OnCreateItem(Player* player, Item* item, uint32 count);
         void OnQuestRewardItem(Player* player, Item* item, uint32 count);
+        void OnPlayerRepop(Player* player);
+        void OnMovieComplete(Player* player, uint32 movieId);
         
         /* SessionScript */
         void OnSessionLogin(WorldSession* session);
@@ -1075,23 +1148,42 @@ class TC_GAME_API ScriptMgr
         void OnGroupChangeLeader(Group* group, ObjectGuid const& newLeaderGuid, ObjectGuid const& oldLeaderGuid);
         void OnGroupDisband(Group* group);
 
+        /* UnitScript */
+        void OnHeal(Unit* healer, Unit* receiver, uint32& gain);
+        void OnDamage(Unit* attacker, Unit* victim, uint32& damage);
+        void ModifyPeriodicDamageAurasTick(Unit* target, Unit* attacker, float& damage);
+        void ModifyMeleeDamage(Unit* target, Unit* attacker, uint32& damage);
+        void ModifySpellDamageTaken(Unit* target, Unit* attacker, float& damage);
+        void ModifyHealReceived(Unit* target, Unit* attacker, float& addHealth);
+        
+        
+        /* Scheduled scripts */
+        uint32 IncreaseScheduledScriptsCount() { return ++_scheduledScripts; }
+        uint32 DecreaseScheduledScriptCount() { return --_scheduledScripts; }
+        uint32 DecreaseScheduledScriptCount(size_t count) { return _scheduledScripts -= count; }
+        bool IsScriptScheduled() const { return _scheduledScripts > 0; }
+
         void OnWorldStateCreate(uint32 variableID, uint32 value, uint8 type);
         void OnWorldStateDelete(uint32 variableID, uint8 type);
 
-        /* BattlePayProductScript */
-        void OnBattlePayProductDelivery(WorldSession* session, Battlepay::Product const* product);
-        bool BattlePayCanBuy(WorldSession* session, Battlepay::Product const* product, std::string& reason);
+        void RegisterBattlePayProductScript(std::string scriptName, BattlePayProductScript* script);
+        void OnBattlePayProductDelivery(WorldSession* session, Battlepay::Product const& product);
+        bool BattlePayCanBuy(WorldSession* session, Battlepay::Product const& product, std::string& reason);
         std::string BattlePayGetCustomData(Battlepay::Product const& product);
+    
+        /* QuestScript */
+        void OnQuestStatusChange(Player* player, Quest const* quest, QuestStatus oldStatus, QuestStatus newStatus);
+        void OnQuestObjectiveChange(Player* player, Quest const* quest, QuestObjective const* objective, int32 oldAmount, int32 newAmount);
+
     private:
 
         uint32 _scriptCount;
 
+        //atomic op counter for active scripts amount
+        std::atomic_long _scheduledScripts;
         ScriptLoaderCallbackType _script_loader_callback;
-
-        std::string _currentContext;
+        std::map<std::string, BattlePayProductScript*> _battlePayProductScripts;
 };
-
-#define sScriptMgr ScriptMgr::instance()
 
 template <class S>
 class GenericSpellScriptLoader : public SpellScriptLoader
@@ -1165,5 +1257,13 @@ public:
     InstanceScript* GetInstanceScript(InstanceMap* map) const override { return new AI(map); }
 };
 #define RegisterInstanceScript(ai_name, mapId) new GenericInstanceMapScript<ai_name>(#ai_name, mapId)
+
+#define RegisterSceneScript(script) new script()
+#define RegisterQuestScript(script) new script()
+#define RegisterConversationScript(script) new script()
+#define RegisterPlayerScript(script) new script()
+#define RegisterItemScript(script) new script()
+#define RegisterEventObjectScript(script) new script()
+#define RegisterAchievementScript(script) new script()
 
 #endif

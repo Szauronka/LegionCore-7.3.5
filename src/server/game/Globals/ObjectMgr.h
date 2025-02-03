@@ -138,6 +138,108 @@ struct SpellClickInfo
     bool IsFitToRequirements(Unit const* clicker, Unit const* clickee) const;
 };
 
+struct DonVenCat
+{
+    int32 action;
+    std::string Names[12];
+    // std::string NameEn;
+    // std::string NameKo;
+    // std::string NameFr;
+    // std::string NameDe;
+    // std::string NameCn;
+    // std::string NameTw;
+    // std::string NameEs;
+    // std::string NameMx;
+    // std::string NameRu;
+    // std::string NamePt;
+    // std::string NameBr;
+    // std::string NameIt;
+    uint32 type;
+    uint8 faction;
+    bool is_available_for_preview = false;
+};
+
+struct DonVenAdd
+{
+    uint32 action;
+    uint32 cost;
+    uint32 type;
+    uint32 storeId;
+    uint8 faction = 0;
+    
+    std::string Names[12];
+    // std::string NameEn;
+    // std::string NameKo;
+    // std::string NameFr;
+    // std::string NameDe;
+    // std::string NameCn;
+    // std::string NameTw;
+    // std::string NameEs;
+    // std::string NameMx;
+    // std::string NameRu;
+    // std::string NamePt;
+    // std::string NameBr;
+    // std::string NameIt;
+    
+};
+
+
+enum DMStoreTypes
+{
+    DM_TYPE_MORPH  = 0,
+    DM_TYPE_LOGO,
+    
+    DM_TYPE_MAX
+};
+
+enum DonateStoreTypes // + 1 from db
+{
+    DONATE_TYPE_ITEM = 1,       // 0 db
+    DONATE_TYPE_TITLE = 2,      // 1 db
+    DONATE_TYPE_ACHIEVEMENTS = 3, //! 2 db. Not realised
+    DONATE_TYPE_MORPH = 4,      // 3 db
+
+    DONATE_TYPE_MAX
+};
+
+struct DonVenCatBase
+{
+    int32 parent = 0;
+    uint8 type = DONATE_TYPE_ITEM;
+    int32 next_page = -1, prev_page = -1;
+    bool is_available_for_preview = false;
+    
+    std::vector<DonVenCat> categories{};
+    std::vector<DonVenAdd> additionals{};
+};
+
+struct DeathMatchStore
+{
+    DeathMatchStore(std::string  name_, uint8 type_, std::string logo_, uint32 cost_, uint32 personal_id_) : type(type_), logo(logo_), product(0), cost(cost_), personal_id(personal_id_), name(std::move(name_))
+    {
+        std::ostringstream ss;
+        ss << logo_ << " Cost = " << cost_ << " DeathMatch's currency";
+        name = ss.str();
+    }
+
+    DeathMatchStore(std::string const& name_, uint8 type_, uint32 product_, uint32 cost_, uint32 personal_id_) : type(type_), product(product_), cost(cost_), personal_id(personal_id_), name(name_)
+    {
+        std::ostringstream ss;
+        ss << name_ << " Cost = " << cost_ << " DeathMatch's currency";
+        name = ss.str();
+    }
+    
+    ~DeathMatchStore() = default;
+    
+    uint8 type;
+    
+    std::string logo;
+    uint32 product;
+    
+    uint32 cost;
+    uint32 personal_id;
+    std::string name;
+};
 typedef std::multimap<uint32, SpellClickInfo> SpellClickInfoContainer;
 typedef std::pair<SpellClickInfoContainer::const_iterator, SpellClickInfoContainer::const_iterator> SpellClickInfoMapBounds;
 
@@ -304,7 +406,7 @@ typedef std::vector<std::vector<CellObjectGuidsMap>> MapObjectGuids;
 
 struct TrinityStringLocale
 {
-    std::vector<std::string> Content;
+    StringVector Content;
 };
 
 typedef std::unordered_map<ObjectGuid, ObjectGuid> LinkedRespawnContainer;
@@ -434,7 +536,11 @@ typedef std::multimap<uint32, GraveYardData> GraveYardContainer;
 
 
 typedef std::unordered_map<int32, VendorItemData> CacheVendorItemContainer;
+typedef std::unordered_map<int32, VendorItemData> CacheDonateVendorItemContainer;
 typedef std::unordered_map<uint32, TrainerSpellData> CacheTrainerSpellContainer;
+typedef std::vector<float> PriceForLevelUp;
+typedef std::vector<float> PriceForArtLevelUp;
+typedef std::unordered_map<uint32, float> PriceForAddBonus;
 
 typedef std::unordered_map<uint8, uint8> ExpansionRequirementContainer;
 typedef std::unordered_map<uint32, std::string> RealmNameContainer;
@@ -478,7 +584,7 @@ typedef std::vector<uint32> DungeonEncounterToCreatureMap;
 
 class PlayerDumpReader;
 
-struct TC_GAME_API ItemSpecStats
+struct ItemSpecStats
 {
     uint32 ItemType;
     uint32 ItemSpecStatTypes[MAX_ITEM_PROTO_STATS];
@@ -489,7 +595,7 @@ struct TC_GAME_API ItemSpecStats
     void AddModStat(int32 itemStatType);
 };
 
-class TC_GAME_API ObjectMgr
+class ObjectMgr
 {
     friend class PlayerDumpReader;
 
@@ -499,11 +605,18 @@ class TC_GAME_API ObjectMgr
     public:
         typedef std::unordered_map<uint32, Item*> ItemMap;
         
+        typedef std::unordered_map<int32, DonVenCatBase> DonateVendorCat;
+        typedef std::unordered_map<int32, std::vector<int32>> FakeDonateVendorCat;
+        typedef std::unordered_map<int32, int32> ReversFakeDonateVendorCat;
+        typedef std::unordered_map<uint32, std::map<uint32, DonVenAdd> > DonVenAdds; // [type][entry]
+        typedef std::unordered_map<uint8, std::vector<DeathMatchStore>> DeathMatchProducts;
+        typedef std::unordered_map<uint32, std::vector<DeathMatchStore>> DeathMatchProductsById;
+        
         typedef std::map<AccessRequirementKey, AccessRequirement> AccessRequirementContainer;
         typedef std::unordered_map<uint32, RepRewardRate > RepRewardRateContainer;
         typedef std::unordered_map<uint32, std::vector<ReputationOnKillEntry>> RepOnKillContainer;
         typedef std::unordered_map<uint32, RepSpilloverTemplate> RepSpilloverTemplateContainer;
-        typedef std::vector<std::string> ScriptNameContainer;
+        typedef StringVector ScriptNameContainer;
         typedef std::list<CurrencyLoot> CurrencysLoot;
         typedef std::unordered_map<uint32, uint32> CreatureSpellBonusList;
         typedef std::unordered_map<uint32, NpcText> NpcTextContainer;
@@ -511,7 +624,7 @@ class TC_GAME_API ObjectMgr
         typedef std::vector<uint32> PlayerXPperLevel;       // [level]
         typedef std::map<uint32, uint32> BaseXPContainer;          // [area level][base xp]
         typedef std::map<uint32, int32> FishingBaseSkillContainer; // [areaId][base skill level]
-        typedef std::map<uint32, std::vector<std::string>> HalfNameContainer;
+        typedef std::map<uint32, StringVector> HalfNameContainer;
 
     static ObjectMgr* instance();
         std::list<CurrencyLoot> GetCurrencyLoot(uint32 entry, uint8 type, uint8 spawnMode);
@@ -538,7 +651,6 @@ class TC_GAME_API ObjectMgr
         EquipmentInfo const* GetEquipmentInfo(uint32 entry, int8& id);
         CreatureAddon const* GetCreatureAddon(ObjectGuid::LowType const& lowguid);
         CreatureAddon const* GetCreatureTemplateAddon(uint32 entry);
-        CreatureMovementData const* GetCreatureMovementOverride(ObjectGuid::LowType spawnId) const;
         ItemTemplate const* GetItemTemplate(uint32 entry);
         ItemTemplateContainer const* GetItemTemplateStore() const { return &_itemTemplateStore; }
 
@@ -619,12 +731,10 @@ class TC_GAME_API ObjectMgr
         void LoadCreatureLocales();
         void LoadCreatureDifficultyStat();
         void LoadCreatureTemplates();
-        void LoadCreatureScalingData();
         void LoadWDBCreatureTemplates();
         void LoadCreatureTemplateAddons();
         void CheckCreatureTemplate(CreatureTemplate const* cInfo);
         void CheckCreatureTemplateWDB(CreatureTemplate* cInfo);
-        void CheckCreatureMovement(char const* table, uint64 id, CreatureMovementData& creatureMovement);
         void RestructCreatureGUID();
         void RestructGameObjectGUID();
         void LoadTempSummons();
@@ -632,13 +742,12 @@ class TC_GAME_API ObjectMgr
         void LoadCreatureAIInstance();
         void LoadCreatureActionData();
         void LoadDisplayChoiceData();
-        void LoadPlayerChoicesLocale();
-        void LoadLinkedRespawn();
+    void LoadPlayerChoicesLocale();
+    void LoadLinkedRespawn();
         bool SetCreatureLinkedRespawn(ObjectGuid::LowType const& guid, ObjectGuid::LowType const& linkedGuid);
         void LoadCreatureAddons();
         void LoadCreatureModelInfo();
         void LoadEquipmentTemplates();
-        void LoadCreatureMovementOverrides();
         void LoadGameObjectLocales();
         void LoadGameobjects();
         void LoadItemTemplates();
@@ -681,6 +790,7 @@ class TC_GAME_API ObjectMgr
         void LoadGameTele();
 
         void LoadVendors();
+        void LoadDonateVendors();
         void LoadTrainerSpell();
         void AddSpellToTrainer(uint32 entry, uint32 spell, uint32 spellCost, uint32 reqSkill, uint32 reqSkillValue, uint32 reqLevel);
 
@@ -695,6 +805,8 @@ class TC_GAME_API ObjectMgr
         
         void LoadCreatureOutfits();
         
+        void LoadDeathMatchStore();
+
         PhaseDefinitionStore const* GetPhaseDefinitionStore() { return &_PhaseDefinitionStore; }
         SpellPhaseStore const* GetSpellPhaseStore() { return &_SpellPhaseStore; }
 
@@ -719,6 +831,7 @@ class TC_GAME_API ObjectMgr
         uint32 GeneratePetNumber();
         uint64 GenerateVoidStorageItemId();
         uint64 GenerateReportComplaintID();
+        uint64 GenerateSupportTicketSubmitBugID();
 
         MailLevelReward const* GetMailLevelReward(uint32 level, uint32 raceMask);
 
@@ -847,13 +960,25 @@ class TC_GAME_API ObjectMgr
         }
 
         VendorItemData const* GetNpcVendorItemList(uint32 entry) const;
+        VendorItemData const* GetNpcDonateVendorItemList(int32 entry) const;
+        DonVenCatBase const* GetDonateVendorCat(int32 entry) const;
+        bool IsActivateDonateService() const;
+        std::vector<int32> const* GetFakeDonateVendorCat(int32 entry) const;
+        int32 const* GetRealDonateVendorCat(int32 entry) const;
+        DonVenAdd const* GetDonateVendorAdditionalInfo(uint32 type, uint32 entry) const;
+        std::vector<DeathMatchStore> const* GetDeathMatchStore(uint8 type) const;
+        std::vector<DeathMatchStore> const* GetDeathMatchStoreById(uint32 id) const;
+        float const* GetPriceForLevelUp(uint8 level);
+        float const* GetPriceForArtLevelUp(uint8 level);
+        PriceForAddBonus const* GetPricesForAddBonus();
+        const float& GetDonateDiscount() const;
 
         void AddVendorItem(uint32 entry, uint32 item, int32 maxcount, uint32 incrtime, uint32 extendedCost, uint8 type, uint64 money, bool persist = true); // for event
         bool RemoveVendorItem(uint32 entry, uint32 item, uint8 type, bool persist = true); // for event
         bool IsVendorItemValid(uint32 vendor_entry, uint32 id, int32 maxcount, uint32 ptime, uint32 ExtendedCost, uint8 type, Player* player = nullptr, std::set<uint32>* skip_vendors = nullptr, uint32 ORnpcflag = 0) const;
 
         void LoadScriptNames();
-        ScriptNameContainer const& GetAllScriptNames() const;
+        ScriptNameContainer& GetScriptNames();
         std::string const& GetScriptName(uint32 id) const;
         uint32 GetScriptId(const char *name);
 
@@ -862,8 +987,8 @@ class TC_GAME_API ObjectMgr
         // for wintergrasp only
         GraveYardContainer GraveYardStore;
 
-        static void AddLocaleString(std::string&& value, LocaleConstant localeConstant, std::vector<std::string>& data);
-        static void GetLocaleString(std::vector<std::string> const& data, LocaleConstant localeConstant, std::string& value);
+        static void AddLocaleString(std::string&& value, LocaleConstant localeConstant, StringVector& data);
+        static void GetLocaleString(StringVector const& data, LocaleConstant localeConstant, std::string& value);
 
         GameObjectDataContainer _gameObjectDataStore;
         //Get item count from spawnmode
@@ -914,6 +1039,8 @@ class TC_GAME_API ObjectMgr
         uint32 _hiPetNumber;
         ObjectGuid::LowType _voidItemId;
         uint64 _reportComplaintID;
+        uint64 _supportTicketSubmitBugID;
+        float donateDiscount = 1;
 
         // first free low guid for selected guid type
         ObjectGuidGenerator<HighGuid::Player> _playerGuidGenerator;
@@ -1009,7 +1136,6 @@ class TC_GAME_API ObjectMgr
         CreatureModelContainer _creatureModelStore;
         CreatureAddonContainer _creatureAddonStore;
         CreatureTemplateAddonContainer _creatureTemplateAddonStore;
-        std::unordered_map<ObjectGuid::LowType, CreatureMovementData> _creatureMovementOverrides;
         CreatureAIInstanceContainer _creatureAIInstance;
         EquipmentInfoContainer _equipmentInfoStore;
         LinkedRespawnContainer _linkedRespawnStore;
@@ -1027,7 +1153,13 @@ class TC_GAME_API ObjectMgr
         TrinityStringLocaleContainer _trinityStringLocaleStore;
 
         CacheVendorItemContainer _cacheVendorItemStore;
+        CacheDonateVendorItemContainer _cacheDonateVendorItemStore;
         CacheTrainerSpellContainer _cacheTrainerSpellStore;
+        PriceForLevelUp _priceforlevelupStore;
+        PriceForArtLevelUp _priceforArtlevelupStore;
+        PriceForAddBonus _priceforAddBonusStore;
+        mutable std::recursive_mutex m_donate_lock;
+        std::atomic<bool> m_donate_waite;
 
         std::unordered_map<uint8, RaceUnlockRequirement> _raceUnlockRequirementStore;
         ExpansionRequirementContainer _classExpansionRequirementStore;
@@ -1040,6 +1172,7 @@ class TC_GAME_API ObjectMgr
             GO_TO_GO,
             GO_TO_CREATURE,         // GO is dependant on creature
         };
+
 
         ScenarioDataMap _scenarioData;
         ScenarioDataListMap _scenarioDataList;
@@ -1055,6 +1188,13 @@ class TC_GAME_API ObjectMgr
 
         GameObjectActionMap _gameObjectActionMap;
 
+        DonateVendorCat _donvendorcat;
+        FakeDonateVendorCat _fakedonvendorcat;
+        ReversFakeDonateVendorCat _reversfakedonvendorcat;
+        DonVenAdds _donvenadds;
+        
+        DeathMatchProducts _dmProducts;
+        DeathMatchProductsById _dmProductsById;
         CurrencysLoot  _currencysLoot;
 
         std::set<uint32> _transportMaps; // Helper container storing map ids that are for transports only, loaded from gameobject_template

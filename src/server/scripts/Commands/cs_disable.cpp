@@ -15,13 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-Name: disable_commandscript
-%Complete: 100
-Comment: All disable related commands
-Category: commandscripts
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "Chat.h"
 #include "DisableMgr.h"
@@ -169,7 +162,7 @@ public:
                 break;
         }
 
-        WorldDatabasePreparedStatement* stmt = NULL;
+        PreparedStatement* stmt = NULL;
         stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_DISABLES);
         stmt->setUInt32(0, entry);
         stmt->setUInt8(1, disableType);
@@ -284,7 +277,7 @@ public:
                 break;
         }
 
-        WorldDatabasePreparedStatement* stmt = NULL;
+        PreparedStatement* stmt = NULL;
         stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_DISABLES);
         stmt->setUInt32(0, entry);
         stmt->setUInt8(1, disableType);

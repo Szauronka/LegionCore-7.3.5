@@ -1,11 +1,10 @@
 /*
+    http://uwow.biz
     Dungeon : Dark Heart Thicket 100-110
 */
 
 #ifndef DARKHEART_THICKET_H_
 #define DARKHEART_THICKET_H_
-
-#define DataHeader "DHT"
 
 enum eData
 {

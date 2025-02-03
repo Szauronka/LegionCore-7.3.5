@@ -1,4 +1,5 @@
 /*===============
+    uwow.biz
 ================*/
 
 #include "VMapFactory.h"
@@ -46,12 +47,10 @@ public:
         uint8 JadeCount;
         uint8 GemCount;
 
-        instance_mogu_shan_palace_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_mogu_shan_palace_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         void Initialize() override
         {
-            SetHeaders(DataHeader);
-
             xin_guid.Clear();
             kuai_guid.Clear();
             ming_guid.Clear();
@@ -197,7 +196,7 @@ public:
         {
             instance->ApplyOnEveryPlayer([&](Player* player)
             {
-                if (player->IsAlive() && !player->isGameMaster())
+                if (player->isAlive() && !player->isGameMaster())
                     return false;
             });
 
@@ -557,5 +556,5 @@ public:
 void AddSC_instance_mogu_shan_palace()
 {
     new instance_mogu_shan_palace();
-    //new go_mogushan_palace_temp_portal();
+    new go_mogushan_palace_temp_portal();
 }

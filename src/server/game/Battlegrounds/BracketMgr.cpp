@@ -1,3 +1,21 @@
+/*
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
+ */
+
 #include "BracketMgr.h"
 #include "DatabaseEnv.h"
 #include "Log.h"
@@ -25,7 +43,7 @@ void BracketMgr::LoadCharacterBrackets()
     QueryResult result = CharacterDatabase.Query("SELECT `bracket`, `rating`, `best`, `bestWeek`, `mmr`, `games`, `wins`, `weekGames`, `weekWins`, `guid`, `bestWeekLast` FROM `character_brackets_info`");
     if (!result)
     {
-        TC_LOG_INFO("server.loading", ">> Loaded 0 bracket info. DB table `character_brackets_info` is empty!");
+        TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 bracket info. DB table `character_brackets_info` is empty!");
         return;
     }
 
@@ -50,7 +68,7 @@ void BracketMgr::LoadCharacterBrackets()
         ++count;
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u brackets data in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u brackets data in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 Bracket* BracketMgr::TryGetOrCreateBracket(ObjectGuid guid, uint8 bType)

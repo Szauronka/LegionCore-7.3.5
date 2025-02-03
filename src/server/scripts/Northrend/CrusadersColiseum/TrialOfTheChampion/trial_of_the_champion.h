@@ -19,8 +19,6 @@
 #ifndef DEF_TOC_H
 #define DEF_TOC_H
 
-#define DataHeader "TOC"
-
 enum eData
 {
     BOSS_GRAND_CHAMPIONS,
@@ -289,7 +287,7 @@ static void AggroAllPlayers(Creature* creature)
             if (player->isGameMaster())
                 continue;
 
-            if (player->IsAlive())
+            if (player->isAlive())
             {
                 if (Unit* mount = player->GetVehicleBase())
                 {

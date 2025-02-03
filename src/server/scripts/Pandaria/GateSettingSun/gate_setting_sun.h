@@ -1,10 +1,9 @@
 /*==============
+    uwow.biz
 ==============*/
 
 #ifndef STORMSTOUT_BREWERY_H_
 #define STORMSTOUT_BREWERY_H_
-
-#define DataHeader "GSS"
 
 uint32 const EncounterCount = 4;
 

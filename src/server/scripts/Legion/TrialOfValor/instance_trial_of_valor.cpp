@@ -1,5 +1,9 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "trial_of_valor.h"
-#include "ScriptPCH.h"
+#include "PrecompiledHeaders/ScriptPCH.h"
 #include "WorldPacket.h"
 #include "InstancePackets.h"
 
@@ -56,9 +60,8 @@ public:
         uint32 checkTimer = 1000;
         uint32 checkTimerAura = 1000;
 
-        explicit instance_trial_of_valor_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        explicit instance_trial_of_valor_InstanceMapScript(Map* map) : InstanceScript(map)
         {
-            SetHeaders(DataHeader);
             SetBossNumber(Data::BossIDs::Max);
         }
 
@@ -388,7 +391,8 @@ public:
 
         WorldLocation* GetClosestGraveYard(float x, float y, float z) override
         {
-            loc_res_pla.WorldRelocate(1648, x, y, z);
+            loc_res_pla.Relocate(x, y, z);
+            loc_res_pla.SetMapId(1648);
 
             uint32 graveyardId = 0;
 
@@ -403,20 +407,53 @@ public:
             {
                 if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
                 {
-                    loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                    loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                    loc_res_pla.SetMapId(gy->MapID);
                 }
             }
             return &loc_res_pla;
         }
 
-        void WriteSaveDataMore(std::ostringstream& data) override
+        std::string GetSaveData() override
         {
-            data << OdynIntroEvent << " " << OdynEvadeComplete;
+            std::ostringstream saveStream;
+            saveStream << "T O V " << GetBossSaveData() << OdynIntroEvent << OdynEvadeComplete;
+            return saveStream.str();
         }
 
-        void ReadSaveDataMore(std::istringstream& data) override
+        void Load(const char* data) override
         {
-            data >> OdynIntroEvent >> OdynEvadeComplete;
+            if (!data)
+            {
+                OUT_LOAD_INST_DATA_FAIL;
+                return;
+            }
+
+            OUT_LOAD_INST_DATA(data);
+
+            char dataHead1, dataHead2, dataHead3;
+            std::istringstream loadStream(data);
+            loadStream >> dataHead1 >> dataHead2 >> dataHead3;
+
+            if (dataHead1 == 'T' && dataHead2 == 'O' && dataHead3 == 'V')
+            {
+                for (uint32 i = 0; i < Data::BossIDs::Max; ++i)
+                {
+                    uint32 tmpState;
+                    loadStream >> tmpState;
+
+                    if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                        tmpState = NOT_STARTED;
+
+                    SetBossState(i, EncounterState(tmpState));
+                }
+
+                loadStream >> OdynIntroEvent >> OdynEvadeComplete;
+            }
+            else
+                OUT_LOAD_INST_DATA_FAIL;
+
+            OUT_LOAD_INST_DATA_COMPLETE;
         }
     };
 };

@@ -1,4 +1,5 @@
 /*==============
+    uwow.biz
 ==============*/
 
 #include "shadopan_monastery.h"
@@ -302,7 +303,7 @@ class spell_shadopan_apparitions : public AuraScript
             caster->GetCreatureListWithEntryInGridAppend(hatredList, NPC_FRAGMENT_OF_HATRED, 20.0f);
 
             for (std::list<Creature*>::const_iterator itr = hatredList.begin(); itr != hatredList.end(); ++itr)
-                if ((*itr)->IsAlive())
+                if ((*itr)->isAlive())
                     (*itr)->CastSpell(*itr, GetSpellInfo()->Effects[EFFECT_0]->TriggerSpell, true);
         }
     }
@@ -357,7 +358,7 @@ void AddSC_shadopan_monastery()
     RegisterCreatureAI(npc_shadopan_ambusher);
     RegisterCreatureAI(npc_shadopan_archery);
     RegisterCreatureAI(npc_shadopan_hatred);
-    //RegisterAuraScript(spell_shadopan_explosion);
+    RegisterAuraScript(spell_shadopan_explosion);
     RegisterAuraScript(spell_shadopan_apparitions);
-    //new areatrigger_at_shadopan_archery();
+    new areatrigger_at_shadopan_archery();
 }

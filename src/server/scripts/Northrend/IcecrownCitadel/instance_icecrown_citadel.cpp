@@ -19,6 +19,7 @@
 #include "ScriptMgr.h"
 #include "InstanceScript.h"
 #include "ScriptedCreature.h"
+#include "Map.h"
 #include "MapManager.h"
 #include "Transport.h"
 #include "PoolMgr.h"
@@ -100,7 +101,6 @@ class instance_icecrown_citadel : public InstanceMapScript
         {
             instance_icecrown_citadel_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
-                SetHeaders(DataHeader);
                 SetBossNumber(EncounterCount);
                 LoadDoorData(doorData);
                 TeamInInstance = 0;
@@ -1222,23 +1222,58 @@ class instance_icecrown_citadel : public InstanceMapScript
                 }
             }
 
-            void WriteSaveDataMore(std::ostringstream& data) override
+            std::string GetSaveData() override
             {
-                data << HeroicAttempts << ' ' << ColdflameJetsState << ' '
-                     << BloodQuickeningState << ' ' << BloodQuickeningMinutes;
+                OUT_SAVE_INST_DATA;
+
+                std::ostringstream saveStream;
+                saveStream << "I C " << GetBossSaveData() << HeroicAttempts << ' '
+                    << ColdflameJetsState << ' ' << BloodQuickeningState << ' ' << BloodQuickeningMinutes;
+
+                OUT_SAVE_INST_DATA_COMPLETE;
+                return saveStream.str();
             }
 
-            void ReadSaveDataMore(std::istringstream& data) override
+            void Load(const char* str) override
             {
-                data >> HeroicAttempts;
+                if (!str)
+                {
+                    OUT_LOAD_INST_DATA_FAIL;
+                    return;
+                }
 
-                uint32 temp = 0;
-                data >> temp;
-                ColdflameJetsState = temp ? DONE : NOT_STARTED;
+                OUT_LOAD_INST_DATA(str);
 
-                data >> temp;
-                BloodQuickeningState = temp ? DONE : NOT_STARTED;   // DONE means finished (not success/fail)
-                data >> BloodQuickeningMinutes;
+                char dataHead1, dataHead2;
+
+                std::istringstream loadStream(str);
+                loadStream >> dataHead1 >> dataHead2;
+
+                if (dataHead1 == 'I' && dataHead2 == 'C')
+                {
+                    for (uint32 i = 0; i < EncounterCount; ++i)
+                    {
+                        uint32 tmpState;
+                        loadStream >> tmpState;
+                        if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                            tmpState = NOT_STARTED;
+                        SetBossState(i, EncounterState(tmpState));
+                    }
+
+                    loadStream >> HeroicAttempts;
+
+                    uint32 temp = 0;
+                    loadStream >> temp;
+                    ColdflameJetsState = temp ? DONE : NOT_STARTED;
+
+                    loadStream >> temp;
+                    BloodQuickeningState = temp ? DONE : NOT_STARTED;   // DONE means finished (not success/fail)
+                    loadStream >> BloodQuickeningMinutes;
+                }
+                else
+                    OUT_LOAD_INST_DATA_FAIL;
+
+                OUT_LOAD_INST_DATA_COMPLETE;
             }
 
             void Update(uint32 diff) override
@@ -1342,10 +1377,10 @@ class instance_icecrown_citadel : public InstanceMapScript
 
             void PrepareGunshipEvent()
             {
-                /*TC_LOG_DEBUG("scripts", "PrepareGunshipEvent %u, %u",isPrepared, GetBossState(DATA_GUNSHIP_EVENT));
+                /*TC_LOG_DEBUG(LOG_FILTER_TSCR, "PrepareGunshipEvent %u, %u",isPrepared, GetBossState(DATA_GUNSHIP_EVENT));
                 if (isPrepared || GetBossState(DATA_GUNSHIP_EVENT) == DONE)
                     return;
-                TC_LOG_DEBUG("scripts", "PrepareGunshipEvent");
+                TC_LOG_DEBUG(LOG_FILTER_TSCR, "PrepareGunshipEvent");
                 isPrepared = true;
 
                 if(TeamInInstance == ALLIANCE)
@@ -1395,7 +1430,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         }
                     }
                     else
-                        TC_LOG_DEBUG("scripts", "LoadTransportInMap GO_ORGRIM_S_HAMMER_ALLIANCE_ICC error");
+                        TC_LOG_DEBUG(LOG_FILTER_TSCR, "LoadTransportInMap GO_ORGRIM_S_HAMMER_ALLIANCE_ICC error");
 
                     if(Transport* t = sMapMgr->LoadTransportInMap(instance, GO_THE_SKYBREAKER_ALLIANCE_ICC, 108000))
                     {
@@ -1443,7 +1478,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         }
                     }
                     else
-                        TC_LOG_DEBUG("scripts", "LoadTransportInMap GO_THE_SKYBREAKER_ALLIANCE_ICC error");
+                        TC_LOG_DEBUG(LOG_FILTER_TSCR, "LoadTransportInMap GO_THE_SKYBREAKER_ALLIANCE_ICC error");
                 }
 
                if(TeamInInstance == HORDE)
@@ -1500,7 +1535,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                       }
                     }
                     else
-                        TC_LOG_DEBUG("scripts", "LoadTransportInMap GO_THE_SKYBREAKER_HORDE_ICC error");
+                        TC_LOG_DEBUG(LOG_FILTER_TSCR, "LoadTransportInMap GO_THE_SKYBREAKER_HORDE_ICC error");
                  
                     if(Transport* th = sMapMgr->LoadTransportInMap(instance,GO_ORGRIM_S_HAMMER_HORDE_ICC, 77800))
                     {
@@ -1536,7 +1571,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         }
                     }
                     else
-                        TC_LOG_DEBUG("scripts", "LoadTransportInMap GO_ORGRIM_S_HAMMER_HORDE_ICC error");
+                        TC_LOG_DEBUG(LOG_FILTER_TSCR, "LoadTransportInMap GO_ORGRIM_S_HAMMER_HORDE_ICC error");
                 }*/
             }
 

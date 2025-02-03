@@ -108,7 +108,7 @@ void BrawlersGuild::AddPlayer(Player* player)
         return;
     if (GetPlayerRank(player) > 7)
     {
-         ChatHandler(player).PSendSysMessage("Your rank is too high! The Areana is for ranks 1,2,3, 4, 5, 6, 7");
+        ChatHandler(player).PSendSysMessage("Your rank very high! Now realeased only rank 1,2,3, 4, 5, 6, 7");
         return;
     }
 

@@ -16,7 +16,27 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "ObjectMgr.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
+#include "SpellAuraEffects.h"
+#include "SpellAuras.h"
+#include "MapManager.h"
+#include "Spell.h"
+#include "Vehicle.h"
+#include "Cell.h"
+#include "CellImpl.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
 #include "CreatureTextMgr.h"
+#include "Unit.h"
+#include "Player.h"
+#include "Creature.h"
+#include "InstanceScript.h"
+#include "Map.h"
+#include "VehicleDefines.h"
+#include "SpellInfo.h"
 #include "siege_of_orgrimmar.h"
 
 enum eSpells
@@ -202,7 +222,7 @@ struct boss_fallen_protectors : public ScriptedAI
         for (int32 i = 0; i < 3; i++)
             if (Creature* prot = me->GetCreature(*me, instance->GetGuidData(protectors[i])))
                 if (me->GetEntry() != prot->GetEntry())
-                    if (prot->IsAlive() && !prot->isInCombat())
+                    if (prot->isAlive() && !prot->isInCombat())
                         DoZoneInCombat(prot, 150.0f);
 
         if (instance->GetBossState(DATA_F_PROTECTORS) != IN_PROGRESS)
@@ -214,7 +234,7 @@ struct boss_fallen_protectors : public ScriptedAI
         for (int32 i = 0; i < 3; i++)
             if (Creature* prot = me->GetCreature(*me, instance->GetGuidData(protectors[i])))
                 if (me->GetEntry() != prot->GetEntry())
-                    if (prot->IsAlive() && prot->isInCombat())
+                    if (prot->isAlive() && prot->isInCombat())
                         prot->AI()->EnterEvadeMode();
 
         if (instance->GetBossState(DATA_F_PROTECTORS) != NOT_STARTED)
@@ -226,7 +246,7 @@ struct boss_fallen_protectors : public ScriptedAI
         for (int32 i = 0; i < 3; i++)
             if (Creature* prot = me->GetCreature(*me, instance->GetGuidData(protectors[i])))
                 if (me->GetEntry() != prot->GetEntry())
-                    if (prot->IsAlive())
+                    if (prot->isAlive())
                         prot->Kill(prot, true);
 
         if (instance->GetBossState(DATA_F_PROTECTORS) != DONE)
@@ -251,7 +271,7 @@ struct boss_fallen_protectors : public ScriptedAI
         for (int32 i = 0; i < 3; i++)
             if (Creature* prot = me->GetCreature(*me, instance->GetGuidData(protectors[i])))
                 if (me->GetEntry() != prot->GetEntry())
-                    if (prot->IsAlive())
+                    if (prot->isAlive())
                         prot->AI()->DoAction(ACTION_RESET_EVENTS);
     }
 
@@ -260,7 +280,7 @@ struct boss_fallen_protectors : public ScriptedAI
         for (int32 i = 0; i < 3; i++)
             if (Creature* prot = me->GetCreature(*me, instance->GetGuidData(protectors[i])))
                 if (me->GetEntry() != prot->GetEntry())
-                    if (prot->IsAlive() && !prot->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+                    if (prot->isAlive() && !prot->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
                         prot->AI()->DoAction(ACTION_START_EVENTS);
     }
 
@@ -268,7 +288,7 @@ struct boss_fallen_protectors : public ScriptedAI
     {
         for (int32 i = 0; i < 3; i++)
             if (Creature* prot = me->GetCreature(*me, instance->GetGuidData(protectors[i])))
-                if (prot->IsAlive() && !prot->HasAura(SPELL_BERSERK))
+                if (prot->isAlive() && !prot->HasAura(SPELL_BERSERK))
                     prot->CastSpell(prot, SPELL_BERSERK, true);
     }
 };
@@ -1196,7 +1216,7 @@ public:
                 case EVENT_ACTIVE:
                     if (Unit* target = me->GetUnit(*me, _target))
                     {
-                        if (!target->IsAlive() || !target->HasAura(SPELL_MARK_OF_ANGUISH_STUN))
+                        if (!target->isAlive() || !target->HasAura(SPELL_MARK_OF_ANGUISH_STUN))
                         {
                             RemoveShadowWeakness();
                             events.RescheduleEvent(EVENT_1, 1000);
@@ -1235,7 +1255,7 @@ struct rook_measureAI : ScriptedAI
         for (int32 n = 0; n < 3; n++)
             if (me->GetEntry() != rookmeasure[n])
                 if (Creature* measure = me->GetCreature(*me, instance->GetGuidData(rookmeasure[n])))
-                    if (measure->IsAlive())
+                    if (measure->isAlive())
                         measure->SetHealth(measure->GetHealth() - damage);
     }
 
@@ -1244,7 +1264,7 @@ struct rook_measureAI : ScriptedAI
         for (int32 n = 0; n < 3; n++)
             if (me->GetEntry() != rookmeasure[n])
                 if (Creature* measure = me->GetCreature(*me, instance->GetGuidData(rookmeasure[n])))
-                    if (measure->IsAlive())
+                    if (measure->isAlive())
                         measure->Kill(measure, true);
     }
 };

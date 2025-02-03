@@ -1,3 +1,4 @@
+# Set build-directive (used in core to tell which buildtype we used)
 target_compile_definitions(trinity-compile-option-interface
   INTERFACE
     -D_BUILD_DIRECTIVE="${CMAKE_BUILD_TYPE}")
@@ -24,5 +25,6 @@ if( WITH_COREDEBUG )
   target_compile_options(trinity-compile-option-interface
     INTERFACE
       -g)
+
   message(STATUS "ICC: Debug-flag set (-g)")
 endif()

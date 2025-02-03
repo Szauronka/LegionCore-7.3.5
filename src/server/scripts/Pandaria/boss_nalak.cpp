@@ -1,5 +1,12 @@
-
+//UWoWCore
 //World boss
+
+#include "ScriptMgr.h"
+#include "CreatureAI.h"
+#include "CombatAI.h"
+#include "SpellScript.h"
+#include "ScriptedEscortAI.h"
+
 
 enum eSpells
 {
@@ -37,6 +44,7 @@ public:
         {
             me->SetCanFly(true);
             me->SetDisableGravity(true);
+            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
         }
 
         EventMap events;
@@ -168,6 +176,7 @@ public:
         {
             me->SetCanFly(true);
             me->SetDisableGravity(true);
+            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
         }
 
         void Reset() override

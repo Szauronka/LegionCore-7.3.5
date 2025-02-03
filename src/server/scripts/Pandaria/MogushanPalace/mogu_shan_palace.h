@@ -1,10 +1,9 @@
 /*===============
+    uwow.biz
 ================*/
 
 #ifndef MOGUSHAN_PALACE_H_
 #define MOGUSHAN_PALACE_H_
-
-#define DataHeader "MSP"
 
 enum eData
 {

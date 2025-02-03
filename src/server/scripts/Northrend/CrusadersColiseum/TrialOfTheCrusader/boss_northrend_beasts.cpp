@@ -349,7 +349,7 @@ class npc_snobold_vassal : public CreatureScript
             void JustDied(Unit* /*killer*/) override
             {
                 if (Unit* target = ObjectAccessor::GetPlayer(*me, _targetGUID))
-                    if (target->IsAlive())
+                    if (target->isAlive())
                         target->RemoveAurasDueToSpell(SPELL_SNOBOLLED);
                 _instance->SetData(DATA_SNOBOLD_COUNT, DECREASE);
             }
@@ -376,10 +376,10 @@ class npc_snobold_vassal : public CreatureScript
 
                 if (Unit* target = ObjectAccessor::GetPlayer(*me, _targetGUID))
                 {
-                    if (!target->IsAlive())
+                    if (!target->isAlive())
                     {
                         Unit* gormok = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(NPC_GORMOK));
-                        if (gormok && gormok->IsAlive())
+                        if (gormok && gormok->isAlive())
                         {
                             SetCombatMovement(false);
                             _targetDied = true;
@@ -398,7 +398,7 @@ class npc_snobold_vassal : public CreatureScript
                         else if (Unit* target2 = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                         {
                             _targetGUID = target2->GetGUID();
-                            me->GetMotionMaster()->MoveJump(target2->GetPositionX(), target2->GetPositionY(), target2->GetPositionZ(), 15.0f, 15.0f, EVENT_JUMP);
+                            me->GetMotionMaster()->MoveJump(target2->GetPositionX(), target2->GetPositionY(), target2->GetPositionZ(), 15.0f, 15.0f);
                         }
                     }
                 }
@@ -522,7 +522,7 @@ struct boss_jormungarAI : public BossAI
     {
         if (Creature* otherWorm = ObjectAccessor::GetCreature(*me, instance->GetGuidData(OtherWormEntry)))
         {
-            if (!otherWorm->IsAlive())
+            if (!otherWorm->isAlive())
             {
                 instance->SetData(TYPE_NORTHREND_BEASTS, SNAKES_DONE);
 
@@ -1095,7 +1095,7 @@ class boss_icehowl : public CreatureScript
                             {
                                 if (Unit* player = itr->getSource())
                                 {
-                                    if (player->IsAlive() && player->IsWithinDistInMap(me, 6.0f))
+                                    if (player->isAlive() && player->IsWithinDistInMap(me, 6.0f))
                                     {
                                         DoCastAOE(SPELL_TRAMPLE);
                                         events.ScheduleEvent(EVENT_TRAMPLE, 4*IN_MILLISECONDS);

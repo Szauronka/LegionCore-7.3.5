@@ -16,6 +16,7 @@
  */
 
 #include "QueryPackets.h"
+#include "BattlenetAccountMgr.h"
 #include "Player.h"
 #include "World.h"
 #include "ObjectMgr.h"
@@ -71,8 +72,8 @@ WorldPacket const* WorldPackets::Query::QueryCreatureResponse::Write()
 
         _worldPacket << static_cast<int32>(Stats.QuestItems.size());
         _worldPacket << Stats.CreatureMovementInfoID;
-        _worldPacket << Stats.HealthScalingExpansion;
         _worldPacket << Stats.RequiredExpansion;
+        _worldPacket << Stats.FlagQuest;
         _worldPacket << Stats.VignetteID;
 
         if (!Stats.Title.empty())
@@ -98,8 +99,8 @@ void WorldPackets::Query::QueryPlayerName::Read()
 
 ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Query::PlayerGuidLookupHint const& lookupHint)
 {
-    data.WriteBit(lookupHint.VirtualRealmAddress.has_value());
-    data.WriteBit(lookupHint.NativeRealmAddress.has_value());
+    data.WriteBit(lookupHint.VirtualRealmAddress.is_initialized());
+    data.WriteBit(lookupHint.NativeRealmAddress.is_initialized());
     data.FlushBits();
 
     if (lookupHint.VirtualRealmAddress)
@@ -136,6 +137,8 @@ bool WorldPackets::Query::PlayerGuidLookupData::Initialize(ObjectGuid const& gui
         CharacterInfo const* characterInfo = sWorld->GetCharacterInfo(guid);
         if (!characterInfo)
             return false;
+
+        ::Battlenet::AccountMgrNet::GetVoid();
 
         AccountID = ObjectGuid::Create<HighGuid::WowAccount>(characterInfo->AccountId);
         BnetAccountID = ObjectGuid::Create<HighGuid::BNetAccount>(characterInfo->BnetAccountId);

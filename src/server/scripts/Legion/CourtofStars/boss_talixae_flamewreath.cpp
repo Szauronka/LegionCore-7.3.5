@@ -1,4 +1,5 @@
 /*
+    https://uwow.biz/
     Dungeon : Court of Stars 110
     Encounter: Talixae Flamewreath <The Emissary>
     Mythic: 100%
@@ -103,7 +104,7 @@ public:
                     for (uint8 i = pDiedCount; i < 3; i++)
                     {
                         if (Creature* guard = me->GetCreature(*me, guardsGUID[i]))
-                            if (guard && guard->IsAlive())
+                            if (guard && guard->isAlive())
                             {
                                 for (uint8 n = 0; n < 3; n++)
                                     if (summon->GetDistance(gCheckPos[n]) < 40.0f)
@@ -155,7 +156,7 @@ public:
 
             for (int8 i = 0; i < 3; i++)
                 if (Creature* guard = me->GetCreature(*me, guardsGUID[i]))
-                    if (guard && guard->IsAlive())
+                    if (guard && guard->isAlive())
                         guard->AI()->DoZoneInCombat(guard, 100.0f);
 
             events.RescheduleEvent(EVENT_BURNING_INTENSITY, 6000);

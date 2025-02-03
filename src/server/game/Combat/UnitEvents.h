@@ -37,7 +37,7 @@ enum UNIT_EVENT_TYPE
     UEV_THREAT_REF_REMOVE_FROM_LIST     = 1<<2,
 
     // Player/Pet entered/left  water or some other place where it is/was not accessible for the creature
-    UEV_THREAT_REF_ACCESSIBLE_STATUS = 1<<3,
+    UEV_THREAT_REF_ASSECCIBLE_STATUS    = 1<<3,
 
     // Threat list is going to be sorted (if dirty flag is set)
     UEV_THREAT_SORT_LIST                = 1<<4,
@@ -62,16 +62,13 @@ enum UNIT_EVENT_TYPE
 
 class UnitBaseEvent
 {
-public:
-    explicit UnitBaseEvent(uint32 pType) { iType = pType; }
-    uint32 getType() const { return iType; }
-    bool matchesTypeMask(uint32 pMask) const { return (iType & pMask) != 0; }
-
-private:
     uint32 iType;
+public:
+    UnitBaseEvent(uint32 pType);
+    uint32 getType() const;
+    bool matchesTypeMask(uint32 pMask) const;
 
-protected:
-    ~UnitBaseEvent() { }
+    void setType(uint32 pType);
 };
 
 class ThreatRefStatusChangeEvent : public UnitBaseEvent
@@ -85,7 +82,7 @@ class ThreatRefStatusChangeEvent : public UnitBaseEvent
     };
     ThreatManager* iThreatManager;
 public:
-    explicit ThreatRefStatusChangeEvent(uint32 pType);
+    ThreatRefStatusChangeEvent(uint32 pType);
     ThreatRefStatusChangeEvent(uint32 pType, HostileReference* pHostileReference);
     ThreatRefStatusChangeEvent(uint32 pType, HostileReference* pHostileReference, float pValue);
     ThreatRefStatusChangeEvent(uint32 pType, HostileReference* pHostileReference, bool pValue);
@@ -99,6 +96,17 @@ public:
 
     void setThreatManager(ThreatManager* pThreatManager);
     ThreatManager* getThreatManager() const;
+};
+
+class ThreatManagerEvent : public ThreatRefStatusChangeEvent
+{
+    ThreatContainer* iThreatContainer;
+public:
+    ThreatManagerEvent(uint32 pType);
+    ThreatManagerEvent(uint32 pType, HostileReference* pHostileReference);
+
+    void setThreatContainer(ThreatContainer* pThreatContainer);
+    ThreatContainer* getThreatContainer() const;
 };
 
 #endif

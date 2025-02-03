@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Seat Of The Triumvirate 110
 */
 
@@ -24,9 +25,8 @@ public:
 
     struct instance_seat_of_the_triumvirate_InstanceMapScript : public InstanceScript
     {
-        instance_seat_of_the_triumvirate_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_seat_of_the_triumvirate_InstanceMapScript(Map* map) : InstanceScript(map) 
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 
@@ -162,14 +162,45 @@ public:
             }
         }
 
-        void WriteSaveDataMore(std::ostringstream& data) override
+        std::string GetSaveData() override
         {
-            data << luraIntro << " " << saprishPortals;
+            std::ostringstream saveStream;
+            saveStream << "S O T " << GetBossSaveData() << luraIntro << saprishPortals;
+            return saveStream.str();
         }
 
-        void ReadSaveDataMore(std::istringstream& data) override
+        void Load(const char* data) override
         {
-            data >> luraIntro >> saprishPortals;
+            if (!data)
+            {
+                OUT_LOAD_INST_DATA_FAIL;
+                return;
+            }
+
+            OUT_LOAD_INST_DATA(data);
+
+            char dataHead1, dataHead2, dataHead3;
+
+            std::istringstream loadStream(data);
+            loadStream >> dataHead1 >> dataHead2 >> dataHead3;
+
+            if (dataHead1 == 'S' && dataHead2 == 'O' && dataHead3 == 'T')
+            {
+                for (uint32 i = 0; i < MAX_ENCOUNTER; ++i)
+                {
+                    uint32 tmpState;
+                    loadStream >> tmpState;
+                    if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                        tmpState = NOT_STARTED;
+                    SetBossState(i, EncounterState(tmpState));
+                }
+                loadStream >> saprishPortals >> luraIntro;
+            }
+            else
+                OUT_LOAD_INST_DATA_FAIL;
+
+            OUT_LOAD_INST_DATA_COMPLETE;
+
         }
 
         void OnPlayerEnter(Player* player) override
@@ -192,7 +223,8 @@ public:
 
         WorldLocation* GetClosestGraveYard(float x, float y, float z) override
         {
-            loc_res_pla.WorldRelocate(1753, x, y, z);
+            loc_res_pla.Relocate(x, y, z);
+            loc_res_pla.SetMapId(1753);
 
             uint32 graveyardId = 6113;
 
@@ -205,7 +237,8 @@ public:
             {
                 if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
                 {
-                    loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                    loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                    loc_res_pla.SetMapId(gy->MapID);
                 }
             }
             return &loc_res_pla;

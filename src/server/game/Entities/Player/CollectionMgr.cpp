@@ -38,9 +38,9 @@ CollectionMgr::CollectionMgr(Player* owner): _owner(owner)
 {
 }
 
-void CollectionMgr::SaveToDB(CharacterDatabaseTransaction& trans)
+void CollectionMgr::SaveToDB(SQLTransaction& trans)
 {
-    CharacterDatabasePreparedStatement* stmt = nullptr;
+    PreparedStatement* stmt = nullptr;
     uint8 index = 0;
 
     for (auto& i : _toys)
@@ -135,7 +135,7 @@ void CollectionMgr::SaveToDB(CharacterDatabaseTransaction& trans)
 
     _favoriteAppearances.clear();
 
-    for (auto const& mount : _mounts)
+    for (auto const& mount : _saveMounts)
     {
         index = 0;
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_MOUNTS);
@@ -144,6 +144,7 @@ void CollectionMgr::SaveToDB(CharacterDatabaseTransaction& trans)
         stmt->setUInt16(index++, mount.second);
         trans->Append(stmt);
     }
+    _saveMounts.clear();
 }
 
 bool CollectionMgr::LoadFromDB(PreparedQueryResult toys, PreparedQueryResult heirlooms, PreparedQueryResult transmogs, PreparedQueryResult mounts, PreparedQueryResult favoriteAppearances)
@@ -242,12 +243,10 @@ bool CollectionMgr::LoadFromDB(PreparedQueryResult toys, PreparedQueryResult hei
         {
             Field* fields = mounts->Fetch();
             uint32 spellId = fields[0].GetUInt32();
-            auto flags = MountFlags(fields[1].GetUInt16());
-
             if (!sDB2Manager.GetMount(spellId))
                 continue;
 
-            _mounts[spellId] = flags;
+            _mounts[spellId] = fields[1].GetUInt16();
         }
         while (mounts->NextRow());
     }
@@ -745,43 +744,38 @@ void CollectionMgr::LoadAccountMounts(PreparedQueryResult result)
     {
         Field* fields = result->Fetch();
         uint32 spellID = fields[0].GetUInt32();
-        auto flags = MountFlags(fields[1].GetUInt16());
-
         if (!sDB2Manager.GetMount(spellID))
             continue;
 
-        _mounts[spellID] = flags;
+        _mounts[spellID] = fields[1].GetUInt16();
     }
     while (result->NextRow());
 }
 
 bool CollectionMgr::UpdateAccountMounts(uint32 spellID, MountFlags flags)
 {
-    return _mounts.insert(std::make_pair(spellID, flags)).second;
+    _saveMounts.insert(std::make_pair(spellID, uint16(flags)));
+    return _mounts.insert(std::make_pair(spellID, uint16(flags))).second;
 }
 
 std::map<uint32, uint32> _mountDefinitions;
 
 bool CollectionMgr::AddMount(uint32 spellID, MountFlags flags /*= MOUNT_FLAG_NONE*/, bool factionMount /*= false*/, bool loading /*= false*/)
 {
-    Player* player = _owner;
-    if (!player)
-        return false;
-
     MountEntry const* mount = sDB2Manager.GetMount(spellID);
     if (!mount)
         return false;
 
-    auto itr = _mountDefinitions.find(spellID);
+    std::map<uint32, uint32>::const_iterator itr = _mountDefinitions.find(spellID);
     if (itr != _mountDefinitions.end() && !factionMount)
-        AddMount(itr->second, flags, true, loading);
+        AddMount(itr->second, MOUNT_FLAG_NONE, true, loading);
 
     UpdateAccountMounts(spellID, flags);
 
     if (!loading)
     {
         if (!factionMount)
-            SendSingleMountUpdate(std::make_pair(spellID, flags));
+            SendSingleMountUpdate(std::make_pair(spellID, uint16(flags)));
 
         if (!_owner->HasSpell(spellID))
             _owner->learnSpell(spellID, false);
@@ -796,18 +790,15 @@ bool CollectionMgr::AddMount(uint32 spellID, MountFlags flags /*= MOUNT_FLAG_NON
     return true;
 }
 
-void CollectionMgr::MountSetFavorite(uint32 spellId, bool favorite)
+void CollectionMgr::SetMountFlag(uint32 spellID, MountFlags flags)
 {
-    auto itr = _mounts.find(spellId);
-    if (itr == _mounts.end())
-        return;
-
-    if (favorite)
-        itr->second = MountFlags(itr->second | MOUNT_FLAG_FAVORITE);
-    else
-        itr->second = MountFlags(itr->second & ~MOUNT_FLAG_FAVORITE);
-
-    SendSingleMountUpdate(*itr);
+    auto itr = _mounts.find(spellID);
+    if (itr != _mounts.end())
+    {
+        itr->second = uint16(flags);
+        SendSingleMountUpdate(*itr);
+        _saveMounts.insert(std::make_pair(spellID, uint16(flags)));
+    }
 }
 
 bool CollectionMgr::HasMount(uint32 spellID)
@@ -815,17 +806,12 @@ bool CollectionMgr::HasMount(uint32 spellID)
     return _mounts.find(spellID) != _mounts.end();
 }
 
-void CollectionMgr::SendSingleMountUpdate(std::pair<uint32, MountFlags> mount)
+void CollectionMgr::SendSingleMountUpdate(std::pair<uint32, uint16> mount)
 {
-    Player* player = _owner;
-    if (!player)
-        return;
-
     MountContainer tempMounts;
     tempMounts.insert(mount);
 
     WorldPackets::Misc::AccountMountUpdate mountUpdate;
-    mountUpdate.IsFullUpdate = false;
     mountUpdate.Mounts = &tempMounts;
     _owner->SendDirectMessage(mountUpdate.Write());
 }
@@ -837,7 +823,7 @@ void CollectionMgr::LoadMountDefinitions()
     QueryResult result = WorldDatabase.Query("SELECT spellID, otherSpellId FROM mount_definitions");
     if (!result)
     {
-        TC_LOG_INFO("server.loading", ">> Loaded 0 mount definitions. DB table `mount_definitions` is empty.");
+        TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 mount definitions. DB table `mount_definitions` is empty.");
         return;
     }
 
@@ -850,13 +836,13 @@ void CollectionMgr::LoadMountDefinitions()
 
         if (!sDB2Manager.GetMount(spellID))
         {
-            TC_LOG_ERROR("sql.sql", "Mount spell %u defined in `mount_definitions` does not exists in Mount.db2, skipped", spellID);
+            TC_LOG_ERROR(LOG_FILTER_SQL, "Mount spell %u defined in `mount_definitions` does not exists in Mount.db2, skipped", spellID);
             continue;
         }
 
         if (otherSpellId && !sDB2Manager.GetMount(otherSpellId))
         {
-            TC_LOG_ERROR("sql.sql", "OtherSpell %u defined in `mount_definitions` for spellID %u does not exists in Mount.db2, skipped", otherSpellId, spellID);
+            TC_LOG_ERROR(LOG_FILTER_SQL, "OtherSpell %u defined in `mount_definitions` for spellID %u does not exists in Mount.db2, skipped", otherSpellId, spellID);
             continue;
         }
 
@@ -864,7 +850,7 @@ void CollectionMgr::LoadMountDefinitions()
     }
     while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u mount definitions in %u ms", uint32(_mountDefinitions.size()), GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u mount definitions in %u ms", uint32(_mountDefinitions.size()), GetMSTimeDiffToNow(oldMSTime));
 }
 
 void CollectionMgr::Clear()
@@ -875,6 +861,7 @@ void CollectionMgr::Clear()
     _saveTransmogs.clear();
     _favoriteAppearances.clear();
     _mounts.clear();
+    _saveMounts.clear();
 }
 
 uint32 CollectionMgr::GetSize()
@@ -887,5 +874,6 @@ uint32 CollectionMgr::GetSize()
     size += _saveTransmogs.size() * sizeof(TransmogContainerSave);
     size += _favoriteAppearances.size() * sizeof(FavoriteAppearanceState);
     size += _mounts.size() * sizeof(MountContainer);
+    size += _saveMounts.size() * sizeof(_saveMounts);
     return size;
 }

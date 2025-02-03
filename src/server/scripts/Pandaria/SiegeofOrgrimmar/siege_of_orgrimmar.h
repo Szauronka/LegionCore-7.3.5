@@ -1,10 +1,8 @@
-
+//UWoWCore
 //Siege of Orgrimmar
 
 #ifndef SIEGEOFORGRIMMAR
 #define SIEGEOFORGRIMMAR
-
-#define DataHeader "SOO"
 
 #include "SpellScript.h"
 #include "Map.h"

@@ -1,5 +1,11 @@
+/*
+    http://uwow.biz
+*/
+
 #include "bloodmaul_slag_mines.h"
 #include "Garrison.h"
+#include "SpellScript.h"
+#include "GameEventMgr.h"
 
 enum Texts
 {

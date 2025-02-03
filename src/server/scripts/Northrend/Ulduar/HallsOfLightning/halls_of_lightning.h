@@ -19,8 +19,6 @@
 #ifndef DEF_HALLS_OF_LIGHTNING_H
 #define DEF_HALLS_OF_LIGHTNING_H
 
-#define DataHeader "HOL"
-
 enum eTypes
 {
     MAX_ENCOUNTER           = 4,

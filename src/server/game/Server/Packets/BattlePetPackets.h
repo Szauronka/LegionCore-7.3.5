@@ -130,7 +130,7 @@ namespace WorldPackets
 
             ObjectGuid BattlePetID;
             uint32 CreatureID = 0;
-            time_t Timestamp = GameTime::GetGameTime();
+            time_t Timestamp = time(nullptr);
             bool Allow = false;
             std::string Name;
             std::array<std::string, MAX_DECLINED_NAME_CASES> DeclinedNames;

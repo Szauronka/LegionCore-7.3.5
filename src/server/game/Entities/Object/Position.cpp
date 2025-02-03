@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+ * Copyright (C) 2012-2016 Uwow <https://uwow.biz/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,130 +19,164 @@
 #include "Position.h"
 #include "ByteBuffer.h"
 #include "GridDefines.h"
-#include "Random.h"
-
 #include <G3D/LineSegment.h>
-#include <G3D/g3dmath.h>
-#include <sstream>
+
+Position::Position(float x, float y, float z, float o, float h) : m_positionX(x), m_positionY(y), m_positionZ(z), m_positionH(h), m_orientation(NormalizeOrientation(o))
+{
+}
+
+Position::Position(Position const& loc)
+{
+    Position::Relocate(loc);
+}
+
+Position::Position(DBCPosition4D const& dbcLoc)
+{
+    Position loc{ dbcLoc.X, dbcLoc.Y, dbcLoc.Z, dbcLoc.O };
+    Position::Relocate(loc);
+}
 
 void Position::operator+=(Position pos)
 {
     m_positionX += pos.m_positionX;
     m_positionY += pos.m_positionY;
     m_positionZ += pos.m_positionZ;
+    m_positionH += pos.m_positionH;
     m_orientation += pos.m_orientation;
 }
 
-bool Position::operator==(Position const &a)
+void Position::Clear()
 {
-    return (G3D::fuzzyEq(a.m_positionX, m_positionX) &&
-        G3D::fuzzyEq(a.m_positionY, m_positionY) &&
-        G3D::fuzzyEq(a.m_positionZ, m_positionZ) &&
-        G3D::fuzzyEq(a.m_orientation, m_orientation));
+    m_positionX = 0.0f;
+    m_positionY = 0.0f;
+    m_positionZ = 0.0f;
+    m_positionH = 0.0f;
+    SetOrientation(0.0f);
 }
 
-Position Position::operator-(Position const& rkVector) const
+void Position::Relocate(float x, float y)
 {
-    return Position(m_positionX - rkVector.m_positionX, m_positionY - rkVector.m_positionY, m_positionZ - rkVector.m_positionZ);
+    m_positionX = x;
+    m_positionY = y;
 }
 
-float Position::magnitude() const
+void Position::Relocate(float x, float y, float z)
 {
-    return ::sqrtf(m_positionX * m_positionX + m_positionY * m_positionY + m_positionZ * m_positionZ);
+    m_positionX = x;
+    m_positionY = y;
+    m_positionZ = z;
 }
 
-float Position::length() const
+void Position::Relocate(float x, float y, float z, float orientation)
 {
-    return magnitude();
+    m_positionX = x;
+    m_positionY = y;
+    m_positionZ = z;
+    SetOrientation(orientation);
 }
 
-void Position::RelocateOffset(const Position & offset)
+void Position::Relocate(float x, float y, float z, float orientation, float positionH)
 {
-    m_positionX = GetPositionX() + (offset.GetPositionX() * std::cos(GetOrientation()) + offset.GetPositionY() * std::sin(GetOrientation() + float(M_PI)));
-    m_positionY = GetPositionY() + (offset.GetPositionY() * std::cos(GetOrientation()) + offset.GetPositionX() * std::sin(GetOrientation()));
-    m_positionZ = GetPositionZ() + offset.GetPositionZ();
-    SetOrientation(GetOrientation() + offset.GetOrientation());
+    m_positionX = x;
+    m_positionY = y;
+    m_positionZ = z;
+    SetOrientation(orientation);
+    m_positionH = positionH;
 }
 
-bool Position::IsPositionValid() const
+void Position::Relocate(Position const& pos)
 {
-    return Trinity::IsValidMapCoord(m_positionX, m_positionY, m_positionZ, m_orientation);
+    m_positionX = pos.m_positionX;
+    m_positionY = pos.m_positionY;
+    m_positionZ = pos.m_positionZ;
+    m_positionH = pos.m_positionH;
+    SetOrientation(pos.m_orientation);
 }
 
-float Position::GetExactDist2d(const float x, const float y) const
+void Position::Relocate(Position const* pos)
 {
-    return std::sqrt(GetExactDist2dSq(x, y));
+    m_positionX = pos->m_positionX;
+    m_positionY = pos->m_positionY;
+    m_positionZ = pos->m_positionZ;
+    m_positionH = pos->m_positionH;
+    SetOrientation(pos->m_orientation);
 }
 
-float Position::GetExactDist2d(Position const* pos) const
+void Position::SetPosition(DBCPosition2D pos)
 {
-    return std::sqrt(GetExactDist2dSq(pos));
+    m_positionX = pos.X;
+    m_positionY = pos.Y;
 }
 
-float Position::GetExactDist(float x, float y, float z) const
+void Position::SetPosition(DBCPosition3D pos)
 {
-    return std::sqrt(GetExactDistSq(x, y, z));
+    m_positionX = pos.X;
+    m_positionY = pos.Y;
+    m_positionZ = pos.Z;
 }
 
-float Position::GetExactDist(Position const* pos) const
+void Position::SetPosition(DBCPosition4D pos)
 {
-    return std::sqrt(GetExactDistSq(pos));
+    m_positionX = pos.X;
+    m_positionY = pos.Y;
+    m_positionZ = pos.Z;
+    SetOrientation(pos.O);
 }
 
-void Position::GetPositionOffsetTo(const Position & endPos, Position & retOffset) const
+bool Position::IsWithinBox(Position const& center, float xradius, float yradius, float zradius) const
 {
-    float dx = endPos.GetPositionX() - GetPositionX();
-    float dy = endPos.GetPositionY() - GetPositionY();
+    // rotate the WorldObject position instead of rotating the whole cube, that way we can make a simplified
+    // is-in-cube check and we have to calculate only one point instead of 4
 
-    retOffset.m_positionX = dx * std::cos(GetOrientation()) + dy * std::sin(GetOrientation());
-    retOffset.m_positionY = dy * std::cos(GetOrientation()) - dx * std::sin(GetOrientation());
-    retOffset.m_positionZ = endPos.GetPositionZ() - GetPositionZ();
-    retOffset.SetOrientation(endPos.GetOrientation() - GetOrientation());
+    // 2PI = 360*, keep in mind that ingame orientation is counter-clockwise
+    double rotation = 2 * M_PI - center.GetOrientation();
+    double sinVal = std::sin(rotation);
+    double cosVal = std::cos(rotation);
+
+    float BoxDistX = GetPositionX() - center.GetPositionX();
+    float BoxDistY = GetPositionY() - center.GetPositionY();
+
+    float rotX = float(center.GetPositionX() + BoxDistX * cosVal - BoxDistY * sinVal);
+    float rotY = float(center.GetPositionY() + BoxDistY * cosVal + BoxDistX * sinVal);
+
+    // box edges are parallel to coordiante axis, so we can treat every dimension independently :D
+    if ((std::fabs(rotX - center.GetPositionX()) > xradius) || (std::fabs(rotY - center.GetPositionY()) > yradius) || (std::fabs(GetPositionZ() - center.GetPositionZ()) > zradius))
+        return false;
+
+    return true;
 }
 
-Position Position::GetPositionWithOffset(Position const& offset) const
+bool Position::HasInLine(WorldObject const* target, float width) const
 {
-    Position ret(*this);
-    ret.RelocateOffset(offset);
-    return ret;
+    if (!HasInArc(M_PI, target))
+        return false;
+    width += target->GetObjectSize();
+    float angle = GetRelativeAngle(target);
+    return fabs(sin(angle)) * GetExactDist2d(target->GetPositionX(), target->GetPositionY()) < width;
 }
 
-float Position::GetAngle(Position const* pos) const
+bool Position::IsInDegreesRange(float x, float y, float degresA, float degresB, bool relative/* = false*/) const
 {
-    if (!pos)
-        return 0;
-
-    return GetAngle(pos->GetPositionX(), pos->GetPositionY());
+    float angel = GetDegreesAngel(x, y, relative);
+    return angel >= degresA && angel <= degresB;
 }
 
-// Return angle in range 0..2*pi
-float Position::GetAngle(float x, float y) const
+float Position::GetDegreesAngel(float x, float y, bool relative) const
 {
-    float dx = x - GetPositionX();
-    float dy = y - GetPositionY();
-
-    float ang = std::atan2(dy, dx);
-    ang = (ang >= 0) ? ang : 2 * float(M_PI) + ang;
-    return ang;
+    float angel = relative ? GetRelativeAngle(x, y) : GetAngle(x, y);
+    return NormalizeOrientation(angel) * M_RAD;
 }
 
-void Position::GetSinCos(const float x, const float y, float &vsin, float &vcos) const
+Position Position::GetRandPointBetween(Position const& B) const
 {
-    float dx = GetPositionX() - x;
-    float dy = GetPositionY() - y;
+    float Lambda = urand(0.0f, 100.0f) / 100.0f;
+    float X = (B.GetPositionX() + Lambda * GetPositionX()) / (1 + Lambda);
+    float Y = (B.GetPositionY() + Lambda * GetPositionY()) / (1 + Lambda);
+    float Z = (B.GetPositionZ() + Lambda * GetPositionZ()) / (1 + Lambda); //Z should be updated by Vmap
 
-    if (std::fabs(dx) < 0.001f && std::fabs(dy) < 0.001f)
-    {
-        float angle = (float)rand_norm()*static_cast<float>(2 * M_PI);
-        vcos = std::cos(angle);
-        vsin = std::sin(angle);
-    }
-    else
-    {
-        float dist = std::sqrt((dx*dx) + (dy*dy));
-        vcos = dx / dist;
-        vsin = dy / dist;
-    }
+    Position result;
+    result.Relocate(X, Y, Z, 0.0f);
+    return result;
 }
 
 void Position::SimplePosXYRelocationByAngle(Position &pos, float dist, float angle, bool relative) const
@@ -157,7 +192,7 @@ void Position::SimplePosXYRelocationByAngle(Position &pos, float dist, float ang
     if (!Trinity::IsValidMapCoord(pos.m_positionX, pos.m_positionY))
     {
         pos.Relocate(this);
-        TC_LOG_FATAL("misc", "Position::SimplePosXYRelocationByAngle invalid coordinates X: %f and Y: %f were passed!", pos.m_positionX, pos.m_positionY);
+        TC_LOG_FATAL(LOG_FILTER_GENERAL, "Position::SimplePosXYRelocationByAngle invalid coordinates X: %f and Y: %f were passed!", pos.m_positionX, pos.m_positionY);
         return;
     }
 
@@ -166,84 +201,24 @@ void Position::SimplePosXYRelocationByAngle(Position &pos, float dist, float ang
     pos.SetOrientation(GetOrientation());
 }
 
-bool Position::IsWithinBox(const Position& center, float xradius, float yradius, float zradius) const
+bool Position::IsInDist2d(float x, float y, float dist) const
 {
-    // rotate the WorldObject position instead of rotating the whole cube, that way we can make a simplified
-    // is-in-cube check and we have to calculate only one point instead of 4
-
-    // 2PI = 360*, keep in mind that ingame orientation is counter-clockwise
-    double rotation = 2 * M_PI - center.GetOrientation();
-    double sinVal = std::sin(rotation);
-    double cosVal = std::cos(rotation);
-
-    float BoxDistX = GetPositionX() - center.GetPositionX();
-    float BoxDistY = GetPositionY() - center.GetPositionY();
-
-    float rotX = float(center.GetPositionX() + BoxDistX * cosVal - BoxDistY*sinVal);
-    float rotY = float(center.GetPositionY() + BoxDistY * cosVal + BoxDistX*sinVal);
-
-    // box edges are parallel to coordiante axis, so we can treat every dimension independently :D
-    float dz = GetPositionZ() - center.GetPositionZ();
-    float dx = rotX - center.GetPositionX();
-    float dy = rotY - center.GetPositionY();
-    if ((std::fabs(dx) > xradius) ||
-        (std::fabs(dy) > yradius) ||
-        (std::fabs(dz) > zradius))
-        return false;
-
-    return true;
+    return GetExactDist2dSq(x, y) < dist * dist;
 }
 
-bool Position::HasInArc(float arc, const Position* obj, float border) const
+bool Position::IsInDist2d(Position const* pos, float dist) const
 {
-    // always have self in arc
-    if (obj == this)
-        return true;
-
-    // move arc to range 0.. 2*pi
-    arc = NormalizeOrientation(arc);
-
-    float angle = GetAngle(obj);
-    angle -= m_orientation;
-
-    // move angle to range -pi ... +pi
-    angle = NormalizeOrientation(angle);
-    if (angle > float(M_PI))
-        angle -= 2.0f * float(M_PI);
-
-    float lborder = -1 * (arc / border);                        // in range -pi..0
-    float rborder = (arc / border);                             // in range 0..pi
-    return ((angle >= lborder) && (angle <= rborder));
+    return GetExactDist2dSq(pos) < dist * dist;
 }
 
-bool Position::HasInLine(Position const* pos, float width) const
+bool Position::IsInDist(float x, float y, float z, float dist) const
 {
-    if (!HasInArc(float(M_PI), pos))
-        return false;
-
-    float angle = GetRelativeAngle(pos);
-    return std::fabs(std::sin(angle)) * GetExactDist2d(pos->GetPositionX(), pos->GetPositionY()) < width;
+    return GetExactDistSq(x, y, z) < dist * dist;
 }
 
-std::string Position::ToString() const
+bool Position::IsInDist(Position const* pos, float dist) const
 {
-    std::stringstream sstr;
-    sstr << "X: " << m_positionX << " Y: " << m_positionY << " Z: " << m_positionZ << " O: " << m_orientation;
-    return sstr.str();
-}
-
-float Position::NormalizeOrientation(float o)
-{
-    // fmod only supports positive numbers. Thus we have
-    // to emulate negative numbers
-    if (o < 0)
-    {
-        float mod = o *-1;
-        mod = std::fmod(mod, 2.0f * static_cast<float>(M_PI));
-        mod = -mod + 2.0f * static_cast<float>(M_PI);
-        return mod;
-    }
-    return std::fmod(o, 2.0f * static_cast<float>(M_PI));
+    return GetExactDistSq(pos) < dist * dist;
 }
 
 bool Position::IsLinesCross(Position const &pos11, Position const &pos12, Position const &pos21, Position const &pos22, Position * dest) const
@@ -286,6 +261,49 @@ bool Position::IsPointInBox(Position const& centerBox, std::vector<Position> box
     return true;
 }
 
+void Position::GeneratePointInBox(Position centerBox, std::vector<Position> box, std::vector<Position>& points, uint32 count) const
+{
+    if (box.size() <= 2) // Min point 3
+        return;
+
+    float minX = box[0].m_positionX, minY = box[0].m_positionY, maxX = box[0].m_positionX, maxY = box[0].m_positionY;
+    for (uint32 i = 0; i < box.size(); ++i)
+    {
+        if (minX > box[0].m_positionX)
+            minX = box[0].m_positionX;
+        if (maxX < box[0].m_positionX)
+            maxX = box[0].m_positionX;
+
+        if (minY > box[0].m_positionY)
+            minY = box[0].m_positionY;
+        if (maxY < box[0].m_positionY)
+            maxY = box[0].m_positionY;
+    }
+
+    for (uint32 i = 0; i < count;)
+    {
+        auto pos = Position{ frand(minX, maxX), frand(minY, maxY), centerBox.m_positionZ };
+
+        auto canAdd = true;
+        for (uint32 j = 0; j < box.size(); ++j)
+        {
+            uint32 first = j;
+            uint32 second = j + 1;
+            if (second >= box.size())
+                second = 0;
+
+            if (centerBox.IsLinesCross(centerBox, pos, box[first], box[second]))
+                canAdd = false;
+        }
+
+        if (!canAdd)
+            continue;
+
+        points.emplace_back(pos);
+        ++i;
+    }
+}
+
 void Position::GenerateNonDuplicatePoints(std::list<Position>& randPosList, Position const& centerPos, uint8 maxPoint, float randMin, float randMax, float minDist) const
 {
     Position pos;
@@ -311,6 +329,347 @@ void Position::GenerateNonDuplicatePoints(std::list<Position>& randPosList, Posi
     }
 }
 
+float Position::NormalizeOrientation(float o)
+{
+    // fmod only supports positive numbers. Thus we have
+    // to emulate negative numbers
+    if (o < 0)
+    {
+        float mod = o * -1;
+        mod = fmod(mod, 2.0f * static_cast<float>(M_PI));
+        mod = -mod + 2.0f * static_cast<float>(M_PI);
+        return mod;
+    }
+    return fmod(o, 2.0f * static_cast<float>(M_PI));
+}
+
+float Position::NormalizePitch(float o)
+{
+    if (o > -M_PI && o < M_PI)
+        return o;
+
+    o = NormalizeOrientation(o + M_PI) - M_PI;
+    return o;
+}
+
+void Position::RelocateOffset(Position const& offset)
+{
+    m_positionX = GetPositionX() + (offset.GetPositionX() * std::cos(GetOrientation()) + offset.GetPositionY() * std::sin(GetOrientation() + M_PI));
+    m_positionY = GetPositionY() + (offset.GetPositionY() * std::cos(GetOrientation()) + offset.GetPositionX() * std::sin(GetOrientation()));
+    m_positionZ = GetPositionZ() + offset.GetPositionZ();
+    SetOrientation(GetOrientation() + offset.GetOrientation());
+}
+
+void Position::SetOrientation(float orientation)
+{
+    m_orientation = NormalizeOrientation(orientation);
+}
+
+void Position::SetPositionH(float positionH)
+{
+    m_positionH = positionH;
+}
+
+float Position::GetPositionX() const
+{
+    return m_positionX;
+}
+
+float Position::GetPositionY() const
+{
+    return m_positionY;
+}
+
+float Position::GetPositionZ() const
+{
+    return m_positionZ;
+}
+
+float Position::GetPositionH() const
+{
+    return m_positionH;
+}
+
+float Position::GetOrientation() const
+{
+    return m_orientation;
+}
+
+float Position::GetPositionZH() const
+{
+    return m_positionZ - m_positionH;
+}
+
+Position Position::GetPosition() const
+{
+    return *this;
+}
+
+void Position::GetPosition(float& x, float& y, Transport* /*transport*/) const
+{
+    x = m_positionX;
+    y = m_positionY;
+}
+
+void Position::GetPosition(float& x, float& y, float& z, Transport* /*transport*/) const
+{
+    x = m_positionX;
+    y = m_positionY;
+    z = GetPositionZH();
+}
+
+void Position::GetPosition(float& x, float& y, float& z, float& o, Transport* /*transport*/) const
+{
+    x = m_positionX;
+    y = m_positionY;
+    z = GetPositionZH();
+    o = m_orientation;
+}
+
+void Position::GetPosition(Position* pos, Transport* /*transport*/) const
+{
+    if (pos)
+        pos->Relocate(m_positionX, m_positionY, GetPositionZH(), m_orientation);
+}
+
+Position::Streamer<Position::XY> Position::PositionXYStream()
+{
+    return Streamer<XY>(*this);
+}
+
+Position::ConstStreamer<Position::XY> Position::PositionXYStream() const
+{
+    return ConstStreamer<XY>(*this);
+}
+
+Position::Streamer<Position::XYZ> Position::PositionXYZStream()
+{
+    return Streamer<XYZ>(*this);
+}
+
+Position::ConstStreamer<Position::XYZ> Position::PositionXYZStream() const
+{
+    return ConstStreamer<XYZ>(*this);
+}
+
+Position::Streamer<Position::XYZO> Position::PositionXYZOStream()
+{
+    return Streamer<XYZO>(*this);
+}
+
+Position::ConstStreamer<Position::XYZO> Position::PositionXYZOStream() const
+{
+    return ConstStreamer<XYZO>(*this);
+}
+
+Position::Streamer<Position::PackedXYZ> Position::PositionPackedXYZStream()
+{
+    return Streamer<PackedXYZ>(*this);
+}
+
+Position::ConstStreamer<Position::PackedXYZ> Position::PositionPackedXYZStream() const
+{
+    return ConstStreamer<PackedXYZ>(*this);
+}
+
+void Position::GetPositionOffsetTo(Position const& endPos, Position & retOffset) const
+{
+    float dx = endPos.GetPositionX() - GetPositionX();
+    float dy = endPos.GetPositionY() - GetPositionY();
+
+    retOffset.m_positionX = dx * std::cos(GetOrientation()) + dy * std::sin(GetOrientation());
+    retOffset.m_positionY = dy * std::cos(GetOrientation()) - dx * std::sin(GetOrientation());
+    retOffset.m_positionZ = endPos.GetPositionZ() - GetPositionZ();
+    retOffset.SetOrientation(endPos.GetOrientation() - GetOrientation());
+}
+
+float Position::GetAngle(Position const* obj) const
+{
+    if (!obj)
+        return 0;
+
+    return GetAngle(obj->GetPositionX(), obj->GetPositionY());
+}
+
+// Return angle in range 0..2*pi
+float Position::GetAngle(const float x, const float y) const
+{
+    float dx = x - GetPositionX();
+    float dy = y - GetPositionY();
+
+    float ang = atan2(dy, dx);
+    ang = (ang >= 0) ? ang : 2 * M_PI + ang;
+    return ang;
+}
+
+float Position::GetRelativeAngle(Position const* pos) const
+{
+    return GetAngle(pos) - m_orientation;
+}
+
+float Position::GetRelativeAngle(float x, float y) const
+{
+    return GetAngle(x, y) - m_orientation;
+}
+
+void Position::GetSinCos(const float x, const float y, float &vsin, float &vcos) const
+{
+    float dx = GetPositionX() - x;
+    float dy = GetPositionY() - y;
+
+    if (fabs(dx) < 0.001f && fabs(dy) < 0.001f)
+    {
+        float angle = static_cast<float>(rand_norm())*static_cast<float>(2 * M_PI);
+        vcos = std::cos(angle);
+        vsin = std::sin(angle);
+    }
+    else
+    {
+        float dist = sqrt((dx*dx) + (dy*dy));
+        vcos = dx / dist;
+        vsin = dy / dist;
+    }
+}
+
+bool Position::HasInArc(float arc, Position const* obj) const
+{
+    // always have self in arc
+    if (obj == this)
+        return true;
+
+    // move arc to range 0.. 2*pi
+    arc = NormalizeOrientation(arc);
+
+    float angle = GetAngle(obj);
+    angle -= m_orientation;
+
+    // move angle to range -pi ... +pi
+    angle = NormalizeOrientation(angle);
+    if (angle > M_PI)
+        angle -= 2.0f*M_PI;
+
+    float lborder = -1 * (arc / 2.0f);                        // in range -pi..0
+    float rborder = (arc / 2.0f);                             // in range 0..pi
+    return ((angle >= lborder) && (angle <= rborder));
+}
+
+bool Position::IsPositionValid() const
+{
+    return Trinity::IsValidMapCoord(m_positionX, m_positionY, m_positionZ, m_orientation);
+}
+
+float Position::GetExactDist2dSq(float x, float y) const
+{
+    float dx = m_positionX - x;
+    float dy = m_positionY - y;
+    return dx * dx + dy * dy;
+}
+
+float Position::GetExactDist2d(float x, float y) const
+{
+    return sqrt(GetExactDist2dSq(x, y));
+}
+
+float Position::GetExactDist2dSq(Position const* pos) const
+{
+    float dx = m_positionX - pos->m_positionX;
+    float dy = m_positionY - pos->m_positionY;
+    return dx * dx + dy * dy;
+}
+
+float Position::GetExactDist2d(Position const* pos) const
+{
+    return sqrt(GetExactDist2dSq(pos));
+}
+
+float Position::GetExactDistSq(float x, float y, float z) const
+{
+    float dz = GetPositionZH() - z;
+    return GetExactDist2dSq(x, y) + dz * dz;
+}
+
+float Position::GetExactDist(float x, float y, float z) const
+{
+    return sqrt(GetExactDistSq(x, y, z));
+}
+
+float Position::GetExactDistSq(Position const* pos) const
+{
+    float dx = m_positionX - pos->m_positionX;
+    float dy = m_positionY - pos->m_positionY;
+    float dz = GetPositionZH() - pos->GetPositionZH();
+    return dx * dx + dy * dy + dz * dz;
+}
+
+float Position::GetExactDist(Position const* pos) const
+{
+    return sqrt(GetExactDistSq(pos));
+}
+
+std::string Position::ToString() const
+{
+    std::stringstream sstr;
+    sstr << "X: " << m_positionX << " Y: " << m_positionY << " Z: " << m_positionZ << " O: " << m_orientation;
+    return sstr.str();
+}
+
+Position Position::operator-(Position const& rkVector) const
+{
+    return Position(m_positionX - rkVector.m_positionX, m_positionY - rkVector.m_positionY, m_positionZ - rkVector.m_positionZ);
+}
+
+float Position::magnitude() const
+{
+    return ::sqrtf(m_positionX * m_positionX + m_positionY * m_positionY + m_positionZ * m_positionZ);
+}
+
+float Position::length() const
+{
+    return magnitude();
+}
+
+WorldLocation::WorldLocation(uint32 _mapid, float _x, float _y, float _z, float _o) : m_mapId(_mapid)
+{
+    Position::Relocate(_x, _y, _z, _o);
+}
+
+WorldLocation::WorldLocation(uint32 _mapid, Position const& pos) : m_mapId(_mapid)
+{
+    Position::Relocate(pos);
+}
+
+WorldLocation::WorldLocation(WorldLocation const& loc) : Position(loc)
+{
+    WorldRelocate(loc);
+}
+
+void WorldLocation::WorldRelocate(WorldLocation const& loc)
+{
+    m_mapId = loc.GetMapId();
+    Relocate(loc);
+}
+
+void WorldLocation::WorldRelocate(uint32 _mapId, float _x, float _y, float _z, float _o)
+{
+    m_mapId = _mapId;
+    Relocate(_x, _y, _z, _o);
+}
+
+uint32 WorldLocation::GetMapId() const
+{
+    return m_mapId;
+}
+
+void WorldLocation::SetMapId(uint32 _mapid)
+{
+    m_mapId = _mapid;
+}
+
+WorldLocation WorldLocation::GetWorldLocation() const
+{
+    return *this;
+}
+
 ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::XY> const& streamer)
 {
     buf << streamer.Pos->GetPositionX();
@@ -318,7 +677,7 @@ ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::XY> co
     return buf;
 }
 
-ByteBuffer& operator>>(ByteBuffer& buf, Position::Streamer<Position::XY> const& streamer)
+ByteBuffer& operator >> (ByteBuffer& buf, Position::Streamer<Position::XY> const& streamer)
 {
     float x, y;
     buf >> x >> y;
@@ -334,7 +693,7 @@ ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::XYZ> c
     return buf;
 }
 
-ByteBuffer& operator>>(ByteBuffer& buf, Position::Streamer<Position::XYZ> const& streamer)
+ByteBuffer& operator >> (ByteBuffer& buf, Position::Streamer<Position::XYZ> const& streamer)
 {
     float x, y, z;
     buf >> x >> y >> z;
@@ -351,7 +710,7 @@ ByteBuffer& operator<<(ByteBuffer& buf, Position::ConstStreamer<Position::XYZO> 
     return buf;
 }
 
-ByteBuffer& operator>>(ByteBuffer& buf, Position::Streamer<Position::XYZO> const& streamer)
+ByteBuffer& operator >> (ByteBuffer& buf, Position::Streamer<Position::XYZO> const& streamer)
 {
     float x, y, z, o;
     buf >> x >> y >> z >> o;

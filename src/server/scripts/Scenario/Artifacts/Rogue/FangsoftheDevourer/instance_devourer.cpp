@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Rogue: Devourer
 */
 
@@ -18,7 +19,7 @@ public:
 
     struct instance_devourer_InstanceMapScript : public InstanceScript
     {
-        instance_devourer_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_devourer_InstanceMapScript(Map* map) : InstanceScript(map) {}
         
         WorldLocation loc_res_pla;  // for respawn
         std::list<Creature*> trashGUIDconteiner;
@@ -47,7 +48,8 @@ public:
         // OnPlayerDeath
         {
             // Init data
-            loc_res_pla.WorldRelocate(1607, x, y, z);
+            loc_res_pla.Relocate(x, y, z);
+            loc_res_pla.SetMapId(1607);
 
             uint32 graveyardId = 5467;
             
@@ -69,7 +71,8 @@ public:
 
             if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
             {
-                loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                loc_res_pla.SetMapId(gy->MapID);
             }
             return &loc_res_pla;
         }

@@ -97,7 +97,7 @@ class boss_ra_den : public CreatureScript
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL);
                 if (instance)
                     instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_UNLEASHED_ANIMA);
-                me->SetPowerType(POWER_ENERGY);
+                me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 me->SetPower(POWER_ENERGY, 0);
                 checkpower = 0;
@@ -262,7 +262,7 @@ void CallRaDenAndUseSphere(InstanceScript* instance, Creature* caller, uint32 ca
         {
             if (Unit* raden = caller->ToTempSummon()->GetSummoner())
             {
-                if (raden->IsAlive())
+                if (raden->isAlive())
                 {
                     if (died)
                     {
@@ -271,7 +271,7 @@ void CallRaDenAndUseSphere(InstanceScript* instance, Creature* caller, uint32 ca
                         case NPC_CORRUPTED_ANIMA:
                             if (Creature* cv = caller->GetCreature(*caller, instance->GetGuidData(NPC_CORRUPTED_VITA)))
                             {
-                                if (cv->IsAlive())
+                                if (cv->isAlive())
                                 {
                                     caller->DespawnOrUnsummon();
                                     cv->DespawnOrUnsummon();
@@ -283,7 +283,7 @@ void CallRaDenAndUseSphere(InstanceScript* instance, Creature* caller, uint32 ca
                         case NPC_CORRUPTED_VITA:
                             if (Creature* ca = caller->GetCreature(*caller, instance->GetGuidData(NPC_CORRUPTED_ANIMA)))
                             {
-                                if (ca->IsAlive())
+                                if (ca->isAlive())
                                 {
                                     caller->DespawnOrUnsummon();
                                     ca->DespawnOrUnsummon();
@@ -357,7 +357,7 @@ class npc_corrupted_sphere : public CreatureScript
                 {
                     if (Unit* raden = me->ToTempSummon()->GetSummoner())
                     {
-                        if (raden->IsAlive())
+                        if (raden->isAlive())
                         {
                             if (me->GetDistance(raden) <= 5.0f)
                                 CallRaDenAndUseSphere(pInstance, me, me->GetEntry(), false);
@@ -549,13 +549,13 @@ class spell_material_of_creation : public SpellScriptLoader
                     {
                     case 0:
                         GetCaster()->GetNearPoint2D(x, y, 40.0f, 1.570796326795f); 
-                        GetCaster()->GetNearPoint2D(x2, y2, 40.0f, float(M_PI + 1.570796326795f));
+                        GetCaster()->GetNearPoint2D(x2, y2, 40.0f, M_PI + 1.570796326795f);
                         GetCaster()->SummonCreature(NPC_CORRUPTED_ANIMA, x, y, GetCaster()->GetPositionZ() + 2.0f);
                         GetCaster()->SummonCreature(NPC_CORRUPTED_VITA, x2, y2, GetCaster()->GetPositionZ() + 7.0f);
                         break;
                     case 1:
                         GetCaster()->GetNearPoint2D(x, y, 40.0f, 0.0f); 
-                        GetCaster()->GetNearPoint2D(x2, y2, 40.0f, float(M_PI));
+                        GetCaster()->GetNearPoint2D(x2, y2, 40.0f, M_PI);
                         GetCaster()->SummonCreature(NPC_CORRUPTED_ANIMA, x, y, GetCaster()->GetPositionZ() + 2.0f);
                         GetCaster()->SummonCreature(NPC_CORRUPTED_VITA, x2, y2, GetCaster()->GetPositionZ() + 7.0f);
                         break;

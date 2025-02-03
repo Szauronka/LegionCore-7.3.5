@@ -281,46 +281,6 @@ public:
     }
 };
 
-/*#####
-# item_petrov_cluster_bombs
-#####*/
-
-enum ePetrovClusterBombs
-{
-    SPELL_PETROV_BOMB           = 42406,
-    AREA_ID_SHATTERED_STRAITS   = 4064,
-    ZONE_ID_HOWLING             = 495
-};
-
-class item_petrov_cluster_bombs : public ItemScript
-{
-public:
-    item_petrov_cluster_bombs() : ItemScript("item_petrov_cluster_bombs") { }
-
-    bool OnUse(Player* player, Item* /*item*/, const SpellCastTargets & /*targets*/) override
-    {
-        if (player->GetCurrentZoneID() != ZONE_ID_HOWLING)
-            return false;
-
-        if (!player->GetTransport() || player->GetCurrentAreaID() != AREA_ID_SHATTERED_STRAITS)
-        {
-            if (const SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(SPELL_PETROV_BOMB))
-            {
-                TriggerCastData triggerData;
-                triggerData.triggerFlags = TRIGGERED_FULL_MASK;
-
-                Spell* spell = new Spell(player, spellInfo, triggerData);
-                spell->SendCastResult(player, spellInfo, SPELL_FAILED_NOT_HERE);
-                spell->finish(false);
-                delete spell;
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-};
 
 /*######
 # item_dehta_trap_smasher
@@ -602,7 +562,6 @@ void AddSC_item_scripts()
     new item_mysterious_egg();
     new item_disgusting_jar();
     new item_pile_fake_furs();
-    new item_petrov_cluster_bombs();
     new item_dehta_trap_smasher();
     new item_trident_of_nazjan();
     new item_captured_frog();
@@ -610,7 +569,7 @@ void AddSC_item_scripts()
     new item_brewfest_sampler;
     new item_brewfest_ram_reins;
     new item_primal_egg();
-    //new item_leyara_locket();
+    new item_leyara_locket();
     new item_pulsating_sac();
     new item_fel_spotted_egg();
 }

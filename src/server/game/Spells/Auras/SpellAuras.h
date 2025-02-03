@@ -23,6 +23,7 @@
 #include "SpellInfo.h"
 #include "Unit.h"
 #include "Containers.h"
+#include "HashFuctor.h"
 
 class Unit;
 class SpellInfo;
@@ -50,7 +51,7 @@ namespace WorldPackets
 // update aura target map every 500 ms instead of every update - reduce amount of grid searcher calls
 #define UPDATE_TARGET_MAP_INTERVAL 500
 
-class TC_GAME_API AuraApplication
+class AuraApplication
 {
     friend void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask);
     friend void Unit::_UnapplyAura(/*AuraApplicationMap*/std::multimap<uint32, AuraApplicationPtr>::iterator &i, AuraRemoveMode removeMode);
@@ -97,12 +98,13 @@ class TC_GAME_API AuraApplication
 
 typedef std::array<AuraEffect*, MAX_SPELL_EFFECTS> AuraEffectVector;
 
-class TC_GAME_API Aura
+class Aura
 {
     friend Aura* Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, Unit* caster, float *baseAmount, Item* castItem, ObjectGuid casterGUID);
     public:
+		Trinity::AnyData Variables;
         void SetAuraTimer(int32 time, ObjectGuid guid = ObjectGuid::Empty);
-        typedef std::map<ObjectGuid, AuraApplicationPtr> ApplicationMap;
+        typedef cds::container::FeldmanHashMap< cds::gc::HP, ObjectGuid, AuraApplicationPtr, guidTraits > ApplicationMap;
 
         static uint32 BuildEffectMaskForOwner(SpellInfo const* spellProto, uint32 avalibleEffectMask, WorldObject* owner);
         static Aura* TryRefreshStackOrCreate(SpellInfo const* spellproto, uint32 tryEffMask, WorldObject* owner, Unit* caster, float* baseAmount = nullptr, Item* castItem = nullptr, ObjectGuid casterGUID = ObjectGuid::Empty, bool* refresh = nullptr, uint16 stackAmount = 0, Spell* spell = nullptr);
@@ -166,10 +168,12 @@ class TC_GAME_API Aura
         int32 GetDuration() const { return m_duration; }
         int32 GetAllDuration() const { return m_allDuration; }
         void SetDuration(int32 duration, bool withMods = false);
+		void ModDuration(int32 duration, bool withMods = false) { SetDuration(GetDuration() + duration, withMods); }
         void RefreshDuration();
         void RefreshTimers();
         bool IsExpired() const { return !GetDuration();}
         bool IsPermanent() const { return GetMaxDuration() == -1; }
+
 
         uint8 GetCharges() const { return m_procCharges; }
         void SetCharges(uint8 charges);
@@ -284,7 +288,6 @@ class TC_GAME_API Aura
         void CallScriptEffectManaShieldHandlers(AuraEffect* aurEff, AuraApplication const* aurApp, DamageInfo & dmgInfo, float & absorbAmount, bool & defaultPrevented);
         void CallScriptEffectAfterManaShieldHandlers(AuraEffect* aurEff, AuraApplication const* aurApp, DamageInfo & dmgInfo, float & absorbAmount);
         void CallScriptEffectSplitDamageHandlers(AuraEffect* aurEff, AuraApplication const* aurApp, DamageInfo & dmgInfo, float & absorbAmount);
-        bool CallScriptCheckProcHandlers(AuraApplication const* aurApp, ProcEventInfo& eventInfo);
         void SetScriptData(uint32 type, uint32 data);
         void SetScriptGuid(uint32 type, ObjectGuid const& data);
         // Spell Proc Hooks

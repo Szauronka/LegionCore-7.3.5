@@ -1,18 +1,19 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #include "ChallengeMgr.h"
@@ -112,9 +113,9 @@ bool ChallengeMgr::CheckBestMemberMapId(ObjectGuid const& guid, ChallengeData* c
 
 void ChallengeMgr::SaveChallengeToDB(ChallengeData const* challengeData)
 {
-    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHALLENGE);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHALLENGE);
     stmt->setUInt32(0, challengeData->ID);
     stmt->setUInt64(1, challengeData->GuildID);
     stmt->setUInt16(2, challengeData->MapID);
@@ -366,7 +367,7 @@ OploteLoot* ChallengeMgr::GetOploteLoot(ObjectGuid const& guid)
 
 void ChallengeMgr::SaveOploteLootToDB()
 {
-    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
     for (auto const& v : _oploteWeekLoot)
     {
@@ -389,7 +390,7 @@ void ChallengeMgr::SaveOploteLootToDB()
 
 void ChallengeMgr::DeleteOploteLoot(ObjectGuid const& guid)
 {
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHALLENGE_OPLOTE_LOOT_BY_GUID);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHALLENGE_OPLOTE_LOOT_BY_GUID);
     stmt->setUInt32(0, guid.GetCounter());
     CharacterDatabase.Execute(stmt);
 
@@ -398,7 +399,7 @@ void ChallengeMgr::DeleteOploteLoot(ObjectGuid const& guid)
 
 void ChallengeMgr::GenerateOploteLoot(bool manual)
 {
-    TC_LOG_DEBUG("challenge", "GenerateOploteLoot manual %u _challengeWeekList %zu", manual, _challengeWeekList.size());
+    TC_LOG_DEBUG(LOG_FILTER_CHALLENGE, "GenerateOploteLoot manual %u _challengeWeekList %u", manual, _challengeWeekList.size());
 
     CharacterDatabase.Query("DELETE FROM challenge_oplote_loot WHERE date <= UNIX_TIMESTAMP()");
     _oploteWeekLoot.clear();

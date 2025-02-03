@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Vault of the Wardens 100-110
     Encounter: Ashgolm
 */
@@ -152,7 +153,7 @@ public:
                 Position pos;
                 for (uint8 i = 0; i < 6; i++)
                 {
-                    pos = target->GetNearPosition(5.0f, i * 1.2);
+                    target->GetNearPosition(pos, 5.0f, i * 1.2);
                     me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_LAVA_WREATH_TRIG, true);
                 }
             }

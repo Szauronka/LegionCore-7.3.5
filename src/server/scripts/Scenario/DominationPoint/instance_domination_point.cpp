@@ -23,7 +23,7 @@
 class instance_domination_point : public InstanceMapScript
 {
 public:
-    instance_domination_point() : InstanceMapScript("instance_domination_point", 1144) { }
+    instance_domination_point() : InstanceMapScript("instance_domination_point", 1103) { }
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const override
     {
@@ -32,7 +32,7 @@ public:
 
     struct instance_domination_point_InstanceMapScript : public InstanceScript
     {
-        instance_domination_point_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_domination_point_InstanceMapScript(Map* map) : InstanceScript(map)
         { }
 
         void Initialize() override
@@ -77,5 +77,5 @@ public:
 
 void AddSC_instance_domination_point()
 {
-    //new instance_domination_point();
+    new instance_domination_point();
 }

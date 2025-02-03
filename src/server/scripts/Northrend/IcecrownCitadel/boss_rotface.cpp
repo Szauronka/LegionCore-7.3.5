@@ -367,7 +367,7 @@ class npc_precious_icc : public CreatureScript
             {
                 _summons.DespawnAll();
                 if (Creature* rotface = Unit::GetCreature(*me, _instance->GetGuidData(DATA_ROTFACE)))
-                    if (rotface->IsAlive())
+                    if (rotface->isAlive())
                         rotface->AI()->Talk(SAY_PRECIOUS_DIES);
             }
 
@@ -540,7 +540,7 @@ class spell_rotface_little_ooze_combine : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                if (!GetHitCreature() || !GetHitUnit()->IsAlive() || GetHitCreature()->IsDespawn())
+                if (!GetHitCreature() || !GetHitUnit()->isAlive() || GetHitCreature()->IsDespawn())
                     return;
 
                 GetCaster()->RemoveAurasDueToSpell(SPELL_LITTLE_OOZE_COMBINE);
@@ -572,7 +572,7 @@ class spell_rotface_large_ooze_combine : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                if (!(GetHitCreature() && GetHitCreature()->IsAlive()))
+                if (!(GetHitCreature() && GetHitCreature()->isAlive()))
                     return;
 
                 if (Aura* unstable = GetCaster()->GetAura(SPELL_UNSTABLE_OOZE))
@@ -614,7 +614,7 @@ class spell_rotface_large_ooze_buff_combine : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                if (!(GetHitCreature() && GetHitCreature()->IsAlive()))
+                if (!(GetHitCreature() && GetHitCreature()->isAlive()))
                     return;
 
                 if (Aura* unstable = GetCaster()->GetAura(SPELL_UNSTABLE_OOZE))
@@ -629,7 +629,7 @@ class spell_rotface_large_ooze_buff_combine : public SpellScriptLoader
                         GetCaster()->RemoveAurasDueToSpell(SPELL_LARGE_OOZE_COMBINE);
                         if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                             if (Creature* rotface = Unit::GetCreature(*GetCaster(), instance->GetGuidData(DATA_ROTFACE)))
-                                if (rotface->IsAlive())
+                                if (rotface->isAlive())
                                 {
                                     rotface->AI()->Talk(EMOTE_UNSTABLE_EXPLOSION);
                                     rotface->AI()->Talk(SAY_UNSTABLE_EXPLOSION);

@@ -100,9 +100,9 @@ struct TransportAnimation
 
 typedef std::map<uint32, TransportAnimation> TransportAnimationContainer;
 
-class TC_GAME_API TransportMgr
+class TransportMgr
 {
-        friend uint32 DB2Manager::LoadStores(std::string const&, uint32);
+        friend void DB2Manager::LoadStores(std::string const&, uint32);
 
     public:
         static TransportMgr* instance();
@@ -121,7 +121,7 @@ class TC_GAME_API TransportMgr
 
         // creates all transports for instance
         void CreateInstanceTransports(Map* map);
-        Transport* GetTransport(Map* map, ObjectGuid const& guid);
+        Transport* GetTransport(Map* map, uint32 entry);
 
         TransportTemplate const* GetTransportTemplate(uint32 entry) const
         {
@@ -133,14 +133,14 @@ class TC_GAME_API TransportMgr
             return Trinity::Containers::MapGetValuePtr(_transportAnimations, entry);
         }
 
+        // Generates and precaches a path for transport to avoid generation each time transport instance is created
+        void GeneratePath(GameObjectTemplate const* goInfo, TransportTemplate* transport);
+
     private:
         TransportMgr();
         ~TransportMgr();
         TransportMgr(TransportMgr const&) = delete;
         TransportMgr& operator=(TransportMgr const&) = delete;
-
-        // Generates and precaches a path for transport to avoid generation each time transport instance is created
-        void GeneratePath(GameObjectTemplate const* goInfo, TransportTemplate* transport);
 
         void AddPathNodeToTransport(uint32 transportEntry, uint32 timeSeg, TransportAnimationEntry const* node);
 

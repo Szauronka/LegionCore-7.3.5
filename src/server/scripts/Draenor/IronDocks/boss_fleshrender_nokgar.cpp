@@ -1,9 +1,13 @@
 /*
+    http://epicwow.com/
     Dungeon : Iron Docks 93-95
     Encounter: Fleshrender Nok'gar
 */
 
 #include "iron_docks.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "Vehicle.h"
 
 enum Says
 {

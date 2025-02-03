@@ -28,6 +28,7 @@
 #include "Group.h"
 #include "SpellInfo.h"
 #include "CharmInfo.h"
+#include "SpellAuraEffects.h"
 
 int PetAI::Permissible(const Creature* creature)
 {
@@ -93,14 +94,19 @@ bool PetAI::_needToStop()
     if (me->isCharmed() && me->getVictim() == me->GetCharmer())
         return true;
 
+    // dont allow pets to follow targets far away from owner
+    if (Unit* owner = me->GetCharmerOrOwner())
+        if (owner->GetExactDist(me) >= (owner->GetVisibilityRange() - 10.0f))
+            return true;
+
     return !me->IsValidAttackTarget(me->getVictim());
 }
 
 void PetAI::_stopAttack()
 {
-    if (!me->IsAlive())
+    if (!me->isAlive())
     {
-        TC_LOG_DEBUG("misc", "Creature stoped attacking cuz his dead [guid=%s]", me->GetGUID().ToString().c_str());
+        TC_LOG_DEBUG(LOG_FILTER_PETS, "Creature stoped attacking cuz his dead [guid=%s]", me->GetGUID().ToString().c_str());
         me->GetMotionMaster()->Clear();
         me->GetMotionMaster()->MoveIdle();
         me->CombatStop();
@@ -115,7 +121,7 @@ void PetAI::_stopAttack()
 
 void PetAI::UpdateAI(uint32 diff)
 {
-    if (!me->IsAlive())
+    if (!me->isAlive() || !me->GetCharmInfo())
         return;
 
     Unit* owner = me->GetCharmerOrOwner();
@@ -132,10 +138,11 @@ void PetAI::UpdateAI(uint32 diff)
         if (!me->HasUnitState(UNIT_STATE_FOLLOW))
             me->GetMotionMaster()->MoveFollow(owner, me->GetFollowDistance(), me->GetFollowAngle());
     }
-    else if (me->getVictim())
+    else if (me->getVictim() && me->getVictim()->isAlive())
     {
         // is only necessary to stop casting, the pet must not exit combat
-        if (me->getVictim()->HasCrowdControlAura(me))
+        if (!me->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && // ignore channeled spells (Pin, Seduction) 
+            me->getVictim()->HasCrowdControlAura(me))
         {
             me->InterruptNonMeleeSpells(false);
             return;
@@ -143,7 +150,7 @@ void PetAI::UpdateAI(uint32 diff)
 
         if (_needToStop())
         {
-            TC_LOG_DEBUG("misc", "Pet AI stopped attacking [guid=%s]", me->GetGUID().ToString().c_str());
+            TC_LOG_DEBUG(LOG_FILTER_PETS, "PetAI::UpdateAI: AI stopped attacking %s", me->GetGUID().ToString().c_str());
             _stopAttack();
             return;
         }
@@ -151,12 +158,18 @@ void PetAI::UpdateAI(uint32 diff)
         if (owner && !owner->isInCombat())
             owner->SetInCombatWith(me->getVictim());
 
-        if (!me->GetCasterPet())
+        // Check before attacking to prevent pets from leaving stay position
+        if (me->GetCharmInfo()->HasCommandState(COMMAND_STAY))
+        {
+            if (me->GetCharmInfo()->IsCommandAttack() || (me->GetCharmInfo()->IsAtStay() && me->IsWithinMeleeRange(me->getVictim())))
+                DoMeleeAttackIfReady();
+        }
+        else
             DoMeleeAttackIfReady();
     }
     else if (owner && me->GetCharmInfo()) //no victim
     {
-        //TC_LOG_DEBUG("misc", "PetAI::UpdateAI [guid=%u] no victim GetCasterPet %i", me->GetGUIDLow(), me->GetCasterPet());
+        //TC_LOG_DEBUG(LOG_FILTER_PETS, "PetAI::UpdateAI [guid=%u] no victim GetCasterPet %i", me->GetGUIDLow(), me->GetCasterPet());
         // Only aggressive pets do target search every update.
         // Defensive pets do target search only in these cases:
         //  * Owner attacks something - handled by OwnerAttacked()
@@ -185,7 +198,7 @@ void PetAI::UpdateAI(uint32 diff)
     {
         typedef std::vector<std::pair<Unit*, Spell*> > TargetSpellList;
         TargetSpellList targetSpellStore;
-        // TC_LOG_DEBUG("misc", "PetAI::UpdateAI GetPetAutoSpellSize %i", me->GetPetAutoSpellSize());
+        // TC_LOG_DEBUG(LOG_FILTER_PETS, "PetAI::UpdateAI GetPetAutoSpellSize %i", me->GetPetAutoSpellSize());
 
         for (uint8 i = 0; i < me->GetPetAutoSpellSize(); ++i)
         {
@@ -197,17 +210,33 @@ void PetAI::UpdateAI(uint32 diff)
             if (!spellInfo)
                 continue;
 
-            // TC_LOG_DEBUG("misc", "PetAI::UpdateAI spellID %i, Cooldown %i IsPositive %i CanBeUsedInCombat %i GUID %u",
+            // TC_LOG_DEBUG(LOG_FILTER_PETS, "PetAI::UpdateAI spellID %i, Cooldown %i IsPositive %i CanBeUsedInCombat %i GUID %u",
             // spellID, me->HasCreatureSpellCooldown(spellID), spellInfo->IsPositive(), spellInfo->CanBeUsedInCombat(), me->GetGUIDLow());
 
             if (me->GetCharmInfo() && me->GetGlobalCooldownMgr().HasGlobalCooldown(spellInfo))
                 continue;
 
+            // check spell cooldown
+            if (me->HasCreatureSpellCooldown(spellInfo->Id))
+                continue;
+
             if (spellInfo->IsPositive())
             {
-                // check spell cooldown
-                if (me->HasCreatureSpellCooldown(spellInfo->Id))
-                    continue;
+                if (spellInfo->CanBeUsedInCombat())
+                {
+                    // Check if we're in combat or commanded to attack
+                    if (!me->isInCombat() && !me->GetCharmInfo()->IsCommandAttack())
+                        continue;
+
+                    if (Unit* target = me->getAttackerForHelper())
+                    {
+                        if (me->GetDistance(target) <= 6 && spellInfo->Id == 61684) // Dash is only cast when target is 7 more yards away which is blizzlike
+                        {
+                            continue;
+                        }
+                    }
+
+                }
 
                 if (spellInfo->IsSelfTargets())
                 {
@@ -230,6 +259,7 @@ void PetAI::UpdateAI(uint32 diff)
 
                 TriggerCastData triggerData;
                 auto spell = new Spell(me, spellInfo, triggerData);
+                bool spellUsed = false;
 
                 // Some spells can target enemy or friendly (DK Ghoul's Leap)
                 // Check for enemy first (pet then owner)
@@ -242,25 +272,34 @@ void PetAI::UpdateAI(uint32 diff)
                     if (CanAttack(target) && spell->CanAutoCast(target))
                     {
                         targetSpellStore.push_back(std::make_pair(target, spell));
-                        break;
+                        spellUsed = true;
                     }
                 }
 
-                // No enemy, check friendly
-                bool spellUsed = false;
-                for (auto tar : m_AllySet)
+                if (spellInfo->HasEffect(SPELL_EFFECT_JUMP_DEST))
                 {
-                    Unit* ally = ObjectAccessor::GetUnit(*me, tar);
+                    if (!spellUsed)
+                        delete spell;
+                    continue; // Pets must only jump to target
+                }
 
-                    //only buff targets that are in combat, unless the spell can only be cast while out of combat
-                    if (!ally)
-                        continue;
-
-                    if (spell->CanAutoCast(ally))
+                // No enemy, check friendly
+                if (!spellUsed)
+                {
+                    for (ObjectGuid target : m_AllySet)
                     {
-                        targetSpellStore.push_back(std::make_pair(ally, spell));
-                        spellUsed = true;
-                        break;
+                        Unit* ally = ObjectAccessor::GetUnit(*me, target);
+
+                        //only buff targets that are in combat, unless the spell can only be cast while out of combat
+                        if (!ally)
+                            continue;
+
+                        if (spell->CanAutoCast(ally))
+                        {
+                            targetSpellStore.push_back(std::make_pair(ally, spell));
+                            spellUsed = true;
+                            break;
+                        }
                     }
                 }
 
@@ -268,7 +307,7 @@ void PetAI::UpdateAI(uint32 diff)
                 if (!spellUsed)
                     delete spell;
             }
-            else if (spellInfo->CanBeUsedInCombat())
+            else if (me->getVictim() && CanAttack(me->getVictim()) && spellInfo->CanBeUsedInCombat())
             {
                 Unit* target = me->getAttackerForHelper();
                 Unit* targetOwner = target;
@@ -294,7 +333,7 @@ void PetAI::UpdateAI(uint32 diff)
             uint32 index = urand(0, targetSpellStore.size() - 1);
 
             Spell* spell = targetSpellStore[index].second;
-            Unit*  target = targetSpellStore[index].first;
+            Unit* target = targetSpellStore[index].first;
 
             targetSpellStore.erase(targetSpellStore.begin() + index);
 
@@ -302,7 +341,7 @@ void PetAI::UpdateAI(uint32 diff)
             targets.SetCaster(target);
             targets.SetUnitTarget(target);
 
-            if (!me->HasInArc(float(M_PI), target))
+            if (!me->HasInArc(M_PI, target))
             {
                 me->SetInFront(target);
                 if (target && target->IsPlayer())
@@ -316,10 +355,58 @@ void PetAI::UpdateAI(uint32 diff)
             spell->prepare(&targets);
         }
 
+        if (Unit* owner = me->GetOwner())
+        {
+            if (Player* player = owner->ToPlayer())
+            {
+                if (player->HasPvPTalent(248490))
+                {
+                    auto distance = me->GetDistance(player);
+                    if (distance >= 25)
+                    {
+                        if (!me->HasAura(248492))
+                        {
+                            me->AddAura(248492, me);
+                        }
+                        if (AuraEffect* petAurEffMovement = me->GetAuraEffect(248492, EFFECT_0))
+                        {
+                            if (AuraEffect* petAurEffDamageReduced = me->GetAuraEffect(248492, EFFECT_1))
+                            {
+                                if (distance >= 25 && distance <= 30)
+                                {
+                                    petAurEffMovement->ChangeAmount(25);
+                                    petAurEffDamageReduced->ChangeAmount(15);
+                                }
+                                else if (distance >= 31 && distance <= 35)
+                                {
+                                    petAurEffMovement->ChangeAmount(40);
+                                    petAurEffDamageReduced->ChangeAmount(20);
+                                }
+                                else
+                                {
+                                    petAurEffMovement->ChangeAmount(50);
+                                    petAurEffDamageReduced->ChangeAmount(25);
+                                }
+                            }
+                        }
+                    }
+                    else if (me->HasAura(248492))
+                    {
+                        me->RemoveAura(248492);
+                    }
+                }
+            }
+        }
+
         // deleted cached Spell objects
         for (TargetSpellList::const_iterator itr = targetSpellStore.begin(); itr != targetSpellStore.end(); ++itr)
             delete itr->second;
     }
+
+    // Update speed as needed to prevent dropping too far behind and despawning
+    me->UpdateSpeed(MOVE_RUN, true);
+    me->UpdateSpeed(MOVE_WALK, true);
+    me->UpdateSpeed(MOVE_FLIGHT, true);
 }
 
 void PetAI::UpdateAllies()
@@ -389,6 +476,9 @@ void PetAI::AttackStart(Unit* target)
     // Overrides Unit::AttackStart to correctly evaluate Pet states
 
     // Check all pet states to decide if we can attack this target
+    if (!target)
+        return;
+
     if (!CanAttack(target))
         return;
 
@@ -411,7 +501,7 @@ void PetAI::OwnerDamagedBy(Unit* attacker)
         return;
 
     // Prevent pet from disengaging from current target
-    if (me->getVictim() && me->getVictim()->IsAlive())
+    if (me->getVictim() && me->getVictim()->isAlive())
         return;
 
     // Continue to evaluate and attack if necessary
@@ -432,7 +522,7 @@ void PetAI::OwnerAttacked(Unit* target)
         return;
 
     // Prevent pet from disengaging from current target
-    if (me->getVictim() && me->getVictim()->IsAlive())
+    if (me->getVictim() && me->getVictim()->isAlive())
         return;
 
     // Continue to evaluate and attack if necessary
@@ -473,7 +563,7 @@ Unit* PetAI::SelectNextTarget()
 void PetAI::HandleReturnMovement()
 {
     // Handles moving the pet back to stay or owner
-    //TC_LOG_DEBUG("misc", "PetAI::HandleReturnMovement [guid=%u] GetCommandState %i", me->GetGUIDLow(), me->GetCharmInfo()->GetCommandState());
+    //TC_LOG_DEBUG(LOG_FILTER_PETS, "PetAI::HandleReturnMovement [guid=%u] GetCommandState %i", me->GetGUIDLow(), me->GetCharmInfo()->GetCommandState());
 
     if (me->GetCharmInfo()->HasCommandState(COMMAND_STAY))
     {
@@ -499,7 +589,7 @@ void PetAI::HandleReturnMovement()
     {
         if (!me->GetCharmInfo()->IsFollowing() && !me->GetCharmInfo()->IsReturning() && me->GetDistance(me->GetCharmerOrOwner()) > sWorld->getRate(RATE_TARGET_POS_RECALCULATION_RANGE))
         {
-            //TC_LOG_DEBUG("misc", "PetAI::HandleReturnMovement Pet %u", me->GetEntry());
+            //TC_LOG_DEBUG(LOG_FILTER_PETS, "PetAI::HandleReturnMovement Pet %u", me->GetEntry());
 
             //if (!me->GetCharmInfo()->IsCommandAttack())
             {
@@ -544,7 +634,7 @@ void PetAI::DoAttack(Unit* target, bool chase)
 
 void PetAI::MovementInform(uint32 moveType, uint32 data)
 {
-    //TC_LOG_DEBUG("misc", "PetAI::MovementInform Pet %u moveType %i data %i", me->GetEntry(), moveType, data);
+    //TC_LOG_DEBUG(LOG_FILTER_PETS, "PetAI::MovementInform Pet %u moveType %i data %i", me->GetEntry(), moveType, data);
     // Receives notification when pet reaches stay or follow owner
     switch (moveType)
     {
@@ -595,6 +685,13 @@ bool PetAI::CanAttack(Unit* target)
     // CrashFix
     if (!me->GetCharmInfo())
         return false;
+
+    //Pet can't attack stealthed, invis and not visile targets
+    if (me->getVictim() && (me->getVictim()->HasStealthAura() || me->getVictim()->HasInvisibilityAura() || !me->getVictim()->IsVisible()))
+    {
+        TC_LOG_DEBUG(LOG_FILTER_UNITS, "Stealth/Invis check triggered");
+        return false;
+    }
 
     // Evaluates wether a pet can attack a specific
     // target based on CommandState, ReactState and other flags

@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Violet Hold Legion 100-110
     Encounter: Millificent Manastorm
     Normal: 100%, Heroic: 100%, Mythic: 100%
@@ -492,7 +493,7 @@ public:
                 me->RemoveAurasDueToSpell(SPELL_OVERLOADED);
                 me->InterruptNonMeleeSpells(false);
                 //DoCast(me, SPELL_EJECT_ALL_PASSENGERS, true);
-                me->SendPlaySpellVisualKit(63152, 0);
+                me->SendPlaySpellVisualKit(0, 63152);
                 diedTimer = 2000;
                 disarmed = true;
             }

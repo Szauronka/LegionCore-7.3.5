@@ -23,41 +23,34 @@
 #include <string>
 #include <type_traits>
 #include <openssl/sha.h>
-#include <openssl/evp.h>
 
 class BigNumber;
 
-class TC_COMMON_API SHA1Hash
+class SHA1Hash
 {
-    public:
-        typedef std::integral_constant<uint32, SHA_DIGEST_LENGTH> DigestLength;
-    
-        SHA1Hash() noexcept;
-        SHA1Hash(SHA1Hash const& other);     // copy
-        SHA1Hash(SHA1Hash&& other) noexcept; // move
-        SHA1Hash &operator=(SHA1Hash other); // assign
-        ~SHA1Hash();
+public:
+    typedef std::integral_constant<uint32, SHA_DIGEST_LENGTH> DigestLength;
 
-        void Swap(SHA1Hash& other) throw();
-        friend void Swap(SHA1Hash& left, SHA1Hash &right) { left.Swap(right); }
+    SHA1Hash();
+    ~SHA1Hash();
 
-        void UpdateBigNumbers(BigNumber* bn0, ...);
-    
-        void UpdateData(const uint8* dta, int len);
-        void UpdateData(const std::string& str);
-    
-        void Initialize();
-        void Finalize();
-    
-        uint8 *GetDigest(void) { return m_digest; }
-        int GetLength() const { return SHA_DIGEST_LENGTH; }
-    
-    private:
-        EVP_MD_CTX* m_ctx;
-        uint8 m_digest[SHA_DIGEST_LENGTH];
+    void UpdateBigNumbers(BigNumber* bn0, ...);
+
+    void UpdateData(const uint8 *dta, int len);
+    void UpdateData(const std::string &str);
+
+    void Initialize();
+    void Finalize();
+
+    uint8 *GetDigest(void) { return mDigest; }
+    int GetLength(void) const { return SHA_DIGEST_LENGTH; }
+
+private:
+    SHA_CTX mC;
+    uint8 mDigest[SHA_DIGEST_LENGTH];
 };
 
 /// Returns the SHA1 hash of the given content as hex string.
-TC_COMMON_API std::string CalculateSHA1Hash(std::string const& content);
+std::string CalculateSHA1Hash(std::string const& content);
 
 #endif

@@ -25,7 +25,6 @@ if(WIN32)
   )
 endif(WIN32)
 
-add_subdirectory(database)
 add_subdirectory(proto)
 add_subdirectory(shared)
 add_subdirectory(bnetserver)

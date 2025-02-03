@@ -1,3 +1,11 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright 2017 Uwow; EpicWoW
+//  Copyright 2016 Millenium-studio SARL
+//  All Rights Reserved.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 #ifndef VIGNETTE_MGR_HPP
 #define VIGNETTE_MGR_HPP
 
@@ -10,7 +18,7 @@ class Player;
 
 namespace Vignette
 {
-class TC_GAME_API Manager
+class Manager
 {
 public:
     explicit Manager(Player const* player);

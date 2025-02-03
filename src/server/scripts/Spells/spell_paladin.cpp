@@ -41,6 +41,7 @@ enum PaladinSpells
     PALADIN_SPELL_ARCING_LIGHT_HEAL              = 119952,
     PALADIN_SPELL_ARCING_LIGHT_DAMAGE            = 114919,
     PALADIN_SPELL_ARDENT_DEFENDER_HEAL           = 66235,
+    
 
     HealingStorm                                 = 193058,
     HealingStormHeal                             = 215257,
@@ -258,7 +259,7 @@ class spell_pal_divine_storm : public SpellScriptLoader
             if (Unit* caster = GetCaster())
             {
                 if (!hasDivineTempest)
-                    caster->SendPlaySpellVisualKit(73892, 0);
+                    caster->SendPlaySpellVisualKit(0, 73892);
             }
         }
 
@@ -926,69 +927,69 @@ class spell_pal_divine_intervention : public SpellScriptLoader
 // Greater Blessing of Kings - 203538
 class spell_pal_greater_blessing_of_kings : public SpellScriptLoader
 {
-    public:
-        spell_pal_greater_blessing_of_kings() : SpellScriptLoader("spell_pal_greater_blessing_of_kings") { }
+public:
+    spell_pal_greater_blessing_of_kings() : SpellScriptLoader("spell_pal_greater_blessing_of_kings") { }
 
-        class spell_pal_greater_blessing_of_kings_AuraScript : public AuraScript
+    class spell_pal_greater_blessing_of_kings_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_pal_greater_blessing_of_kings_AuraScript);
+
+        uint32 absorb = 0;
+
+        void CalculateAmount(AuraEffect const* aurEff, float& amount, bool& canBeRecalculated)
         {
-            PrepareAuraScript(spell_pal_greater_blessing_of_kings_AuraScript);
-
-            uint32 absorb = 0;
-
-            void CalculateAmount(AuraEffect const* aurEff, float & amount, bool & canBeRecalculated)
-            {
-                amount = -1;
-                if (Unit* caster = GetCaster())
-                    absorb = int32(caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_HOLY) * 2.7f);
-            }
-
-            void CalculateDummy(AuraEffect const* aurEff, float & amount, bool & canBeRecalculated)
-            {
-                if (Unit* caster = GetCaster())
-                    amount = int32(caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_HOLY) * 2.7f);
-            }
-
-            void Absorb(AuraEffect* aurEff, DamageInfo & dmgInfo, float & absorbAmount)
-            {
-                absorbAmount = 0;
-                if (!absorb)
-                    return;
-
-                if (dmgInfo.GetDamage() > absorb)
-                {
-                    absorbAmount = absorb;
-                    absorb = 0;
-                }
-                else
-                {
-                    absorbAmount = dmgInfo.GetDamage();
-                    absorb -= dmgInfo.GetDamage();
-                }
-                if (AuraEffect* effect = GetAura()->GetEffect(EFFECT_0))
-                    effect->ChangeAmount(absorb);
-            }
-
-            void OnTick(AuraEffect const* aurEff)
-            {
-                if (Unit* caster = GetCaster())
-                    absorb = int32(caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_HOLY) * 2.7f);
-                if (AuraEffect* effect = GetAura()->GetEffect(EFFECT_0))
-                    effect->ChangeAmount(absorb);
-            }
-
-            void Register() override
-            {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_pal_greater_blessing_of_kings_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pal_greater_blessing_of_kings_AuraScript::CalculateDummy, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pal_greater_blessing_of_kings_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
-                OnEffectAbsorb += AuraEffectAbsorbFn(spell_pal_greater_blessing_of_kings_AuraScript::Absorb, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
-            }
-        };
-
-        AuraScript* GetAuraScript() const override
-        {
-            return new spell_pal_greater_blessing_of_kings_AuraScript();
+            amount = -1;
+            if (Unit* caster = GetCaster())
+                absorb = int32(caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_HOLY) * 2.7f);
         }
+
+        void CalculateDummy(AuraEffect const* aurEff, float& amount, bool& canBeRecalculated)
+        {
+            if (Unit* caster = GetCaster())
+                amount = int32(caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_HOLY) * 2.7f);
+        }
+
+        void Absorb(AuraEffect* aurEff, DamageInfo& dmgInfo, float& absorbAmount)
+        {
+            absorbAmount = 0;
+            if (!absorb)
+                return;
+
+            if (dmgInfo.GetDamage() > absorb)
+            {
+                absorbAmount = absorb;
+                absorb = 0;
+            }
+            else
+            {
+                absorbAmount = dmgInfo.GetDamage();
+                absorb -= dmgInfo.GetDamage();
+            }
+            if (AuraEffect* effect = GetAura()->GetEffect(EFFECT_0))
+                effect->ChangeAmount(absorb);
+        }
+
+        void OnTick(AuraEffect const* aurEff)
+        {
+            if (Unit* caster = GetCaster())
+                absorb = int32(caster->GetSpellPowerDamage(SPELL_SCHOOL_MASK_HOLY) * 2.7f);
+            if (AuraEffect* effect = GetAura()->GetEffect(EFFECT_0))
+                effect->ChangeAmount(absorb);
+        }
+
+        void Register() override
+        {
+            OnEffectPeriodic += AuraEffectPeriodicFn(spell_pal_greater_blessing_of_kings_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pal_greater_blessing_of_kings_AuraScript::CalculateDummy, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pal_greater_blessing_of_kings_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
+            OnEffectAbsorb += AuraEffectAbsorbFn(spell_pal_greater_blessing_of_kings_AuraScript::Absorb, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_pal_greater_blessing_of_kings_AuraScript();
+    }
 };
 
 // Shield of Vengeance - 184662
@@ -1349,7 +1350,7 @@ struct spell_pal_at_aura_of_sacrifice : public AreaTriggerAI
                     {
                         if (Player* player = itr->getSource())
                         {
-                            if (player->IsAlive())
+                            if (player->isAlive())
                                 unitList.push_back(player);
                         }
                     }
@@ -1380,7 +1381,7 @@ struct spell_pal_at_aura_of_sacrifice : public AreaTriggerAI
 
     bool IsValidTarget(Unit* caster, Unit* target, AreaTriggerActionMoment /*actionM*/) override
     {
-        if (!caster || !target || !caster->IsAlive() || !CheckTarget(caster, target))
+        if (!caster || !target || !caster->isAlive() || !CheckTarget(caster, target))
             return false;
 
         return true;
@@ -1401,7 +1402,7 @@ struct spell_pal_at_aura_of_sacrifice : public AreaTriggerAI
     {
         SetAuraMastery(Num);
         SetTimer();
-        return 0;
+        return NULL;
     }
 
     void OnUnitEnter(Unit* /*unit*/) override
@@ -1439,7 +1440,7 @@ struct spell_pal_at_aura_of_sacrifice : public AreaTriggerAI
 
             if (Unit* caster = at->GetCaster())
             {
-                if (!caster->IsAlive())
+                if (!caster->isAlive())
                 {
                     RemoveAuras(caster, true);
                     return;

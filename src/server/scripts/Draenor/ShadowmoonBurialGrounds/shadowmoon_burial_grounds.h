@@ -1,11 +1,10 @@
 /*
+    http://epicwow.com/
     Dungeon : Shadowmoon Burial Grounds 100
 */
 
 #ifndef SHADOWMOON_BURIAL_GROUNDS_H_
 #define SHADOWMOON_BURIAL_GROUNDS_H_
-
-#define DataHeader "SBG"
 
 enum eData
 {

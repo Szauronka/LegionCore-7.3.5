@@ -103,12 +103,12 @@ void WorldSession::SendTrainerList(ObjectGuid const& guid)
 
 void WorldSession::SendTrainerList(ObjectGuid const& guid, std::string const& strTitle)
 {
-    TC_LOG_DEBUG("network", "WORLD: SendTrainerList");
+    TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "WORLD: SendTrainerList");
 
     Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_TRAINER);
     if (!unit)
     {
-        TC_LOG_DEBUG("network", "WORLD: SendTrainerList - Unit (GUID: %u) not found or you can not interact with him.", uint32(guid.GetGUIDLow()));
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "WORLD: SendTrainerList - Unit (GUID: %u) not found or you can not interact with him.", uint32(guid.GetGUIDLow()));
         return;
     }
 
@@ -116,21 +116,22 @@ void WorldSession::SendTrainerList(ObjectGuid const& guid, std::string const& st
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
-//    // trainer list loaded at check;
-//    if (!unit->isCanTrainingOf(_player, true))
-//        return;
+    // trainer list loaded at check;
+    if (!unit->isCanTrainingOf(_player, true))
+        return;
 
     CreatureTemplate const* ci = unit->GetCreatureTemplate();
+
     if (!ci)
     {
-        TC_LOG_DEBUG("network", "WORLD: SendTrainerList - (GUID: %u) NO CREATUREINFO!", guid.GetGUIDLow());
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "WORLD: SendTrainerList - (GUID: %u) NO CREATUREINFO!", guid.GetGUIDLow());
         return;
     }
 
     TrainerSpellData const* trainer_spells = unit->GetTrainerSpells();
     if (!trainer_spells)
     {
-        TC_LOG_DEBUG("network", "WORLD: SendTrainerList - Training spells not found for creature (GUID: %u Entry: %u)",
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "WORLD: SendTrainerList - Training spells not found for creature (GUID: %u Entry: %u)",
             guid.GetGUIDLow(), unit->GetEntry());
         return;
     }
@@ -143,7 +144,8 @@ void WorldSession::SendTrainerList(ObjectGuid const& guid, std::string const& st
     // reputation discount
     float fDiscountMod = _player->GetReputationPriceDiscount(unit);
 
-    packet.Spells.reserve(trainer_spells->spellList.size());
+    packet.Spells.resize(trainer_spells->spellList.size());
+    uint32 count = 0;
     for (const auto & itr : trainer_spells->spellList)
     {
         TrainerSpell const* tSpell = &itr.second;
@@ -164,9 +166,18 @@ void WorldSession::SendTrainerList(ObjectGuid const& guid, std::string const& st
         if (!valid)
             continue;
 
+        // whats the fuck?
+        /*if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(tSpell->spell))
+        {
+            if (spellInfo->HasAttribute(SPELL_ATTR7_HORDE_ONLY) && GetPlayer()->GetTeam() != HORDE)
+                continue;
+            if (spellInfo->HasAttribute(SPELL_ATTR7_ALLIANCE_ONLY) && GetPlayer()->GetTeam() != ALLIANCE)
+                continue;
+        }*/
+
         TrainerSpellState state = _player->GetTrainerSpellState(tSpell);
 
-        WorldPackets::NPC::TrainerListSpell spell;
+        WorldPackets::NPC::TrainerListSpell& spell = packet.Spells[count];
         spell.SpellID = tSpell->spell;
         spell.MoneyCost = floor(tSpell->spellCost * fDiscountMod);
         spell.ReqSkillLine = tSpell->reqSkill;
@@ -192,9 +203,11 @@ void WorldSession::SendTrainerList(ObjectGuid const& guid, std::string const& st
             for (auto const& requirePair : sSpellMgr->GetSpellsRequiredForSpellBounds(i))
                 spell.ReqAbility[maxReq++] = requirePair.second;
         }
-
-        packet.Spells.push_back(spell);
+        ++count;
     }
+
+    // Shrink to actual data size
+    packet.Spells.resize(count);
 
     SendPacket(packet.Write());
 }
@@ -283,12 +296,8 @@ void WorldSession::HandleGossipHelloOpcode(WorldPackets::NPC::Hello& packet)
 
     player->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
 
-    // Stop the npc if moving
-    if (uint32 pause = unit->GetMovementTemplate().GetInteractionPauseTimer())
-    {
-        unit->PauseMovement(pause);
-        unit->SetHomePosition(unit->GetPosition());
-    }
+    if (unit->isArmorer() || unit->isCivilian() || unit->isQuestGiver() || unit->isServiceProvider() || unit->isGuard())
+        unit->StopMoving();
 
     if (unit->isSpiritGuide())
     {
@@ -330,13 +339,13 @@ void WorldSession::HandleGossipSelectOption(WorldPackets::NPC::GossipSelectOptio
         go = player->GetMap()->GetGameObject(packet.GossipUnit);
         if (!go)
         {
-            TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOption - GameObject (GUID: %s) not found.", packet.GossipUnit.ToString().c_str());
+            TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "WORLD: HandleGossipSelectOption - GameObject (GUID: %s) not found.", packet.GossipUnit.ToString());
             return;
         }
     }
     else
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOption - unsupported GUID %s", packet.GossipUnit.ToString().c_str());
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "WORLD: HandleGossipSelectOption - unsupported GUID %s", packet.GossipUnit.ToString());
         return;
     }
 
@@ -345,7 +354,7 @@ void WorldSession::HandleGossipSelectOption(WorldPackets::NPC::GossipSelectOptio
 
     if ((unit && unit->GetCreatureTemplate()->ScriptID != unit->LastUsedScriptID) || (go && go->GetGOInfo()->ScriptId != go->LastUsedScriptID))
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOption - Script reloaded while in use, ignoring and set new scipt id");
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "WORLD: HandleGossipSelectOption - Script reloaded while in use, ignoring and set new scipt id");
         if (unit)
             unit->LastUsedScriptID = unit->GetCreatureTemplate()->ScriptID;
         if (go)
@@ -441,7 +450,7 @@ void WorldSession::HandleBinderActivate(WorldPackets::NPC::Hello& packet)
     if (!player)
         return;
 
-    if (!player->IsInWorld() || !player->IsAlive())
+    if (!player->IsInWorld() || !player->isAlive())
         return;
 
     Creature* unit = player->GetNPCIfCanInteractWith(packet.Unit, UNIT_NPC_FLAG_INNKEEPER);
@@ -463,7 +472,7 @@ void WorldSession::SendBindPoint(Creature* npc)
     uint32 bindspell = 3286;
 
     // update sql homebind
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_PLAYER_HOMEBIND);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_PLAYER_HOMEBIND);
     stmt->setUInt16(0, _player->GetMapId());
     stmt->setUInt16(1, _player->GetCurrentAreaID());
     stmt->setFloat(2, _player->GetPositionX());
@@ -487,11 +496,11 @@ void WorldSession::SendBindPoint(Creature* npc)
 
 void WorldSession::HandleListInventory(WorldPackets::NPC::Hello& packet)
 {
-    if (GetPlayer()->IsAlive())
+    if (GetPlayer()->isAlive())
         SendListInventory(packet.Unit);
 }
 
-void WorldSession::SendListInventory(ObjectGuid const& vendorGuid)
+void WorldSession::SendListInventory(ObjectGuid const& vendorGuid, uint32 entry)
 {
     Player* player = GetPlayer();
     if (!player)
@@ -507,13 +516,16 @@ void WorldSession::SendListInventory(ObjectGuid const& vendorGuid)
     if (player->HasUnitState(UNIT_STATE_DIED))
         player->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
-    if (uint32 pause = vendor->GetMovementTemplate().GetInteractionPauseTimer())
-    {
-        vendor->PauseMovement(pause);
-        vendor->SetHomePosition(vendor->GetPosition());
-    }
+    if (vendor->HasUnitState(UNIT_STATE_MOVING))
+        vendor->StopMoving();
 
-    VendorItemData const* vendorItems = vendor->GetVendorItems();
+    VendorItemData const* vendorItems;
+    
+    if (entry != 0)
+       vendorItems = sObjectMgr->GetNpcDonateVendorItemList(entry);
+    else
+       vendorItems = vendor->GetVendorItems();
+   
     uint32 rawItemCount = vendorItems ? vendorItems->GetItemCount() : 0;
 
     //if (rawItemCount > 300),
@@ -558,8 +570,9 @@ void WorldSession::SendListInventory(ObjectGuid const& vendorGuid)
                 if (!sConditionMgr->IsObjectMeetToConditions(player, vendor, conditions))
                     continue;
 
-                if (!(itemTemplate->AllowableClass & player->getClassMask()) && itemTemplate->GetBonding() == BIND_WHEN_PICKED_UP)
-                    continue;
+                if (vendorItem->DonateCost == 0)
+                    if (!(itemTemplate->AllowableClass & player->getClassMask()) && itemTemplate->GetBonding() == BIND_WHEN_PICKED_UP)
+                        continue;
 
                 // Custom MoP Script for Pandarens Mounts (Alliance)
                 if (itemTemplate->GetClass() == 15 && itemTemplate->GetSubClass() == 5 && player->getRace() != RACE_PANDAREN_ALLIANCE
@@ -587,39 +600,41 @@ void WorldSession::SendListInventory(ObjectGuid const& vendorGuid)
                 std::vector<GuildReward> const& rewards = sGuildMgr->GetGuildRewards();
                 bool guildRewardCheckPassed = true;
                 
-                for (const auto & reward : rewards)
+                if (!entry)
                 {
-                    if (itemTemplate->GetId() != reward.Entry)
-                        continue;
-
-                    Guild* guild = sGuildMgr->GetGuildById(_player->GetGuildId());
-                    if (!guild)
+                    for (const auto & reward : rewards)
                     {
-                        guildRewardCheckPassed = false;
-                        break;
-                    }
+                        if (itemTemplate->GetId() != reward.Entry)
+                            continue;
 
-                    if (reward.Standing && player->GetReputationRank(REP_GUILD) < reward.Standing)
-                    {
-                        guildRewardCheckPassed = false;
-                        break;
-                    }
-
-                    for (uint32 const id : reward.AchievementsRequired)
-                        if (!guild->GetAchievementMgr().HasAchieved(id))
+                        Guild* guild = sGuildMgr->GetGuildById(_player->GetGuildId());
+                        if (!guild)
                         {
                             guildRewardCheckPassed = false;
                             break;
                         }
 
-                    if (reward.Racemask)
-                        if (!(player->getRaceMask() & reward.Racemask))
+                        if (reward.Standing && player->GetReputationRank(REP_GUILD) < reward.Standing)
                         {
                             guildRewardCheckPassed = false;
                             break;
                         }
+
+                        for (uint32 const id : reward.AchievementsRequired)
+                            if (!guild->GetAchievementMgr().HasAchieved(id))
+                            {
+                                guildRewardCheckPassed = false;
+                                break;
+                            }
+
+                        if (reward.Racemask)
+                            if (!(player->getRaceMask() & reward.Racemask))
+                            {
+                                guildRewardCheckPassed = false;
+                                break;
+                            }
+                    }
                 }
-
                 if (!guildRewardCheckPassed)
                     continue;
             }
@@ -633,6 +648,12 @@ void WorldSession::SendListInventory(ObjectGuid const& vendorGuid)
             //if (int32 priceMod = player->GetTotalAuraModifier(SPELL_AURA_MOD_VENDOR_ITEMS_PRICES))
                  //price -= CalculatePct(price, priceMod);
 
+            //Hack for donate
+            if (vendorItem->DonateCost != 0)
+            {
+                price = vendorItem->DonateCost * 10000;
+            }
+            
             item.MuID = slot + 1;
             item.Durability = itemTemplate->MaxDurability ? itemTemplate->MaxDurability : -1;
             item.ExtendedCostID = vendorItem->ExtendedCost;
@@ -641,7 +662,7 @@ void WorldSession::SendListInventory(ObjectGuid const& vendorGuid)
                 item.PlayerConditionFailed = vendorItem->PlayerConditionID;
             item.Type = vendorItem->Type;
             item.Quantity = leftInStock;
-            item.StackCount = itemTemplate->VendorStackCount;
+            item.StackCount = itemTemplate->GetBuyCount();
             item.Price = price;
             item.Item.Initialize(vendorItem);
         }
@@ -677,16 +698,14 @@ void WorldSession::HandleRequestStabledPets(WorldPackets::NPC::RequestStabledPet
 {
     if (!GetPlayer()->GetNPCIfCanInteractWith(packet.StableMaster, UNIT_NPC_FLAG_STABLEMASTER))
     {
-        TC_LOG_DEBUG("network", "Stablemaster (GUID:%u) not found or you can't interact with him.", packet.StableMaster.GetGUIDLow());
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "Stablemaster (GUID:%u) not found or you can't interact with him.", packet.StableMaster.GetGUIDLow());
         SendStableResult(STABLE_ERR_STABLE);
         return;
     }
 
-    // remove fake death
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
-    // remove mounts this fix bug where getting pet from stable while mounted deletes pet.
     if (GetPlayer()->IsMounted())
         GetPlayer()->RemoveAurasByType(SPELL_AURA_MOUNTED);
 

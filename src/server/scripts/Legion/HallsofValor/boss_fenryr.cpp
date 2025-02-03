@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Halls of Valor 100-110
     Encounter: Fenryr
     Normal: 100%, Heroic: 100%, Mythic: 100%
@@ -212,7 +213,7 @@ public:
                         Position pos;
                         for (uint8 i = 0; i < 3; i++)
                         {
-                            pos = me->GetNearPosition(40.0f, i);
+                            me->GetNearPosition(pos, 40.0f, i);
                             me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_SPAWN_WOLVES, true);
                         }
                         events.RescheduleEvent(EVENT_SPAWN_WOLVES, 36000);

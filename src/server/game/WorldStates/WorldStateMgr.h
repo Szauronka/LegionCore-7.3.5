@@ -9,18 +9,16 @@ inline void AddToWorldState(std::vector<WorldState*>** worldStates, WorldState* 
 
 class Player;
 
-class TC_GAME_API WorldStateMgr
+class WorldStateMgr
 {
 public:
     WorldStateMgr();
-    ~WorldStateMgr() = default;
+    ~WorldStateMgr();
 
     void Update(uint32 diff);
 
     static WorldStateMgr& Instance();
     void Initialize();
-
-    void Unload();
 
     void LoadTemplatesFromDB();
     void LoadTemplatesFromObjectTemplateDB();

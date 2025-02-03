@@ -1,4 +1,5 @@
 /*==============
+    uwow.biz
 ==============*/
 
 #include "CreatureTextMgr.h"
@@ -171,13 +172,13 @@ struct boss_lorewalker_stonestep : public BossAI
 
                 if (auto strife = ObjectAccessor::GetCreature(*me, strifeGUID))
                 {
-                    if (strife->IsAlive())
+                    if (strife->isAlive())
                         me->Kill(strife);
                 }
 
                 if (auto peril = ObjectAccessor::GetCreature(*me, perilGUID))
                 {
-                    if (peril->IsAlive())
+                    if (peril->isAlive())
                         me->Kill(peril);
                 }
             }
@@ -1069,5 +1070,5 @@ void AddSC_boss_lorewalker_stonestep()
     RegisterCreatureAI(mob_golden_beetle);
     RegisterCreatureAI(mob_jiang_xiang);
     RegisterCreatureAI(mob_songbird_queen);
-    //RegisterCreatureAI(mob_talking_fish);
+    RegisterCreatureAI(mob_talking_fish);
 }

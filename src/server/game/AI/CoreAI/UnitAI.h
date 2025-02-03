@@ -48,7 +48,7 @@ enum SelectAggroTarget
 };
 
 // default predicate function to select target based on distance, player and/or aura criteria
-struct TC_GAME_API DefaultTargetSelector
+struct DefaultTargetSelector
 {
     const Unit* me;
     float m_dist;
@@ -66,7 +66,7 @@ struct TC_GAME_API DefaultTargetSelector
 
 // Target selector for spell casts checking range, auras and attributes
 // TODO: Add more checks from Spell::CheckCast
-struct TC_GAME_API SpellTargetSelector
+struct SpellTargetSelector
 {
     public:
         SpellTargetSelector(Unit* caster, uint32 spellId);
@@ -80,7 +80,7 @@ struct TC_GAME_API SpellTargetSelector
 // Very simple target selector, will just skip main target
 // NOTE: When passing to UnitAI::SelectTarget remember to use 0 as position for random selection
 //       because tank will not be in the temporary list
-struct TC_GAME_API NonTankTargetSelector
+struct NonTankTargetSelector
 {
     public:
         NonTankTargetSelector(Creature* source, bool playerOnly = true) : _source(source), _playerOnly(playerOnly) { }
@@ -91,7 +91,7 @@ struct TC_GAME_API NonTankTargetSelector
         bool _playerOnly;
 };
 
-struct TC_GAME_API TankTargetSelector
+struct TankTargetSelector
 {
     public:
         TankTargetSelector(Creature* source, bool playerOnly = true) : _source(source), _playerOnly(playerOnly) { }
@@ -102,7 +102,7 @@ struct TC_GAME_API TankTargetSelector
         bool _playerOnly;
 };
 
-class TC_GAME_API UnitAI
+class UnitAI
 {
     protected:
         Unit* const me;
@@ -222,7 +222,7 @@ class TC_GAME_API UnitAI
         // Called at any Damage from any attacker (before damage apply)
         // Note: it for recalculation damage or special reaction at damage
         // for attack reaction use AttackedBy called for not DOT damage in Unit::DealDamage also
-        virtual void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/, DamageEffectType dmgType) { }
+        virtual void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/, DamageEffectType dmgType) {}
 
         // Called when the creature receives heal
         virtual void HealReceived(Unit* /*done_by*/, uint32& /*addhealth*/) {}
@@ -235,7 +235,6 @@ class TC_GAME_API UnitAI
         void DoAddAuraToAllHostilePlayers(uint32 spellid);
         void DoCast(uint32 spellId);
         void DoCast(Unit* victim, uint32 spellId, bool triggered = false);
-        void DoCastSelf(uint32 spellId, bool triggered = false) { DoCast(me, spellId, triggered); }
         void DoCastToAllHostilePlayers(uint32 spellid, bool triggered = false);
         void DoFunctionToHostilePlayers(uint8 playersCount, std::function<void(Unit*, Player*)> const& function);
         void DoCastVictim(uint32 spellId, bool triggered = false);
@@ -266,7 +265,7 @@ class TC_GAME_API UnitAI
         void KillAllDelayedEvents();
 };
 
-class TC_GAME_API PlayerAI : public UnitAI
+class PlayerAI : public UnitAI
 {
     protected:
         Player* const me;
@@ -278,7 +277,7 @@ class TC_GAME_API PlayerAI : public UnitAI
         bool UpdateVictim();
 };
 
-class TC_GAME_API SimpleCharmedAI : public PlayerAI
+class SimpleCharmedAI : public PlayerAI
 {
     public:
         void UpdateAI(uint32 diff);

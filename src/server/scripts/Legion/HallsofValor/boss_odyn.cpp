@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Halls of Valor 100-110
     Encounter: Odyn
     Normal: 80%, Heroic: 100%, Mythic: 100%
@@ -191,7 +192,7 @@ public:
                     for (uint8 i = 0; i < 3; i++)
                     {
                         angle = 0.0f + (i * 2);
-                        pos = target->GetNearPosition(1.0f, angle);
+                        target->GetNearPosition(pos, 1.0f, angle);
                         me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_GLOWING_FRAGMENT, true);
                     }
                     target->ToCreature()->DespawnOrUnsummon(1000);

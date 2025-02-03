@@ -154,7 +154,7 @@ public:
             bool done = true;
             for (auto itr : fear)
             {
-                if (itr->IsAlive())
+                if (itr->isAlive())
                 {
                     done = false;
                     break;
@@ -163,7 +163,7 @@ public:
 
             for (auto itr : terror)
             {
-                if (itr->IsAlive())
+                if (itr->isAlive())
                 {
                     done = false;
                     break;
@@ -201,7 +201,9 @@ public:
                             if (targets.empty())
                                 return;
 
-                            Trinity::Containers::RandomShuffle(targets);
+                            std::random_device rd;
+                            std::mt19937 g(rd());
+                            std::shuffle(targets.begin(), targets.end(), g);
                             if (Unit* target = sObjectAccessor->FindUnit((*targets.begin())))
                                 me->CastSpell(target, SPELL_CORRUPTION_BOLT, true);
                         }
@@ -305,7 +307,7 @@ public:
             bool done = true;
             for (auto itr : fear)
             {
-                if (itr->IsAlive())
+                if (itr->isAlive())
                 {
                     done = false;
                     break;
@@ -314,7 +316,7 @@ public:
 
             for (auto itr : terror)
             {
-                if (itr->IsAlive())
+                if (itr->isAlive())
                 {
                     done = false;
                     break;
@@ -352,7 +354,9 @@ public:
                             if (targets.empty())
                                 return;
 
-                            Trinity::Containers::RandomShuffle(targets);
+                            std::random_device rd;
+                            std::mt19937 g(rd());
+                            std::shuffle(targets.begin(), targets.end(), g);
                             if (Unit* target = sObjectAccessor->FindUnit((*targets.begin())))
                                 me->CastSpell(target, SPELL_CORRUPTION_BOLT, true);
                         }
@@ -527,7 +531,8 @@ public:
         {
             if (Unit* caster = GetCaster())
             {
-                Position pos = caster->GetPosition();
+                Position pos;
+                caster->GetPosition(&pos);
                 caster->SummonCreature(NPC_NIGHT_TERROR_SUMMON, pos);
             }
         }
@@ -575,22 +580,22 @@ public:
     bool OnGossipHello(Player * player, Creature * Creature)
     {
         if (player->GetQuestRewardStatus(QuestFearItself))
-            player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Sha Touched Weapon Gems", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Sha Touched Weapon Gems", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
         if (player->GetQuestRewardStatus(QuestTheCrownOfHeaven))
-            player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Sha Touched Head Gems", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Sha Touched Head Gems", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
 
         if (player->GetQuestRewardStatus(QuestTheSoulOfTheHorde) || player->GetQuestRewardStatus(QuestCallThePackMaster))
-            player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Eye of the Black Prince [2500 gold coins]", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Eye of the Black Prince [2500 gold coins]", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
 
         if (player->GetQuestRewardStatus(QuestCloakOfVirtue))
-            player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Cloaks", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Cloaks", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
 
         if (player->GetQuestRewardStatus(QuestPandarenLegend))
-            player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Legenday enchant [1000 gold coins]", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Legenday enchant [1000 gold coins]", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
 
 
-        player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "No thank you..", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 60);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "No thank you..", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 60);
 
         player->SEND_GOSSIP_MENU(1, Creature->GetGUID());
         return true;
@@ -641,10 +646,10 @@ public:
                 break;
 
             case GOSSIP_ACTION_INFO_DEF + 1: // Sha Touched Weapon gems
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Crystalized Dread [10k gold coins]", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 51);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Crystalized Horror [10k gold coins]", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 52);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Crystalized Terror [10k gold coins]", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 53);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Exit..", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 60);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Crystalized Dread [10k gold coins]", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 51);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Crystalized Horror [10k gold coins]", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 52);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Crystalized Terror [10k gold coins]", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 53);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Exit..", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 60);
 
                 player->SEND_GOSSIP_MENU(1, Creature->GetGUID());
                 break;
@@ -705,11 +710,11 @@ public:
                 break;
 
             case GOSSIP_ACTION_INFO_DEF + 2: // Sha Touched Weapon gems
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Indomitable Primal Diamond", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 20);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Courageous Primal Diamond", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 21);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Capacitive Primal Diamond", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 22);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Sinister Primal Diamond", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 23);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Exit..", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 60);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Indomitable Primal Diamond", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 20);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Courageous Primal Diamond", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 21);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Capacitive Primal Diamond", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 22);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Sinister Primal Diamond", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 23);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Exit..", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 60);
 
                 player->SEND_GOSSIP_MENU(1, Creature->GetGUID());
                 break;
@@ -794,14 +799,14 @@ public:
 
                 // uint32 EntriesCloaks[6] = { 98146, 98147, 98148, 98149, 98150, 98335 }; // oxhorn, tigerclaw, tigerfang, cranewing, jadefire, oxhoof
             case GOSSIP_ACTION_INFO_DEF + 3: // Cloaks
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Oxhorn Bladebreaker", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 31);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Tigerclaw Cape", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 32);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Tigerfang Wrap", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 33);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Cranewing Cloak", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 34);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Jadefire Drape", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 35);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Oxhoof Greatcloak", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 36);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Oxhorn Bladebreaker", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 31);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Tigerclaw Cape", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 32);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Tigerfang Wrap", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 33);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Cranewing Cloak", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 34);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Jadefire Drape", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 35);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Oxhoof Greatcloak", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 36);
 
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Exit..", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 60);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Exit..", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 60);
 
                 player->SEND_GOSSIP_MENU(1, Creature->GetGUID());
                 break;

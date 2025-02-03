@@ -1,3 +1,7 @@
+/*
+https://uwow.biz/
+*/
+
 #include "the_nighthold.h"
 
 Position const sludgeraxSumPos[8] =
@@ -289,7 +293,7 @@ public:
                     
                 for (uint8 i = 0; i < count; ++i)
                 {
-                    pos = me->GetNearPosition(25.0f, frand(0.0f, 6.28f));
+                    me->GetNearPosition(pos, 25.0f, frand(0.0f, 6.28f));
                     me->CastSpell(pos, SPELL_SUCCULENT_FEAST_SUM, true);
                 }
             }
@@ -299,7 +303,7 @@ public:
                 {
                     me->AddDelayedEvent(250 * i, [this, i] () -> void
                     {
-                        if (me && me->IsAlive())
+                        if (me && me->isAlive())
                             me->CastSpell(scrubberPos[i], SPELL_TIDY_UP_SUM, true);
                     });
                 }
@@ -592,7 +596,7 @@ public:
         void IsSummonedBy(Unit* summoner) override
         {
             onClick = false;
-            me->SetPowerType(POWER_MANA);
+            me->setPowerType(POWER_MANA);
             me->SetMaxPower(POWER_MANA, 100);
             me->SetPower(POWER_MANA, 0);
             me->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);

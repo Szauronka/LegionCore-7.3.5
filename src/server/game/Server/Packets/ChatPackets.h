@@ -143,7 +143,7 @@ namespace WorldPackets
         };
 
         // SMSG_CHAT
-        class TC_GAME_API Chat final : public ServerPacket
+        class Chat final : public ServerPacket
         {
         public:
             Chat() : ServerPacket(SMSG_CHAT, 100) { }
@@ -152,6 +152,7 @@ namespace WorldPackets
             void Initialize(ChatMsg chatType, Language language, WorldObject const* sender, WorldObject const* receiver, std::string message, uint32 achievementId = 0, std::string channelName = "", LocaleConstant locale = DEFAULT_LOCALE, std::string addonPrefix = "");
             void SetSender(WorldObject const* sender, LocaleConstant locale);
             void SetReceiver(WorldObject const* receiver, LocaleConstant locale);
+            std::string CodeChatMessage(std::string text, uint32 lang_id);
 
             WorldPacket const* Write() override;
 
@@ -214,7 +215,7 @@ namespace WorldPackets
             int32 EmoteID = 0;
         };
 
-        class TC_GAME_API PrintNotification final : public ServerPacket
+        class PrintNotification final : public ServerPacket
         {
         public:
             PrintNotification(std::string const& notifyText) : ServerPacket(SMSG_PRINT_NOTIFICATION, 2 + notifyText.size()), NotifyText(notifyText) { }
@@ -256,7 +257,7 @@ namespace WorldPackets
             std::string MessageText;
         };
 
-        class TC_GAME_API WorldText final : public ServerPacket
+        class WorldText final : public ServerPacket
         {
         public:
             WorldText() : ServerPacket(SMSG_WORLD_TEXT, 16 + 4 + 4 + 2) { }

@@ -22,6 +22,7 @@
 #include "QuestPackets.h"
 #include "DatabaseEnv.h"
 #include "GameTables.h"
+#include "ObjectMgr.h"
 
 bool QuestObjective::IsStoringFlag() const
 {
@@ -206,6 +207,7 @@ void Quest::LoadQuestTemplateAddon(Field* fields)
     SourceItemIdCount = fields[15].GetUInt8();
     SpecialFlags = fields[16].GetUInt8();
     RewardMailTitle = fields[17].GetString();
+    ScriptId = sObjectMgr->GetScriptId(fields[18].GetCString());
 
     if (SpecialFlags & QUEST_SPECIAL_FLAGS_AUTO_ACCEPT)
         Flags |= QUEST_FLAGS_AUTO_ACCEPT;
@@ -290,14 +292,33 @@ uint32 Quest::XPValue(Player* player) const
             diffFactor = 10;
 
         uint32 xp = diffFactor * xpentry->Difficulty[RewardXPDifficulty] * RewardXPMultiplier / 10 * multiplier;
-        if (xp <= 100)
-            xp = 5 * ((xp + 2) / 5);
-        else if (xp <= 500)
-            xp = 10 * ((xp + 5) / 10);
-        else if (xp <= 1000)
-            xp = 25 * ((xp + 12) / 25);
-        else
-            xp = 50 * ((xp + 25) / 50);
+        if (!IsDaily())
+        {
+            uint32 expLevel = GetMaxLevelForExpansion(player->GetMap()->GetEntry()->ExpansionID);
+
+            switch (player->GetZoneId())
+            {
+                // Mount Hyjal
+                case 616:
+                // Twilight Highlands
+                case 4922:
+                // Uldum
+                case 5034:
+                // Deepholm
+                case 5042:
+                // Vashj'ir
+                case 4815:  // Kelp'thar Forest
+                case 5144:  // Shimmering Expanse
+                case 5145:  // Abyssal Depths
+                    expLevel = GetMaxLevelForExpansion(Expansions::EXPANSION_CATACLYSM);
+                    break;
+            }
+
+            if (player->getLevel() > expLevel)
+                xp = uint32(xp / 9.0f);
+        }
+
+        xp = RoundXPValue(xp);
 
         return xp;
     }
@@ -329,7 +350,15 @@ void Quest::BuildQuestRewards(WorldPackets::Quest::QuestRewards& rewards, Player
     rewards.ChoiceItemCount = m_rewChoiceItemsCount;
     rewards.ItemCount = m_rewItemsCount;
     rewards.Money = player->GetQuestMoneyReward(this);
-    rewards.XP = player->GetQuestXPReward(this);
+    float QuestXpRate = 1.0f;
+    if (float rate = player->GetSession()->GetPersonalXPRate())
+        QuestXpRate = rate;
+    else if (player->GetPersonnalXpRate())
+        QuestXpRate = player->GetPersonnalXpRate();
+    else
+        QuestXpRate = sWorld->getRate(RATE_XP_QUEST);
+
+    rewards.XP = uint32(XPValue(player) * QuestXpRate);
     rewards.ArtifactCategoryID = RewardArtifactCategoryID;
     rewards.ArtifactXP = RewardArtifactXP;
     rewards.Honor = RewardHonor;

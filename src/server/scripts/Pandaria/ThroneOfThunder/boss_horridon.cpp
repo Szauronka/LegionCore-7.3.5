@@ -266,7 +266,7 @@ public:
         {
             if (Creature* jalak = me->GetCreature(*me, instance->GetGuidData(NPC_JALAK)))
             {
-                if (!jalak->IsAlive())
+                if (!jalak->isAlive())
                 {
                     jalak->Respawn();
                     jalak->GetMotionMaster()->MoveTargetedHome();
@@ -375,7 +375,7 @@ public:
         {
             if (Creature* jalak = me->GetCreature(*me, instance->GetGuidData(NPC_JALAK)))
             {
-                if (jalak->IsAlive())
+                if (jalak->isAlive())
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 else
                 {
@@ -463,7 +463,7 @@ public:
         {
             if (Creature* horridon = me->GetCreature(*me, instance->GetGuidData(NPC_HORRIDON)))
             {
-                if (!horridon->IsAlive())
+                if (!horridon->isAlive())
                 {
                     horridon->Respawn();
                     horridon->GetMotionMaster()->MoveTargetedHome();
@@ -499,7 +499,7 @@ public:
         {
             if (Creature* horridon = me->GetCreature(*me, instance->GetGuidData(NPC_HORRIDON)))
             {
-                if (horridon->IsAlive())
+                if (horridon->isAlive())
                     horridon->AddAura(SPELL_RAMPAGE, horridon);
                 else
                 {
@@ -1497,7 +1497,7 @@ public:
             if (GetCaster() && GetCaster()->ToCreature())
             {
                 if (Unit* _target = GetCaster()->GetUnit(*GetCaster(), targetGuid))
-                    if (_target->IsAlive())
+                    if (_target->isAlive())
                         GetCaster()->CastSpell(_target, SPELL_RENDING_CHARGE_DMG, true);
                 GetCaster()->ToCreature()->AI()->DoAction(ACTION_RE_ATTACK);
             }
@@ -1649,7 +1649,7 @@ void AddSC_boss_horridon()
 {
     new boss_horridon();
     new boss_jalak();
-    //new npc_horridon_gate_controller();
+    new npc_horridon_gate_controller();
     new npc_generic_gate_add();
     new npc_zandalari_dinomancer();
     new npc_sand_trap();

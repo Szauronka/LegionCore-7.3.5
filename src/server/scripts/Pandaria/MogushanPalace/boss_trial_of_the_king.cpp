@@ -1,4 +1,5 @@
 /*===============
+    uwow.biz
 ================*/
 
 #include "mogu_shan_palace.h"
@@ -505,9 +506,9 @@ struct boss_kuai_the_brute : public BossAI
 
             if (auto mu_shiba = me->GetMap()->GetCreature(pet_guid))
             {
-                if (mu_shiba && mu_shiba->IsAlive())
+                if (mu_shiba && mu_shiba->isAlive())
                 {
-                    mu_shiba->GetMotionMaster()->MoveFollow(me, 2.0f, float(M_PI / 4));
+                    mu_shiba->GetMotionMaster()->MoveFollow(me, 2.0f, M_PI / 4);
                     mu_shiba->GetAI()->DoAction(ACTION_ATTACK_STOP);
                 }
             }

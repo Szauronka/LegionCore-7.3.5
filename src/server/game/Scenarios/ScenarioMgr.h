@@ -29,7 +29,7 @@ typedef std::map<uint32 /*instance_id*/, Scenario*> ScenarioMap;
 typedef std::map<uint32, ScenarioSteps> ScenarioStepsByScenarioMap;
 typedef std::vector<ScenarioSteps*> ScenarioStepsByScenarioVector;
 
-class TC_GAME_API ScenarioMgr
+class ScenarioMgr
 {
 public:
     ScenarioMgr();

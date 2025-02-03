@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Vault of the Wardens 100-110
     Encounter: Cordana
     TO-DO: Resizing AT, cast from invis for npc

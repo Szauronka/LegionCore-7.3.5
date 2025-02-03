@@ -224,7 +224,7 @@ class boss_lady_deathwhisper : public CreatureScript
             void Reset() override
             {
                 _Reset();
-                me->SetFullPower(POWER_MANA);
+                me->SetPower(POWER_MANA, me->GetMaxPower(POWER_MANA));
                 events.SetPhase(PHASE_ONE);
                 _waveCounter = 0;
                 transform = true;
@@ -302,7 +302,7 @@ class boss_lady_deathwhisper : public CreatureScript
                 // Full House achievement
                 for (SummonList::iterator itr = summons.begin(); itr != summons.end(); ++itr)
                     if (Unit* unit = ObjectAccessor::GetUnit(*me, *itr))
-                        if (unit->IsAlive() && unit->GetEntry() != NPC_VENGEFUL_SHADE)
+                        if (unit->isAlive() && unit->GetEntry() != NPC_VENGEFUL_SHADE)
                             livingAddEntries.insert(unit->GetEntry());
 
                 if (livingAddEntries.size() >= 5)
@@ -310,7 +310,7 @@ class boss_lady_deathwhisper : public CreatureScript
 
                 if (Creature* darnavan = ObjectAccessor::GetCreature(*me, _darnavanGUID))
                 {
-                    if (darnavan->IsAlive())
+                    if (darnavan->isAlive())
                     {
                         darnavan->setFaction(35);
                         darnavan->CombatStop(true);
@@ -573,7 +573,8 @@ class boss_lady_deathwhisper : public CreatureScript
 
                 Talk(SAY_ANIMATE_DEAD);
                 
-                Position pos = cultist->GetPosition();
+                Position pos;
+                cultist->GetPosition(&pos);
                 if (cultist->GetEntry() == NPC_CULT_FANATIC)
                     me->SummonCreature(NPC_REANIMATED_FANATIC, pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
                 else
@@ -591,7 +592,7 @@ class boss_lady_deathwhisper : public CreatureScript
                 std::list<Creature*> temp;
                 for (SummonList::iterator itr = summons.begin(); itr != summons.end(); ++itr)
                     if (Creature* cre = ObjectAccessor::GetCreature(*me, *itr))
-                        if (cre->IsAlive() && (cre->GetEntry() == NPC_CULT_FANATIC || cre->GetEntry() == NPC_CULT_ADHERENT))
+                        if (cre->isAlive() && (cre->GetEntry() == NPC_CULT_FANATIC || cre->GetEntry() == NPC_CULT_ADHERENT))
                             temp.push_back(cre);
 
                 // noone to empower

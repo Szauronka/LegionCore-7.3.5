@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Violet Hold Legion 100-110
     Encounter: Festerface
     Normal: 100%, Heroic: 100%, Mythic: 100%
@@ -245,7 +246,7 @@ class spell_festerface_congealing_vomit : public SpellScriptLoader
                 for(uint16 i = 0; i < 44; i++)
                 {
                     angle = frand(-0.3f, 0.3f);
-                    pos = caster->GetNearPosition(dist+i, angle);
+                    caster->GetNearPosition(pos, dist+i, angle);
                     caster->CastSpell(pos, SPELL_CONGEALING_VOMIT_VIS, true);
                 }
 
@@ -253,7 +254,7 @@ class spell_festerface_congealing_vomit : public SpellScriptLoader
                 {
                     dist += 5.0f;
                     angle = frand(-0.3f, 0.3f);
-                    pos = caster->GetNearPosition(frand(dist, 30.0f), angle);
+                    caster->GetNearPosition(pos, frand(dist, 30.0f), angle);
                     caster->CastSpell(pos, SPELL_CONGEALING_VOMIT_SUM, true);
                 }
             }

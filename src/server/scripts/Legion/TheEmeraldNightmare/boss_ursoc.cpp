@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "the_emerald_nightmare.h"
 
 enum Says
@@ -140,7 +144,8 @@ struct boss_ursoc : public BossAI
                 if (IsHeroicPlusRaid())
                 {
                     DoActionSummon(NPC_NIGHTMARE_IMAGE, ACTION_1);
-                    Position pos = me->GetFirstCollisionPosition(0.0f, 0.0f);
+                    Position pos;
+                    me->GetFirstCollisionPosition(pos, 0.0f, 0.0f);
                     me->CastSpell(pos, SPELL_ROARING_CACOPHONY_SUM, true);
                 }
                 break;
@@ -151,7 +156,7 @@ struct boss_ursoc : public BossAI
                 //DoCast(caster, SPELL_B_MOMENTUM_CHARGE);
                 //>Hack
                 me->SetPower(POWER_ENERGY, 0);
-                me->GetMotionMaster()->MoveCharge(caster->GetPositionX(), caster->GetPositionY(), caster->GetPositionZ(), 40.0f, SPELL_B_MOMENTUM_CHARGE);
+                me->GetMotionMaster()->MoveCharge(caster->GetPosition(), 40.0f, SPELL_B_MOMENTUM_CHARGE);
                 //<
                 focused = false;
                 break;

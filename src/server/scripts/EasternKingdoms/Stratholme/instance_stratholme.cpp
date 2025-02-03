@@ -64,9 +64,8 @@ class instance_stratholme : public InstanceMapScript
 
         struct instance_stratholme_InstanceMapScript : public InstanceScript
         {
-            instance_stratholme_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+            instance_stratholme_InstanceMapScript(Map* map) : InstanceScript(map)
             {
-                SetHeaders(DataHeader);
             }
 
             uint32 EncounterState[MAX_ENCOUNTER];
@@ -125,7 +124,7 @@ class instance_stratholme : public InstanceMapScript
                     return true;
                 }
 
-                TC_LOG_DEBUG("scripts", "Instance Stratholme: Cannot open slaugther square yet.");
+                TC_LOG_DEBUG(LOG_FILTER_TSCR, "Instance Stratholme: Cannot open slaugther square yet.");
                 return false;
             }
 
@@ -243,7 +242,7 @@ class instance_stratholme : public InstanceMapScript
                                     break;
                                 EncounterState[0] = data;
                                 events.RescheduleEvent(EVENT_BARON_RUN, 2700000);
-                                TC_LOG_DEBUG("scripts", "Instance Stratholme: Baron run in progress.");
+                                TC_LOG_DEBUG(LOG_FILTER_TSCR, "Instance Stratholme: Baron run in progress.");
                                 break;
                             case FAIL:
                                 DoRemoveAurasDueToSpellOnPlayers(SPELL_BARON_ULTIMATUM);
@@ -253,7 +252,8 @@ class instance_stratholme : public InstanceMapScript
                                 EncounterState[0] = data;
                                 if (Creature* ysidaTrigger = instance->GetCreature(ysidaTriggerGUID))
                                 {
-                                    Position ysidaPos = ysidaTrigger->GetPosition();
+                                    Position ysidaPos;
+                                    ysidaTrigger->GetPosition(&ysidaPos);
                                     ysidaTrigger->SummonCreature(C_YSIDA, ysidaPos, TEMPSUMMON_TIMED_DESPAWN, 1800000);
                                 }
                                 events.CancelEvent(EVENT_BARON_RUN);
@@ -290,7 +290,7 @@ class instance_stratholme : public InstanceMapScript
                             for (GuidSet::const_iterator i = abomnationGUID.begin(); i != abomnationGUID.end(); ++i)
                             {
                                 if (Creature* pAbom = instance->GetCreature(*i))
-                                    if (!pAbom->IsAlive())
+                                    if (!pAbom->isAlive())
                                         --count;
                             }
 
@@ -300,10 +300,10 @@ class instance_stratholme : public InstanceMapScript
                                 //UpdateGoState(ziggurat4GUID, 0, true);
                                 if (Creature* pBaron = instance->GetCreature(baronGUID))
                                     pBaron->SummonCreature(C_RAMSTEIN, 4032.84f, -3390.24f, 119.73f, 4.71f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 1800000);
-                                TC_LOG_DEBUG("scripts", "Instance Stratholme: Ramstein spawned.");
+                                TC_LOG_DEBUG(LOG_FILTER_TSCR, "Instance Stratholme: Ramstein spawned.");
                             }
                             else
-                                TC_LOG_DEBUG("scripts", "Instance Stratholme: %u Abomnation left to kill.", count);
+                                TC_LOG_DEBUG(LOG_FILTER_TSCR, "Instance Stratholme: %u Abomnation left to kill.", count);
                         }
 
                         if (data == NOT_STARTED)
@@ -312,7 +312,7 @@ class instance_stratholme : public InstanceMapScript
                         if (data == DONE)
                         {
                             events.RescheduleEvent(EVENT_SLAUGHTER_SQUARE, 60000);
-                            TC_LOG_DEBUG("scripts", "Instance Stratholme: Slaugther event will continue in 1 minute.");
+                            TC_LOG_DEBUG(LOG_FILTER_TSCR, "Instance Stratholme: Slaugther event will continue in 1 minute.");
                         }
                         EncounterState[4] = data;
                         break;
@@ -448,7 +448,7 @@ class instance_stratholme : public InstanceMapScript
                         case EVENT_BARON_RUN:
                             if (GetData(TYPE_BARON_RUN) != DONE)
                                 SetData(TYPE_BARON_RUN, FAIL);
-                            TC_LOG_DEBUG("scripts", "Instance Stratholme: Baron run event reached end. Event has state %u.", GetData(TYPE_BARON_RUN));
+                            TC_LOG_DEBUG(LOG_FILTER_TSCR, "Instance Stratholme: Baron run event reached end. Event has state %u.", GetData(TYPE_BARON_RUN));
                             break;
                         case EVENT_SLAUGHTER_SQUARE:
                             if (Creature* baron = instance->GetCreature(baronGUID))
@@ -458,7 +458,7 @@ class instance_stratholme : public InstanceMapScript
 
                                 HandleGameObject(ziggurat4GUID, true);
                                 HandleGameObject(ziggurat5GUID, true);
-                                TC_LOG_DEBUG("scripts", "Instance Stratholme: Black guard sentries spawned. Opening gates to baron.");
+                                TC_LOG_DEBUG(LOG_FILTER_TSCR, "Instance Stratholme: Black guard sentries spawned. Opening gates to baron.");
                             }
                             break;
                         default:

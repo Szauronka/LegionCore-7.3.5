@@ -1,3 +1,8 @@
+/*
+https://uwow.biz/
+
+*/
+
 #include "tomb_of_sargeras.h"
 
 enum Says
@@ -260,7 +265,7 @@ struct boss_fallen_avatar : BossAI
 
         pilones.clear(); // just despawned, i think
 
-        if (me->IsAlive())
+        if (me->isAlive())
             if (Creature* maiden = me->SummonCreature(NPC_AVATARA_MAIDEN, 6583.50f, -771.65f, 1663.67f, 3.04f, TEMPSUMMON_MANUAL_DESPAWN))
                 for (const auto pos : pilonesPos)
                     me->SummonCreature(NPC_PILONES, pos, maiden->GetGUID(), TEMPSUMMON_MANUAL_DESPAWN, 0);
@@ -269,7 +274,7 @@ struct boss_fallen_avatar : BossAI
 
         instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TAINTED_ESSENCE);
 
-        me->SetPower(me->GetPowerType(), 0);
+        me->SetPower(me->getPowerType(), 0);
 
         if (IntroDone)
             DoCast(SPELL_VISUAL_SWORD);
@@ -290,7 +295,7 @@ struct boss_fallen_avatar : BossAI
         Talk(SAY_AGGRO);
         _EnterCombat();
 
-        me->SetPower(me->GetPowerType(), 0);
+        me->SetPower(me->getPowerType(), 0);
 
         DoCast(74426); // hack
 
@@ -475,7 +480,7 @@ struct boss_fallen_avatar : BossAI
         if (!who->IsPlayer())
             return;
 
-        if (me->IsAlive() && !me->isInCombat() && who->GetDistance(me) <= 19.0f)
+        if (me->isAlive() && !me->isInCombat() && who->GetDistance(me) <= 19.0f)
             AttackStart(who);
 
         if (me->GetDistance(who) < 100.0f && !IntroDone)
@@ -624,7 +629,7 @@ struct boss_fallen_avatar : BossAI
                         DoCast(SPELL_ANNIHILATION);
                     });
 
-                    me->SetPower(me->GetPowerType(), 0);
+                    me->SetPower(me->getPowerType(), 0);
                 break;
                 case EVENT_SHADOWY_BLADES:
                 {
@@ -730,12 +735,10 @@ struct boss_fallen_avatar : BossAI
                     if (isSecondPhase)
                         break;
 
-                    me->SetPower(me->GetPowerType(), me->GetPower(me->GetPowerType()) + 1);
+                    me->SetPower(me->getPowerType(), me->GetPower(me->getPowerType()) + 1);
 
-                    if ((me->GetPower(me->GetPowerType()) >= 100 && summons.GetCreature(NPC_AVATARA_MAIDEN) &&
-                            summons.GetCreature(NPC_AVATARA_MAIDEN)->IsAlive())
-                        || (summons.GetCreature(NPC_AVATARA_MAIDEN) && !summons.GetCreature(
-                            NPC_AVATARA_MAIDEN)->IsAlive()))
+                    if ((me->GetPower(me->getPowerType()) >= 100 && summons.GetCreature(NPC_AVATARA_MAIDEN) && summons.GetCreature(NPC_AVATARA_MAIDEN)->isAlive())
+                        || (summons.GetCreature(NPC_AVATARA_MAIDEN) && !summons.GetCreature(NPC_AVATARA_MAIDEN)->isAlive()))
                     {
                         isSecondPhase = true;
                         events.Reset();
@@ -746,7 +749,7 @@ struct boss_fallen_avatar : BossAI
                             DoCast(SPELL_ANNIHILATION);
                         });
 
-                        me->SetPower(me->GetPowerType(), 0);
+                        me->SetPower(me->getPowerType(), 0);
                         break;
                     }
 
@@ -769,14 +772,14 @@ struct boss_fallen_avatar : BossAI
                         }
 
 
-                    if (me->GetPower(me->GetPowerType()) >= 100)
+                    if (me->GetPower(me->getPowerType()) >= 100)
                     {
                         DoCast(SPELL_RUPTURE_REALISTIC_2);
                         Talk(SAY_RUPTURE_1);
                         Talk(SAY_RUPTURE_2);
                     }
                     else
-                        me->SetPower(me->GetPowerType(), me->GetPower(me->GetPowerType()) + 3);
+                        me->SetPower(me->getPowerType(), me->GetPower(me->getPowerType()) + 3);
 
                     events.RescheduleEvent(EVENT_RUPTURE_REALISTIC_AND_ENERGY, 1000);
                     break;
@@ -832,13 +835,13 @@ struct npc_avatara_maiden : public ScriptedAI
     void Reset() override
     {
         events.Reset();
-        me->SetPower(me->GetPowerType(), 0);
+        me->SetPower(me->getPowerType(), 0);
     }
 
     void EnterCombat(Unit* who) override
     {
         me->SetReactState(REACT_DEFENSIVE);
-        me->SetPower(me->GetPowerType(), 0);
+        me->SetPower(me->getPowerType(), 0);
 
         events.RescheduleEvent(EVENT_1, 1000);   
 
@@ -862,7 +865,7 @@ struct npc_avatara_maiden : public ScriptedAI
     {
         if (spellId == SPELL_CLEANING_PROTOCOL_ABSORB && !apply)
         {
-            me->SetPower(me->GetPowerType(), 0);
+            me->SetPower(me->getPowerType(), 0);
             DoCast(me, SPELL_MALFUNCTION, true);
             me->DealDamage(me, me->GetMaxHealth()*0.25);
         }
@@ -883,7 +886,7 @@ struct npc_avatara_maiden : public ScriptedAI
             switch (eventId)
             {
             case EVENT_1:
-                if (me->GetPower(me->GetPowerType()) >= 100 && !me->HasAura(SPELL_CLEANING_PROTOCOL_ABSORB))
+                if (me->GetPower(me->getPowerType()) >= 100 && !me->HasAura(SPELL_CLEANING_PROTOCOL_ABSORB))
                 {
                     me->CastCustomSpell(SPELL_CLEANING_PROTOCOL_ABSORB, SPELLVALUE_BASE_POINT0, me->GetMaxHealth() * 0.05, me );
                     DoCast(SPELL_CLEANING_PROTOCOL);
@@ -1217,7 +1220,7 @@ class spell_tos_avatara_energy : public AuraScript
         if (!target)
             return;
         
-        target->SetPower(target->GetPowerType(), target->GetPower(target->GetPowerType()) + ((isFirstTick || urand(1, 100) == 90) ? 3 : 2));
+        target->SetPower(target->getPowerType(), target->GetPower(target->getPowerType()) + ((isFirstTick || urand(1, 100) == 90) ? 3 : 2));
         isFirstTick = false;
     }
 

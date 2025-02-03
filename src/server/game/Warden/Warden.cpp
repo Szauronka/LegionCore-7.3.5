@@ -34,9 +34,9 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 
-Warden::Warden(WorldSession* session) : _session(session), _inputCrypto(16), _outputCrypto(16), _state(WARDEN_NOT_INITIALIZED), _currentSessionFlagged(false), _checkSequenceIndex(0)
+Warden::Warden(WorldSession* session) : _session(session), _state(WARDEN_NOT_INITIALIZED), _currentSessionFlagged(false), _checkSequenceIndex(0)
 {
-    _lastUpdateTime = GameTime::GetGameTimeMS();
+    _lastUpdateTime = getMSTime();
     _currentModule = nullptr;
 
     CreateTimers();
@@ -67,15 +67,18 @@ bool Warden::Create(BigNumber *k)
     WK.Generate(tempClientKeySeed, 16);
     WK.Generate(tempServerKeySeed, 16);
 
+    ARC4::rc4_init(&_clientRC4State, tempClientKeySeed, 16);
+    ARC4::rc4_init(&_serverRC4State, tempServerKeySeed, 16);
+
     //sLog->outWarden("Module Key: %s", ByteArrayToHexStr(_currentModule->Key, 16).c_str());
     //sLog->outWarden("Module ID: %s", ByteArrayToHexStr(_currentModule->ID, 32).c_str());
     //RequestModule();
 
-    //TC_LOG_DEBUG("warden", "Server side warden for client %u initializing...", session->GetAccountId());
-    //TC_LOG_DEBUG("warden", "C->S Key: %s", ByteArrayToHexStr(_inputKey, 16).c_str());
-    //TC_LOG_DEBUG("warden", "S->C Key: %s", ByteArrayToHexStr(_outputKey, 16).c_str());
-    //TC_LOG_DEBUG("warden", "Seed: %s", ByteArrayToHexStr(_seed, 16).c_str());
-    //TC_LOG_DEBUG("warden", "Loading Module...");
+    //TC_LOG_DEBUG(LOG_FILTER_WARDEN, "Server side warden for client %u initializing...", session->GetAccountId());
+    //TC_LOG_DEBUG(LOG_FILTER_WARDEN, "C->S Key: %s", ByteArrayToHexStr(_inputKey, 16).c_str());
+    //TC_LOG_DEBUG(LOG_FILTER_WARDEN, "S->C Key: %s", ByteArrayToHexStr(_outputKey, 16).c_str());
+    //TC_LOG_DEBUG(LOG_FILTER_WARDEN, "Seed: %s", ByteArrayToHexStr(_seed, 16).c_str());
+    //TC_LOG_DEBUG(LOG_FILTER_WARDEN, "Loading Module...");
     SetNewState(WARDEN_MODULE_NOT_LOADED);
 
     return true;
@@ -102,7 +105,7 @@ void Warden::ConnectToMaievModule()
 
 void Warden::RequestModule()
 {
-    TC_LOG_DEBUG("warden", "WARDEN: Request module(0x00)");
+    TC_LOG_DEBUG(LOG_FILTER_WARDEN, "WARDEN: Request module(0x00)");
 
     SetNewState(WARDEN_MODULE_REQUESTING);
 
@@ -127,7 +130,7 @@ void Warden::RequestModule()
 
 void Warden::SendModuleToClient()
 {
-    TC_LOG_DEBUG("warden", "WARDEN: Send module to client(0x01)");
+    TC_LOG_DEBUG(LOG_FILTER_WARDEN, "WARDEN: Send module to client(0x01)");
 
     // CMSG_MODULE_MISSING, change state and stop timer
     SetNewState(WARDEN_MODULE_SENDING);
@@ -162,7 +165,7 @@ void Warden::SendModuleToClient()
 
 void Warden::RequestHash()
 {
-    TC_LOG_DEBUG("warden", "WARDEN: Request hash(0x05)");
+    TC_LOG_DEBUG(LOG_FILTER_WARDEN, "WARDEN: Request hash(0x05)");
 
     SetNewState(WARDEN_MODULE_SEND_CHALLENGE);
 
@@ -184,7 +187,7 @@ void Warden::RequestHash()
 
 void Warden::Update()
 {
-    uint32 currentUpdateTime = GameTime::GetGameTimeMS();
+    uint32 currentUpdateTime = getMSTime();
     const uint32 diff = currentUpdateTime - _lastUpdateTime;
     _lastUpdateTime = currentUpdateTime;
 
@@ -326,12 +329,12 @@ void Warden::DoAction(uint32 id, const uint32 diff)
 
 void Warden::DecryptData(uint8* buffer, uint32 length)
 {
-    _inputCrypto.UpdateData(length, buffer);
+    ARC4::rc4_process(&_clientRC4State, buffer, length);
 }
 
 void Warden::EncryptData(uint8* buffer, uint32 length)
 {
-    _outputCrypto.UpdateData(length, buffer);
+    ARC4::rc4_process(&_serverRC4State, buffer, length);
 }
 
 bool Warden::IsValidCheckSum(uint32 checksum, const uint8* data, const uint16 length)
@@ -358,7 +361,7 @@ void Warden::SetPlayerLocked(uint16 checkId)
 {
     SetNewState(WARDEN_MODULE_SET_PLAYER_LOCK);
 
-    std::string message = "Anticheat: Unknown internal error";
+    std::string message = "uWoW Anticheat: Unknown internal error";
 
     WardenCheck* wd = _wardenMgr->GetCheckDataById(checkId);
 
@@ -366,22 +369,22 @@ void Warden::SetPlayerLocked(uint16 checkId)
     {
         switch (wd->Type)
         {
-            case MPQ_CHECK: message = "Anticheat: Banned MPQ patches detected."; break;
-            case LUA_STR_CHECK: message = "Anticheat: Banned addons detected."; break;
+            case MPQ_CHECK: message = "uWoW Anticheat: Banned MPQ patches detected."; break;
+            case LUA_STR_CHECK: message = "uWoW Anticheat: Banned addons detected."; break;
             case PAGE_CHECK_A:
             case PAGE_CHECK_B:
             {
-                message = "Anticheat: Injected cheat code detected.";
+                message = "uWoW Anticheat: Injected cheat code detected.";
                 break;
             }
-            case MEM_CHECK: message = "Anticheat: Unknown cheat detected."; break;
-            case MODULE_CHECK: message = "Anticheat: Banned DLLs detected."; break;
-            case PROC_CHECK: message = "Anticheat: API hooks detected."; break;
-            default: message = "Anticheat: Unknown suspicious program detected."; break;
+            case MEM_CHECK: message = "uWoW Anticheat: Unknown cheat detected."; break;
+            case MODULE_CHECK: message = "uWoW Anticheat: Banned DLLs detected."; break;
+            case PROC_CHECK: message = "uWoW Anticheat: API hooks detected."; break;
+            default: message = "uWoW Anticheat: Unknown suspicious program detected."; break;
         }
 
         if (wd->BanReason != "")
-            message = "Anticheat: " + wd->BanReason + " detected.";
+            message = "uWoW Anticheat: " + wd->BanReason + " detected.";
     }
 
     if (Player* player = _session->GetPlayer())
@@ -440,7 +443,7 @@ std::string Warden::Penalty(uint16 checkId)
                 else
                     banReason << check->BanReason << " (CheckId: " << checkId << ") (Realm: " << sWorld->GetRealmName() << ")";
 
-                sWorld->BanAccount(BAN_ACCOUNT, accountName, duration.str(), banReason.str(), "Anticheat", true);
+                sWorld->BanAccount(BAN_ACCOUNT, accountName, duration.str(), banReason.str(), "uWoW Anticheat", true);
                 KickPlayer();
                 return "Ban";
             }
@@ -467,7 +470,7 @@ std::string Warden::Penalty(uint16 checkId)
                 else
                     banReason << check->BanReason << " (CheckId: " << checkId << ") (Realm: " << sWorld->GetRealmName() << ")";
 
-                sWorld->FlagAccount(_session->GetAccountId(), banTime, banReason.str(), "Anticheat");
+                sWorld->FlagAccount(_session->GetAccountId(), banTime, banReason.str(), "uWoW Anticheat");
                 return "FlagAccount";
             }
             default:
@@ -485,7 +488,7 @@ uint32 Warden::CalcBanTime()
     uint32 accountId = _session->GetAccountId();
     uint32 banTime = 72 * HOUR;
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_WARDEN_BAN_ATTEMPTS);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_WARDEN_BAN_ATTEMPTS);
     stmt->setUInt32(0, accountId);
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
@@ -524,7 +527,7 @@ uint32 Warden::GetBanTime()
     uint32 accountId = _session->GetAccountId();
     uint32 banTime = 72 * HOUR;
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_WARDEN_BAN_ATTEMPTS);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_WARDEN_BAN_ATTEMPTS);
     stmt->setUInt32(0, accountId);
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
 

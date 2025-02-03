@@ -15,13 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-Name: learn_commandscript
-%Complete: 100
-Comment: All learn related commands
-Category: commandscripts
-EndScriptData */
-
 #include "Chat.h"
 #include "ScriptMgr.h"
 #include "SpellMgr.h"
@@ -38,23 +31,23 @@ public:
 
         static std::vector<ChatCommand> learnAllCommandTable =
         {
-            { "gm",             SEC_GAMEMASTER,     false, &HandleLearnAllGMCommand,            ""},
-            { "crafts",         SEC_GAMEMASTER,     false, &HandleLearnAllCraftsCommand,        ""},
-            { "default",        SEC_MODERATOR,      false, &HandleLearnAllDefaultCommand,       ""},
-            { "lang",           SEC_MODERATOR,      false, &HandleLearnAllLangCommand,          ""},
-            { "recipes",        SEC_GAMEMASTER,     false, &HandleLearnAllRecipesCommand,       ""}
+            { "gm",             SEC_GAMEMASTER,     true, &HandleLearnAllGMCommand,            ""},
+            { "crafts",         SEC_GAMEMASTER,     true, &HandleLearnAllCraftsCommand,        ""},
+            { "default",        SEC_MODERATOR,      true, &HandleLearnAllDefaultCommand,       ""},
+            { "lang",           SEC_MODERATOR,      true, &HandleLearnAllLangCommand,          ""},
+            { "recipes",        SEC_GAMEMASTER,     true, &HandleLearnAllRecipesCommand,       ""}
         };
 
         static std::vector<ChatCommand> learnCommandTable =
         {
-            { "all",            SEC_ADMINISTRATOR,  false, NULL,                                "",  learnAllCommandTable },
-            { "",               SEC_ADMINISTRATOR,  false, &HandleLearnCommand,                 ""}
+            { "all",            SEC_ADMINISTRATOR,  true, NULL,                                "",  learnAllCommandTable },
+            { "",               SEC_ADMINISTRATOR,  true, &HandleLearnCommand,                 ""}
         };
 
         static std::vector<ChatCommand> commandTable =
         {
-            { "learn",          SEC_MODERATOR,      false, NULL,                                "", learnCommandTable },
-            { "unlearn",        SEC_ADMINISTRATOR,  false, &HandleUnLearnCommand,               ""}
+            { "learn",          SEC_MODERATOR,      true, NULL,                                "", learnCommandTable },
+            { "unlearn",        SEC_ADMINISTRATOR,  true, &HandleUnLearnCommand,               ""}
         };
         return commandTable;
     }

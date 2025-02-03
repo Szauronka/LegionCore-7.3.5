@@ -1,4 +1,5 @@
 /*
+    http://epicwow.com/
     Dungeon : Upper Blackrock Spire 90-100
 */
 
@@ -32,9 +33,8 @@ public:
 
     struct instance_upper_blackrock_spire_InstanceMapScript : public InstanceScript
     {
-        instance_upper_blackrock_spire_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_upper_blackrock_spire_InstanceMapScript(Map* map) : InstanceScript(map) 
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 
@@ -75,7 +75,7 @@ public:
             switch (creature->GetEntry())
             {
                 case NPC_RUNE_GLOW:
-                    if (creature->IsAlive())
+                    if (creature->isAlive())
                     {
                         runeglow_count++;
 

@@ -81,7 +81,7 @@ struct CheatSanctions
 };
 
 /// Donnees statiques.
-class TC_GAME_API PlayerCheatsMgr
+class PlayerCheatsMgr
 {
     public:
     static PlayerCheatsMgr* instance();

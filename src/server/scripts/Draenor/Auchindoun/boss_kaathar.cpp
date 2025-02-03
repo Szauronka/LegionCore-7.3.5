@@ -7,6 +7,7 @@
 ///  Coded by Davethebrave
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "ScriptMgr.h"
 #include "GridNotifiers.h"
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
@@ -512,7 +513,7 @@ public:
                 m_Intro = false;
                 m_False = false;
                 m_IntroDone = false;
-                me->setFaction(FriendlyFaction);
+                me->setFaction(HostileFaction);
                 me->CastSpell(me, SpellGuard);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
             }
@@ -644,7 +645,7 @@ public:
                     if (!itr)
                         continue;
 
-                    //itr->PlayScene(SpellAuchindounSceneTeronogorSpawn, itr);
+                    itr->SendSpellScene(SpellAuchindounSceneTeronogorSpawn, nullptr, true, &itr->GetPosition());
                 }
             }
 
@@ -682,7 +683,8 @@ public:
                 }
                 case EventHallowedGround:
                 {
-                    Position l_Position = me->GetRandomNearPosition(20.0f);
+                    Position l_Position;
+                    me->GetRandomNearPosition(l_Position, 20.0f);
                     me->SummonCreature(TriggerHallowedGround, l_Position, TEMPSUMMON_TIMED_DESPAWN, 30 * IN_MILLISECONDS);
                     events.RescheduleEvent(EventHallowedGround, 8 * IN_MILLISECONDS);
                     break;
@@ -737,8 +739,8 @@ public:
 
                     for (uint8 l_I = 0; l_I <= 10; l_I++)
                     {
-                        float l_PosX = me->GetPositionX() + (l_I + 1) * cos(me->GetOrientation());;
-                        float l_PosY = me->GetPositionY() + l_I * sin(me->GetOrientation());
+                        float l_PosX = me->GetPositionX() + (l_I + 1) * cos(me->m_orientation);;
+                        float l_PosY = me->GetPositionY() + l_I * sin(me->m_orientation);
 
                         l_PosX += frand(0.5f, 1.8f);
                         l_PosY += frand(0.7f, 1.9f);
@@ -1136,11 +1138,11 @@ public:
 void AddSC_boss_kaathar()
 {
     new boss_kaathar();                                                 ///< 75839
-    //new auchindoun_kaathar_mob_spawn_fissures();                        ///< 543536
-    //new auchindoun_kaathar_mob_hallowed_ground();                       ///< 537324
+    new auchindoun_kaathar_mob_spawn_fissures();                        ///< 543536
+    new auchindoun_kaathar_mob_hallowed_ground();                       ///< 537324
     new auchindoun_kaathar_mob_holy_shield();                           ///< 76071
-    //new auchindoun_kaathar_mob_nyami();                                 ///< 77810
-    //new auchindoun_kaathar_mob_teleport_players();                      ///< 3242352
+    new auchindoun_kaathar_mob_nyami();                                 ///< 77810
+    new auchindoun_kaathar_mob_teleport_players();                      ///< 3242352
     new auchindoun_kaathar_spell_consecrated_light();                   ///< 153006
     new auchindoun_kaathar_spell_fate();                                ///< 157465
     new auchindoun_kaathar_spell_sanctified_ground();                   ///< 153430

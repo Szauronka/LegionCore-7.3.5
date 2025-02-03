@@ -45,14 +45,13 @@ public:
 
     struct instance_sethekk_halls_InstanceMapScript : public InstanceScript
     {
-        instance_sethekk_halls_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_sethekk_halls_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint32 AnzuEncounter;
         ObjectGuid m_uiIkissDoorGUID;
 
         void Initialize()
         {
-            SetHeaders(DataHeader);
             AnzuEncounter = NOT_STARTED;
             m_uiIkissDoorGUID.Clear();
         }

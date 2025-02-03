@@ -24,6 +24,7 @@
 #include "SpellPackets.h"
 #include "PlayerDefines.h"
 #include "ArtifactPackets.h"
+#include "Chat.h"
 
 void WorldSession::HandleSplitItemOpcode(WorldPackets::Item::SplitItem& splitItem)
 {
@@ -56,6 +57,13 @@ void WorldSession::HandleSplitItemOpcode(WorldPackets::Item::SplitItem& splitIte
 
 void WorldSession::HandleSwapInvItemOpcode(WorldPackets::Item::SwapInvItem& swapInvItem)
 {
+	//Fix bug arena
+	if (_player->InArena() || _player->InBattleground())
+	{
+		ChatHandler(_player).SendSysMessage("No Puede Mover Item En Ambientes PVP");
+		return;
+	}
+
     if (swapInvItem.Inv.Items.size() != 2)
         return;
 
@@ -94,6 +102,14 @@ void WorldSession::HandleSwapInvItemOpcode(WorldPackets::Item::SwapInvItem& swap
 
 void WorldSession::HandleAutoEquipItemSlotOpcode(WorldPackets::Item::AutoEquipItemSlot& autoEquipItemSlot)
 {
+
+	//Fix bug arena
+	if (_player->InArena() || _player->InBattleground())
+	{
+		ChatHandler(_player).SendSysMessage("No Puede Mover Item En Ambientes PVP");
+		return;
+	}
+
     if (autoEquipItemSlot.Inv.Items.size() != 1 || !Player::IsEquipmentPos(INVENTORY_SLOT_BAG_0, autoEquipItemSlot.ItemDstSlot))
         return;
 
@@ -109,6 +125,13 @@ void WorldSession::HandleAutoEquipItemSlotOpcode(WorldPackets::Item::AutoEquipIt
 
 void WorldSession::HandleSwapItem(WorldPackets::Item::SwapItem& swapItem)
 {
+	//Fix bug arena
+	if (_player->InArena() || _player->InBattleground())
+	{
+		ChatHandler(_player).SendSysMessage("No Puede Mover Item En Ambientes PVP");
+		return;
+	}
+
     if (swapItem.Inv.Items.size() != 2)
         return;
 
@@ -140,6 +163,14 @@ void WorldSession::HandleSwapItem(WorldPackets::Item::SwapItem& swapItem)
 
 void WorldSession::HandleAutoEquipItem(WorldPackets::Item::AutoEquipItem& autoEquipItem)
 {
+	//Fix bug arena
+	if (_player->InArena() || _player->InBattleground())
+	{
+		ChatHandler(_player).SendSysMessage("No Puede Mover Item En Ambientes PVP");
+		return;
+	}
+		
+
     if (autoEquipItem.Inv.Items.size() != 1)
         return;
 
@@ -384,6 +415,12 @@ void WorldSession::HandleSellItemOpcode(WorldPackets::Item::SellItem& packet)
             return;
         }
         
+        if (item->GetDonateItem())
+        {
+            player->SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, packet.ItemGUID);
+            return;
+        }
+
         if (packet.Amount == 0)
             packet.Amount = item->GetCount();
         else if (packet.Amount > item->GetCount())
@@ -430,6 +467,19 @@ void WorldSession::HandleSellItemOpcode(WorldPackets::Item::SellItem& packet)
                 player->ModifyMoney(money);
                 player->UpdateAchievementCriteria(CRITERIA_TYPE_MONEY_FROM_VENDORS, money);
                 player->SendSellError(SELL_ERR_OK, creature, packet.ItemGUID);
+                
+                SQLTransaction transs = LoginDatabase.BeginTransaction();
+                
+                TC_LOG_DEBUG(LOG_FILTER_DONATE, "[Status] Status = 2 item  guid = %u, entry = %u, %s", item->GetGUIDLow(), item->GetEntry(), player->GetInfoForDonate().c_str());
+                
+                uint8 index = 0;
+                PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_HISTORY_STATUS);
+                stmt->setUInt32(  index, 2);
+                stmt->setUInt32(  ++index, item->GetGUID().GetGUIDLow());
+                stmt->setUInt32(  ++index, realm.Id.Realm);                 
+            
+                transs->Append(stmt);
+                LoginDatabase.CommitTransaction(transs);
             }
             else
                 player->SendSellError(SELL_ERR_CANT_SELL_ITEM, creature, packet.ItemGUID);
@@ -474,9 +524,7 @@ void WorldSession::HandleBuybackItem(WorldPackets::Item::BuyBackItem& packet)
         {
             player->ModifyMoney(-(int32)price);
             player->RemoveItemFromBuyBackSlot(packet.Slot, false);
-            player->ItemAddedQuestCheck(item->GetEntry(), item->GetCount());
-            player->UpdateAchievementCriteria(CRITERIA_TYPE_RECEIVE_EPIC_ITEM, item->GetEntry(), item->GetCount());
-            player->StoreItem(dest, item, true);
+            player->MoveItemToInventory(dest, item, true);
         }
         else
             player->SendEquipError(msg, item);
@@ -518,7 +566,7 @@ void WorldSession::HandleBuyItemOpcode(WorldPackets::Item::BuyItem& packet)
             break;
         default:
         {
-            TC_LOG_DEBUG("network", "WORLD: received wrong itemType (%u) in HandleBuyItemOpcode", packet.ItemType);
+            TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "WORLD: received wrong itemType (%u) in HandleBuyItemOpcode", packet.ItemType);
             break;
         }
     }
@@ -746,9 +794,9 @@ void WorldSession::HandleWrapItem(WorldPackets::Item::WrapItem& packet)
         return;
     }
 
-    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_GIFT);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_GIFT);
     stmt->setUInt64(0, item->GetOwnerGUID().GetCounter());
     stmt->setUInt64(1, item->GetGUIDLow());
     stmt->setUInt32(2, item->GetEntry());
@@ -1041,7 +1089,7 @@ void WorldSession::HandleGetItemPurchaseData(WorldPackets::Item::ItemRefundInfo&
     Item* item = _player->GetItemByGuid(packet.ItemGUID);
     if (!item)
     {
-        TC_LOG_DEBUG("network", "Item refund: item not found!");
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "Item refund: item not found!");
         return;
     }
 
@@ -1053,7 +1101,7 @@ void WorldSession::HandleItemPurchaseRefund(WorldPackets::Item::ItemPurchaseRefu
     Item* item = _player->GetItemByGuid(packet.ItemGUID);
     if (!item)
     {
-        TC_LOG_DEBUG("network", "Item refund: item not found!");
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "Item refund: item not found!");
         return;
     }
 
@@ -1064,7 +1112,7 @@ void WorldSession::HandleOpenItem(WorldPackets::Spells::OpenItem& packet)
 {
     Player* player = GetPlayer();
 
-    if (player->GetUnitBeingMoved() != player)
+    if (player->m_mover != player)
         return;
 
     Item* item = player->GetItemByPos(packet.Slot, packet.PackSlot);
@@ -1084,7 +1132,7 @@ void WorldSession::HandleOpenItem(WorldPackets::Spells::OpenItem& packet)
     if (!(proto->GetFlags() & ITEM_FLAG_HAS_LOOT) && !item->HasFlag(ITEM_FIELD_DYNAMIC_FLAGS, ITEM_FLAG_WRAPPED))
     {
         player->SendEquipError(EQUIP_ERR_CLIENT_LOCKED_OUT, item);
-        TC_LOG_ERROR("network", "Possible hacking attempt: Player %s [guid: %u] tried to open item [guid: %u, entry: %u] which is not openable!",
+        TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "Possible hacking attempt: Player %s [guid: %u] tried to open item [guid: %u, entry: %u] which is not openable!",
                 player->GetName(), player->GetGUIDLow(), item->GetGUIDLow(), proto->GetId());
         return;
     }
@@ -1109,7 +1157,7 @@ void WorldSession::HandleOpenItem(WorldPackets::Spells::OpenItem& packet)
 
     if (item->HasFlag(ITEM_FIELD_DYNAMIC_FLAGS, ITEM_FLAG_WRAPPED))
     {
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_GIFT_BY_ITEM);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_GIFT_BY_ITEM);
 
         stmt->setUInt64(0, item->GetGUIDLow());
 
@@ -1128,7 +1176,7 @@ void WorldSession::HandleOpenItem(WorldPackets::Spells::OpenItem& packet)
         }
         else
         {
-            TC_LOG_ERROR("network", "Wrapped item %u don't have record in character_gifts table and will deleted", item->GetGUIDLow());
+            TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "Wrapped item %u don't have record in character_gifts table and will deleted", item->GetGUIDLow());
             player->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
             return;
         }
@@ -1152,7 +1200,7 @@ void WorldSession::HandleUpgradeItem(WorldPackets::Item::UpgradeItem& packet)
     Item* item = player->GetItemByGuid(packet.ItemGUID);
     if (!item)
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleUpgradeItem - Can't find item (GUID: %u).", packet.ItemGUID.GetGUIDLow());
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "WORLD: HandleUpgradeItem - Can't find item (GUID: %u).", packet.ItemGUID.GetGUIDLow());
         return;
     }
 
@@ -1166,20 +1214,20 @@ void WorldSession::HandleUpgradeItem(WorldPackets::Item::UpgradeItem& packet)
     ItemUpgradeEntry const* itemUpgradeEntry = sItemUpgradeStore.LookupEntry(packet.UpgradeID);
     if (!itemUpgradeEntry)
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleUpgradeItems - ItemUpgradeEntry (%u) not found.", packet.UpgradeID);
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "WORLD: HandleUpgradeItems - ItemUpgradeEntry (%u) not found.", packet.UpgradeID);
         return;
     }
 
     if (!_player->HasCurrency(itemUpgradeEntry->CurrencyType, itemUpgradeEntry->CurrencyAmount))
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleUpgradeItems - Player has not enougth currency (ID: %u, Cost: %u) not found.", itemUpgradeEntry->CurrencyType, itemUpgradeEntry->CurrencyAmount);
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "WORLD: HandleUpgradeItems - Player has not enougth currency (ID: %u, Cost: %u) not found.", itemUpgradeEntry->CurrencyType, itemUpgradeEntry->CurrencyAmount);
         return;
     }
 
     uint32 currentUpgradeId = item->GetModifier(ITEM_MODIFIER_UPGRADE_ID);
     if (currentUpgradeId != itemUpgradeEntry->PrerequisiteID)
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleUpgradeItems - ItemUpgradeEntry (%u) is not related to this ItemUpgradePath (%u).", itemUpgradeEntry->ID, currentUpgradeId);
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "WORLD: HandleUpgradeItems - ItemUpgradeEntry (%u) is not related to this ItemUpgradePath (%u).", itemUpgradeEntry->ID, currentUpgradeId);
         return;
     }
 
@@ -1240,50 +1288,78 @@ void WorldSession::HandleRepairItem(WorldPackets::Item::RepairItem& packet)
 // This anonymous namespace contains utility functions for handling BagAutoSort.
 namespace
 {
-    bool StoreItemAndStack(Player* player, Item* item, uint8 bagSlot)
+    // Look in the bag if the item can be store or stacked.
+    bool StoreItemAndStack(Player* player, Item* item, uint8 bag)
     {
-        ItemPosCountVec dest;
-        if (player->CanStoreItem(bagSlot, NULL_SLOT, dest, item, false) == EQUIP_ERR_OK && !(dest.size() == 1 && dest[0].pos == item->GetPos()))
+        uint16 src = item->GetPos();
+
+ ItemPosCountVec dest;
+        InventoryResult result = player->CanStoreItem(bag, NULL_SLOT, dest, item, false);
+        if (result == EQUIP_ERR_OK && !(dest.size() == 1 && dest[0].pos == src))
         {
             player->RemoveItem(item->GetBagSlot(), item->GetSlot(), true);
             player->StoreItem(dest, item, true);
 
+    return true;
+        }
+
+
+        return false;
+    }
+
+    bool BankItemAndStack(Player* player, Item* item, uint8 bag, bool reagent = false)
+    {
+         uint16 src = item->GetPos();
+
+        ItemPosCountVec dest;
+        InventoryResult result = player->CanBankItem(reagent ? bag == NULL_BAG : bag, NULL_SLOT, dest, item, false, true);
+        if (result == EQUIP_ERR_OK && !(dest.size() == 1 && dest[0].pos == src))
+        {
+            player->RemoveItem(item->GetBagSlot(), item->GetSlot(), true);
+            player->BankItem(dest, item, true);
+
+        
             return true;
         }
 
         return false;
     }
 
+    // Loop through all the bags to see if it can be stack or not.
     void StoreItemInBags(Player* player, Item* item)
     {
         if (StoreItemAndStack(player, item, INVENTORY_SLOT_BAG_0))
             return;
 
-        for (uint32 i = INVENTORY_SLOT_ITEM_START; i < player->GetInventoryEndSlot(); i++)
+        for (uint32 i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; i++)
+        {
             if (StoreItemAndStack(player, item, i))
                 break;
+        }
     }
 
-    bool BankItemAndStack(Player* player, Item* item, uint8 bagSlot)
-    {
-        ItemPosCountVec dest;
-        if (player->CanBankItem(bagSlot, NULL_SLOT, dest, item, false) != EQUIP_ERR_OK)
-            return false;
-
-        player->RemoveItem(item->GetBagSlot(), item->GetSlot(), true);
-        player->BankItem(dest, item, true);
-
-        return true;
-    }
-
-    void StoreItemInBanks(Player* player, Item* item)
+    void StoreItemInBank(Player* player, Item* item)
     {
         if (BankItemAndStack(player, item, NULL_SLOT))
             return;
 
         for (uint32 i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
+        {
             if (BankItemAndStack(player, item, i))
                 break;
+        }
+    }
+
+    void StoreItemInReagentBank(Player* player, Item* item)
+    {
+        if (BankItemAndStack(player, item, NULL_SLOT, true))
+            return;
+
+        for (uint32 i = REAGENT_SLOT_START; i < REAGENT_SLOT_END; i++)
+        {
+            if (BankItemAndStack(player, item, i, true))
+                break;
+        }
     }
 
     void SortBags(Player* player, void(Player::* fn)(std::function<bool(Player*, Item*, uint8 /*bag*/, uint8 /*slot*/)>&&))
@@ -1293,13 +1369,14 @@ namespace
         typedef std::multimap<uint32, Item*> SortItemsContainer;
         SortItemsContainer items;
 
-        // Second pass, we collect the informations for sorting.
+         // Second pass, we collect the informations for sorting.
         (player->*fn)([&items, &itemsQuality](Player* player, Item* item, uint8 /*bag*/, uint8 /*slot*/)
         {
             // We get the number of non-distinct items and item level for sorting.
             items.insert(std::make_pair(item->GetEntry(), item));
             itemsQuality[item->GetEntry()] = item->GetItemLevel();
 
+   
             return true;
         });
 
@@ -1319,107 +1396,9 @@ namespace
             player->SwapItem(pos, (bag << 8) | slot);
             ++itr;
 
-            return true;
+          return true;
         });
     }
-}
-
-void WorldSession::HandleSortBags(WorldPackets::Item::SortBags& /*packet*/)
-{
-    // _player->ApplyOnBagsItems([](Player* player, Item* item, uint8 /*bag*/, uint8 /*slot*/)
-    // {
-    //     StoreItemInBags(player, item);
-    //     return true;
-    // });
-    //
-    // SortBags(_player, &Player::ApplyOnBagsItems);
-    SendPacket(WorldPackets::Item::SortBagsResult().Write());
-}
-
-void WorldSession::HandleSortBankBags(WorldPackets::Item::SortBankBags& /*packet*/)
-{
-    SendPacket(WorldPackets::Item::SortBagsResult().Write());
-    return;
-    _player->ApplyOnItems(2, [](Player* player, Item* item, uint8 /*bagSlot*/, uint8)
-    {
-        StoreItemInBanks(player, item);
-        return true;
-    });
-
-    std::unordered_map<uint32, uint32> bankItemsQuality;
-    std::multimap<uint32, Item*> bankItems;
-
-    _player->ApplyOnItems(2, [&bankItems, &bankItemsQuality](Player* player, Item* item, uint8 /*bagSlot*/, uint8)
-    {
-        if (!item)
-            return false;
-
-        if (!sObjectMgr->GetItemTemplate(item->GetEntry()))
-            return true;
-
-        bankItems.insert(std::make_pair(item->GetEntry(), item));
-        bankItemsQuality[item->GetEntry()] = item->GetItemLevel();
-
-        return true;
-    });
-
-    std::multimap<uint32, std::pair<uint32, Item*>> bankResultMap;
-    for (auto const& v : bankItems)
-        bankResultMap.insert(std::make_pair(bankItemsQuality[v.first], v));
-
-    auto itr = std::begin(bankResultMap);
-    _player->ApplyOnItems(2, [&bankResultMap, &itr](Player* player, Item* /*item*/, uint8 bagSlot, uint8 itemSlot)
-    {
-        if (itr == std::end(bankResultMap))
-            return false;
-
-        player->SwapItem(itr->second.second->GetPos(), (bagSlot << 8) | itemSlot);
-        ++itr;
-
-        return true;
-    });
-}
-
-void WorldSession::HandleSortReagentBankBags(WorldPackets::Item::SortReagentBankBags& /*packet*/)
-{
-    SendPacket(WorldPackets::Item::SortBagsResult().Write());
-    return;
-
-    _player->ApplyOnItems(3, [](Player* player, Item* item, uint8 /*bagSlot*/, uint8)
-    {
-        StoreItemInBanks(player, item);
-        return true;
-    });
-
-    std::unordered_map<uint32, uint32> bankItemsQuality;
-    std::multimap<uint32, Item*> bankItems;
-
-    _player->ApplyOnItems(3, [&bankItems, &bankItemsQuality](Player* player, Item* item, uint8 /*bagSlot*/, uint8)
-    {
-        if (!sObjectMgr->GetItemTemplate(item->GetEntry()))
-            return true;
-
-        bankItems.insert(std::make_pair(item->GetEntry(), item));
-        bankItemsQuality[item->GetEntry()] = item->GetItemLevel();
-
-        return true;
-    });
-
-    std::multimap<uint32, std::pair<uint32, Item*>> bankResultMap;
-    for (auto const& v : bankItems)
-        bankResultMap.insert(std::make_pair(bankItemsQuality[v.first], v));
-
-    auto itr = std::begin(bankResultMap);
-    _player->ApplyOnItems(3, [&bankResultMap, &itr](Player* player, Item* /*item*/, uint8 bagSlot, uint8 itemSlot)
-    {
-        if (itr == std::end(bankResultMap))
-            return false;
-
-        player->SwapItem(itr->second.second->GetPos(), (bagSlot << 8) | itemSlot);
-        ++itr;
-
-        return true;
-    });
 }
 
 void WorldSession::HandleUseCritterItem(WorldPackets::Item::UseCritterItem& useCritterItem)
@@ -1555,4 +1534,40 @@ void WorldSession::HandleRemoveNewItem(WorldPackets::Item::RemoveNewItem& remove
         item->RemoveFlag(ITEM_FIELD_DYNAMIC_FLAGS, ITEM_FLAG_NEW_ITEM);
         item->SetState(ITEM_CHANGED, _player);
     }
+}
+
+void WorldSession::HandleSortBags(WorldPackets::Item::SortBags& /*sortBags*/)
+{
+    _player->ApplyOnBagsItems([](Player* player, Item* item, uint8 /*bag*/, uint8 /*slot*/)
+    {
+        StoreItemInBags(player, item);
+        return true;
+    });
+
+    SortBags(_player, &Player::ApplyOnBagsItems);
+    SendPacket(WorldPackets::Item::SortBagsResult().Write());
+}
+
+void WorldSession::HandleSortBankBags(WorldPackets::Item::SortBankBags& /*sortBankBags*/)
+{
+    _player->ApplyOnBankItems([](Player* player, Item* item, uint8 /*bag*/, uint8 /*slot*/)
+    {
+        StoreItemInBank(player, item);
+        return true;
+    });
+
+    SortBags(_player, &Player::ApplyOnBankItems);
+    SendPacket(WorldPackets::Item::SortBagsResult().Write());
+}
+
+void WorldSession::HandleSortReagentBankBags(WorldPackets::Item::SortReagentBankBags& /*sortReagentBankBags*/)
+{
+    _player->ApplyOnReagentBankItems([](Player* player, Item* item, uint8 /*bag*/, uint8 /*slot*/)
+    {
+        StoreItemInReagentBank(player, item);
+        return true;
+    });
+
+    SortBags(_player, &Player::ApplyOnReagentBankItems);
+    SendPacket(WorldPackets::Item::SortBagsResult().Write());
 }

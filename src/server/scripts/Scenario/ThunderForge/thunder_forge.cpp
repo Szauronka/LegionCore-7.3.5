@@ -438,10 +438,10 @@ G3D::Vector3 constellationPoints[]
     {7338.207f, 5166.078f, 60.575f},
 };
 
-class npc_wrathion : public CreatureScript
+class npc_wrathion_2 : public CreatureScript
 {
 public:
-    npc_wrathion() : CreatureScript("npc_wrathion") { }
+    npc_wrathion_2() : CreatureScript("npc_wrathion") { }
 
     bool OnQuestComplete(Player* /*player*/, Creature* creature, Quest const* quest) override
     {
@@ -3447,7 +3447,7 @@ public:
 
 void AddSC_thunder_forge()
 {
-    new npc_wrathion();
+    new npc_wrathion_2();
 
     new go_mogu_crucible();
 
@@ -3456,8 +3456,8 @@ void AddSC_thunder_forge()
 
     new npc_thunder_forge();
     new npc_thunder_forge_second();
-    //new npc_thunder_forge_third();
-    //new npc_invisible_stalker();
+    new npc_thunder_forge_third();
+    new npc_invisible_stalker();
     new npc_lighting_pilar_beam_stalker();
     new npc_lighting_pilar_spark_stalker();
 
@@ -3471,8 +3471,8 @@ void AddSC_thunder_forge()
     new npc_celestial_blacksmith();
     new npc_celestial_defender();
     new npc_lighting_spear_float_stalker();
-    //new go_thunder_forge_avnils();
-    //new npc_avnil_stalker();
+    new go_thunder_forge_avnils();
+    new npc_avnil_stalker();
     new npc_phase3_room_center_stalker();
     new npc_sha_beast();
     new npc_sha_fiend();

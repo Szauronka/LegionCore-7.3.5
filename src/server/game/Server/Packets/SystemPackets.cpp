@@ -37,14 +37,14 @@ WorldPacket const* WorldPackets::System::FeatureSystemStatus::Write()
     _worldPacket << uint32(BpayStoreProductDeliveryDelay);
 
     _worldPacket.WriteBit(VoiceEnabled);
-    _worldPacket.WriteBit(EuropaTicketSystemStatus.has_value());
+    _worldPacket.WriteBit(EuropaTicketSystemStatus.is_initialized());
     _worldPacket.WriteBit(ScrollOfResurrectionEnabled);
     _worldPacket.WriteBit(BpayStoreEnabled);
     _worldPacket.WriteBit(BpayStoreAvailable);
     _worldPacket.WriteBit(BpayStoreDisabledByParentalControls);
     _worldPacket.WriteBit(ItemRestorationButtonEnabled);
     _worldPacket.WriteBit(BrowserEnabled);
-    _worldPacket.WriteBit(SessionAlert.has_value());
+    _worldPacket.WriteBit(SessionAlert.is_initialized());
     _worldPacket.WriteBit(RecruitAFriendSendingEnabled);
     _worldPacket.WriteBit(CharUndeleteEnabled);
     _worldPacket.WriteBit(RestrictedAccount);
@@ -56,7 +56,7 @@ WorldPacket const* WorldPackets::System::FeatureSystemStatus::Write()
     _worldPacket.WriteBit(WillKickFromWorld);
     _worldPacket.WriteBit(KioskModeEnabled);
     _worldPacket.WriteBit(CompetitiveModeEnabled);
-    _worldPacket.WriteBit(RaceClassExpansionLevels.has_value());
+    _worldPacket.WriteBit(RaceClassExpansionLevels.is_initialized());
     _worldPacket.WriteBit(TokenBalanceEnabled);
 
     _worldPacket.FlushBits();
@@ -139,10 +139,10 @@ WorldPacket const* WorldPackets::System::FeatureSystemStatusGlueScreen::Write()
     _worldPacket << int32(TokenRedeemIndex);
     _worldPacket << int64(TokenBalanceAmount);
     _worldPacket << uint32(BpayStoreProductDeliveryDelay);
-//    _worldPacket << uint32(UnkInt1);
-//    _worldPacket << uint32(UnkInt2);
-//    _worldPacket << uint32(UnkInt3);
-//    _worldPacket << uint32(UnkInt4);
+    _worldPacket << uint32(UnkInt1);
+    _worldPacket << uint32(UnkInt2);
+    _worldPacket << uint32(UnkInt3);
+    _worldPacket << uint32(UnkInt4);
 
     return &_worldPacket;
 }
@@ -156,7 +156,6 @@ WorldPacket const* WorldPackets::System::MOTD::Write()
     for (std::string const& line : *Text)
     {
         _worldPacket.WriteBits(line.length(), 7);
-        _worldPacket.FlushBits();
         _worldPacket.WriteString(line);
     }
 
@@ -167,8 +166,6 @@ WorldPacket const* WorldPackets::System::SetTimeZoneInformation::Write()
 {
     _worldPacket.WriteBits(ServerTimeTZ.length(), 7);
     _worldPacket.WriteBits(GameTimeTZ.length(), 7);
-    _worldPacket.FlushBits();
-
     _worldPacket.WriteString(ServerTimeTZ);
     _worldPacket.WriteString(GameTimeTZ);
 

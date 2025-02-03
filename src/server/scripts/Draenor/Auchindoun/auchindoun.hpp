@@ -9,8 +9,8 @@
 #pragma once
 
 #include "Common.h"
-
-#define DataHeader "AD"
+#include "ScriptMgr.h"
+#include <ScriptedCreature.h>
 
 static void DespawnCreaturesInArea(uint32 entry, WorldObject* object)
 {
@@ -476,7 +476,7 @@ enum eAuchindounSpells
     SpellVoidShiftDmg                   = 157037,
     SpellShadowWordPainPriest           = 176518,
     SpellPsychicTerrorDummy             = 154356,
-    SpellPsychicTerrorFear              = 154359
+    SpellPsychicTerrorFear              = 154359,
 };
 
 enum eAuchindounEvents
@@ -503,7 +503,7 @@ enum eAuchindounEvents
     EventConfligrate,
     EventBeginRp,
     EventShadowWordPainSoulPriest,
-    EventPsychicTerrors
+    EventPsychicTerrors,
 };
 
 enum eAuchindounObjects
@@ -523,7 +523,7 @@ enum eAuchindounObjects
     GameobjectSoulTransport2     = 345367,
     GameobjectSoulTransport3     = 345368,
     GameobjectHolyBarrierEntra   = 231679,
-	GameObjectAuchindounCrystal	 = 23524
+	GameObjectAuchindounCrystal	 = 23524,
 };
 
 enum eAuchindounAchievements
@@ -532,7 +532,7 @@ enum eAuchindounAchievements
     AchievementAuchindounHeroic = 9049,
     AchievementAuchindounMythic = 10080,
     AchievementDemonSouls       = 9551,
-    AchievementNoTagBacks       = 9552
+    AchievementNoTagBacks       = 9552,
 };
 
 enum eAuchindounSpellVisualKit
@@ -546,7 +546,7 @@ enum eAuchindounSpellVisualKit
 enum eAuchindounScenes
 {
     SpellAuchindounSceneTulaaniReachNyami = 1365,
-    SpellAuchindounSceneTeronogorSpawn = 1366
+    SpellAuchindounSceneTeronogorSpawn = 1366,
 };
 
 enum eAuchindounChallengeDatas
@@ -563,5 +563,5 @@ enum eAuchindounChallengeDatas
     NyamiCriteriaID             = 25103,
     AzaakelCriteriaID           = 25104,
     TerongorCriteriaID          = 24991,
-    EnnemiesCriteriaID          = 26335
+    EnnemiesCriteriaID          = 26335,
 };

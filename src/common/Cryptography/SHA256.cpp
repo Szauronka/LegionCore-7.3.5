@@ -18,25 +18,23 @@
 
 #include "SHA256.h"
 #include "BigNumber.h"
-#include "Errors.h"
 #include <cstring>
 #include <cstdarg>
 
-SHA256Hash::SHA256Hash() : _ctx(EVP_MD_CTX_create())
+SHA256Hash::SHA256Hash()
 {
-    EVP_DigestInit_ex(_ctx, EVP_sha256(), nullptr);
+    SHA256_Init(&mC);
     memset(mDigest, 0, SHA256_DIGEST_LENGTH * sizeof(uint8));
 }
 
 SHA256Hash::~SHA256Hash()
 {
-    EVP_MD_CTX_destroy(_ctx);
-    _ctx = nullptr;
+    SHA256_Init(&mC);
 }
 
 void SHA256Hash::UpdateData(uint8 const* data, size_t len)
 {
-    EVP_DigestUpdate(_ctx, data, len);
+    SHA256_Update(&mC, data, len);
 }
 
 void SHA256Hash::UpdateData(const std::string &str)
@@ -60,14 +58,12 @@ void SHA256Hash::UpdateBigNumbers(BigNumber* bn0, ...)
 
 void SHA256Hash::Initialize()
 {
-    EVP_DigestInit_ex(_ctx, EVP_sha256(), nullptr);
+    SHA256_Init(&mC);
 }
 
 void SHA256Hash::Finalize(void)
 {
-    uint32 length = SHA256_DIGEST_LENGTH;
-    EVP_DigestFinal_ex(_ctx, mDigest, &length);
-    ASSERT(length == SHA256_DIGEST_LENGTH);
+    SHA256_Final(mDigest, &mC);
 }
 
 uint8* SHA256Hash::GetDigest()

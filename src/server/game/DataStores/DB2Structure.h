@@ -21,15 +21,8 @@
 #include "Common.h"
 #include "DBCEnums.h"
 #include "Util.h"
-#include <set>
-#include <map>
 
 class Player;
-
-enum PrestigeLevelInfoFlags : uint8
-{
-    PRESTIGE_FLAG_DISABLED  = 0x01                      // Prestige levels with this flag won't be included to calculate max prestigelevel.
-};
 
 #define MAX_HOLIDAY_DURATIONS 10
 #define MAX_HOLIDAY_DATES 16
@@ -2177,7 +2170,7 @@ struct GameObjectsEntry
     DBCPosition3D Position;
     DBCPosition4D Rotation;
     float       Scale;
-    std::array<uint32, 8> PropValue;
+    uint32      PropValue[8];
     uint16      OwnerID;
     uint16      DisplayID;
     uint16      PhaseID;
@@ -2528,7 +2521,7 @@ struct GarrMissionEntry
     int32       AreaID;
     int32       OvermaxRewardPackID;
     int32       EnvGarrMechanicID;
-    int32       RelationshipData;
+	int32       RelationshipData;
 };
 
 // FileOptions: Index, None
@@ -3467,7 +3460,7 @@ struct ItemSparseEntry
     float       QualityModifier;
     int32       DurationInInventory;
     float       DmgVariance;
-    int16      AllowableClass;
+    uint16      AllowableClass;
     uint16      ItemLevel;
     uint16      RequiredSkill;
     uint16      RequiredSkillRank;
@@ -4138,9 +4131,9 @@ struct MapEntry
     bool IsRaid() const;
     bool IsBattleground() const;
     bool IsBattleArena() const;
-    bool IsBattlegroundOrArena() const { return InstanceType == MAP_BATTLEGROUND || InstanceType == MAP_ARENA; }
+    bool IsBattlegroundOrArena() const;
     bool IsWorldMap() const;
-    bool IsScenario() const { return InstanceType == MAP_SCENARIO; }
+    bool IsScenario() const;
     bool GetEntrancePos(int32& mapid, float& x, float& y) const;
     bool IsContinent() const;
     bool IsDynamicDifficultyMap() const;
@@ -4729,8 +4722,6 @@ struct PrestigeLevelInfoEntry
     int32       BadgeTextureFileDataID;
     uint8       PrestigeLevel;
     uint8       Flags;
-
-    bool IsDisabled() const { return (Flags & PRESTIGE_FLAG_DISABLED) != 0; }
 };
 
 // FileOptions: Index, None

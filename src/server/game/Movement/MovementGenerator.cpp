@@ -17,12 +17,7 @@
  */
 
 #include "MovementGenerator.h"
-#include "IdleMovementGenerator.h"
 
-MovementGenerator::~MovementGenerator() = default;
-
-MovementGenerator* IdleMovementFactory::Create(void* /*object*/) const
+MovementGenerator::~MovementGenerator()
 {
-    static IdleMovementGenerator instance;
-    return &instance;
 }

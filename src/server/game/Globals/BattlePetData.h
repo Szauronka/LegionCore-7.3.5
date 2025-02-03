@@ -45,7 +45,7 @@ typedef std::map<uint32, BattlePetTemplate> BattlePetTemplateContainer;
 typedef std::map<uint32, BattlePetTemplate*> BattlePetTemplateMap;
 typedef std::map<uint32, std::vector<BattlePetNpcTeamMember>> BattlePetNpcTeamMembers;
 
-class TC_GAME_API BattlePetDataStoreMgr
+class BattlePetDataStoreMgr
 {
     BattlePetDataStoreMgr();
     ~BattlePetDataStoreMgr();

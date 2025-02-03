@@ -37,12 +37,8 @@
 #include "ObjectDefines.h"
 #include "MapInstanced.h"
 #include "World.h"
+#include "ThreadPoolMgr.hpp"
 
-template<class T>
-sf::contention_free_shared_mutex<>& HashMapHolder<T>::GetLock()
-{
-    return i_lock;
-}
 
 ObjectAccessor::ObjectAccessor()
 {
@@ -50,12 +46,6 @@ ObjectAccessor::ObjectAccessor()
 
 ObjectAccessor::~ObjectAccessor()
 {
-}
-
-ObjectAccessor* ObjectAccessor::instance()
-{
-    static ObjectAccessor instance;
-    return &instance;
 }
 
 WorldObject* ObjectAccessor::GetWorldObject(WorldObject const& p, ObjectGuid guid)
@@ -398,7 +388,7 @@ Corpse* ObjectAccessor::ConvertCorpseForPlayer(ObjectGuid player_guid, bool insi
         return nullptr;
     }
 
-    TC_LOG_DEBUG("misc", "Deleting Corpse and spawned bones.");
+    TC_LOG_DEBUG(LOG_FILTER_GENERAL, "Deleting Corpse and spawned bones.");
 
     // Map can be NULL
     Map* map = corpse->FindMap();
@@ -407,7 +397,7 @@ Corpse* ObjectAccessor::ConvertCorpseForPlayer(ObjectGuid player_guid, bool insi
     RemoveCorpse(corpse);
 
     // remove corpse from DB
-    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     corpse->DeleteFromDB(trans);
     CharacterDatabase.CommitTransaction(trans);
 
@@ -449,7 +439,7 @@ Corpse* ObjectAccessor::ConvertCorpseForPlayer(ObjectGuid player_guid, bool insi
 
 void ObjectAccessor::RemoveOldCorpses()
 {
-    time_t now = GameTime::GetGameTime();
+    time_t now = time(nullptr);
     Player2CorpsesMapType::iterator next;
     for (Player2CorpsesMapType::iterator itr = i_player2corpse.begin(); itr != i_player2corpse.end(); itr = next)
     {
@@ -493,16 +483,16 @@ template <class T> std::atomic<bool> HashMapHolder<T>::_checkLock;
 
 /// Global definitions for the hashmap storage
 
-template class TC_GAME_API HashMapHolder<Player>;
-template class TC_GAME_API HashMapHolder<Pet>;
-template class TC_GAME_API HashMapHolder<GameObject>;
-template class TC_GAME_API HashMapHolder<DynamicObject>;
-template class TC_GAME_API HashMapHolder<Creature>;
-template class TC_GAME_API HashMapHolder<Corpse>;
-template class TC_GAME_API HashMapHolder<Transport>;
-template class TC_GAME_API HashMapHolder<AreaTrigger>;
-template class TC_GAME_API HashMapHolder<Conversation>;
-template class TC_GAME_API HashMapHolder<EventObject>;
+template class HashMapHolder<Player>;
+template class HashMapHolder<Pet>;
+template class HashMapHolder<GameObject>;
+template class HashMapHolder<DynamicObject>;
+template class HashMapHolder<Creature>;
+template class HashMapHolder<Corpse>;
+template class HashMapHolder<Transport>;
+template class HashMapHolder<AreaTrigger>;
+template class HashMapHolder<Conversation>;
+template class HashMapHolder<EventObject>;
 
 template Player* ObjectAccessor::GetObjectInWorld<Player>(uint32 mapid, float x, float y, ObjectGuid guid, Player* /*fake*/);
 template Pet* ObjectAccessor::GetObjectInWorld<Pet>(uint32 mapid, float x, float y, ObjectGuid guid, Pet* /*fake*/);

@@ -249,11 +249,12 @@ public:
                     if (Unit* owner = ObjectAccessor::GetUnit(*me, _owner))
                     {
                         float _angle;
+                        Position _pos;
                         x = me->GetPositionX();
                         y = me->GetPositionY();
                         z = me->GetPositionZ();
                         _angle = owner->GetAngle(me->GetPositionX(), me->GetPositionY());
-                        Position _pos = owner->GetNearPosition(5.0f, _angle);
+                        owner->GetNearPosition(_pos, 5.0f, _angle);
                         me->GetMotionMaster()->MovementExpired(false);
                         me->GetMotionMaster()->MovePoint(GetCurentWP(), _pos);
                     }

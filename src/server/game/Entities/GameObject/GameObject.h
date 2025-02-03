@@ -97,7 +97,7 @@ class GameObjectModel;
 // 5 sec for bobber catch
 #define FISHING_BOBBER_READY_TIME 5
 
-class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>, public MapObject
+class GameObject : public WorldObject, public GridObject<GameObject>, public MapObject
 {
     public:
         explicit GameObject();
@@ -226,7 +226,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         bool IsInvisibleDueToDespawn() const override;
         bool IsNeverVisible(WorldObject const* obj) const override;
 
-        uint8 GetLevelForTarget(WorldObject const* target) const override;
+        uint8 getLevelForTarget(WorldObject const* target) const override;
 
         GameObject* LookupFishingHoleAround(float range);
 
@@ -324,8 +324,6 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         bool        m_spawnedByDefault;
         time_t      m_cooldownTime;                         // used as internal reaction delay time store (not state change reaction).
                                                             // For traps this: spell casting cooldown, for doors/buttons: reset time.
-        GOState     m_prevGoState;                          // What state to set whenever resetting
-
         GuidSet m_SkillupList;
 
         Player* m_ritualOwner;                              // used for GAMEOBJECT_TYPE_RITUAL where GO is not summoned (no owner)

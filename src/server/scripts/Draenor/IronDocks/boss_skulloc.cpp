@@ -1,9 +1,13 @@
 /*
+    http://epicwow.com/
     Dungeon : Iron Docks 93-95
     Encounter: Skulloc <Son of Gruul>
 */
 
 #include "iron_docks.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "Vehicle.h"
 
 enum Spells
 {
@@ -74,7 +78,7 @@ struct boss_encounter_skulloc : public BossAI
         bossDiedCount = 0;
         for (uint8 i = 0; i < 3; i++)
             if (auto enfor = ObjectAccessor::GetCreature(*me, instance->GetGuidData(bossSkulloc[i])))
-                if (!enfor->IsAlive())
+                if (!enfor->isAlive())
                     bossDiedCount++;
 
         if (bossDiedCount == 3)

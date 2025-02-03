@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Monk Specialization: Brewmaster
 */
 
@@ -18,7 +19,7 @@ public:
 
     struct instance_temple_of_the_jade_serpent_InstanceMapScript : public InstanceScript
     {
-        instance_temple_of_the_jade_serpent_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_temple_of_the_jade_serpent_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint8 diedCounter;
         ObjectGuid YulonGUID;

@@ -23,9 +23,8 @@ class instance_zulaman : public InstanceMapScript
 
         struct instance_zulaman_InstanceMapScript : public InstanceScript
         {
-            instance_zulaman_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+            instance_zulaman_InstanceMapScript(Map* map) : InstanceScript(map) 
             {
-                SetHeaders(DataHeader);
                 SetBossNumber(MAX_ENCOUNTER);
                 LoadDoorData(doordata);
 
@@ -282,19 +281,51 @@ class instance_zulaman : public InstanceMapScript
                 }
             }
 
-            void WriteSaveDataMore(std::ostringstream& data) override
+            std::string GetSaveData()
             {
-                data << uiMainGate << " " << QuestMinute << " " << uiVendor1 << " " << uiVendor2 << " " << archaeologyQuestAura;
+                OUT_SAVE_INST_DATA;
+
+                std::ostringstream ss;
+                ss << "ZA " << GetBossSaveData() << uiMainGate << " " << QuestMinute << " " << uiVendor1 << " " << uiVendor2 << " " << archaeologyQuestAura;
+
+                OUT_SAVE_INST_DATA_COMPLETE;
+                return ss.str();
             }
 
-            void ReadSaveDataMore(std::istringstream& data) override
+            void Load(const char* in)
             {
-                data >> uiMainGate;
-                data >> QuestMinute;
-                DoUpdateWorldState(static_cast<WorldStates>(3104), QuestMinute);
-                data >> uiVendor1;
-                data >> uiVendor2;
-                data >> archaeologyQuestAura;
+                if (!in)
+                {
+                    OUT_LOAD_INST_DATA_FAIL;
+                    return;
+                }
+
+                OUT_LOAD_INST_DATA(in);
+
+                char dataHead1, dataHead2;
+
+                std::istringstream loadStream(in);
+                loadStream >> dataHead1 >> dataHead2;
+
+                if (dataHead1 == 'Z' && dataHead2 == 'A')
+                {
+                    for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
+                    {
+                        uint32 tmpState;
+                        loadStream >> tmpState;
+                        if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                            tmpState = NOT_STARTED;
+                        SetBossState(i, EncounterState(tmpState));
+                    }
+                    loadStream >> uiMainGate;
+                    loadStream >> QuestMinute;
+                    DoUpdateWorldState(static_cast<WorldStates>(3104), QuestMinute);
+                    loadStream >> uiVendor1;
+                    loadStream >> uiVendor2;
+                    loadStream >> archaeologyQuestAura;
+                } else OUT_LOAD_INST_DATA_FAIL;
+
+                OUT_LOAD_INST_DATA_COMPLETE;
             }
 
         private:

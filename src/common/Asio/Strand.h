@@ -1,5 +1,5 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+ * Copyright (C) 2008-2021 TrinityCore <https://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,6 +19,7 @@
 #define Strand_h__
 
 #include "IoContext.h"
+#include <boost/asio/bind_executor.hpp>
 #include <boost/asio/strand.hpp>
 
 namespace Trinity
@@ -34,11 +35,7 @@ namespace Trinity
             Strand(IoContext& ioContext) : boost::asio::io_context::strand(ioContext) { }
         };
 
-        template<typename T>
-        inline decltype(auto) post(boost::asio::io_context::strand& strand, T&& t)
-        {
-            return boost::asio::post(strand, std::forward<T>(t));
-        }
+        using boost::asio::bind_executor;
     }
 }
 

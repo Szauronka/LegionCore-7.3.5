@@ -32,7 +32,7 @@ DB2LoadInfo::DB2LoadInfo(DB2FieldMeta const* fields, std::size_t fieldCount, DB2
 
 static char const* nullStr = "";
 
-char* DB2DatabaseLoader::Load(uint32& records, char**& indexTable, char*& stringHolders, std::vector<char*>& stringPool, uint32& minId)
+char* DB2DatabaseLoader::Load(uint32& records, char**& indexTable, char*& stringHolders, std::vector<char*>& stringPool)
 {
     // Even though this query is executed only once, prepared statement is used to send data from mysql server in binary format
     PreparedQueryResult result = HotfixDatabase.Query(HotfixDatabase.GetPreparedStatement(_loadInfo->Statement));
@@ -188,11 +188,7 @@ char* DB2DatabaseLoader::Load(uint32& records, char**& indexTable, char*& string
 
     // insert new records to index table
     for (uint32 i = 0; i < newRecords; ++i)
-    {
-        uint32 newId = newIndexes[i];
-        indexTable[newId] = &dataTable[i * recordSize];
-        minId = std::min(minId, newId);
-    }
+        indexTable[newIndexes[i]] = &dataTable[i * recordSize];
 
     delete[] tempDataTable;
     delete[] newIndexes;
@@ -204,7 +200,7 @@ char* DB2DatabaseLoader::Load(uint32& records, char**& indexTable, char*& string
 
 void DB2DatabaseLoader::LoadStrings(uint32 locale, uint32 records, char** indexTable, std::vector<char*>& stringPool)
 {
-    HotfixDatabasePreparedStatement* stmt = HotfixDatabase.GetPreparedStatement(HotfixDatabaseStatements(_loadInfo->Statement + 1));
+    PreparedStatement* stmt = HotfixDatabase.GetPreparedStatement(HotfixDatabaseStatements(_loadInfo->Statement + 1));
     stmt->setString(0, localeNames[locale]);
     PreparedQueryResult result = HotfixDatabase.Query(stmt);
     if (!result)
@@ -282,7 +278,7 @@ void DB2DatabaseLoader::LoadStrings(uint32 locale, uint32 records, char** indexT
             ASSERT(offset == recordSize);
         }
         //else
-        //    TC_LOG_ERROR("sql.sql", "Hotfix locale table for storage %s references row that does not exist %u locale %s!", _storageName.c_str(), indexValue, localeNames[locale]);
+        //    TC_LOG_ERROR(LOG_FILTER_SQL, "Hotfix locale table for storage %s references row that does not exist %u locale %s!", _storageName.c_str(), indexValue, localeNames[locale]);
 
     } while (result->NextRow());
 }

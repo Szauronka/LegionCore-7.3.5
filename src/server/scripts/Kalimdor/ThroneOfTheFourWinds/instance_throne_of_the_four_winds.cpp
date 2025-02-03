@@ -26,7 +26,6 @@ public:
 
         void Initialize()
         {
-            SetHeaders(DataHeader);
             uiAnshal.Clear();
             uiNezir.Clear();
             uiRohash.Clear();

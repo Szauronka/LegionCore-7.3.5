@@ -91,7 +91,7 @@ public:
         if (go->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER)
         {
             player->PrepareQuestMenu(go->GetGUID());
-            player->SendPreparedQuest(go);
+            player->SendPreparedQuest(go->GetGUID());
         }
 
         if (player->GetQuestStatus(4285) == QUEST_STATUS_INCOMPLETE)
@@ -111,7 +111,7 @@ public:
         if (go->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER)
         {
             player->PrepareQuestMenu(go->GetGUID());
-            player->SendPreparedQuest(go);
+            player->SendPreparedQuest(go->GetGUID());
         }
 
         if (player->GetQuestStatus(4287) == QUEST_STATUS_INCOMPLETE)
@@ -131,7 +131,7 @@ public:
         if (go->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER)
         {
             player->PrepareQuestMenu(go->GetGUID());
-            player->SendPreparedQuest(go);
+            player->SendPreparedQuest(go->GetGUID());
         }
 
         if (player->GetQuestStatus(4288) == QUEST_STATUS_INCOMPLETE)
@@ -338,7 +338,7 @@ public:
                     if (Spell)
                         creature->CastSpell(player, Spell, false);
                     else
-                        TC_LOG_ERROR("scripts", "go_ethereum_prison summoned Creature (entry %u) but faction (%u) are not expected by script.", creature->GetEntry(), creature->getFaction());
+                        TC_LOG_ERROR(LOG_FILTER_TSCR, "go_ethereum_prison summoned Creature (entry %u) but faction (%u) are not expected by script.", creature->GetEntry(), creature->getFaction());
                 }
             }
         }
@@ -561,8 +561,8 @@ public:
         if (go->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER) /* != GAMEOBJECT_TYPE_QUESTGIVER) */
             player->PrepareQuestMenu(go->GetGUID()); /* return true*/
 
-        player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_FEL_CRYSTALFORGE_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-        player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_FEL_CRYSTALFORGE_ITEM_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_FEL_CRYSTALFORGE_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_FEL_CRYSTALFORGE_ITEM_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
         player->SEND_GOSSIP_MENU(GOSSIP_FEL_CRYSTALFORGE_TEXT, go->GetGUID());
 
@@ -576,17 +576,17 @@ public:
         {
             case GOSSIP_ACTION_INFO_DEF:
                 player->CastSpell(player, SPELL_CREATE_1_FLASK_OF_BEAST, false);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_FEL_CRYSTALFORGE_ITEM_RETURN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_FEL_CRYSTALFORGE_ITEM_RETURN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
                 player->SEND_GOSSIP_MENU(GOSSIP_FEL_CRYSTALFORGE_ITEM_TEXT_RETURN, go->GetGUID());
                 break;
             case GOSSIP_ACTION_INFO_DEF + 1:
                 player->CastSpell(player, SPELL_CREATE_5_FLASK_OF_BEAST, false);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_FEL_CRYSTALFORGE_ITEM_RETURN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_FEL_CRYSTALFORGE_ITEM_RETURN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
                 player->SEND_GOSSIP_MENU(GOSSIP_FEL_CRYSTALFORGE_ITEM_TEXT_RETURN, go->GetGUID());
                 break;
             case GOSSIP_ACTION_INFO_DEF + 2:
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_FEL_CRYSTALFORGE_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_FEL_CRYSTALFORGE_ITEM_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_FEL_CRYSTALFORGE_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_FEL_CRYSTALFORGE_ITEM_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
                 player->SEND_GOSSIP_MENU(GOSSIP_FEL_CRYSTALFORGE_TEXT, go->GetGUID());
                 break;
         }
@@ -620,8 +620,8 @@ public:
         if (go->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER) /* != GAMEOBJECT_TYPE_QUESTGIVER) */
             player->PrepareQuestMenu(go->GetGUID()); /* return true*/
 
-        player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_BASHIR_CRYSTALFORGE_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-        player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_BASHIR_CRYSTALFORGE_ITEM_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_BASHIR_CRYSTALFORGE_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_BASHIR_CRYSTALFORGE_ITEM_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
         player->SEND_GOSSIP_MENU(GOSSIP_BASHIR_CRYSTALFORGE_TEXT, go->GetGUID());
 
@@ -635,17 +635,17 @@ public:
         {
             case GOSSIP_ACTION_INFO_DEF:
                 player->CastSpell(player, SPELL_CREATE_1_FLASK_OF_SORCERER, false);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_BASHIR_CRYSTALFORGE_ITEM_RETURN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_BASHIR_CRYSTALFORGE_ITEM_RETURN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
                 player->SEND_GOSSIP_MENU(GOSSIP_BASHIR_CRYSTALFORGE_ITEM_TEXT_RETURN, go->GetGUID());
                 break;
             case GOSSIP_ACTION_INFO_DEF + 1:
                 player->CastSpell(player, SPELL_CREATE_5_FLASK_OF_SORCERER, false);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_BASHIR_CRYSTALFORGE_ITEM_RETURN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_BASHIR_CRYSTALFORGE_ITEM_RETURN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
                 player->SEND_GOSSIP_MENU(GOSSIP_BASHIR_CRYSTALFORGE_ITEM_TEXT_RETURN, go->GetGUID());
                 break;
             case GOSSIP_ACTION_INFO_DEF + 2:
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_BASHIR_CRYSTALFORGE_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_BASHIR_CRYSTALFORGE_ITEM_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_BASHIR_CRYSTALFORGE_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_BASHIR_CRYSTALFORGE_ITEM_5, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
                 player->SEND_GOSSIP_MENU(GOSSIP_BASHIR_CRYSTALFORGE_TEXT, go->GetGUID());
                 break;
         }
@@ -827,7 +827,7 @@ public:
                     pPrisoner = go->FindNearestCreature(NPC_EBON_BLADE_PRISONER_NE, 5.0f, true);
             }
         }
-        if (!pPrisoner || !pPrisoner->IsAlive())
+        if (!pPrisoner || !pPrisoner->isAlive())
             return false;
 
         pPrisoner->DisappearAndDie();
@@ -957,11 +957,12 @@ class go_soulwell : public GameObjectScript
                 _stoneId = spellInfo->Effects[EFFECT_0]->ItemType;
             }
 
-            bool GossipHello(Player* player, bool isUse) override
+            /// Due to the fact that this GameObject triggers CMSG_GAMEOBJECT_USE
+            /// _and_ CMSG_GAMEOBJECT_REPORT_USE, this GossipHello hook is called
+            /// twice. The script's handling is fine as it won't remove two charges
+            /// on the well. We have to find how to segregate REPORT_USE and USE.
+            bool GossipHello(Player* player) override
             {
-                if (!isUse)
-                    return true;
-
                 Unit* owner = go->GetOwner();
                 if (_stoneSpell == 0 || _stoneId == 0)
                     return true;
@@ -1028,7 +1029,7 @@ public:
             }
         }
 
-        if (!pPrisoner || !pPrisoner->IsAlive())
+        if (!pPrisoner || !pPrisoner->isAlive())
             return true;
 
         Quest const* qInfo = sQuestDataStore->GetQuestTemplate(QUEST_PRISONERS_OF_WYRMSKULL);
@@ -1104,7 +1105,7 @@ public:
         QuestStatus status = player->GetQuestStatus(QUEST_DOING_YOUR_DUTY);
         if (status == QUEST_STATUS_INCOMPLETE || status == QUEST_STATUS_COMPLETE || status == QUEST_STATUS_REWARDED)
         {
-            player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_USE_OUTHOUSE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_USE_OUTHOUSE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
             player->SEND_GOSSIP_MENU(GOSSIP_OUTHOUSE_VACANT, go->GetGUID());
             return true;
         }
@@ -1376,63 +1377,6 @@ public:
     }
 };
 
-//239338 239332 Q37660
-class go_azsuna_soul_gem : public GameObjectScript
-{
-public:
-    go_azsuna_soul_gem() : GameObjectScript("go_azsuna_soul_gem") { }
-
-    bool OnGossipHello(Player* player, GameObject* go) override
-    {
-        if (go->GetEntry() == 239338)
-        {
-            if (!player->GetQuestObjectiveData(37660, 239338) && player->GetQuestObjectiveData(37660, 90403))
-            {
-                GuidList* allari = player->GetSummonList(90401);
-                for (GuidList::const_iterator iter = allari->begin(); iter != allari->end(); ++iter)
-                {
-                    if (Creature* summon = ObjectAccessor::GetCreature(*player, (*iter)))
-                        if (!go->FindNearestCreature(90402, 50.0f, true) || !go->FindNearestCreature(89276, 50.0f, true))
-                        {
-                            summon->GetAI()->DoAction(1);
-                            go->SummonCreature(90402, go->GetPosition());
-                            player->QuestObjectiveSatisfy(239338, 1, QUEST_OBJECTIVE_GAMEOBJECT);
-
-                            player->AddDelayedEvent(8000, [player] {
-                                player->RewardPlayerAndGroupAtEvent(90402, player);
-                            });
-                        }
-                    return true;
-                }
-            }
-        }
-
-        if (go->GetEntry() == 239332)
-        {
-            if (!player->GetQuestObjectiveData(37660, 239332) && player->GetQuestObjectiveData(37660, 90403))
-            {
-                GuidList* allari = player->GetSummonList(90401);
-                for (GuidList::const_iterator iter = allari->begin(); iter != allari->end(); ++iter)
-                {
-                    if (Creature* summon = ObjectAccessor::GetCreature(*player, (*iter)))
-                        if (!go->FindNearestCreature(90402, 50.0f, true) || !go->FindNearestCreature(89276, 50.0f, true))
-                        {
-                            summon->GetAI()->DoAction(2);
-                            go->SummonCreature(89276, go->GetPosition());
-                            player->QuestObjectiveSatisfy(239332, 1, QUEST_OBJECTIVE_GAMEOBJECT);
-
-                            player->AddDelayedEvent(15000, [player] {
-                                player->RewardPlayerAndGroupAtEvent(90402, player);
-                            });
-                        }
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-};
-
 struct go_toy_train_set : public GameObjectAI
 {
     go_toy_train_set(GameObject* go) : GameObjectAI(go), pulseTimer(3 * IN_MILLISECONDS) {}
@@ -1676,7 +1620,7 @@ void AddSC_go_scripts()
     new go_barov_journal;
     new go_field_repair_bot_74A;
     new go_gilded_brazier;
-    //new go_orb_of_command;
+    new go_orb_of_command;
     new go_shrine_of_the_birds;
     new go_southfury_moonstone;
     new go_tablet_of_madness;
@@ -1711,7 +1655,6 @@ void AddSC_go_scripts()
     new go_sikthik_cage;
     new go_forsaken_stink_bomb;
     new go_ephemeral_crystal;
-    new go_azsuna_soul_gem;
     RegisterGameObjectAI(go_toy_train_set);
     RegisterGameObjectAI(go_brewfest_music);
     RegisterGameObjectAI(go_midsummer_music);

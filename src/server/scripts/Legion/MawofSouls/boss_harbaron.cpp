@@ -1,11 +1,12 @@
 /*
+    http://uwow.biz
     Dungeon : Maw of Souls 100-110
     Encounter: Harbaron
     Normal: 100%, Heroic: 100%, Mythic: 100%
 */
 
 #include "maw_of_souls.h"
-#include "ScriptPCH.h"
+#include "PrecompiledHeaders/ScriptPCH.h"
 
 enum Says
 {
@@ -151,7 +152,7 @@ struct boss_harbaron : public BossAI
             for (uint8 i = 0; i < 6; ++i)
             {
                 scytheRange += 5;
-                pos = me->GetNearPosition(scytheRange, angle);
+                me->GetNearPosition(pos, scytheRange, angle);
                 SummonCreatureDelay(i * 100, NPC_COSMIC_SCYTHE_2, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), angle * 2.0f);
             }
         }
@@ -164,7 +165,7 @@ struct boss_harbaron : public BossAI
 
             for (uint8 i = 0; i < maxCount; ++i)
             {
-                pos = target->GetFirstCollisionPosition(1.5f, angle);
+                target->GetFirstCollisionPosition(pos, 1.5f, angle);
                 angle += 6.28f / maxCount;
                 if (auto soul = target->SummonCreature(NPC_SOUL_FRAGMENT, pos, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000))
                     trashGUID.push_back(soul->GetGUID());
@@ -226,7 +227,8 @@ struct boss_harbaron : public BossAI
                 case EVENT_SUM_SHACKLED_SERVITOR:
                 {
                     Talk(SAY_SUMMON);
-                    Position pos = me->GetFirstCollisionPosition(15.0f, frand(0.0f, 6.28f));
+                    Position pos;
+                    me->GetFirstCollisionPosition(pos, 15.0f, frand(0.0f, 6.28f));
                     me->CastSpell(pos, SPELL_SUM_SHACKLED_SERVITOR, false);
                     events.RescheduleEvent(EVENT_SUM_SHACKLED_SERVITOR, 23000);
                     break;
@@ -508,7 +510,8 @@ class spell_harbaron_nether_rip : public AuraScript
 
         if (aurEff->GetTickNumber() % 2)
         {
-            Position pos = GetCaster()->GetRandomNearPosition(10.0f);
+            Position pos;
+            GetCaster()->GetRandomNearPosition(pos, 10.0f);
             GetCaster()->CastSpell(pos, 199457, true); //Hack. 198726
         }
         else

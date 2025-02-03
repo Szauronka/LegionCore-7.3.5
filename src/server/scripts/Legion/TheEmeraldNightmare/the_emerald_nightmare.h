@@ -1,7 +1,9 @@
+/*
+    https://uwow.biz/
+*/
+
 #ifndef THE_EMERALD_NIGHTMARE_H_
 #define THE_EMERALD_NIGHTMARE_H_
-
-#define DataHeader "EN"
 
 enum eData
 {

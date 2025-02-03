@@ -1,4 +1,5 @@
 /*===============
+    uwow.biz
 ================*/
 
 #include "mogu_shan_palace.h"
@@ -192,7 +193,7 @@ struct mob_animated_staff : public ScriptedAI
                 std::list<Unit*> units;
                 instance->instance->ApplyOnEveryPlayer([&](Player* player)
                 {
-                    if (player->IsAlive() && !player->isGameMaster())
+                    if (player->isAlive() && !player->isGameMaster())
                         units.push_back(player);
                 });
 
@@ -241,7 +242,7 @@ class OnlyTriggerInFrontPredicate
 
         bool operator()(WorldObject* target)
         {
-            return target->GetEntry() != 59481 || !_caster->isInFront(target, float(M_PI / 5) || target->GetGUID() == _caster->GetGUID());
+            return target->GetEntry() != 59481 || !_caster->isInFront(target, M_PI / 5) || target->GetGUID() == _caster->GetGUID();
         }
 
     private:

@@ -24,32 +24,12 @@
 #include "ObjectMgr.h"
 
 DB2Storage<AchievementEntry>                    sAchievementStore("Achievement.db2", AchievementLoadInfo::Instance());
-DB2Storage<Achievement_CategoryEntry>           sAchievement_CategoryStore("Achievement_Category.db2", Achievement_CategoryLoadInfo::Instance());
 DB2Storage<AdventureJournalEntry>               sAdventureJournalStore("AdventureJournal.db2", AdventureJournalLoadInfo::Instance());
 DB2Storage<AdventureMapPOIEntry>                sAdventureMapPOIStore("AdventureMapPOI.db2", AdventureMapPOILoadInfo::Instance());
-DB2Storage<AlliedRaceEntry>                     sAlliedRaceStore("AlliedRace.db2", AlliedRaceLoadInfo::Instance());
-DB2Storage<AlliedRaceRacialAbilityEntry>        sAlliedRaceRacialAbilityStore("AlliedRaceRacialAbility.db2", AlliedRaceRacialAbilityLoadInfo::Instance());
-DB2Storage<AnimationDataEntry>                  sAnimationDataStore("AnimationData.db2", AnimationDataLoadInfo::Instance());
 DB2Storage<AnimKitEntry>                        sAnimKitStore("AnimKit.db2", AnimKitLoadInfo::Instance());
-DB2Storage<AnimKitBoneSetEntry>                 sAnimKitBoneSetStore("AnimKitBoneSet.db2", AnimKitBoneSetLoadInfo::Instance());
-DB2Storage<AnimKitBoneSetAliasEntry>            sAnimKitBoneSetAliasStore("AnimKitBoneSetAlias.db2", AnimKitBoneSetAliasLoadInfo::Instance());
-DB2Storage<AnimKitConfigEntry>                  sAnimKitConfigStore("AnimKitConfig.db2", AnimKitConfigLoadInfo::Instance());
-DB2Storage<AnimKitConfigBoneSetEntry>           sAnimKitConfigBoneSetStore("AnimKitConfigBoneSet.db2", AnimKitConfigBoneSetLoadInfo::Instance());
-DB2Storage<AnimKitPriorityEntry>                sAnimKitPriorityStore("AnimKitPriority.db2", AnimKitPriorityLoadInfo::Instance());
-DB2Storage<AnimKitReplacementEntry>             sAnimKitReplacementStore("AnimKitReplacement.db2", AnimKitReplacementLoadInfo::Instance());
-DB2Storage<AnimKitSegmentEntry>                 sAnimKitSegmentStore("AnimKitSegment.db2", AnimKitSegmentLoadInfo::Instance());
-DB2Storage<AnimReplacementEntry>                sAnimReplacementStore("AnimReplacement.db2", AnimReplacementLoadInfo::Instance());
-DB2Storage<AnimReplacementSetEntry>             sAnimReplacementSetStore("AnimReplacementSet.db2", AnimReplacementSetLoadInfo::Instance());
-DB2Storage<AreaFarClipOverrideEntry>            sAreaFarClipOverrideStore("AreaFarClipOverride.db2", AreaFarClipOverrideLoadInfo::Instance());
 DB2Storage<AreaGroupMemberEntry>                sAreaGroupMemberStore("AreaGroupMember.db2", AreaGroupMemberLoadInfo::Instance());
-DB2Storage<AreaPOIEntry>                        sAreaPOIStore("AreaPOI.db2", AreaPOILoadInfo::Instance());
-DB2Storage<AreaPOIStateEntry>                   sAreaPOIStateStore("AreaPOIState.db2", AreaPOIStateLoadInfo::Instance());
 DB2Storage<AreaTableEntry>                      sAreaTableStore("AreaTable.db2", AreaTableLoadInfo::Instance());
 DB2Storage<AreaTriggerEntry>                    sAreaTriggerStore("AreaTrigger.db2", AreaTriggerLoadInfo::Instance());
-DB2Storage<AreaTriggerActionSetEntry>           sAreaTriggerActionSetStore("AreaTriggerActionSet.db2", AreaTriggerActionSetLoadInfo::Instance());
-DB2Storage<AreaTriggerBoxEntry>                 sAreaTriggerBoxStore("AreaTriggerBox.db2", AreaTriggerBoxLoadInfo::Instance());
-DB2Storage<AreaTriggerCylinderEntry>            sAreaTriggerCylinderStore("AreaTriggerCylinder.db2", AreaTriggerCylinderLoadInfo::Instance());
-DB2Storage<AreaTriggerSphereEntry>              sAreaTriggerSphereStore("AreaTriggerSphere.db2", AreaTriggerSphereLoadInfo::Instance());
 DB2Storage<ArmorLocationEntry>                  sArmorLocationStore("ArmorLocation.db2", ArmorLocationLoadInfo::Instance());
 DB2Storage<ArtifactEntry>                       sArtifactStore("Artifact.db2", ArtifactLoadInfo::Instance());
 DB2Storage<ArtifactAppearanceEntry>             sArtifactAppearanceStore("ArtifactAppearance.db2", ArtifactAppearanceLoadInfo::Instance());
@@ -60,7 +40,6 @@ DB2Storage<ArtifactPowerLinkEntry>              sArtifactPowerLinkStore("Artifac
 DB2Storage<ArtifactPowerPickerEntry>            sArtifactPowerPickerStore("ArtifactPowerPicker.db2", ArtifactPowerPickerLoadInfo::Instance());
 DB2Storage<ArtifactPowerRankEntry>              sArtifactPowerRankStore("ArtifactPowerRank.db2", ArtifactPowerRankLoadInfo::Instance());
 DB2Storage<ArtifactQuestXPEntry>                sArtifactQuestXPStore("ArtifactQuestXP.db2", ArtifactQuestXpLoadInfo::Instance());
-DB2Storage<ArtifactTierEntry>                   sArtifactTierStore("ArtifactTier.db2", ArtifactTierLoadInfo::Instance());
 DB2Storage<ArtifactUnlockEntry>                 sArtifactUnlockStore("ArtifactUnlock.db2", ArtifactUnlockLoadInfo::Instance());
 DB2Storage<AuctionHouseEntry>                   sAuctionHouseStore("AuctionHouse.db2", AuctionHouseLoadInfo::Instance());
 DB2Storage<BankBagSlotPricesEntry>              sBankBagSlotPricesStore("BankBagSlotPrices.db2", BankBagSlotPricesLoadInfo::Instance());
@@ -73,124 +52,54 @@ DB2Storage<BattlePetAbilityStateEntry>          sBattlePetAbilityStateStore("Bat
 DB2Storage<BattlePetAbilityTurnEntry>           sBattlePetAbilityTurnStore("BattlePetAbilityTurn.db2", BattlePetAbilityTurnLoadInfo::Instance());
 DB2Storage<BattlePetBreedQualityEntry>          sBattlePetBreedQualityStore("BattlePetBreedQuality.db2", BattlePetBreedQualityLoadInfo::Instance());
 DB2Storage<BattlePetBreedStateEntry>            sBattlePetBreedStateStore("BattlePetBreedState.db2", BattlePetBreedStateLoadInfo::Instance());
-DB2Storage<BattlePetDisplayOverrideEntry>       sBattlePetDisplayOverrideStore("BattlePetDisplayOverride.db2", BattlePetDisplayOverrideLoadInfo::Instance());
 DB2Storage<BattlePetEffectPropertiesEntry>      sBattlePetEffectPropertiesStore("BattlePetEffectProperties.db2", BattlePetEffectPropertiesLoadInfo::Instance());
-DB2Storage<BattlePetNPCTeamMemberEntry>         sBattlePetNPCTeamMemberStore("BattlePetNPCTeamMember.db2", BattlePetNPCTeamMemberLoadInfo::Instance());
 DB2Storage<BattlePetSpeciesEntry>               sBattlePetSpeciesStore("BattlePetSpecies.db2", BattlePetSpeciesLoadInfo::Instance());
 DB2Storage<BattlePetSpeciesStateEntry>          sBattlePetSpeciesStateStore("BattlePetSpeciesState.db2", BattlePetSpeciesStateLoadInfo::Instance());
 DB2Storage<BattlePetSpeciesXAbilityEntry>       sBattlePetSpeciesXAbilityStore("BattlePetSpeciesXAbility.db2", BattlePetSpeciesXAbilityLoadInfo::Instance());
 DB2Storage<BattlePetStateEntry>                 sBattlePetStateStore("BattlePetState.db2", BattlePetStateLoadInfo::Instance());
-DB2Storage<BattlePetVisualEntry>                sBattlePetVisualStore("BattlePetVisual.db2", BattlePetVisualLoadInfo::Instance());
-DB2Storage<BeamEffectEntry>                     sBeamEffectStore("BeamEffect.db2", BeamEffectLoadInfo::Instance());
-DB2Storage<BoneWindModifierModelEntry>          sBoneWindModifierModelStore("BoneWindModifierModel.db2", BoneWindModifierModelLoadInfo::Instance());
-DB2Storage<BoneWindModifiersEntry>              sBoneWindModifiersStore("BoneWindModifiers.db2", BoneWindModifiersLoadInfo::Instance());
-DB2Storage<BountyEntry>                         sBountyStore("Bounty.db2", BountyLoadInfo::Instance());
-DB2Storage<BountySetEntry>                      sBountySetStore("BountySet.db2", BountySetLoadInfo::Instance());
 DB2Storage<BroadcastTextEntry>                  sBroadcastTextStore("BroadcastText.db2", BroadcastTextLoadInfo::Instance());
-DB2Storage<CameraEffectEntry>                   sCameraEffectStore("CameraEffect.db2", CameraEffectLoadInfo::Instance());
-DB2Storage<CameraEffectEntryEntry>              sCameraEffectEntryStore("CameraEffectEntry.db2", CameraEffectEntryLoadInfo::Instance());
-DB2Storage<CameraModeEntry>                     sCameraModeStore("CameraMode.db2", CameraModeLoadInfo::Instance());
-DB2Storage<CastableRaidBuffsEntry>              sCastableRaidBuffsStore("CastableRaidBuffs.db2", CastableRaidBuffsLoadInfo::Instance());
-DB2Storage<CelestialBodyEntry>                  sCelestialBodyStore("CelestialBody.db2", CelestialBodyLoadInfo::Instance());
-DB2Storage<Cfg_CategoriesEntry>                 sCfg_CategoriesStore("Cfg_Categories.db2", Cfg_CategoriesLoadInfo::Instance());
-DB2Storage<Cfg_ConfigsEntry>                    sCfg_ConfigsStore("Cfg_Configs.db2", Cfg_ConfigsLoadInfo::Instance());
-DB2Storage<Cfg_RegionsEntry>                    sCfg_RegionsStore("Cfg_Regions.db2", Cfg_RegionsLoadInfo::Instance());
-DB2Storage<CharacterFaceBoneSetEntry>           sCharacterFaceBoneSetStore("CharacterFaceBoneSet.db2", CharacterFaceBoneSetLoadInfo::Instance());
 DB2Storage<CharacterFacialHairStylesEntry>      sCharacterFacialHairStylesStore("CharacterFacialHairStyles.db2", CharacterFacialHairStylesLoadInfo::Instance());
 DB2Storage<CharacterLoadoutEntry>               sCharacterLoadoutStore("CharacterLoadout.db2", CharacterLoadoutLoadInfo::Instance());
 DB2Storage<CharacterLoadoutItemEntry>           sCharacterLoadoutItemStore("CharacterLoadoutItem.db2", CharacterLoadoutItemLoadInfo::Instance());
-DB2Storage<CharacterServiceInfoEntry>           sCharacterServiceInfoStore("CharacterServiceInfo.db2", CharacterServiceInfoLoadInfo::Instance());
-DB2Storage<CharBaseInfoEntry>                   sCharBaseInfoStore("CharBaseInfo.db2", CharBaseInfoLoadInfo::Instance());
 DB2Storage<CharBaseSectionEntry>                sCharBaseSectionStore("CharBaseSection.db2", CharBaseSectionLoadInfo::Instance());
-DB2Storage<CharComponentTextureLayoutsEntry>    sCharComponentTextureLayoutsStore("CharComponentTextureLayouts.db2", CharComponentTextureLayoutsLoadInfo::Instance());
-DB2Storage<CharComponentTextureSectionsEntry>   sCharComponentTextureSectionsStore("CharComponentTextureSections.db2", CharComponentTextureSectionsLoadInfo::Instance());
-DB2Storage<CharHairGeosetsEntry>                sCharHairGeosetsStore("CharHairGeosets.db2", CharHairGeosetsLoadInfo::Instance());
 DB2Storage<CharSectionsEntry>                   sCharSectionsStore("CharSections.db2", CharSectionsLoadInfo::Instance());
 DB2Storage<CharShipmentEntry>                   sCharShipmentStore("CharShipment.db2", CharShipmentLoadInfo::Instance());
 DB2Storage<CharShipmentContainerEntry>          sCharShipmentContainerStore("CharShipmentContainer.db2", CharShipmentContainerLoadInfo::Instance());
 DB2Storage<CharStartOutfitEntry>                sCharStartOutfitStore("CharStartOutfit.db2", CharStartOutfitLoadInfo::Instance());
 DB2Storage<CharTitlesEntry>                     sCharTitlesStore("CharTitles.db2", CharTitlesLoadInfo::Instance());
 DB2Storage<ChatChannelsEntry>                   sChatChannelsStore("ChatChannels.db2", ChatChannelsLoadInfo::Instance());
-DB2Storage<ChatProfanityEntry>                  sChatProfanityStore("ChatProfanity.db2", ChatProfanityLoadInfo::Instance());
 DB2Storage<ChrClassesEntry>                     sChrClassesStore("ChrClasses.db2", ChrClassesLoadInfo::Instance());
 DB2Storage<ChrClassesXPowerTypesEntry>          sChrClassesXPowerTypesStore("ChrClassesXPowerTypes.db2", ChrClassesXPowerTypesLoadInfo::Instance());
-DB2Storage<ChrClassRaceSexEntry>                sChrClassRaceSexStore("ChrClassRaceSex.db2", ChrClassRaceSexLoadInfo::Instance());
-DB2Storage<ChrClassTitleEntry>                  sChrClassTitleStore("ChrClassTitle.db2", ChrClassTitleLoadInfo::Instance());
-DB2Storage<ChrClassUIDisplayEntry>              sChrClassUIDisplayStore("ChrClassUIDisplay.db2", ChrClassUIDisplayLoadInfo::Instance());
-DB2Storage<ChrClassVillainEntry>                sChrClassVillainStore("ChrClassVillain.db2", ChrClassVillainLoadInfo::Instance());
-DB2Storage<ChrCustomizationEntry>               sChrCustomizationStore("ChrCustomization.db2", ChrCustomizationLoadInfo::Instance());
 DB2Storage<ChrRacesEntry>                       sChrRacesStore("ChrRaces.db2", ChrRacesLoadInfo::Instance());
 DB2Storage<ChrSpecializationEntry>              sChrSpecializationStore("ChrSpecialization.db2", ChrSpecializationLoadInfo::Instance());
-DB2Storage<ChrUpgradeBucketEntry>               sChrUpgradeBucketStore("ChrUpgradeBucket.db2", ChrUpgradeBucketLoadInfo::Instance());
-DB2Storage<ChrUpgradeBucketSpellEntry>          sChrUpgradeBucketSpellStore("ChrUpgradeBucketSpell.db2", ChrUpgradeBucketSpellLoadInfo::Instance());
-DB2Storage<ChrUpgradeTierEntry>                 sChrUpgradeTierStore("ChrUpgradeTier.db2", ChrUpgradeTierLoadInfo::Instance());
-DB2Storage<CinematicCameraEntry>                sCinematicCameraStore("CinematicCamera.db2", CinematicCameraLoadInfo::Instance());
-DB2Storage<CinematicSequencesEntry>             sCinematicSequencesStore("CinematicSequences.db2", CinematicSequencesLoadInfo::Instance());
-DB2Storage<CloakDampeningEntry>                 sCloakDampeningStore("CloakDampening.db2", CloakDampeningLoadInfo::Instance());
-DB2Storage<CombatConditionEntry>                sCombatConditionStore("CombatCondition.db2", CombatConditionLoadInfo::Instance());
-DB2Storage<CommentatorStartLocationEntry>       sCommentatorStartLocationStore("CommentatorStartLocation.db2", CommentatorStartLocationLoadInfo::Instance());
-DB2Storage<CommentatorTrackedCooldownEntry>     sCommentatorTrackedCooldownStore("CommentatorTrackedCooldown.db2", CommentatorTrackedCooldownLoadInfo::Instance());
-DB2Storage<ComponentModelFileDataEntry>         sComponentModelFileDataStore("ComponentModelFileData.db2", ComponentModelFileDataLoadInfo::Instance());
-DB2Storage<ComponentTextureFileDataEntry>       sComponentTextureFileDataStore("ComponentTextureFileData.db2", ComponentTextureFileDataLoadInfo::Instance());
-DB2Storage<ConfigurationWarningEntry>           sConfigurationWarningStore("ConfigurationWarning.db2", ConfigurationWarningLoadInfo::Instance());
 DB2Storage<ContributionEntry>                   sContributionStore("Contribution.db2", ContributionLoadInfo::Instance());
 DB2Storage<ConversationLineEntry>               sConversationLineStore("ConversationLine.db2", ConversationLineLoadInfo::Instance());
-DB2Storage<CreatureEntry>                       sCreatureStore("Creature.db2", CreatureLoadInfo::Instance());
 DB2Storage<CreatureDifficultyEntry>             sCreatureDifficultyStore("CreatureDifficulty.db2", CreatureDifficultyLoadInfo::Instance());
 DB2Storage<CreatureDisplayInfoEntry>            sCreatureDisplayInfoStore("CreatureDisplayInfo.db2", CreatureDisplayInfoLoadInfo::Instance());
-DB2Storage<CreatureDisplayInfoCondEntry>        sCreatureDisplayInfoCondStore("CreatureDisplayInfoCond.db2", CreatureDisplayInfoCondLoadInfo::Instance());
-DB2Storage<CreatureDisplayInfoEvtEntry>         sCreatureDisplayInfoEvtStore("CreatureDisplayInfoEvt.db2", CreatureDisplayInfoEvtLoadInfo::Instance());
 DB2Storage<CreatureDisplayInfoExtraEntry>       sCreatureDisplayInfoExtraStore("CreatureDisplayInfoExtra.db2", CreatureDisplayInfoExtraLoadInfo::Instance());
-DB2Storage<CreatureDisplayInfoTrnEntry>         sCreatureDisplayInfoTrnStore("CreatureDisplayInfoTrn.db2", CreatureDisplayInfoTrnLoadInfo::Instance());
-DB2Storage<CreatureDispXUiCameraEntry>          sCreatureDispXUiCameraStore("CreatureDispXUiCamera.db2", CreatureDispXUiCameraLoadInfo::Instance());
 DB2Storage<CreatureFamilyEntry>                 sCreatureFamilyStore("CreatureFamily.db2", CreatureFamilyLoadInfo::Instance());
-DB2Storage<CreatureImmunitiesEntry>             sCreatureImmunitiesStore("CreatureImmunities.db2", CreatureImmunitiesLoadInfo::Instance());
 DB2Storage<CreatureModelDataEntry>              sCreatureModelDataStore("CreatureModelData.db2", CreatureModelDataLoadInfo::Instance());
-DB2Storage<CreatureMovementInfoEntry>           sCreatureMovementInfoStore("CreatureMovementInfo.db2", CreatureMovementInfoLoadInfo::Instance());
-DB2Storage<CreatureSoundDataEntry>              sCreatureSoundDataStore("CreatureSoundData.db2", CreatureSoundDataLoadInfo::Instance());
 DB2Storage<CreatureTypeEntry>                   sCreatureTypeStore("CreatureType.db2", CreatureTypeLoadInfo::Instance());
 DB2Storage<CreatureXContributionEntry>          sCreatureXContributionStore("CreatureXContribution.db2", CreatureXContributionLoadInfo::Instance());
 DB2Storage<CriteriaEntry>                       sCriteriaStore("Criteria.db2", CriteriaLoadInfo::Instance());
 DB2Storage<CriteriaTreeEntry>                   sCriteriaTreeStore("CriteriaTree.db2", CriteriaTreeLoadInfo::Instance());
-DB2Storage<CriteriaTreeXEffectEntry>            sCriteriaTreeXEffectStore("CriteriaTreeXEffect.db2", CriteriaTreeXEffectLoadInfo::Instance());
-DB2Storage<CurrencyCategoryEntry>               sCurrencyCategoryStore("CurrencyCategory.db2", CurrencyCategoryLoadInfo::Instance());
 DB2Storage<CurrencyTypesEntry>                  sCurrencyTypesStore("CurrencyTypes.db2", CurrencyTypesLoadInfo::Instance());
 DB2Storage<CurveEntry>                          sCurveStore("Curve.db2", CurveLoadInfo::Instance());
 DB2Storage<CurvePointEntry>                     sCurvePointStore("CurvePoint.db2", CurvePointLoadInfo::Instance());
-DB2Storage<DeathThudLookupsEntry>               sDeathThudLookupsStore("DeathThudLookups.db2", DeathThudLookupsLoadInfo::Instance());
-DB2Storage<DecalPropertiesEntry>                sDecalPropertiesStore("DecalProperties.db2", DecalPropertiesLoadInfo::Instance());
-DB2Storage<DeclinedWordEntry>                   sDeclinedWordStore("DeclinedWord.db2", DeclinedWordLoadInfo::Instance());
-DB2Storage<DeclinedWordCasesEntry>              sDeclinedWordCasesStore("DeclinedWordCases.db2", DeclinedWordCasesLoadInfo::Instance());
 DB2Storage<DestructibleModelDataEntry>          sDestructibleModelDataStore("DestructibleModelData.db2", DestructibleModelDataLoadInfo::Instance());
-DB2Storage<DeviceBlacklistEntry>                sDeviceBlacklistStore("DeviceBlacklist.db2", DeviceBlacklistLoadInfo::Instance());
-DB2Storage<DeviceDefaultSettingsEntry>          sDeviceDefaultSettingsStore("DeviceDefaultSettings.db2", DeviceDefaultSettingsLoadInfo::Instance());
 DB2Storage<DifficultyEntry>                     sDifficultyStore("Difficulty.db2", DifficultyLoadInfo::Instance());
-DB2Storage<DissolveEffectEntry>                 sDissolveEffectStore("DissolveEffect.db2", DissolveEffectLoadInfo::Instance());
-DB2Storage<DriverBlacklistEntry>                sDriverBlacklistStore("DriverBlacklist.db2", DriverBlacklistLoadInfo::Instance());
 DB2Storage<DungeonEncounterEntry>               sDungeonEncounterStore("DungeonEncounter.db2", DungeonEncounterLoadInfo::Instance());
 DB2Storage<DurabilityCostsEntry>                sDurabilityCostsStore("DurabilityCosts.db2", DurabilityCostsLoadInfo::Instance());
 DB2Storage<DurabilityQualityEntry>              sDurabilityQualityStore("DurabilityQuality.db2", DurabilityQualityLoadInfo::Instance());
-DB2Storage<EdgeGlowEffectEntry>                 sEdgeGlowEffectStore("EdgeGlowEffect.db2", EdgeGlowEffectLoadInfo::Instance());
 DB2Storage<EmotesEntry>                         sEmotesStore("Emotes.db2", EmotesLoadInfo::Instance());
 DB2Storage<EmotesTextEntry>                     sEmotesTextStore("EmotesText.db2", EmotesTextLoadInfo::Instance());
-DB2Storage<EmotesTextDataEntry>                 sEmotesTextDataStore("EmotesTextData.db2", EmotesTextDataLoadInfo::Instance());
-DB2Storage<EmotesTextSoundEntry>                sEmotesTextSoundStore("EmotesTextSound.db2", EmotesTextSoundLoadInfo::Instance());
-DB2Storage<EnvironmentalDamageEntry>            sEnvironmentalDamageStore("EnvironmentalDamage.db2", EnvironmentalDamageLoadInfo::Instance());
-DB2Storage<ExhaustionEntry>                     sExhaustionStore("Exhaustion.db2", ExhaustionLoadInfo::Instance());
 DB2Storage<FactionEntry>                        sFactionStore("Faction.db2", FactionLoadInfo::Instance());
-DB2Storage<FactionGroupEntry>                   sFactionGroupStore("FactionGroup.db2", FactionGroupLoadInfo::Instance());
 DB2Storage<FactionTemplateEntry>                sFactionTemplateStore("FactionTemplate.db2", FactionTemplateLoadInfo::Instance());
-DB2Storage<FootprintTexturesEntry>              sFootprintTexturesStore("FootprintTextures.db2", FootprintTexturesLoadInfo::Instance());
-DB2Storage<FootstepTerrainLookupEntry>          sFootstepTerrainLookupStore("FootstepTerrainLookup.db2", FootstepTerrainLookupLoadInfo::Instance());
 DB2Storage<FriendshipRepReactionEntry>          sFriendshipRepReactionStore("FriendshipRepReaction.db2", FriendshipRepReactionLoadInfo::Instance());
 DB2Storage<FriendshipReputationEntry>           sFriendshipReputationStore("FriendshipReputation.db2", FriendshipReputationLoadInfo::Instance());
-DB2Storage<FullScreenEffectEntry>               sFullScreenEffectStore("FullScreenEffect.db2", FullScreenEffectLoadInfo::Instance());
 DB2Storage<GameObjectArtKitEntry>               sGameObjectArtKitStore("GameObjectArtKit.db2", GameobjectArtKitLoadInfo::Instance());
-DB2Storage<GameObjectDiffAnimMapEntry>          sGameObjectDiffAnimMapStore("GameObjectDiffAnimMap.db2", GameobjectDiffAnimMapLoadInfo::Instance());
 DB2Storage<GameObjectDisplayInfoEntry>          sGameObjectDisplayInfoStore("GameObjectDisplayInfo.db2", GameobjectDisplayInfoLoadInfo::Instance());
-DB2Storage<GameObjectDisplayInfoXSoundKitEntry> sGameObjectDisplayInfoXSoundKitStore("GameObjectDisplayInfoXSoundKit.db2", GameobjectDisplayInfoXSoundKitLoadInfo::Instance());
 DB2Storage<GameObjectsEntry>                    sGameObjectsStore("GameObjects.db2", GameobjectsLoadInfo::Instance());
-DB2Storage<GameTipsEntry>                       sGameTipsStore("GameTips.db2", GameTipsLoadInfo::Instance());
 DB2Storage<GarrAbilityEntry>                    sGarrAbilityStore("GarrAbility.db2", GarrAbilityLoadInfo::Instance());
 DB2Storage<GarrAbilityCategoryEntry>            sGarrAbilityCategoryStore("GarrAbilityCategory.db2", GarrAbilityCategoryLoadInfo::Instance());
 DB2Storage<GarrAbilityEffectEntry>              sGarrAbilityEffectStore("GarrAbilityEffect.db2", GarrAbilityEffectLoadInfo::Instance());
@@ -198,7 +107,6 @@ DB2Storage<GarrBuildingEntry>                   sGarrBuildingStore("GarrBuilding
 DB2Storage<GarrBuildingDoodadSetEntry>          sGarrBuildingDoodadSetStore("GarrBuildingDoodadSet.db2", GarrBuildingDoodadSetLoadInfo::Instance());
 DB2Storage<GarrBuildingPlotInstEntry>           sGarrBuildingPlotInstStore("GarrBuildingPlotInst.db2", GarrBuildingPlotInstLoadInfo::Instance());
 DB2Storage<GarrClassSpecEntry>                  sGarrClassSpecStore("GarrClassSpec.db2", GarrClassSpecLoadInfo::Instance());
-DB2Storage<GarrClassSpecPlayerCondEntry>        sGarrClassSpecPlayerCondStore("GarrClassSpecPlayerCond.db2", GarrClassSpecPlayerCondLoadInfo::Instance());
 DB2Storage<GarrEncounterEntry>                  sGarrEncounterStore("GarrEncounter.db2", GarrEncounterLoadInfo::Instance());
 DB2Storage<GarrEncounterSetXEncounterEntry>     sGarrEncounterSetXEncounterStore("GarrEncounterSetXEncounter.db2", GarrEncounterSetXEncounterLoadInfo::Instance());
 DB2Storage<GarrEncounterXMechanicEntry>         sGarrEncounterXMechanicStore("GarrEncounterXMechanic.db2", GarrEncounterXMechanicLoadInfo::Instance());
@@ -208,7 +116,6 @@ DB2Storage<GarrFollowerLevelXPEntry>            sGarrFollowerLevelXPStore("GarrF
 DB2Storage<GarrFollowerQualityEntry>            sGarrFollowerQualityStore("GarrFollowerQuality.db2", GarrFollowerQualityLoadInfo::Instance());
 DB2Storage<GarrFollowerSetXFollowerEntry>       sGarrFollowerSetXFollowerStore("GarrFollowerSetXFollower.db2", GarrFollowerSetXFollowerLoadInfo::Instance());
 DB2Storage<GarrFollowerTypeEntry>               sGarrFollowerTypeStore("GarrFollowerType.db2", GarrFollowerTypeLoadInfo::Instance());
-DB2Storage<GarrFollowerUICreatureEntry>         sGarrFollowerUICreatureStore("GarrFollowerUICreature.db2", GarrFollowerUICreatureLoadInfo::Instance());
 DB2Storage<GarrFollowerXAbilityEntry>           sGarrFollowerXAbilityStore("GarrFollowerXAbility.db2", GarrFollowerXAbilityLoadInfo::Instance());
 DB2Storage<GarrFollSupportSpellEntry>           sGarrFollSupportSpellStore("GarrFollSupportSpell.db2", GarrFollSupportSpellLoadInfo::Instance());
 DB2Storage<GarrItemLevelUpgradeDataEntry>       sGarrItemLevelUpgradeDataStore("GarrItemLevelUpgradeData.db2", GarrItemLevelUpgradeDataLoadInfo::Instance());
@@ -216,7 +123,6 @@ DB2Storage<GarrMechanicEntry>                   sGarrMechanicStore("GarrMechanic
 DB2Storage<GarrMechanicSetXMechanicEntry>       sGarrMechanicSetXMechanicStore("GarrMechanicSetXMechanic.db2", GarrMechanicSetXMechanicLoadInfo::Instance());
 DB2Storage<GarrMechanicTypeEntry>               sGarrMechanicTypeStore("GarrMechanicType.db2", GarrMechanicTypeLoadInfo::Instance());
 DB2Storage<GarrMissionEntry>                    sGarrMissionStore("GarrMission.db2", GarrMissionLoadInfo::Instance());
-DB2Storage<GarrMissionTextureEntry>             sGarrMissionTextureStore("GarrMissionTexture.db2", GarrMissionTextureLoadInfo::Instance());
 DB2Storage<GarrMissionTypeEntry>                sGarrMissionTypeStore("GarrMissionType.db2", GarrMissionTypeLoadInfo::Instance());
 DB2Storage<GarrMissionXEncounterEntry>          sGarrMissionXEncounterStore("GarrMissionXEncounter.db2", GarrMissionXEncounterLoadInfo::Instance());
 DB2Storage<GarrMissionXFollowerEntry>           sGarrMissionXFollowerStore("GarrMissionXFollower.db2", GarrMissionXFollowerLoadInfo::Instance());
@@ -224,28 +130,16 @@ DB2Storage<GarrMssnBonusAbilityEntry>           sGarrMssnBonusAbilityStore("Garr
 DB2Storage<GarrPlotEntry>                       sGarrPlotStore("GarrPlot.db2", GarrPlotLoadInfo::Instance());
 DB2Storage<GarrPlotBuildingEntry>               sGarrPlotBuildingStore("GarrPlotBuilding.db2", GarrPlotBuildingLoadInfo::Instance());
 DB2Storage<GarrPlotInstanceEntry>               sGarrPlotInstanceStore("GarrPlotInstance.db2", GarrPlotInstanceLoadInfo::Instance());
-DB2Storage<GarrPlotUICategoryEntry>             sGarrPlotUICategoryStore("GarrPlotUICategory.db2", GarrPlotUICategoryLoadInfo::Instance());
 DB2Storage<GarrSiteLevelEntry>                  sGarrSiteLevelStore("GarrSiteLevel.db2", GarrSiteLevelLoadInfo::Instance());
 DB2Storage<GarrSiteLevelPlotInstEntry>          sGarrSiteLevelPlotInstStore("GarrSiteLevelPlotInst.db2", GarrSiteLevelPlotInstLoadInfo::Instance());
 DB2Storage<GarrSpecializationEntry>             sGarrSpecializationStore("GarrSpecialization.db2", GarrSpecializationLoadInfo::Instance());
-DB2Storage<GarrStringEntry>                     sGarrStringStore("GarrString.db2", GarrStringLoadInfo::Instance());
 DB2Storage<GarrTalentEntry>                     sGarrTalentStore("GarrTalent.db2", GarrTalentLoadInfo::Instance());
 DB2Storage<GarrTalentTreeEntry>                 sGarrTalentTreeStore("GarrTalentTree.db2", GarrTalentTreeLoadInfo::Instance());
 DB2Storage<GarrTypeEntry>                       sGarrTypeStore("GarrType.db2", GarrTypeLoadInfo::Instance());
-DB2Storage<GarrUiAnimClassInfoEntry>            sGarrUiAnimClassInfoStore("GarrUiAnimClassInfo.db2", GarrUiAnimClassInfoLoadInfo::Instance());
-DB2Storage<GarrUiAnimRaceInfoEntry>             sGarrUiAnimRaceInfoStore("GarrUiAnimRaceInfo.db2", GarrUiAnimRaceInfoLoadInfo::Instance());
 DB2Storage<GemPropertiesEntry>                  sGemPropertiesStore("GemProperties.db2", GemPropertiesLoadInfo::Instance());
-DB2Storage<GlobalStringsEntry>                  sGlobalStringsStore("GlobalStrings.db2", GlobalStringsLoadInfo::Instance());
 DB2Storage<GlyphBindableSpellEntry>             sGlyphBindableSpellStore("GlyphBindableSpell.db2", GlyphBindableSpellLoadInfo::Instance());
-DB2Storage<GlyphExclusiveCategoryEntry>         sGlyphExclusiveCategoryStore("GlyphExclusiveCategory.db2", GlyphExclusiveCategoryLoadInfo::Instance());
 DB2Storage<GlyphPropertiesEntry>                sGlyphPropertiesStore("GlyphProperties.db2", GlyphPropertiesLoadInfo::Instance());
 DB2Storage<GlyphRequiredSpecEntry>              sGlyphRequiredSpecStore("GlyphRequiredSpec.db2", GlyphRequiredSpecLoadInfo::Instance());
-DB2Storage<GMSurveyAnswersEntry>                sGMSurveyAnswersStore("GMSurveyAnswers.db2", GMSurveyAnswersLoadInfo::Instance());
-DB2Storage<GMSurveyCurrentSurveyEntry>          sGMSurveyCurrentSurveyStore("GMSurveyCurrentSurvey.db2", GMSurveyCurrentSurveyLoadInfo::Instance());
-DB2Storage<GMSurveyQuestionsEntry>              sGMSurveyQuestionsStore("GMSurveyQuestions.db2", GMSurveyQuestionsLoadInfo::Instance());
-DB2Storage<GMSurveySurveysEntry>                sGMSurveySurveysStore("GMSurveySurveys.db2", GMSurveySurveysLoadInfo::Instance());
-DB2Storage<GroundEffectDoodadEntry>             sGroundEffectDoodadStore("GroundEffectDoodad.db2", GroundEffectDoodadLoadInfo::Instance());
-DB2Storage<GroundEffectTextureEntry>            sGroundEffectTextureStore("GroundEffectTexture.db2", GroundEffectTextureLoadInfo::Instance());
 DB2Storage<GroupFinderActivityEntry>            sGroupFinderActivityStore("GroupFinderActivity.db2", GroupFinderActivityLoadInfo::Instance());
 DB2Storage<GroupFinderActivityGrpEntry>         sGroupFinderActivityGrpStore("GroupFinderActivityGrp.db2", GroupFinderActivityGrpLoadInfo::Instance());
 DB2Storage<GroupFinderCategoryEntry>            sGroupFinderCategoryStore("GroupFinderCategory.db2", GroupFinderCategoryLoadInfo::Instance());
@@ -254,25 +148,17 @@ DB2Storage<GuildColorBorderEntry>               sGuildColorBorderStore("GuildCol
 DB2Storage<GuildColorEmblemEntry>               sGuildColorEmblemStore("GuildColorEmblem.db2", GuildColorEmblemLoadInfo::Instance());
 DB2Storage<GuildPerkSpellsEntry>                sGuildPerkSpellsStore("GuildPerkSpells.db2", GuildPerkSpellsLoadInfo::Instance());
 DB2Storage<HeirloomEntry>                       sHeirloomStore("Heirloom.db2", HeirloomLoadInfo::Instance());
-DB2Storage<HelmetAnimScalingEntry>              sHelmetAnimScalingStore("HelmetAnimScaling.db2", HelmetAnimScalingLoadInfo::Instance());
-DB2Storage<HelmetGeosetVisDataEntry>            sHelmetGeosetVisDataStore("HelmetGeosetVisData.db2", HelmetGeosetVisDataLoadInfo::Instance());
-DB2Storage<HighlightColorEntry>                 sHighlightColorStore("HighlightColor.db2", HighlightColorLoadInfo::Instance());
-DB2Storage<HolidayDescriptionsEntry>            sHolidayDescriptionsStore("HolidayDescriptions.db2", HolidayDescriptionsLoadInfo::Instance());
 DB2Storage<HolidayNamesEntry>                   sHolidayNamesStore("HolidayNames.db2", HolidayNamesLoadInfo::Instance());
 DB2Storage<HolidaysEntry>                       sHolidaysStore("Holidays.db2", HolidaysLoadInfo::Instance());
-DB2Storage<HotfixEntry>                         sHotfixesStore("Hotfix.db2", HotfixLoadInfo::Instance());
 DB2Storage<ImportPriceArmorEntry>               sImportPriceArmorStore("ImportPriceArmor.db2", ImportPriceArmorLoadInfo::Instance());
 DB2Storage<ImportPriceQualityEntry>             sImportPriceQualityStore("ImportPriceQuality.db2", ImportPriceQualityLoadInfo::Instance());
 DB2Storage<ImportPriceShieldEntry>              sImportPriceShieldStore("ImportPriceShield.db2", ImportPriceShieldLoadInfo::Instance());
 DB2Storage<ImportPriceWeaponEntry>              sImportPriceWeaponStore("ImportPriceWeapon.db2", ImportPriceWeaponLoadInfo::Instance());
-DB2Storage<InvasionClientDataEntry>             sInvasionClientDataStore("InvasionClientData.db2", InvasionClientDataLoadInfo::Instance());
 DB2Storage<ItemEntry>                           sItemStore("Item.db2", ItemLoadInfo::Instance());
 DB2Storage<ItemAppearanceEntry>                 sItemAppearanceStore("ItemAppearance.db2", ItemAppearanceLoadInfo::Instance());
-DB2Storage<ItemAppearanceXUiCameraEntry>        sItemAppearanceXUiCameraStore("ItemAppearanceXUiCamera.db2", ItemAppearanceXUiCameraLoadInfo::Instance());
 DB2Storage<ItemArmorQualityEntry>               sItemArmorQualityStore("ItemArmorQuality.db2", ItemArmorQualityLoadInfo::Instance());
 DB2Storage<ItemArmorShieldEntry>                sItemArmorShieldStore("ItemArmorShield.db2", ItemArmorShieldLoadInfo::Instance());
 DB2Storage<ItemArmorTotalEntry>                 sItemArmorTotalStore("ItemArmorTotal.db2", ItemArmorTotalLoadInfo::Instance());
-DB2Storage<ItemBagFamilyEntry>                  sItemBagFamilyStore("ItemBagFamily.db2", ItemBagFamilyLoadInfo::Instance());
 DB2Storage<ItemBonusEntry>                      sItemBonusStore("ItemBonus.db2", ItemBonusLoadInfo::Instance());
 DB2Storage<ItemBonusListLevelDeltaEntry>        sItemBonusListLevelDeltaStore("ItemBonusListLevelDelta.db2", ItemBonusListLevelDeltaLoadInfo::Instance());
 DB2Storage<ItemBonusTreeNodeEntry>              sItemBonusTreeNodeStore("ItemBonusTreeNode.db2", ItemBonusTreeNodeLoadInfo::Instance());
@@ -285,128 +171,61 @@ DB2Storage<ItemDamageOneHandCasterEntry>        sItemDamageOneHandCasterStore("I
 DB2Storage<ItemDamageTwoHandEntry>              sItemDamageTwoHandStore("ItemDamageTwoHand.db2", ItemDamageTwoHandLoadInfo::Instance());
 DB2Storage<ItemDamageTwoHandCasterEntry>        sItemDamageTwoHandCasterStore("ItemDamageTwoHandCaster.db2", ItemDamageTwoHandCasterLoadInfo::Instance());
 DB2Storage<ItemDisenchantLootEntry>             sItemDisenchantLootStore("ItemDisenchantLoot.db2", ItemDisenchantLootLoadInfo::Instance());
-DB2Storage<ItemDisplayInfoEntry>                sItemDisplayInfoStore("ItemDisplayInfo.db2", ItemDisplayInfoLoadInfo::Instance());
-DB2Storage<ItemDisplayInfoMaterialResEntry>     sItemDisplayInfoMaterialResStore("ItemDisplayInfoMaterialRes.db2", ItemDisplayInfoMaterialResLoadInfo::Instance());
-DB2Storage<ItemDisplayXUiCameraEntry>           sItemDisplayXUiCameraStore("ItemDisplayXUiCamera.db2", ItemDisplayXUiCameraLoadInfo::Instance());
 DB2Storage<ItemEffectEntry>                     sItemEffectStore("ItemEffect.db2", ItemEffectLoadInfo::Instance());
 DB2Storage<ItemExtendedCostEntry>               sItemExtendedCostStore("ItemExtendedCost.db2", ItemExtendedCostLoadInfo::Instance());
-DB2Storage<ItemGroupSoundsEntry>                sItemGroupSoundsStore("ItemGroupSounds.db2", ItemGroupSoundsLoadInfo::Instance());
 DB2Storage<ItemLevelSelectorEntry>              sItemLevelSelectorStore("ItemLevelSelector.db2", ItemLevelSelectorLoadInfo::Instance());
 DB2Storage<ItemLevelSelectorQualityEntry>       sItemLevelSelectorQualityStore("ItemLevelSelectorQuality.db2", ItemLevelSelectorQualityLoadInfo::Instance());
 DB2Storage<ItemLevelSelectorQualitySetEntry>    sItemLevelSelectorQualitySetStore("ItemLevelSelectorQualitySet.db2", ItemLevelSelectorQualitySetLoadInfo::Instance());
 DB2Storage<ItemLimitCategoryEntry>              sItemLimitCategoryStore("ItemLimitCategory.db2", ItemLimitCategoryLoadInfo::Instance());
 DB2Storage<ItemLimitCategoryConditionEntry>     sItemLimitCategoryConditionStore("ItemLimitCategoryCondition.db2", ItemLimitCategoryConditionLoadInfo::Instance());
 DB2Storage<ItemModifiedAppearanceEntry>         sItemModifiedAppearanceStore("ItemModifiedAppearance.db2", ItemModifiedAppearanceLoadInfo::Instance());
-DB2Storage<ItemModifiedAppearanceExtraEntry>    sItemModifiedAppearanceExtraStore("ItemModifiedAppearanceExtra.db2", ItemModifiedAppearanceExtraLoadInfo::Instance());
-DB2Storage<ItemNameDescriptionEntry>            sItemNameDescriptionStore("ItemNameDescription.db2", ItemNameDescriptionLoadInfo::Instance());
-DB2Storage<ItemPetFoodEntry>                    sItemPetFoodStore("ItemPetFood.db2", ItemPetFoodLoadInfo::Instance());
 DB2Storage<ItemPriceBaseEntry>                  sItemPriceBaseStore("ItemPriceBase.db2", ItemPriceBaseLoadInfo::Instance());
 DB2Storage<ItemRandomPropertiesEntry>           sItemRandomPropertiesStore("ItemRandomProperties.db2", ItemRandomPropertiesLoadInfo::Instance());
 DB2Storage<ItemRandomSuffixEntry>               sItemRandomSuffixStore("ItemRandomSuffix.db2", ItemRandomSuffixLoadInfo::Instance());
-DB2Storage<ItemRangedDisplayInfoEntry>          sItemRangedDisplayInfoStore("ItemRangedDisplayInfo.db2", ItemRangedDisplayInfoLoadInfo::Instance());
-DB2Storage<ItemSearchNameEntry>                 sItemSearchNameStore("ItemSearchName.db2", ItemSearchNameLoadInfo::Instance());
 DB2Storage<ItemSetEntry>                        sItemSetStore("ItemSet.db2", ItemSetLoadInfo::Instance());
 DB2Storage<ItemSetSpellEntry>                   sItemSetSpellStore("ItemSetSpell.db2", ItemSetSpellLoadInfo::Instance());
 DB2Storage<ItemSparseEntry>                     sItemSparseStore("ItemSparse.db2", ItemSparseLoadInfo::Instance());
 DB2Storage<ItemSpecEntry>                       sItemSpecStore("ItemSpec.db2", ItemSpecLoadInfo::Instance());
 DB2Storage<ItemSpecOverrideEntry>               sItemSpecOverrideStore("ItemSpecOverride.db2", ItemSpecOverrideLoadInfo::Instance());
-DB2Storage<ItemSubClassEntry>                   sItemSubClassStore("ItemSubClass.db2", ItemSubClassLoadInfo::Instance());
-DB2Storage<ItemSubClassMaskEntry>               sItemSubClassMaskStore("ItemSubClassMask.db2", ItemSubClassMaskLoadInfo::Instance());
 DB2Storage<ItemUpgradeEntry>                    sItemUpgradeStore("ItemUpgrade.db2", ItemUpgradeLoadInfo::Instance());
-DB2Storage<ItemVisualsEntry>                    sItemVisualsStore("ItemVisuals.db2", ItemVisualsLoadInfo::Instance());
 DB2Storage<ItemXBonusTreeEntry>                 sItemXBonusTreeStore("ItemXBonusTree.db2", ItemXBonusTreeLoadInfo::Instance());
 DB2Storage<JournalEncounterEntry>               sJournalEncounterStore("JournalEncounter.db2", JournalEncounterLoadInfo::Instance());
 DB2Storage<JournalEncounterCreatureEntry>       sJournalEncounterCreatureStore("JournalEncounterCreature.db2", JournalEncounterCreatureLoadInfo::Instance());
 DB2Storage<JournalEncounterItemEntry>           sJournalEncounterItemStore("JournalEncounterItem.db2", JournalEncounterItemLoadInfo::Instance());
-DB2Storage<JournalEncounterSectionEntry>        sJournalEncounterSectionStore("JournalEncounterSection.db2", JournalEncounterSectionLoadInfo::Instance());
-DB2Storage<JournalEncounterXDifficultyEntry>    sJournalEncounterXDifficultyStore("JournalEncounterXDifficulty.db2", JournalEncounterXDifficultyLoadInfo::Instance());
-DB2Storage<JournalEncounterXMapLocEntry>        sJournalEncounterXMapLocStore("JournalEncounterXMapLoc.db2", JournalEncounterXMapLocLoadInfo::Instance());
 DB2Storage<JournalInstanceEntry>                sJournalInstanceStore("JournalInstance.db2", JournalInstanceLoadInfo::Instance());
-DB2Storage<JournalItemXDifficultyEntry>         sJournalItemXDifficultyStore("JournalItemXDifficulty.db2", JournalItemXDifficultyLoadInfo::Instance());
-DB2Storage<JournalSectionXDifficultyEntry>      sJournalSectionXDifficultyStore("JournalSectionXDifficulty.db2", JournalSectionXDifficultyLoadInfo::Instance());
-DB2Storage<JournalTierEntry>                    sJournalTierStore("JournalTier.db2", JournalTierLoadInfo::Instance());
-DB2Storage<JournalTierXInstanceEntry>           sJournalTierXInstanceStore("JournalTierXInstance.db2", JournalTierXInstanceLoadInfo::Instance());
 DB2Storage<KeychainEntry>                       sKeyChainStore("Keychain.db2", KeychainLoadInfo::Instance());
-DB2Storage<KeystoneAffixEntry>                  sKeystoneAffixStore("KeystoneAffix.db2", KeystoneAffixLoadInfo::Instance());
-DB2Storage<LanguagesEntry>                      sLanguagesStore("Languages.db2", LanguagesLoadInfo::Instance());
 DB2Storage<LanguageWordsEntry>                  sLanguageWordsStore("LanguageWords.db2", LanguageWordsLoadInfo::Instance());
-DB2Storage<LFGDungeonExpansionEntry>            sLfgDungeonExpansionStore("LfgDungeonExpansion.db2", LfgDungeonExpansionLoadInfo::Instance());
-DB2Storage<LFGDungeonGroupEntry>                sLfgDungeonGroupStore("LfgDungeonGroup.db2", LfgDungeonGroupLoadInfo::Instance());
 DB2Storage<LFGDungeonsEntry>                    sLfgDungeonsStore("LFGDungeons.db2", LfgDungeonsLoadInfo::Instance());
-DB2Storage<LfgDungeonsGroupingMapEntry>         sLfgDungeonsGroupingMapStore("LfgDungeonsGroupingMap.db2", LfgDungeonsGroupingMapLoadInfo::Instance());
 DB2Storage<LFGRoleRequirementEntry>             sLfgRoleRequirementStore("LFGRoleRequirement.db2", LfgRoleRequirementLoadInfo::Instance());
 DB2Storage<LightEntry>                          sLightStore("Light.db2", LightLoadInfo::Instance());
-DB2Storage<LightDataEntry>                      sLightDataStore("LightData.db2", LightDataLoadInfo::Instance());
-DB2Storage<LightParamsEntry>                    sLightParamsStore("LightParams.db2", LightParamsLoadInfo::Instance());
-DB2Storage<LightSkyboxEntry>                    sLightSkyboxStore("LightSkybox.db2", LightSkyboxLoadInfo::Instance());
-DB2Storage<LiquidMaterialEntry>                 sLiquidMaterialStore("LiquidMaterial.db2", LiquidMaterialLoadInfo::Instance());
-DB2Storage<LiquidObjectEntry>                   sLiquidObjectStore("LiquidObject.db2", LiquidObjectLoadInfo::Instance());
 DB2Storage<LiquidTypeEntry>                     sLiquidTypeStore("LiquidType.db2", LiquidTypeLoadInfo::Instance());
-DB2Storage<LoadingScreensEntry>                 sLoadingScreensStore("LoadingScreens.db2", LoadingScreensLoadInfo::Instance());
-DB2Storage<LoadingScreenTaxiSplinesEntry>       sLoadingScreenTaxiSplinesStore("LoadingScreenTaxiSplines.db2", LoadingScreenTaxiSplinesLoadInfo::Instance());
-DB2Storage<LocaleEntry>                         sLocaleStore("Locale.db2", LocaleLoadInfo::Instance());
-DB2Storage<LocationEntry>                       sLocationStore("Location.db2", LocationLoadInfo::Instance());
 DB2Storage<LockEntry>                           sLockStore("Lock.db2", LockLoadInfo::Instance());
-DB2Storage<LockTypeEntry>                       sLockTypeStore("LockType.db2", LockTypeLoadInfo::Instance());
-DB2Storage<LookAtControllerEntry>               sLookAtControllerStore("LookAtController.db2", LookAtControllerLoadInfo::Instance());
 DB2Storage<MailTemplateEntry>                   sMailTemplateStore("MailTemplate.db2", MailTemplateLoadInfo::Instance());
 DB2Storage<ManagedWorldStateEntry>              sManagedWorldStateStore("ManagedWorldState.db2", ManagedWorldStateLoadInfo::Instance());
 DB2Storage<ManagedWorldStateBuffEntry>          sManagedWorldStateBuffStore("ManagedWorldStateBuff.db2", ManagedWorldStateBuffLoadInfo::Instance());
 DB2Storage<ManagedWorldStateInputEntry>         sManagedWorldStateInputStore("ManagedWorldStateInput.db2", ManagedWorldStateInputLoadInfo::Instance());
-DB2Storage<ManifestInterfaceActionIconEntry>    sManifestInterfaceActionIconStore("ManifestInterfaceActionIcon.db2", ManifestInterfaceActionIconLoadInfo::Instance());
-DB2Storage<ManifestInterfaceDataEntry>          sManifestInterfaceDataStore("ManifestInterfaceData.db2", ManifestInterfaceDataLoadInfo::Instance());
-DB2Storage<ManifestInterfaceItemIconEntry>      sManifestInterfaceItemIconStore("ManifestInterfaceItemIcon.db2", ManifestInterfaceItemIconLoadInfo::Instance());
-DB2Storage<ManifestInterfaceTOCDataEntry>       sManifestInterfaceTOCDataStore("ManifestInterfaceTOCData.db2", ManifestInterfaceTOCDataLoadInfo::Instance());
-DB2Storage<ManifestMP3Entry>                    sManifestMP3Store("ManifestMP3.db2", ManifestMP3LoadInfo::Instance());
 DB2Storage<MapEntry>                            sMapStore("Map.db2", MapLoadInfo::Instance());
-DB2Storage<MapCelestialBodyEntry>               sMapCelestialBodyStore("MapCelestialBody.db2", MapCelestialBodyLoadInfo::Instance());
 DB2Storage<MapChallengeModeEntry>               sMapChallengeModeStore("MapChallengeMode.db2", MapChallengeModeLoadInfo::Instance());
 DB2Storage<MapDifficultyEntry>                  sMapDifficultyStore("MapDifficulty.db2", MapDifficultyLoadInfo::Instance());
 DB2Storage<MapDifficultyXConditionEntry>        sMapDifficultyXConditionStore("MapDifficultyXCondition.db2", MapDifficultyXConditionLoadInfo::Instance());
-DB2Storage<MapLoadingScreenEntry>               sMapLoadingScreenStore("MapLoadingScreen.db2", MapLoadingScreenLoadInfo::Instance());
-DB2Storage<MarketingPromotionsXLocaleEntry>     sMarketingPromotionsXLocaleStore("MarketingPromotionsXLocale.db2", MarketingPromotionsXLocaleLoadInfo::Instance());
-DB2Storage<MaterialEntry>                       sMaterialStore("Material.db2", MaterialLoadInfo::Instance());
-DB2Storage<MissileTargetingEntry>               sMissileTargetingStore("MissileTargeting.db2", MissileTargetingLoadInfo::Instance());
-DB2Storage<ModelAnimCloakDampeningEntry>        sModelAnimCloakDampeningStore("ModelAnimCloakDampening.db2", ModelAnimCloakDampeningLoadInfo::Instance());
-DB2Storage<ModelFileDataEntry>                  sModelFileDataStore("ModelFileData.db2", ModelFileDataLoadInfo::Instance());
-DB2Storage<ModelRibbonQualityEntry>             sModelRibbonQualityStore("ModelRibbonQuality.db2", ModelRibbonQualityLoadInfo::Instance());
 DB2Storage<ModifierTreeEntry>                   sModifierTreeStore("ModifierTree.db2", ModifierTreeLoadInfo::Instance());
 DB2Storage<MountEntry>                          sMountStore("Mount.db2", MountLoadInfo::Instance());
 DB2Storage<MountCapabilityEntry>                sMountCapabilityStore("MountCapability.db2", MountCapabilityLoadInfo::Instance());
 DB2Storage<MountTypeXCapabilityEntry>           sMountTypeXCapabilityStore("MountTypeXCapability.db2", MountTypeXCapabilityLoadInfo::Instance());
 DB2Storage<MountXDisplayEntry>                  sMountXDisplayStore("MountXDisplay.db2", MountXDisplayLoadInfo::Instance());
 DB2Storage<MovieEntry>                          sMovieStore("Movie.db2", MovieLoadInfo::Instance());
-DB2Storage<MovieFileDataEntry>                  sMovieFileDataStore("MovieFileData.db2", MovieFileDataLoadInfo::Instance());
-DB2Storage<MovieVariationEntry>                 sMovieVariationStore("MovieVariation.db2", MovieVariationLoadInfo::Instance());
 DB2Storage<NameGenEntry>                        sNameGenStore("NameGen.db2", NameGenLoadInfo::Instance());
 DB2Storage<NamesProfanityEntry>                 sNamesProfanityStore("NamesProfanity.db2", NamesProfanityLoadInfo::Instance());
 DB2Storage<NamesReservedEntry>                  sNamesReservedStore("NamesReserved.db2", NamesReservedLoadInfo::Instance());
 DB2Storage<NamesReservedLocaleEntry>            sNamesReservedLocaleStore("NamesReservedLocale.db2", NamesReservedLocaleLoadInfo::Instance());
-DB2Storage<NPCSoundsEntry>                      sNPCSoundsStore("NPCSounds.db2", NPCSoundsLoadInfo::Instance());
-DB2Storage<ObjectEffectEntry>                   sObjectEffectStore("ObjectEffect.db2", ObjectEffectLoadInfo::Instance());
-DB2Storage<ObjectEffectModifierEntry>           sObjectEffectModifierStore("ObjectEffectModifier.db2", ObjectEffectModifierLoadInfo::Instance());
-DB2Storage<ObjectEffectPackageElemEntry>        sObjectEffectPackageElemStore("ObjectEffectPackageElem.db2", ObjectEffectPackageElemLoadInfo::Instance());
-DB2Storage<OutlineEffectEntry>                  sOutlineEffectStore("OutlineEffect.db2", OutlineEffectLoadInfo::Instance());
 DB2Storage<OverrideSpellDataEntry>              sOverrideSpellDataStore("OverrideSpellData.db2", OverrideSpellDataLoadInfo::Instance());
 DB2Storage<ParagonReputationEntry>              sParagonReputationStore("ParagonReputation.db2", ParagonReputationLoadInfo::Instance());
-DB2Storage<PageTextMaterialEntry>               sPageTextMaterialStore("PageTextMaterial.db2", PageTextMaterialLoadInfo::Instance());
-DB2Storage<PaperDollItemFrameEntry>             sPaperDollItemFrameStore("PaperDollItemFrame.db2", PaperDollItemFrameLoadInfo::Instance());
-DB2Storage<ParticleColorEntry>                  sParticleColorStore("ParticleColor.db2", ParticleColorLoadInfo::Instance());
-DB2Storage<PathEntry>                           sPathStore("Path.db2", PathLoadInfo::Instance());
-DB2Storage<PathNodeEntry>                       sPathNodeStore("PathNode.db2", PathNodeLoadInfo::Instance());
-DB2Storage<PathNodePropertyEntry>               sPathNodePropertyStore("PathNodeProperty.db2", PathNodePropertyLoadInfo::Instance());
-DB2Storage<PathPropertyEntry>                   sPathPropertyStore("PathProperty.db2", PathPropertyLoadInfo::Instance());
 DB2Storage<PhaseEntry>                          sPhaseStore("Phase.db2", PhaseLoadInfo::Instance());
-DB2Storage<PhaseShiftZoneSoundsEntry>           sPhaseShiftZoneSoundsStore("PhaseShiftZoneSounds.db2", PhaseShiftZoneSoundsLoadInfo::Instance());
 DB2Storage<PhaseXPhaseGroupEntry>               sPhaseXPhaseGroupStore("PhaseXPhaseGroup.db2", PhaseXPhaseGroupLoadInfo::Instance());
 DB2Storage<PlayerConditionEntry>                sPlayerConditionStore("PlayerCondition.db2", PlayerConditionLoadInfo::Instance());
-DB2Storage<PositionerEntry>                     sPositionerStore("Positioner.db2", PositionerLoadInfo::Instance());
-DB2Storage<PositionerStateEntry>                sPositionerStateStore("PositionerState.db2", PositionerStateLoadInfo::Instance());
-DB2Storage<PositionerStateEntryEntry>           sPositionerStateEntryStore("PositionerStateEntry.db2", PositionerStateEntryLoadInfo::Instance());
 DB2Storage<PowerDisplayEntry>                   sPowerDisplayStore("PowerDisplay.db2", PowerDisplayLoadInfo::Instance());
 DB2Storage<PowerTypeEntry>                      sPowerTypeStore("PowerType.db2", PowerTypeLoadInfo::Instance());
 DB2Storage<PrestigeLevelInfoEntry>              sPrestigeLevelInfoStore("PrestigeLevelInfo.db2", PrestigeLevelInfoLoadInfo::Instance());
-DB2Storage<PVPBracketTypesEntry>                sPvpBracketTypesStore("PvpBracketTypes.db2", PvpBracketTypesLoadInfo::Instance());
 DB2Storage<PVPDifficultyEntry>                  sPvpDifficultyStore("PVPDifficulty.db2", PvpDifficultyLoadInfo::Instance());
 DB2Storage<PVPItemEntry>                        sPvpItemStore("PVPItem.db2", PvpItemLoadInfo::Instance());
 DB2Storage<PvpRewardEntry>                      sPvpRewardStore("PvpReward.db2", PvpRewardLoadInfo::Instance());
@@ -415,8 +234,6 @@ DB2Storage<PvpScalingEffectTypeEntry>           sPvpScalingEffectTypeStore("PvpS
 DB2Storage<PvpTalentEntry>                      sPvpTalentStore("PvpTalent.db2", PvpTalentLoadInfo::Instance());
 DB2Storage<PvpTalentUnlockEntry>                sPvpTalentUnlockStore("PvpTalentUnlock.db2", PvpTalentUnlockLoadInfo::Instance());
 DB2Storage<QuestFactionRewardEntry>             sQuestFactionRewardStore("QuestFactionReward.db2", QuestFactionRewardLoadInfo::Instance());
-DB2Storage<QuestFeedbackEffectEntry>            sQuestFeedbackEffectStore("QuestFeedbackEffect.db2", QuestFeedbackEffectLoadInfo::Instance());
-DB2Storage<QuestInfoEntry>                      sQuestInfoStore("QuestInfo.db2", QuestInfoLoadInfo::Instance());
 DB2Storage<QuestLineEntry>                      sQuestLineStore("QuestLine.db2", QuestLineLoadInfo::Instance());
 DB2Storage<QuestLineXQuestEntry>                sQuestLineXQuestStore("QuestLineXQuest.db2", QuestLineXQuestLoadInfo::Instance());
 DB2Storage<QuestMoneyRewardEntry>               sQuestMoneyRewardStore("QuestMoneyReward.db2", QuestMoneyRewardLoadInfo::Instance());
@@ -427,100 +244,47 @@ DB2Storage<QuestPOIPointEntry>                  sQuestPOIPointStore("QuestPOIPoi
 DB2Storage<QuestSortEntry>                      sQuestSortStore("QuestSort.db2", QuestSortLoadInfo::Instance());
 DB2Storage<QuestV2Entry>                        sQuestV2Store("QuestV2.db2", QuestV2LoadInfo::Instance());
 DB2Storage<QuestV2CliTaskEntry>                 sQuestV2CliTaskStore("QuestV2CliTask.db2", QuestV2CliTaskLoadInfo::Instance());
-DB2Storage<QuestXGroupActivityEntry>            sQuestXGroupActivityStore("QuestXGroupActivity.db2", QuestXGroupActivityLoadInfo::Instance());
 DB2Storage<QuestXPEntry>                        sQuestXPStore("QuestXP.db2", QuestXpLoadInfo::Instance());
 DB2Storage<RandPropPointsEntry>                 sRandPropPointsStore("RandPropPoints.db2", RandPropPointsLoadInfo::Instance());
 DB2Storage<RelicSlotTierRequirementEntry>       sRelicSlotTierRequirementStore("RelicSlotTierRequirement.db2", RelicSlotTierRequirementLoadInfo::Instance());
 DB2Storage<RelicTalentEntry>                    sRelicTalentStore("RelicTalent.db2", RelicTalentLoadInfo::Instance());
 DB2Storage<ResearchBranchEntry>                 sResearchBranchStore("ResearchBranch.db2", ResearchBranchLoadInfo::Instance());
-DB2Storage<ResearchFieldEntry>                  sResearchFieldStore("ResearchField.db2", ResearchFieldLoadInfo::Instance());
 DB2Storage<ResearchProjectEntry>                sResearchProjectStore("ResearchProject.db2", ResearchProjectLoadInfo::Instance());
 DB2Storage<ResearchSiteEntry>                   sResearchSiteStore("ResearchSite.db2", ResearchSiteLoadInfo::Instance());
-DB2Storage<ResistancesEntry>                    sResistancesStore("Resistances.db2", ResistancesLoadInfo::Instance());
 DB2Storage<RewardPackEntry>                     sRewardPackStore("RewardPack.db2", RewardPackLoadInfo::Instance());
 DB2Storage<RewardPackXCurrencyTypeEntry>        sRewardPackXCurrencyTypeStore("RewardPackXCurrencyType.db2", RewardPackXCurrencyTypeLoadInfo::Instance());
 DB2Storage<RewardPackXItemEntry>                sRewardPackXItemStore("RewardPackXItem.db2", RewardPackXItemLoadInfo::Instance());
-DB2Storage<RibbonQualityEntry>                  sRibbonQualityStore("RibbonQuality.db2", RibbonQualityLoadInfo::Instance());
 DB2Storage<RulesetItemUpgradeEntry>             sRulesetItemUpgradeStore("RulesetItemUpgrade.db2", RulesetItemUpgradeLoadInfo::Instance());
 DB2Storage<SandboxScalingEntry>                 sSandboxScalingStore("SandboxScaling.db2", SandboxScalingLoadInfo::Instance());
 DB2Storage<ScalingStatDistributionEntry>        sScalingStatDistributionStore("ScalingStatDistribution.db2", ScalingStatDistributionLoadInfo::Instance());
 DB2Storage<ScenarioEntry>                       sScenarioStore("Scenario.db2", ScenarioLoadInfo::Instance());
 DB2Storage<ScenarioStepEntry>                   sScenarioStepStore("ScenarioStep.db2", ScenarioStepLoadInfo::Instance());
-DB2Storage<SceneScriptEntry>                    sSceneScriptStore("SceneScript.db2", SceneScriptLoadInfo::Instance());
-DB2Storage<SceneScriptGlobalTextEntry>          sSceneScriptGlobalTextStore("SceneScriptGlobalText.db2", SceneScriptGlobalTextLoadInfo::Instance());
-DB2Storage<SceneScriptPackageEntry>             sSceneScriptPackageStore("SceneScriptPackage.db2", SceneScriptPackageLoadInfo::Instance());
-DB2Storage<SceneScriptPackageMemberEntry>       sSceneScriptPackageMemberStore("SceneScriptPackageMember.db2", SceneScriptPackageMemberLoadInfo::Instance());
-DB2Storage<SceneScriptTextEntry>                sSceneScriptTextStore("SceneScriptText.db2", SceneScriptTextLoadInfo::Instance());
-DB2Storage<ScheduledIntervalEntry>              sScheduledIntervalStore("ScheduledInterval.db2", ScheduledIntervalLoadInfo::Instance());
-DB2Storage<ScheduledWorldStateEntry>            sScheduledWorldStateStore("ScheduledWorldState.db2", ScheduledWorldStateLoadInfo::Instance());
-DB2Storage<ScheduledWorldStateGroupEntry>       sScheduledWorldStateGroupStore("ScheduledWorldStateGroup.db2", ScheduledWorldStateGroupLoadInfo::Instance());
-DB2Storage<ScheduledWorldStateXUniqCatEntry>    sScheduledWorldStateXUniqCatStore("ScheduledWorldStateXUniqCat.db2", ScheduledWorldStateXUniqCatLoadInfo::Instance());
-DB2Storage<ScreenEffectEntry>                   sScreenEffectStore("ScreenEffect.db2", ScreenEffectLoadInfo::Instance());
-DB2Storage<ScreenLocationEntry>                 sScreenLocationStore("ScreenLocation.db2", ScreenLocationLoadInfo::Instance());
-DB2Storage<SDReplacementModelEntry>             sSDReplacementModelStore("SDReplacementModel.db2", SDReplacementModelLoadInfo::Instance());
-DB2Storage<SeamlessSiteEntry>                   sSeamlessSiteStore("SeamlessSite.db2", SeamlessSiteLoadInfo::Instance());
-DB2Storage<ServerMessagesEntry>                 sServerMessagesStore("ServerMessages.db2", ServerMessagesLoadInfo::Instance());
-DB2Storage<ShadowyEffectEntry>                  sShadowyEffectStore("ShadowyEffect.db2", ShadowyEffectLoadInfo::Instance());
 DB2Storage<SkillLineEntry>                      sSkillLineStore("SkillLine.db2", SkillLineLoadInfo::Instance());
 DB2Storage<SkillLineAbilityEntry>               sSkillLineAbilityStore("SkillLineAbility.db2", SkillLineAbilityLoadInfo::Instance());
 DB2Storage<SkillRaceClassInfoEntry>             sSkillRaceClassInfoStore("SkillRaceClassInfo.db2", SkillRaceClassInfoLoadInfo::Instance());
-DB2Storage<SoundAmbienceEntry>                  sSoundAmbienceStore("SoundAmbience.db2", SoundAmbienceLoadInfo::Instance());
-DB2Storage<SoundAmbienceFlavorEntry>            sSoundAmbienceFlavorStore("SoundAmbienceFlavor.db2", SoundAmbienceFlavorLoadInfo::Instance());
-DB2Storage<SoundBusEntry>                       sSoundBusStore("SoundBus.db2", SoundBusLoadInfo::Instance());
-DB2Storage<SoundBusOverrideEntry>               sSoundBusOverrideStore("SoundBusOverride.db2", SoundBusOverrideLoadInfo::Instance());
-DB2Storage<SoundEmitterPillPointsEntry>         sSoundEmitterPillPointsStore("SoundEmitterPillPoints.db2", SoundEmitterPillPointsLoadInfo::Instance());
-DB2Storage<SoundEmittersEntry>                  sSoundEmittersStore("SoundEmitters.db2", SoundEmittersLoadInfo::Instance());
-DB2Storage<SoundEnvelopeEntry>                  sSoundEnvelopeStore("SoundEnvelope.db2", SoundEnvelopeLoadInfo::Instance());
-DB2Storage<SoundFilterEntry>                    sSoundFilterStore("SoundFilter.db2", SoundFilterLoadInfo::Instance());
-DB2Storage<SoundFilterElemEntry>                sSoundFilterElemStore("SoundFilterElem.db2", SoundFilterElemLoadInfo::Instance());
 DB2Storage<SoundKitEntry>                       sSoundKitStore("SoundKit.db2", SoundKitLoadInfo::Instance());
-DB2Storage<SoundKitAdvancedEntry>               sSoundKitAdvancedStore("SoundKitAdvanced.db2", SoundKitAdvancedLoadInfo::Instance());
-DB2Storage<SoundKitChildEntry>                  sSoundKitChildStore("SoundKitChild.db2", SoundKitChildLoadInfo::Instance());
-DB2Storage<SoundKitEntryEntry>                  sSoundKitEntryStore("SoundKitEntry.db2", SoundKitEntryLoadInfo::Instance());
-DB2Storage<SoundKitFallbackEntry>               sSoundKitFallbackStore("SoundKitFallback.db2", SoundKitFallbackLoadInfo::Instance());
-DB2Storage<SoundKitNameEntry>                   sSoundKitNameStore("SoundKitName.db2", SoundKitNameLoadInfo::Instance());
-DB2Storage<SoundOverrideEntry>                  sSoundOverrideStore("SoundOverride.db2", SoundOverrideLoadInfo::Instance());
-DB2Storage<SoundProviderPreferencesEntry>       sSoundProviderPreferencesStore("SoundProviderPreferences.db2", SoundProviderPreferencesLoadInfo::Instance());
-DB2Storage<SourceInfoEntry>                     sSourceInfoStore("SourceInfo.db2", SourceInfoLoadInfo::Instance());
-DB2Storage<SpamMessagesEntry>                   sSpamMessagesStore("SpamMessages.db2", SpamMessagesLoadInfo::Instance());
 DB2Storage<SpecializationSpellsEntry>           sSpecializationSpellsStore("SpecializationSpells.db2", SpecializationSpellsLoadInfo::Instance());
 DB2Storage<SpellEntry>                          sSpellStore("Spell.db2", SpellLoadInfo::Instance());
-DB2Storage<SpellActionBarPrefEntry>             sSpellActionBarPrefStore("SpellActionBarPref.db2", SpellActionBarPrefLoadInfo::Instance());
-DB2Storage<SpellActivationOverlayEntry>         sSpellActivationOverlayStore("SpellActivationOverlay.db2", SpellActivationOverlayLoadInfo::Instance());
 DB2Storage<SpellAuraOptionsEntry>               sSpellAuraOptionsStore("SpellAuraOptions.db2", SpellAuraOptionsLoadInfo::Instance());
 DB2Storage<SpellAuraRestrictionsEntry>          sSpellAuraRestrictionsStore("SpellAuraRestrictions.db2", SpellAuraRestrictionsLoadInfo::Instance());
-DB2Storage<SpellAuraVisibilityEntry>            sSpellAuraVisibilityStore("SpellAuraVisibility.db2", SpellAuraVisibilityLoadInfo::Instance());
-DB2Storage<SpellAuraVisXChrSpecEntry>           sSpellAuraVisXChrSpecStore("SpellAuraVisXChrSpec.db2", SpellAuraVisXChrSpecLoadInfo::Instance());
 DB2Storage<SpellCastingRequirementsEntry>       sSpellCastingRequirementsStore("SpellCastingRequirements.db2", SpellCastingRequirementsLoadInfo::Instance());
 DB2Storage<SpellCastTimesEntry>                 sSpellCastTimesStore("SpellCastTimes.db2", SpellCastTimesLoadInfo::Instance());
 DB2Storage<SpellCategoriesEntry>                sSpellCategoriesStore("SpellCategories.db2", SpellCategoriesLoadInfo::Instance());
 DB2Storage<SpellCategoryEntry>                  sSpellCategoryStore("SpellCategory.db2", SpellCategoryLoadInfo::Instance());
-DB2Storage<SpellChainEffectsEntry>              sSpellChainEffectsStore("SpellChainEffects.db2", SpellChainEffectsLoadInfo::Instance());
 DB2Storage<SpellClassOptionsEntry>              sSpellClassOptionsStore("SpellClassOptions.db2", SpellClassOptionsLoadInfo::Instance());
 DB2Storage<SpellCooldownsEntry>                 sSpellCooldownsStore("SpellCooldowns.db2", SpellCooldownsLoadInfo::Instance());
-DB2Storage<SpellDescriptionVariablesEntry>      sSpellDescriptionVariablesStore("SpellDescriptionVariables.db2", SpellDescriptionVariablesLoadInfo::Instance());
-DB2Storage<SpellDispelTypeEntry>                sSpellDispelTypeStore("SpellDispelType.db2", SpellDispelTypeLoadInfo::Instance());
 DB2Storage<SpellDurationEntry>                  sSpellDurationStore("SpellDuration.db2", SpellDurationLoadInfo::Instance());
 DB2Storage<SpellEffectEntry>                    sSpellEffectStore("SpellEffect.db2", SpellEffectLoadInfo::Instance());
-DB2Storage<SpellEffectEmissionEntry>            sSpellEffectEmissionStore("SpellEffectEmission.db2", SpellEffectEmissionLoadInfo::Instance());
 DB2Storage<SpellEquippedItemsEntry>             sSpellEquippedItemsStore("SpellEquippedItems.db2", SpellEquippedItemsLoadInfo::Instance());
-DB2Storage<SpellFlyoutEntry>                    sSpellFlyoutStore("SpellFlyout.db2", SpellFlyoutLoadInfo::Instance());
-DB2Storage<SpellFlyoutItemEntry>                sSpellFlyoutItemStore("SpellFlyoutItem.db2", SpellFlyoutItemLoadInfo::Instance());
 DB2Storage<SpellFocusObjectEntry>               sSpellFocusObjectStore("SpellFocusObject.db2", SpellFocusObjectLoadInfo::Instance());
 DB2Storage<SpellInterruptsEntry>                sSpellInterruptsStore("SpellInterrupts.db2", SpellInterruptsLoadInfo::Instance());
 DB2Storage<SpellItemEnchantmentEntry>           sSpellItemEnchantmentStore("SpellItemEnchantment.db2", SpellItemEnchantmentLoadInfo::Instance());
 DB2Storage<SpellItemEnchantmentConditionEntry>  sSpellItemEnchantmentConditionStore("SpellItemEnchantmentCondition.db2", SpellItemEnchantmentConditionLoadInfo::Instance());
-DB2Storage<SpellKeyboundOverrideEntry>          sSpellKeyboundOverrideStore("SpellKeyboundOverride.db2", SpellKeyboundOverrideLoadInfo::Instance());
-DB2Storage<SpellLabelEntry>                     sSpellLabelStore("SpellLabel.db2", SpellLabelLoadInfo::Instance());
 DB2Storage<SpellLearnSpellEntry>                sSpellLearnSpellStore("SpellLearnSpell.db2", SpellLearnSpellLoadInfo::Instance());
 DB2Storage<SpellLevelsEntry>                    sSpellLevelsStore("SpellLevels.db2", SpellLevelsLoadInfo::Instance());
-DB2Storage<SpellMechanicEntry>                  sSpellMechanicStore("SpellMechanic.db2", SpellMechanicLoadInfo::Instance());
 DB2Storage<SpellMiscEntry>                      sSpellMiscStore("SpellMisc.db2", SpellMiscLoadInfo::Instance());
-DB2Storage<SpellMissileEntry>                   sSpellMissileStore("SpellMissile.db2", SpellMissileLoadInfo::Instance());
-DB2Storage<SpellMissileMotionEntry>             sSpellMissileMotionStore("SpellMissileMotion.db2", SpellMissileMotionLoadInfo::Instance());
 DB2Storage<SpellPowerEntry>                     sSpellPowerStore("SpellPower.db2", SpellPowerLoadInfo::Instance());
 DB2Storage<SpellPowerDifficultyEntry>           sSpellPowerDifficultyStore("SpellPowerDifficulty.db2", SpellPowerDifficultyLoadInfo::Instance());
-DB2Storage<SpellProceduralEffectEntry>          sSpellProceduralEffectStore("SpellProceduralEffect.db2", SpellProceduralEffectLoadInfo::Instance());
 DB2Storage<SpellProcsPerMinuteEntry>            sSpellProcsPerMinuteStore("SpellProcsPerMinute.db2", SpellProcsPerMinuteLoadInfo::Instance());
 DB2Storage<SpellProcsPerMinuteModEntry>         sSpellProcsPerMinuteModStore("SpellProcsPerMinuteMod.db2", SpellProcsPerMinuteModLoadInfo::Instance());
 DB2Storage<SpellRadiusEntry>                    sSpellRadiusStore("SpellRadius.db2", SpellRadiusLoadInfo::Instance());
@@ -530,103 +294,36 @@ DB2Storage<SpellReagentsCurrencyEntry>          sSpellReagentsCurrencyStore("Spe
 DB2Storage<SpellScalingEntry>                   sSpellScalingStore("SpellScaling.db2", SpellScalingLoadInfo::Instance());
 DB2Storage<SpellShapeshiftEntry>                sSpellShapeshiftStore("SpellShapeshift.db2", SpellShapeshiftLoadInfo::Instance());
 DB2Storage<SpellShapeshiftFormEntry>            sSpellShapeshiftFormStore("SpellShapeshiftForm.db2", SpellShapeshiftFormLoadInfo::Instance());
-DB2Storage<SpellSpecialUnitEffectEntry>         sSpellSpecialUnitEffectStore("SpellSpecialUnitEffect.db2", SpellSpecialUnitEffectLoadInfo::Instance());
 DB2Storage<SpellTargetRestrictionsEntry>        sSpellTargetRestrictionsStore("SpellTargetRestrictions.db2", SpellTargetRestrictionsLoadInfo::Instance());
 DB2Storage<SpellTotemsEntry>                    sSpellTotemsStore("SpellTotems.db2", SpellTotemsLoadInfo::Instance());
-DB2Storage<SpellVisualEntry>                    sSpellVisualStore("SpellVisual.db2", SpellVisualLoadInfo::Instance());
-DB2Storage<SpellVisualAnimEntry>                sSpellVisualAnimStore("SpellVisualAnim.db2", SpellVisualAnimLoadInfo::Instance());
-DB2Storage<SpellVisualColorEffectEntry>         sSpellVisualColorEffectStore("SpellVisualColorEffect.db2", SpellVisualColorEffectLoadInfo::Instance());
-DB2Storage<SpellVisualEffectNameEntry>          sSpellVisualEffectNameStore("SpellVisualEffectName.db2", SpellVisualEffectNameLoadInfo::Instance());
-DB2Storage<SpellVisualEventEntry>               sSpellVisualEventStore("SpellVisualEvent.db2", SpellVisualEventLoadInfo::Instance());
-DB2Storage<SpellVisualKitEntry>                 sSpellVisualKitStore("SpellVisualKit.db2", SpellVisualKitLoadInfo::Instance());
-DB2Storage<SpellVisualKitAreaModelEntry>        sSpellVisualKitAreaModelStore("SpellVisualKitAreaModel.db2", SpellVisualKitAreaModelLoadInfo::Instance());
-DB2Storage<SpellVisualKitEffectEntry>           sSpellVisualKitEffectStore("SpellVisualKitEffect.db2", SpellVisualKitEffectLoadInfo::Instance());
-DB2Storage<SpellVisualKitModelAttachEntry>      sSpellVisualKitModelAttachStore("SpellVisualKitModelAttach.db2", SpellVisualKitModelAttachLoadInfo::Instance());
-DB2Storage<SpellVisualMissileEntry>             sSpellVisualMissileStore("SpellVisualMissile.db2", SpellVisualMissileLoadInfo::Instance());
-DB2Storage<SpellXDescriptionVariablesEntry>     sSpellXDescriptionVariablesStore("SpellXDescriptionVariables.db2", SpellXDescriptionVariablesLoadInfo::Instance());
 DB2Storage<SpellXSpellVisualEntry>              sSpellXSpellVisualStore("SpellXSpellVisual.db2", SpellXSpellVisualLoadInfo::Instance());
-DB2Storage<StartupFilesEntry>                   sStartupFilesStore("StartupFiles.db2", StartupFilesLoadInfo::Instance());
-DB2Storage<Startup_StringsEntry>                sStartup_StringsStore("Startup_Strings.db2", Startup_StringsLoadInfo::Instance());
-DB2Storage<StationeryEntry>                     sStationeryStore("Stationery.db2", StationeryLoadInfo::Instance());
 DB2Storage<SummonPropertiesEntry>               sSummonPropertiesStore("SummonProperties.db2", SummonPropertiesLoadInfo::Instance());
 DB2Storage<TactKeyEntry>                        sTactKeyStore("TactKey.db2", TactKeyLoadInfo::Instance());
-DB2Storage<TactKeyLookupEntry>                  sTactKeyLookupStore("TactKeyLookup.db2", TactKeyLookupLoadInfo::Instance());
 DB2Storage<TalentEntry>                         sTalentStore("Talent.db2", TalentLoadInfo::Instance());
 DB2Storage<TaxiNodesEntry>                      sTaxiNodesStore("TaxiNodes.db2", TaxiNodesLoadInfo::Instance());
 DB2Storage<TaxiPathEntry>                       sTaxiPathStore("TaxiPath.db2", TaxiPathLoadInfo::Instance());
 DB2Storage<TaxiPathNodeEntry>                   sTaxiPathNodeStore("TaxiPathNode.db2", TaxiPathNodeLoadInfo::Instance());
-DB2Storage<TerrainMaterialEntry>                sTerrainMaterialStore("TerrainMaterial.db2", TerrainMaterialLoadInfo::Instance());
-DB2Storage<TerrainTypeEntry>                    sTerrainTypeStore("TerrainType.db2", TerrainTypeLoadInfo::Instance());
-DB2Storage<TerrainTypeSoundsEntry>              sTerrainTypeSoundsStore("TerrainTypeSounds.db2", TerrainTypeSoundsLoadInfo::Instance());
-DB2Storage<TextureBlendSetEntry>                sTextureBlendSetStore("TextureBlendSet.db2", TextureBlendSetLoadInfo::Instance());
-DB2Storage<TextureFileDataEntry>                sTextureFileDataStore("TextureFileData.db2", TextureFileDataLoadInfo::Instance());
 DB2Storage<TotemCategoryEntry>                  sTotemCategoryStore("TotemCategory.db2", TotemCategoryLoadInfo::Instance());
 DB2Storage<ToyEntry>                            sToyStore("Toy.db2", ToyLoadInfo::Instance());
-DB2Storage<TradeSkillCategoryEntry>             sTradeSkillCategoryStore("TradeSkillCategory.db2", TradeSkillCategoryLoadInfo::Instance());
-DB2Storage<TradeSkillItemEntry>                 sTradeSkillItemStore("TradeSkillItem.db2", TradeSkillItemLoadInfo::Instance());
-DB2Storage<TransformMatrixEntry>                sTransformMatrixStore("TransformMatrix.db2", TransformMatrixLoadInfo::Instance());
 DB2Storage<TransmogHolidayEntry>                sTransmogHolidayStore("TransmogHoliday.db2", TransmogHolidayLoadInfo::Instance());
 DB2Storage<TransmogSetEntry>                    sTransmogSetStore("TransmogSet.db2", TransmogSetLoadInfo::Instance());
 DB2Storage<TransmogSetGroupEntry>               sTransmogSetGroupStore("TransmogSetGroup.db2", TransmogSetGroupLoadInfo::Instance());
 DB2Storage<TransmogSetItemEntry>                sTransmogSetItemStore("TransmogSetItem.db2", TransmogSetItemLoadInfo::Instance());
 DB2Storage<TransportAnimationEntry>             sTransportAnimationStore("TransportAnimation.db2", TransportAnimationLoadInfo::Instance());
-DB2Storage<TransportPhysicsEntry>               sTransportPhysicsStore("TransportPhysics.db2", TransportPhysicsLoadInfo::Instance());
 DB2Storage<TransportRotationEntry>              sTransportRotationStore("TransportRotation.db2", TransportRotationLoadInfo::Instance());
-DB2Storage<TrophyEntry>                         sTrophyStore("Trophy.db2", TrophyLoadInfo::Instance());
-DB2Storage<UiCameraEntry>                       sUiCameraStore("UiCamera.db2", UiCameraLoadInfo::Instance());
-DB2Storage<UiCameraTypeEntry>                   sUiCameraTypeStore("UiCameraType.db2", UiCameraTypeLoadInfo::Instance());
-DB2Storage<UiCamFbackTransmogChrRaceEntry>      sUiCamFbackTransmogChrRaceStore("UiCamFbackTransmogChrRace.db2", UiCamFbackTransmogChrRaceLoadInfo::Instance());
-DB2Storage<UiCamFbackTransmogWeaponEntry>       sUiCamFbackTransmogWeaponStore("UiCamFbackTransmogWeapon.db2", UiCamFbackTransmogWeaponLoadInfo::Instance());
-DB2Storage<UIExpansionDisplayInfoEntry>         sUIExpansionDisplayInfoStore("UIExpansionDisplayInfo.db2", UIExpansionDisplayInfoLoadInfo::Instance());
-DB2Storage<UIExpansionDisplayInfoIconEntry>     sUIExpansionDisplayInfoIconStore("UIExpansionDisplayInfoIcon.db2", UIExpansionDisplayInfoIconLoadInfo::Instance());
-DB2Storage<UiMapPOIEntry>                       sUiMapPOIStore("UiMapPOI.db2", UiMapPOILoadInfo::Instance());
-DB2Storage<UiModelSceneEntry>                   sUiModelSceneStore("UiModelScene.db2", UiModelSceneLoadInfo::Instance());
-DB2Storage<UiModelSceneActorEntry>              sUiModelSceneActorStore("UiModelSceneActor.db2", UiModelSceneActorLoadInfo::Instance());
-DB2Storage<UiModelSceneActorDisplayEntry>       sUiModelSceneActorDisplayStore("UiModelSceneActorDisplay.db2", UiModelSceneActorDisplayLoadInfo::Instance());
-DB2Storage<UiModelSceneCameraEntry>             sUiModelSceneCameraStore("UiModelSceneCamera.db2", UiModelSceneCameraLoadInfo::Instance());
-DB2Storage<UiTextureAtlasEntry>                 sUiTextureAtlasStore("UiTextureAtlas.db2", UiTextureAtlasLoadInfo::Instance());
-DB2Storage<UiTextureAtlasMemberEntry>           sUiTextureAtlasMemberStore("UiTextureAtlasMember.db2", UiTextureAtlasMemberLoadInfo::Instance());
-DB2Storage<UiTextureKitEntry>                   sUiTextureKitStore("UiTextureKit.db2", UiTextureKitLoadInfo::Instance());
-DB2Storage<UnitBloodEntry>                      sUnitBloodStore("UnitBlood.db2", UnitBloodLoadInfo::Instance());
-DB2Storage<UnitBloodLevelsEntry>                sUnitBloodLevelsStore("UnitBloodLevels.db2", UnitBloodLevelsLoadInfo::Instance());
-DB2Storage<UnitConditionEntry>                  sUnitConditionStore("UnitCondition.db2", UnitConditionLoadInfo::Instance());
 DB2Storage<UnitPowerBarEntry>                   sUnitPowerBarStore("UnitPowerBar.db2", UnitPowerBarLoadInfo::Instance());
 DB2Storage<VehicleEntry>                        sVehicleStore("Vehicle.db2", VehicleLoadInfo::Instance());
 DB2Storage<VehicleSeatEntry>                    sVehicleSeatStore("VehicleSeat.db2", VehicleSeatLoadInfo::Instance());
-DB2Storage<VehicleUIIndicatorEntry>             sVehicleUIIndicatorStore("VehicleUIIndicator.db2", VehicleUIIndicatorLoadInfo::Instance());
-DB2Storage<VehicleUIIndSeatEntry>               sVehicleUIIndSeatStore("VehicleUIIndSeat.db2", VehicleUIIndSeatLoadInfo::Instance());
 DB2Storage<VignetteEntry>                       sVignetteStore("Vignette.db2", VignetteLoadInfo::Instance());
-DB2Storage<VirtualAttachmentEntry>              sVirtualAttachmentStore("VirtualAttachment.db2", VirtualAttachmentLoadInfo::Instance());
-DB2Storage<VirtualAttachmentCustomizationEntry> sVirtualAttachmentCustomizationStore("VirtualAttachmentCustomization.db2", VirtualAttachmentCustomizationLoadInfo::Instance());
-DB2Storage<VocalUISoundsEntry>                  sVocalUISoundsStore("VocalUISounds.db2", VocalUISoundsLoadInfo::Instance());
-DB2Storage<WbAccessControlListEntry>            sWbAccessControlListStore("WbAccessControlList.db2", WbAccessControlListLoadInfo::Instance());
-DB2Storage<WbCertWhitelistEntry>                sWbCertWhitelistStore("WbCertWhitelist.db2", WbCertWhitelistLoadInfo::Instance());
-DB2Storage<WeaponImpactSoundsEntry>             sWeaponImpactSoundsStore("WeaponImpactSounds.db2", WeaponImpactSoundsLoadInfo::Instance());
-DB2Storage<WeaponSwingSounds2Entry>             sWeaponSwingSounds2Store("WeaponSwingSounds2.db2", WeaponSwingSounds2LoadInfo::Instance());
-DB2Storage<WeaponTrailEntry>                    sWeaponTrailStore("WeaponTrail.db2", WeaponTrailLoadInfo::Instance());
-DB2Storage<WeaponTrailModelDefEntry>            sWeaponTrailModelDefStore("WeaponTrailModelDef.db2", WeaponTrailModelDefLoadInfo::Instance());
-DB2Storage<WeaponTrailParamEntry>               sWeaponTrailParamStore("WeaponTrailParam.db2", WeaponTrailParamLoadInfo::Instance());
-DB2Storage<WeatherEntry>                        sWeatherStore("Weather.db2", WeatherLoadInfo::Instance());
-DB2Storage<WindSettingsEntry>                   sWindSettingsStore("WindSettings.db2", WindSettingsLoadInfo::Instance());
 DB2Storage<WMOAreaTableEntry>                   sWMOAreaTableStore("WMOAreaTable.db2", WmoAreaTableLoadInfo::Instance());
-DB2Storage<WMOMinimapTextureEntry>              sWmoMinimapTextureStore("WmoMinimapTexture.db2", WmoMinimapTextureLoadInfo::Instance());
-DB2Storage<WorldBossLockoutEntry>               sWorldBossLockoutStore("WorldBossLockout.db2", WorldBossLockoutLoadInfo::Instance());
-DB2Storage<WorldChunkSoundsEntry>               sWorldChunkSoundsStore("WorldChunkSounds.db2", WorldChunkSoundsLoadInfo::Instance());
 DB2Storage<WorldEffectEntry>                    sWorldEffectStore("WorldEffect.db2", WorldEffectLoadInfo::Instance());
 DB2Storage<WorldMapAreaEntry>                   sWorldMapAreaStore("WorldMapArea.db2", WorldMapAreaLoadInfo::Instance());
-DB2Storage<WorldElapsedTimerEntry>              sWorldElapsedTimerStore("WorldElapsedTimer.db2", WorldElapsedTimerLoadInfo::Instance());
 DB2Storage<WorldMapOverlayEntry>                sWorldMapOverlayStore("WorldMapOverlay.db2", WorldMapOverlayLoadInfo::Instance());
 DB2Storage<WorldMapTransformsEntry>             sWorldMapTransformsStore("WorldMapTransforms.db2", WorldMapTransformsLoadInfo::Instance());
 DB2Storage<WorldSafeLocsEntry>                  sWorldSafeLocsStore("WorldSafeLocs.db2", WorldSafeLocsLoadInfo::Instance());
 DB2Storage<WorldStateExpressionEntry>           sWorldStateExpressionStore("WorldStateExpression.db2", WorldStateExpressionLoadInfo::Instance());
 DB2Storage<WorldStateUIEntry>                   sWorldStateUIStore("WorldStateUI.db2", WorldStateUILoadInfo::Instance());
-DB2Storage<WorldStateZoneSoundsEntry>           sWorldStateZoneSoundsStore("WorldStateZoneSounds.db2", WorldStateZoneSoundsLoadInfo::Instance());
-DB2Storage<World_PVP_AreaEntry>                 sWorld_PVP_AreaStore("World_PVP_Area.db2", World_Pvp_AreaLoadInfo::Instance());
-DB2Storage<ZoneIntroMusicTableEntry>            sZoneIntroMusicTableStore("ZoneIntroMusicTable.db2", ZoneIntroMusicTableLoadInfo::Instance());
-DB2Storage<ZoneLightEntry>                      sZoneLightStore("ZoneLight.db2", ZoneLightLoadInfo::Instance());
-DB2Storage<ZoneLightPointEntry>                 sZoneLightPointStore("ZoneLightPoint.db2", ZoneLightPointLoadInfo::Instance());
-DB2Storage<ZoneMusicEntry>                      sZoneMusicStore("ZoneMusic.db2", ZoneMusicLoadInfo::Instance());
-DB2Storage<ZoneStoryEntry>                      sZoneStoryStore("ZoneStory.db2", ZoneStoryLoadInfo::Instance());
+
 
 
 TaxiMask                                        sTaxiNodesMask;
@@ -667,7 +364,7 @@ typedef std::unordered_map<uint32, MapChallengeModeEntry const*> MapChallengeMod
 typedef std::vector<uint32 /*MapID*/> MapChallengeModeListContainer;
 typedef std::vector<double> MapChallengeWeightListContainer;
 typedef std::unordered_map<uint32, uint32> RulesetItemUpgradeContainer;
-typedef std::unordered_map<uint32, std::pair<std::vector<QuestPackageItemEntry const*>, std::vector<QuestPackageItemEntry const*>>> QuestPackageItemContainer;
+typedef std::unordered_map<uint32, std::vector<QuestPackageItemEntry const*>> QuestPackageItemContainer;
 typedef std::unordered_set<uint32> ToyItemIdsContainer;
 typedef std::unordered_map<uint32, HeirloomEntry const*> HeirloomItemsContainer;
 typedef std::unordered_map<uint32, AchievementEntry const*> AchievementParentContainer;
@@ -832,120 +529,72 @@ namespace
     std::unordered_map<uint32, uint32> _mapDifficultyCondition;
     std::unordered_map<uint32, uint32> _hostileSpellVisualIdContainer;
     std::unordered_map<uint32, bool> _isChildItem;
+    std::unordered_map<uint32, MapEntry const*> _mapEntryContainer;
 }
 
 typedef std::vector<std::string> DB2StoreProblemList;
 
-std::mutex loadMutex{};
-
-template<typename T>
-constexpr std::size_t GetCppRecordSize(DB2Storage<T> const&) { return sizeof(T); }
-
-void LoadDB2(uint32& availableDb2Locales, DB2StoreProblemList& errlist, StorageMap& stores, DB2StorageBase* storage, std::string const& db2Path, uint32 defaultLocale, std::size_t cppRecordSize)
+template<class T, template<class> class DB2>
+inline void LoadDB2(uint32& availableDb2Locales, DB2StoreProblemList& errlist, StorageMap& stores, DB2StorageBase* storage, std::string const& db2Path, uint32 defaultLocale, DB2<T> const& /*hint*/)
 {
-    auto loadInfo = storage->GetLoadInfo();
+    // validate structure
+    DB2LoadInfo const* loadInfo = storage->GetLoadInfo();
     {
         std::string clientMetaString, ourMetaString;
-        for (auto i = 0; i < loadInfo->Meta->FieldCount; ++i)
-            for (auto j = 0; j < loadInfo->Meta->ArraySizes[i]; ++j)
+        for (std::size_t i = 0; i < loadInfo->Meta->FieldCount; ++i)
+            for (std::size_t j = 0; j < loadInfo->Meta->ArraySizes[i]; ++j)
                 clientMetaString += loadInfo->Meta->Types[i];
 
-        for (auto i = loadInfo->Meta->HasIndexFieldInData() ? 0 : 1; i < loadInfo->FieldCount; ++i)
+        for (std::size_t i = loadInfo->Meta->HasIndexFieldInData() ? 0 : 1; i < loadInfo->FieldCount; ++i)
             ourMetaString += char(std::tolower(loadInfo->Fields[i].Type));
 
-        std::ostringstream stream;
-        if (clientMetaString != ourMetaString)
-        {
-            stream << "Core db2 structure fields " << ourMetaString.c_str() << " do not match generated types from the client " << clientMetaString.c_str() << " fileName " << storage->GetFileName().c_str();
-            loadMutex.lock();
-            errlist.push_back(stream.str());
-            loadMutex.unlock();
-            return;
-        }
+        ASSERT(clientMetaString == ourMetaString,
+            "%s C++ structure fields %s do not match generated types from the client %s",
+            storage->GetFileName().c_str(), ourMetaString.c_str(), clientMetaString.c_str());
 
-        if (loadInfo->Meta->GetRecordSize() != cppRecordSize)
-        {
-            stream << "Size of " << storage->GetFileName().c_str() << " set by format string (" << loadInfo->Meta->GetRecordSize() << ") not equal size of C++ structure (" << cppRecordSize << ").";
-            loadMutex.lock();
-            errlist.push_back(stream.str());
-            loadMutex.unlock();
-            return;
-        }
+        // compatibility format and C++ structure sizes
+        ASSERT(loadInfo->Meta->GetRecordSize() == sizeof(T),
+            "Size of '%s' set by format string (%u) not equal size of C++ structure (" SZFMTD ").",
+            storage->GetFileName().c_str(), loadInfo->Meta->GetRecordSize(), sizeof(T));
     }
 
     if (storage->Load(db2Path + localeNames[defaultLocale] + '/', defaultLocale))
     {
         storage->LoadFromDB();
-
+        // LoadFromDB() always loads strings into enUS locale, other locales are expected to have data in corresponding _locale tables
+        // so we need to make additional call to load that data in case said locale is set as default by worldserver.conf (and we do not want to load all this data from .db2 file again)
         if (defaultLocale != LOCALE_enUS)
             storage->LoadStringsFromDB(defaultLocale);
 
-        for (uint8 i = LOCALE_enUS; i < MAX_LOCALES; ++i)
+        for (uint32 i = 0; i < TOTAL_LOCALES; ++i)
         {
-            if (LOCALE_enUS == i || i == LOCALE_none)
+            if (defaultLocale == i || i == LOCALE_none)
                 continue;
 
-            loadMutex.lock();
             if (availableDb2Locales & (1 << i))
                 if (!storage->LoadStringsFrom((db2Path + localeNames[i] + '/'), i))
                     availableDb2Locales &= ~(1 << i);             // mark as not available for speedup next checks
-            loadMutex.unlock();
 
             storage->LoadStringsFromDB(i);
         }
     }
     else
     {
-        if (auto f = fopen((db2Path + localeNames[defaultLocale] + '/' + storage->GetFileName()).c_str(), "rb"))
+        // sort problematic db2 to (1) non compatible and (2) nonexistent
+        if (FILE* f = fopen((db2Path + localeNames[defaultLocale] + '/' + storage->GetFileName()).c_str(), "rb"))
         {
             std::ostringstream stream;
-            stream << storage->GetFileName() << " exists, and has " << storage->GetFieldCount() << " field(s) (expected " << loadInfo->Meta->FieldCount << "). Extracted file might be from wrong client version.";
-            loadMutex.lock();
-            errlist.push_back(stream.str());
-            loadMutex.unlock();
+            stream << storage->GetFileName() << " exists, and has " << storage->GetFieldCount() << " field(s) (expected " << loadInfo->Meta->FieldCount
+                << "). Extracted file might be from wrong client version.";
+            std::string buf = stream.str();
+            errlist.push_back(buf);
             fclose(f);
-            TC_LOG_INFO("server.loading", "%s", stream.str().c_str());
         }
         else
-        {
-            loadMutex.lock();
             errlist.push_back(storage->GetFileName());
-            loadMutex.unlock();
-        }
     }
 
-    loadMutex.lock();
     stores[storage->GetTableHash()] = storage;
-    loadMutex.unlock();
-
-    //auto Dump = []()-> std::string
-    //{
-    //    //template<class T, template<class> class DB2>
-
-    //    auto storeX = DB2Storage<T>(storage->GetFileName(), loadInfo);
-
-    //    std::ostringstream strm;
-    //    strm << "DROP TABLE IF EXISTS `db2_" << storage->GetFileName() << "`;" << std::endl;
-    //    strm << "CREATE TABLE `db2_" << storage->GetFileName() << "` (" << std::endl;
-    //    strm << "  `id` int(10) unsigned not null," << std::endl;
-    //    for (uint32 c = 0; c < storage->GetFieldCount(); ++c)
-    //        strm << "  `data" << c << "` float not null default '0'," << std::endl;
-    //    strm << "  PRIMARY KEY (`id`)" << std::endl;
-    //    strm << ") ENGINE=MyISAM;" << std::endl;
-
-    //    strm << "INSERT INTO db2_" << storage->GetFileName() << " VALUES" << std::endl;
-
-    //    for (uint32 r = 0; r < rows(); ++r)
-    //    {
-    //        strm << "INSERT INTO db2_" << storage->GetFileName() << " VALUES ";
-    //        strm << '(' << r << ',' << decltype row::valyetype : 0.0f);
-    //        for (uint32 c = 1; c < storage->GetFieldCount(); ++c)
-    //            strm << ',' << decltype row : 0.0f);
-    //        strm << ')' << ';' << std::endl;
-    //    }
-
-    //    return strm.str();
-    //};
 }
 
 DB2Manager& DB2Manager::Instance()
@@ -954,7 +603,7 @@ DB2Manager& DB2Manager::Instance()
     return instance;
 }
 
-uint32 DB2Manager::LoadStores(std::string const& dataPath, uint32 defaultLocale)
+void DB2Manager::LoadStores(std::string const& dataPath, uint32 defaultLocale)
 {
     uint32 oldMSTime = getMSTime();
 
@@ -963,35 +612,17 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, uint32 defaultLocale)
     DB2StoreProblemList bad_db2_files;
     uint32 availableDb2Locales = 0xFFF;
 
-#define LOAD_DB2(store) LoadDB2(availableDb2Locales, bad_db2_files, _stores, &(store), db2Path, defaultLocale, GetCppRecordSize(store))
+    std::vector<DB2StorageBase*> storages{};
+
+#define LOAD_DB2(store) LoadDB2(availableDb2Locales, bad_db2_files, _stores, &store, db2Path, defaultLocale, store)
 
     LOAD_DB2(sAchievementStore);
-    //LOAD_DB2(sAchievement_CategoryStore);
     LOAD_DB2(sAdventureJournalStore);
     LOAD_DB2(sAdventureMapPOIStore);
-    //LOAD_DB2(sAlliedRaceStore);
-    //LOAD_DB2(sAlliedRaceRacialAbilityStore);
-    //LOAD_DB2(sAnimationDataStore);
     LOAD_DB2(sAnimKitStore);
-    //LOAD_DB2(sAnimKitBoneSetStore);
-    //LOAD_DB2(sAnimKitBoneSetAliasStore);
-    //LOAD_DB2(sAnimKitConfigStore);
-    //LOAD_DB2(sAnimKitConfigBoneSetStore);
-    //LOAD_DB2(sAnimKitPriorityStore);
-    //LOAD_DB2(sAnimKitReplacementStore);
-    //LOAD_DB2(sAnimKitSegmentStore);
-    //LOAD_DB2(sAnimReplacementStore);
-    //LOAD_DB2(sAnimReplacementSetStore);
-    //LOAD_DB2(sAreaFarClipOverrideStore);
     LOAD_DB2(sAreaGroupMemberStore);
-    //LOAD_DB2(sAreaPOIStore);
-    //LOAD_DB2(sAreaPOIStateStore);
     LOAD_DB2(sAreaTableStore);
     LOAD_DB2(sAreaTriggerStore);
-    //LOAD_DB2(sAreaTriggerActionSetStore);
-    //LOAD_DB2(sAreaTriggerBoxStore);
-    //LOAD_DB2(sAreaTriggerCylinderStore);
-    //LOAD_DB2(sAreaTriggerSphereStore);
     LOAD_DB2(sArmorLocationStore);
     LOAD_DB2(sArtifactStore);
     LOAD_DB2(sArtifactAppearanceStore);
@@ -1002,7 +633,6 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, uint32 defaultLocale)
     LOAD_DB2(sArtifactPowerPickerStore);
     LOAD_DB2(sArtifactPowerRankStore);
     LOAD_DB2(sArtifactQuestXPStore);
-    //LOAD_DB2(sArtifactTierStore);
     LOAD_DB2(sArtifactUnlockStore);
     LOAD_DB2(sAuctionHouseStore);
     LOAD_DB2(sBankBagSlotPricesStore);
@@ -1015,124 +645,54 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, uint32 defaultLocale)
     LOAD_DB2(sBattlePetAbilityTurnStore);
     LOAD_DB2(sBattlePetBreedQualityStore);
     LOAD_DB2(sBattlePetBreedStateStore);
-    //LOAD_DB2(sBattlePetDisplayOverrideStore);
     LOAD_DB2(sBattlePetEffectPropertiesStore);
-    //LOAD_DB2(sBattlePetNPCTeamMemberStore);
     LOAD_DB2(sBattlePetSpeciesStore);
     LOAD_DB2(sBattlePetSpeciesStateStore);
     LOAD_DB2(sBattlePetSpeciesXAbilityStore);
     LOAD_DB2(sBattlePetStateStore);
-    //LOAD_DB2(sBattlePetVisualStore);
-    //LOAD_DB2(sBeamEffectStore);
-    //LOAD_DB2(sBoneWindModifierModelStore);
-    //LOAD_DB2(sBoneWindModifiersStore);
-    //LOAD_DB2(sBountyStore);
-    //LOAD_DB2(sBountySetStore);
     LOAD_DB2(sBroadcastTextStore);
-    //LOAD_DB2(sCameraEffectStore);
-    //LOAD_DB2(sCameraEffectEntryStore);
-    //LOAD_DB2(sCameraModeStore);
-    //LOAD_DB2(sCastableRaidBuffsStore);
-    //LOAD_DB2(sCelestialBodyStore);
-    //LOAD_DB2(sCfg_CategoriesStore);
-    //LOAD_DB2(sCfg_ConfigsStore);
-    //LOAD_DB2(sCfg_RegionsStore);
-    //LOAD_DB2(sCharacterFaceBoneSetStore);
     LOAD_DB2(sCharacterFacialHairStylesStore);
     LOAD_DB2(sCharacterLoadoutStore);
     LOAD_DB2(sCharacterLoadoutItemStore);
-    //LOAD_DB2(sCharacterServiceInfoStore);
-    //LOAD_DB2(sCharBaseInfoStore);
     LOAD_DB2(sCharBaseSectionStore);
-    //LOAD_DB2(sCharComponentTextureLayoutsStore);
-    //LOAD_DB2(sCharComponentTextureSectionsStore);
-    //LOAD_DB2(sCharHairGeosetsStore);
     LOAD_DB2(sCharSectionsStore);
     LOAD_DB2(sCharShipmentStore);
     LOAD_DB2(sCharShipmentContainerStore);
     LOAD_DB2(sCharStartOutfitStore);
     LOAD_DB2(sCharTitlesStore);
     LOAD_DB2(sChatChannelsStore);
-    //LOAD_DB2(sChatProfanityStore);
     LOAD_DB2(sChrClassesStore);
     LOAD_DB2(sChrClassesXPowerTypesStore);
-    //LOAD_DB2(sChrClassRaceSexStore);
-    //LOAD_DB2(sChrClassTitleStore);
-    //LOAD_DB2(sChrClassUIDisplayStore);
-    //LOAD_DB2(sChrClassVillainStore);
-    //LOAD_DB2(sChrCustomizationStore);
     LOAD_DB2(sChrRacesStore);
     LOAD_DB2(sChrSpecializationStore);
-    //LOAD_DB2(sChrUpgradeBucketStore);
-    //LOAD_DB2(sChrUpgradeBucketSpellStore);
-    //LOAD_DB2(sChrUpgradeTierStore);
-    //LOAD_DB2(sCinematicCameraStore);
-    //LOAD_DB2(sCinematicSequencesStore);
-    //LOAD_DB2(sCloakDampeningStore);
-    //LOAD_DB2(sCombatConditionStore);
-    //LOAD_DB2(sCommentatorStartLocationStore);
-    //LOAD_DB2(sCommentatorTrackedCooldownStore);
-    //LOAD_DB2(sComponentModelFileDataStore);
-    //LOAD_DB2(sComponentTextureFileDataStore);
-    //LOAD_DB2(sConfigurationWarningStore);
     LOAD_DB2(sContributionStore);
     LOAD_DB2(sConversationLineStore);
-    //LOAD_DB2(sCreatureStore);
     LOAD_DB2(sCreatureDifficultyStore);
     LOAD_DB2(sCreatureDisplayInfoStore);
-    //LOAD_DB2(sCreatureDisplayInfoCondStore);
-    //LOAD_DB2(sCreatureDisplayInfoEvtStore);
     LOAD_DB2(sCreatureDisplayInfoExtraStore);
-    //LOAD_DB2(sCreatureDisplayInfoTrnStore);
-    //LOAD_DB2(sCreatureDispXUiCameraStore);
     LOAD_DB2(sCreatureFamilyStore);
-    //LOAD_DB2(sCreatureImmunitiesStore);
     LOAD_DB2(sCreatureModelDataStore);
-    //LOAD_DB2(sCreatureMovementInfoStore);
-    //LOAD_DB2(sCreatureSoundDataStore);
     LOAD_DB2(sCreatureTypeStore);
     LOAD_DB2(sCreatureXContributionStore);
     LOAD_DB2(sCriteriaStore);
     LOAD_DB2(sCriteriaTreeStore);
-    //LOAD_DB2(sCriteriaTreeXEffectStore);
-    //LOAD_DB2(sCurrencyCategoryStore);
     LOAD_DB2(sCurrencyTypesStore);
     LOAD_DB2(sCurveStore);
     LOAD_DB2(sCurvePointStore);
-    //LOAD_DB2(sDeathThudLookupsStore);
-    //LOAD_DB2(sDecalPropertiesStore);
-    //LOAD_DB2(sDeclinedWordStore);
-    //LOAD_DB2(sDeclinedWordCasesStore);
     LOAD_DB2(sDestructibleModelDataStore);
-    //LOAD_DB2(sDeviceBlacklistStore);
-    //LOAD_DB2(sDeviceDefaultSettingsStore);
     LOAD_DB2(sDifficultyStore);
-    //LOAD_DB2(sDissolveEffectStore);
-    //LOAD_DB2(sDriverBlacklistStore);
     LOAD_DB2(sDungeonEncounterStore);
     LOAD_DB2(sDurabilityCostsStore);
     LOAD_DB2(sDurabilityQualityStore);
-    //LOAD_DB2(sEdgeGlowEffectStore);
     LOAD_DB2(sEmotesStore);
     LOAD_DB2(sEmotesTextStore);
-    //LOAD_DB2(sEmotesTextDataStore);
-    //LOAD_DB2(sEmotesTextSoundStore);
-    //LOAD_DB2(sEnvironmentalDamageStore);
-    //LOAD_DB2(sExhaustionStore);
     LOAD_DB2(sFactionStore);
-    //LOAD_DB2(sFactionGroupStore);
     LOAD_DB2(sFactionTemplateStore);
-    //LOAD_DB2(sFootprintTexturesStore);
-    //LOAD_DB2(sFootstepTerrainLookupStore);
     LOAD_DB2(sFriendshipRepReactionStore);
     LOAD_DB2(sFriendshipReputationStore);
-    //LOAD_DB2(sFullScreenEffectStore);
     LOAD_DB2(sGameObjectArtKitStore);
-    //LOAD_DB2(sGameObjectDiffAnimMapStore);
     LOAD_DB2(sGameObjectDisplayInfoStore);
-    //LOAD_DB2(sGameObjectDisplayInfoXSoundKitStore);
     LOAD_DB2(sGameObjectsStore);
-    //LOAD_DB2(sGameTipsStore);
     LOAD_DB2(sGarrAbilityStore);
     LOAD_DB2(sGarrAbilityCategoryStore);
     LOAD_DB2(sGarrAbilityEffectStore);
@@ -1140,7 +700,6 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, uint32 defaultLocale)
     LOAD_DB2(sGarrBuildingDoodadSetStore);
     LOAD_DB2(sGarrBuildingPlotInstStore);
     LOAD_DB2(sGarrClassSpecStore);
-    //LOAD_DB2(sGarrClassSpecPlayerCondStore);
     LOAD_DB2(sGarrEncounterStore);
     LOAD_DB2(sGarrEncounterSetXEncounterStore);
     LOAD_DB2(sGarrEncounterXMechanicStore);
@@ -1150,7 +709,6 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, uint32 defaultLocale)
     LOAD_DB2(sGarrFollowerQualityStore);
     LOAD_DB2(sGarrFollowerSetXFollowerStore);
     LOAD_DB2(sGarrFollowerTypeStore);
-    //LOAD_DB2(sGarrFollowerUICreatureStore);
     LOAD_DB2(sGarrFollowerXAbilityStore);
     LOAD_DB2(sGarrFollSupportSpellStore);
     LOAD_DB2(sGarrItemLevelUpgradeDataStore);
@@ -1158,7 +716,6 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, uint32 defaultLocale)
     LOAD_DB2(sGarrMechanicSetXMechanicStore);
     LOAD_DB2(sGarrMechanicTypeStore);
     LOAD_DB2(sGarrMissionStore);
-    //LOAD_DB2(sGarrMissionTextureStore);
     LOAD_DB2(sGarrMissionTypeStore);
     LOAD_DB2(sGarrMissionXEncounterStore);
     LOAD_DB2(sGarrMissionXFollowerStore);
@@ -1166,28 +723,16 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, uint32 defaultLocale)
     LOAD_DB2(sGarrPlotStore);
     LOAD_DB2(sGarrPlotBuildingStore);
     LOAD_DB2(sGarrPlotInstanceStore);
-    //LOAD_DB2(sGarrPlotUICategoryStore);
     LOAD_DB2(sGarrSiteLevelStore);
     LOAD_DB2(sGarrSiteLevelPlotInstStore);
     LOAD_DB2(sGarrSpecializationStore);
-    //LOAD_DB2(sGarrStringStore);
     LOAD_DB2(sGarrTalentStore);
     LOAD_DB2(sGarrTalentTreeStore);
     LOAD_DB2(sGarrTypeStore);
-    //LOAD_DB2(sGarrUiAnimClassInfoStore);
-    //LOAD_DB2(sGarrUiAnimRaceInfoStore);
     LOAD_DB2(sGemPropertiesStore);
-    //LOAD_DB2(sGlobalStringsStore);
     LOAD_DB2(sGlyphBindableSpellStore);
-    //LOAD_DB2(sGlyphExclusiveCategoryStore);
     LOAD_DB2(sGlyphPropertiesStore);
     LOAD_DB2(sGlyphRequiredSpecStore);
-    //LOAD_DB2(sGMSurveyAnswersStore);
-    //LOAD_DB2(sGMSurveyCurrentSurveyStore);
-    //LOAD_DB2(sGMSurveyQuestionsStore);
-    //LOAD_DB2(sGMSurveySurveysStore);
-    //LOAD_DB2(sGroundEffectDoodadStore);
-    //LOAD_DB2(sGroundEffectTextureStore);
     LOAD_DB2(sGroupFinderActivityStore);
     LOAD_DB2(sGroupFinderActivityGrpStore);
     LOAD_DB2(sGroupFinderCategoryStore);
@@ -1196,25 +741,17 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, uint32 defaultLocale)
     LOAD_DB2(sGuildColorEmblemStore);
     LOAD_DB2(sGuildPerkSpellsStore);
     LOAD_DB2(sHeirloomStore);
-    //LOAD_DB2(sHelmetAnimScalingStore);
-    //LOAD_DB2(sHelmetGeosetVisDataStore);
-    //LOAD_DB2(sHighlightColorStore);
-    //LOAD_DB2(sHolidayDescriptionsStore);
     LOAD_DB2(sHolidayNamesStore);
     LOAD_DB2(sHolidaysStore);
-    //LOAD_DB2(sHotfixesStore);
     LOAD_DB2(sImportPriceArmorStore);
     LOAD_DB2(sImportPriceQualityStore);
     LOAD_DB2(sImportPriceShieldStore);
     LOAD_DB2(sImportPriceWeaponStore);
-    //LOAD_DB2(sInvasionClientDataStore);
     LOAD_DB2(sItemStore);
     LOAD_DB2(sItemAppearanceStore);
-    //LOAD_DB2(sItemAppearanceXUiCameraStore);
     LOAD_DB2(sItemArmorQualityStore);
     LOAD_DB2(sItemArmorShieldStore);
     LOAD_DB2(sItemArmorTotalStore);
-    //LOAD_DB2(sItemBagFamilyStore);
     LOAD_DB2(sItemBonusStore);
     LOAD_DB2(sItemBonusListLevelDeltaStore);
     LOAD_DB2(sItemBonusTreeNodeStore);
@@ -1227,128 +764,60 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, uint32 defaultLocale)
     LOAD_DB2(sItemDamageTwoHandStore);
     LOAD_DB2(sItemDamageTwoHandCasterStore);
     LOAD_DB2(sItemDisenchantLootStore);
-    //LOAD_DB2(sItemDisplayInfoStore);
-    //LOAD_DB2(sItemDisplayInfoMaterialResStore);
-    //LOAD_DB2(sItemDisplayXUiCameraStore);
     LOAD_DB2(sItemEffectStore);
     LOAD_DB2(sItemExtendedCostStore);
-    //LOAD_DB2(sItemGroupSoundsStore);
     LOAD_DB2(sItemLevelSelectorStore);
     LOAD_DB2(sItemLevelSelectorQualityStore);
     LOAD_DB2(sItemLevelSelectorQualitySetStore);
     LOAD_DB2(sItemLimitCategoryStore);
     LOAD_DB2(sItemLimitCategoryConditionStore);
     LOAD_DB2(sItemModifiedAppearanceStore);
-    //LOAD_DB2(sItemModifiedAppearanceExtraStore);
-    //LOAD_DB2(sItemNameDescriptionStore);
-    //LOAD_DB2(sItemPetFoodStore);
     LOAD_DB2(sItemPriceBaseStore);
     LOAD_DB2(sItemRandomPropertiesStore);
     LOAD_DB2(sItemRandomSuffixStore);
-    //LOAD_DB2(sItemRangedDisplayInfoStore);
-    //LOAD_DB2(sItemSearchNameStore);
     LOAD_DB2(sItemSetStore);
     LOAD_DB2(sItemSetSpellStore);
     LOAD_DB2(sItemSparseStore);
     LOAD_DB2(sItemSpecStore);
     LOAD_DB2(sItemSpecOverrideStore);
-    //LOAD_DB2(sItemSubClassStore);
-    //LOAD_DB2(sItemSubClassMaskStore);
     LOAD_DB2(sItemUpgradeStore);
-    //LOAD_DB2(sItemVisualsStore);
     LOAD_DB2(sItemXBonusTreeStore);
     LOAD_DB2(sJournalEncounterStore);
     LOAD_DB2(sJournalEncounterCreatureStore);
     LOAD_DB2(sJournalEncounterItemStore);
-    //LOAD_DB2(sJournalEncounterSectionStore);
-    //LOAD_DB2(sJournalEncounterXDifficultyStore);
-    //LOAD_DB2(sJournalEncounterXMapLocStore);
     LOAD_DB2(sJournalInstanceStore);
-    //LOAD_DB2(sJournalItemXDifficultyStore);
-    //LOAD_DB2(sJournalSectionXDifficultyStore);
-    //LOAD_DB2(sJournalTierStore);
-    //LOAD_DB2(sJournalTierXInstanceStore);
     LOAD_DB2(sKeyChainStore);
-    //LOAD_DB2(sKeystoneAffixStore);
-    //LOAD_DB2(sLanguagesStore);
     LOAD_DB2(sLanguageWordsStore);
-    //LOAD_DB2(sLfgDungeonExpansionStore);
-    //LOAD_DB2(sLfgDungeonGroupStore);
     LOAD_DB2(sLfgDungeonsStore);
-    //LOAD_DB2(sLfgDungeonsGroupingMapStore);
     LOAD_DB2(sLfgRoleRequirementStore);
     LOAD_DB2(sLightStore);
-    //LOAD_DB2(sLightDataStore);
-    //LOAD_DB2(sLightParamsStore);
-    //LOAD_DB2(sLightSkyboxStore);
-    //LOAD_DB2(sLiquidMaterialStore);
-    //LOAD_DB2(sLiquidObjectStore);
-    LOAD_DB2(sLiquidTypeStore);
-    //LOAD_DB2(sLoadingScreensStore);
-    //LOAD_DB2(sLoadingScreenTaxiSplinesStore);
-    //LOAD_DB2(sLocaleStore);
-    //LOAD_DB2(sLocationStore);
     LOAD_DB2(sLockStore);
-    //LOAD_DB2(sLockTypeStore);
-    //LOAD_DB2(sLookAtControllerStore);
     LOAD_DB2(sMailTemplateStore);
     LOAD_DB2(sManagedWorldStateStore);
     LOAD_DB2(sManagedWorldStateBuffStore);
     LOAD_DB2(sManagedWorldStateInputStore);
-    //LOAD_DB2(sManifestInterfaceActionIconStore);
-    //LOAD_DB2(sManifestInterfaceDataStore);
-    //LOAD_DB2(sManifestInterfaceItemIconStore);
-    //LOAD_DB2(sManifestInterfaceTOCDataStore);
-    //LOAD_DB2(sManifestMP3Store);
     LOAD_DB2(sMapStore);
-    //LOAD_DB2(sMapCelestialBodyStore);
     LOAD_DB2(sMapChallengeModeStore);
     LOAD_DB2(sMapDifficultyStore);
     LOAD_DB2(sMapDifficultyXConditionStore);
-    //LOAD_DB2(sMapLoadingScreenStore);
-    //LOAD_DB2(sMarketingPromotionsXLocaleStore);
-    //LOAD_DB2(sMaterialStore);
-    //LOAD_DB2(sMissileTargetingStore);
-    //LOAD_DB2(sModelAnimCloakDampeningStore);
-    //LOAD_DB2(sModelFileDataStore);
-    //LOAD_DB2(sModelRibbonQualityStore);
     LOAD_DB2(sModifierTreeStore);
     LOAD_DB2(sMountStore);
     LOAD_DB2(sMountCapabilityStore);
     LOAD_DB2(sMountTypeXCapabilityStore);
     LOAD_DB2(sMountXDisplayStore);
     LOAD_DB2(sMovieStore);
-    //LOAD_DB2(sMovieFileDataStore);
-    //LOAD_DB2(sMovieVariationStore);
     LOAD_DB2(sNameGenStore);
-    //LOAD_DB2(sNamesProfanityStore); @TODO - was disabled
-    //LOAD_DB2(sNamesReservedStore); @TODO - was disabled
-    //LOAD_DB2(sNamesReservedLocaleStore); @TODO - was disabled
-    //LOAD_DB2(sNPCSoundsStore);
-    //LOAD_DB2(sObjectEffectStore);
-    //LOAD_DB2(sObjectEffectModifierStore);
-    //LOAD_DB2(sObjectEffectPackageElemStore);
-    //LOAD_DB2(sOutlineEffectStore);
+    LOAD_DB2(sNamesProfanityStore); 
+    LOAD_DB2(sNamesReservedStore); 
+    LOAD_DB2(sNamesReservedLocaleStore); 
     LOAD_DB2(sOverrideSpellDataStore);
-    //LOAD_DB2(sPageTextMaterialStore);
-    //LOAD_DB2(sPaperDollItemFrameStore);
     LOAD_DB2(sParagonReputationStore);
-    //LOAD_DB2(sParticleColorStore);
-    //LOAD_DB2(sPathStore);
-    //LOAD_DB2(sPathNodeStore);
-    //LOAD_DB2(sPathNodePropertyStore);
-    //LOAD_DB2(sPathPropertyStore);
     LOAD_DB2(sPhaseStore);
-    //LOAD_DB2(sPhaseShiftZoneSoundsStore);
     LOAD_DB2(sPhaseXPhaseGroupStore);
     LOAD_DB2(sPlayerConditionStore);
-    //LOAD_DB2(sPositionerStore);
-    //LOAD_DB2(sPositionerStateStore);
-    //LOAD_DB2(sPositionerStateEntryStore);
     LOAD_DB2(sPowerDisplayStore);
     LOAD_DB2(sPowerTypeStore);
     LOAD_DB2(sPrestigeLevelInfoStore);
-    //LOAD_DB2(sPvpBracketTypesStore);
     LOAD_DB2(sPvpDifficultyStore);
     LOAD_DB2(sPvpItemStore);
     LOAD_DB2(sPvpRewardStore);
@@ -1357,8 +826,6 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, uint32 defaultLocale)
     LOAD_DB2(sPvpTalentStore);
     LOAD_DB2(sPvpTalentUnlockStore);
     LOAD_DB2(sQuestFactionRewardStore);
-    //LOAD_DB2(sQuestFeedbackEffectStore);
-    //LOAD_DB2(sQuestInfoStore);
     LOAD_DB2(sQuestLineStore);
     LOAD_DB2(sQuestLineXQuestStore);
     LOAD_DB2(sQuestMoneyRewardStore);
@@ -1369,100 +836,47 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, uint32 defaultLocale)
     LOAD_DB2(sQuestSortStore);
     LOAD_DB2(sQuestV2Store);
     LOAD_DB2(sQuestV2CliTaskStore);
-    //LOAD_DB2(sQuestXGroupActivityStore);
     LOAD_DB2(sQuestXPStore);
     LOAD_DB2(sRandPropPointsStore);
     LOAD_DB2(sRelicSlotTierRequirementStore);
     LOAD_DB2(sRelicTalentStore);
     LOAD_DB2(sResearchBranchStore);
-    //LOAD_DB2(sResearchFieldStore);
     LOAD_DB2(sResearchProjectStore);
     LOAD_DB2(sResearchSiteStore);
-    //LOAD_DB2(sResistancesStore);
     LOAD_DB2(sRewardPackStore);
     LOAD_DB2(sRewardPackXCurrencyTypeStore);
     LOAD_DB2(sRewardPackXItemStore);
-    //LOAD_DB2(sRibbonQualityStore);
     LOAD_DB2(sRulesetItemUpgradeStore);
     LOAD_DB2(sSandboxScalingStore);
     LOAD_DB2(sScalingStatDistributionStore);
     LOAD_DB2(sScenarioStore);
     LOAD_DB2(sScenarioStepStore);
-    //LOAD_DB2(sSceneScriptStore);
-    //LOAD_DB2(sSceneScriptGlobalTextStore);
-    //LOAD_DB2(sSceneScriptPackageStore);
-    //LOAD_DB2(sSceneScriptPackageMemberStore);
-    //LOAD_DB2(sSceneScriptTextStore);
-    //LOAD_DB2(sScheduledIntervalStore);
-    //LOAD_DB2(sScheduledWorldStateStore);
-    //LOAD_DB2(sScheduledWorldStateGroupStore);
-    //LOAD_DB2(sScheduledWorldStateXUniqCatStore);
-    //LOAD_DB2(sScreenEffectStore);
-    //LOAD_DB2(sScreenLocationStore);
-    //LOAD_DB2(sSDReplacementModelStore);
-    //LOAD_DB2(sSeamlessSiteStore);
-    //LOAD_DB2(sServerMessagesStore);
-    //LOAD_DB2(sShadowyEffectStore);
     LOAD_DB2(sSkillLineStore);
     LOAD_DB2(sSkillLineAbilityStore);
     LOAD_DB2(sSkillRaceClassInfoStore);
-    //LOAD_DB2(sSoundAmbienceStore);
-    //LOAD_DB2(sSoundAmbienceFlavorStore);
-    //LOAD_DB2(sSoundBusStore);
-    //LOAD_DB2(sSoundBusOverrideStore);
-    //LOAD_DB2(sSoundEmitterPillPointsStore);
-    //LOAD_DB2(sSoundEmittersStore);
-    //LOAD_DB2(sSoundEnvelopeStore);
-    //LOAD_DB2(sSoundFilterStore);
-    //LOAD_DB2(sSoundFilterElemStore);
     LOAD_DB2(sSoundKitStore);
-    //LOAD_DB2(sSoundKitAdvancedStore);
-    //LOAD_DB2(sSoundKitChildStore);
-    //LOAD_DB2(sSoundKitEntryStore);
-    //LOAD_DB2(sSoundKitFallbackStore);
-    //LOAD_DB2(sSoundKitNameStore);
-    //LOAD_DB2(sSoundOverrideStore);
-    //LOAD_DB2(sSoundProviderPreferencesStore);
-    //LOAD_DB2(sSourceInfoStore);
-    //LOAD_DB2(sSpamMessagesStore);
     LOAD_DB2(sSpecializationSpellsStore);
     LOAD_DB2(sSpellStore);
-    //LOAD_DB2(sSpellActionBarPrefStore);
-    //LOAD_DB2(sSpellActivationOverlayStore);
     LOAD_DB2(sSpellAuraOptionsStore);
     LOAD_DB2(sSpellAuraRestrictionsStore);
-    //LOAD_DB2(sSpellAuraVisibilityStore);
-    //LOAD_DB2(sSpellAuraVisXChrSpecStore);
     LOAD_DB2(sSpellCastingRequirementsStore);
     LOAD_DB2(sSpellCastTimesStore);
     LOAD_DB2(sSpellCategoriesStore);
     LOAD_DB2(sSpellCategoryStore);
-    //LOAD_DB2(sSpellChainEffectsStore);
     LOAD_DB2(sSpellClassOptionsStore);
     LOAD_DB2(sSpellCooldownsStore);
-    //LOAD_DB2(sSpellDescriptionVariablesStore);
-    //LOAD_DB2(sSpellDispelTypeStore);
     LOAD_DB2(sSpellDurationStore);
     LOAD_DB2(sSpellEffectStore);
-    //LOAD_DB2(sSpellEffectEmissionStore);
     LOAD_DB2(sSpellEquippedItemsStore);
-    //LOAD_DB2(sSpellFlyoutStore);
-    //LOAD_DB2(sSpellFlyoutItemStore);
     LOAD_DB2(sSpellFocusObjectStore);
     LOAD_DB2(sSpellInterruptsStore);
     LOAD_DB2(sSpellItemEnchantmentStore);
     LOAD_DB2(sSpellItemEnchantmentConditionStore);
-    //LOAD_DB2(sSpellKeyboundOverrideStore);
-    //LOAD_DB2(sSpellLabelStore);
     LOAD_DB2(sSpellLearnSpellStore);
     LOAD_DB2(sSpellLevelsStore);
-    //LOAD_DB2(sSpellMechanicStore);
     LOAD_DB2(sSpellMiscStore);
-    //LOAD_DB2(sSpellMissileStore);
-    //LOAD_DB2(sSpellMissileMotionStore);
     LOAD_DB2(sSpellPowerStore);
     LOAD_DB2(sSpellPowerDifficultyStore);
-    //LOAD_DB2(sSpellProceduralEffectStore);
     LOAD_DB2(sSpellProcsPerMinuteStore);
     LOAD_DB2(sSpellProcsPerMinuteModStore);
     LOAD_DB2(sSpellRadiusStore);
@@ -1472,110 +886,41 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, uint32 defaultLocale)
     LOAD_DB2(sSpellScalingStore);
     LOAD_DB2(sSpellShapeshiftStore);
     LOAD_DB2(sSpellShapeshiftFormStore);
-    //LOAD_DB2(sSpellSpecialUnitEffectStore);
     LOAD_DB2(sSpellTargetRestrictionsStore);
     LOAD_DB2(sSpellTotemsStore);
-    // LOAD_DB2(sSpellVisualStore);
-    //LOAD_DB2(sSpellVisualAnimStore);
-    //LOAD_DB2(sSpellVisualColorEffectStore);
-    //LOAD_DB2(sSpellVisualEffectNameStore);
-    //LOAD_DB2(sSpellVisualEventStore);
-    //LOAD_DB2(sSpellVisualKitStore);
-    //LOAD_DB2(sSpellVisualKitAreaModelStore);
-    //LOAD_DB2(sSpellVisualKitEffectStore);
-    //LOAD_DB2(sSpellVisualKitModelAttachStore);
-    //LOAD_DB2(sSpellVisualMissileStore);
-    //LOAD_DB2(sSpellXDescriptionVariablesStore);
     LOAD_DB2(sSpellXSpellVisualStore);
-    //LOAD_DB2(sStartupFilesStore);
-    //LOAD_DB2(sStartup_StringsStore);
-    //LOAD_DB2(sStationeryStore);
     LOAD_DB2(sSummonPropertiesStore);
     LOAD_DB2(sTactKeyStore);
-    //LOAD_DB2(sTactKeyLookupStore);
     LOAD_DB2(sTalentStore);
     LOAD_DB2(sTaxiNodesStore);
     LOAD_DB2(sTaxiPathStore);
     LOAD_DB2(sTaxiPathNodeStore);
-    //LOAD_DB2(sTerrainMaterialStore);
-    //LOAD_DB2(sTerrainTypeStore);
-    //LOAD_DB2(sTerrainTypeSoundsStore);
-    //LOAD_DB2(sTextureBlendSetStore);
-    //LOAD_DB2(sTextureFileDataStore);
     LOAD_DB2(sTotemCategoryStore);
     LOAD_DB2(sToyStore);
-    //LOAD_DB2(sTradeSkillCategoryStore);
-    //LOAD_DB2(sTradeSkillItemStore);
-    //LOAD_DB2(sTransformMatrixStore);
     LOAD_DB2(sTransmogHolidayStore);
     LOAD_DB2(sTransmogSetStore);
     LOAD_DB2(sTransmogSetGroupStore);
     LOAD_DB2(sTransmogSetItemStore);
     LOAD_DB2(sTransportAnimationStore);
-    //LOAD_DB2(sTransportPhysicsStore);
     LOAD_DB2(sTransportRotationStore);
-    //LOAD_DB2(sTrophyStore);
-    //LOAD_DB2(sUiCameraStore);
-    //LOAD_DB2(sUiCameraTypeStore);
-    //LOAD_DB2(sUiCamFbackTransmogChrRaceStore);
-    //LOAD_DB2(sUiCamFbackTransmogWeaponStore);
-    //LOAD_DB2(sUIExpansionDisplayInfoStore);
-    //LOAD_DB2(sUIExpansionDisplayInfoIconStore);
-    //LOAD_DB2(sUiMapPOIStore);
-    //LOAD_DB2(sUiModelSceneStore);
-    //LOAD_DB2(sUiModelSceneActorStore);
-    //LOAD_DB2(sUiModelSceneActorDisplayStore);
-    //LOAD_DB2(sUiModelSceneCameraStore);
-    //LOAD_DB2(sUiTextureAtlasStore);
-    //LOAD_DB2(sUiTextureAtlasMemberStore);
-    //LOAD_DB2(sUiTextureKitStore);
-    //LOAD_DB2(sUnitBloodStore);
-    //LOAD_DB2(sUnitBloodLevelsStore);
-    //LOAD_DB2(sUnitConditionStore);
     LOAD_DB2(sUnitPowerBarStore);
     LOAD_DB2(sVehicleStore);
     LOAD_DB2(sVehicleSeatStore);
-    //LOAD_DB2(sVehicleUIIndicatorStore);
-    //LOAD_DB2(sVehicleUIIndSeatStore);
     LOAD_DB2(sVignetteStore);
-    //LOAD_DB2(sVirtualAttachmentStore);
-    //LOAD_DB2(sVirtualAttachmentCustomizationStore);
-    //LOAD_DB2(sVocalUISoundsStore);
-    //LOAD_DB2(sWbAccessControlListStore);
-    //LOAD_DB2(sWbCertWhitelistStore);
-    //LOAD_DB2(sWeaponImpactSoundsStore);
-    //LOAD_DB2(sWeaponSwingSounds2Store);
-    //LOAD_DB2(sWeaponTrailStore);
-    //LOAD_DB2(sWeaponTrailModelDefStore);
-    //LOAD_DB2(sWeaponTrailParamStore);
-    //LOAD_DB2(sWeatherStore);
-    //LOAD_DB2(sWindSettingsStore);
     LOAD_DB2(sWMOAreaTableStore);
-    //LOAD_DB2(sWmoMinimapTextureStore);
-    //LOAD_DB2(sWorldBossLockoutStore);
-    //LOAD_DB2(sWorldChunkSoundsStore);
     LOAD_DB2(sWorldEffectStore);
-    //LOAD_DB2(sWorldElapsedTimerStore);
     LOAD_DB2(sWorldMapAreaStore);
     LOAD_DB2(sWorldMapOverlayStore);
     LOAD_DB2(sWorldMapTransformsStore);
     LOAD_DB2(sWorldSafeLocsStore);
     LOAD_DB2(sWorldStateExpressionStore);
     LOAD_DB2(sWorldStateUIStore);
-    //LOAD_DB2(sWorldStateZoneSoundsStore);
-    //LOAD_DB2(sWorld_PVP_AreaStore);
-    //LOAD_DB2(sZoneIntroMusicTableStore);
-    //LOAD_DB2(sZoneLightStore);
-    //LOAD_DB2(sZoneLightPointStore);
-    //LOAD_DB2(sZoneMusicStore);
-    //LOAD_DB2(sZoneStoryStore);
-
-#undef LOAD_DB2
+   
 
     // error checks
     if (bad_db2_files.size() == _stores.size())
     {
-        TC_LOG_ERROR("misc", "\nIncorrect DataDir value in worldserver.conf or ALL required *.db2 files (" SZFMTD ") not found by path: %sdbc/%s/", _stores.size(), dataPath.c_str(), localeNames[defaultLocale]);
+        TC_LOG_ERROR(LOG_FILTER_GENERAL, "\nIncorrect DataDir value in worldserver.conf or ALL required *.db2 files (" SZFMTD ") not found by path: %sdbc/%s/", _stores.size(), dataPath.c_str(), localeNames[defaultLocale]);
         exit(1);
     }
     if (!bad_db2_files.empty())
@@ -1584,15 +929,27 @@ uint32 DB2Manager::LoadStores(std::string const& dataPath, uint32 defaultLocale)
         for (auto const& bad_db2_file : bad_db2_files)
             str += bad_db2_file + "\n";
 
-        TC_LOG_ERROR("misc", "\nSome required *.db2 files (%zu from " SZFMTD ") not found or not compatible:\n%s", bad_db2_files.size(), _stores.size(), str.c_str());
+        TC_LOG_ERROR(LOG_FILTER_GENERAL, "\nSome required *.db2 files (%u from " SZFMTD ") not found or not compatible:\n%s", bad_db2_files.size(), _stores.size(), str.c_str());
         exit(1);
     }
 
+    // Check loaded DB2 files proper version
+    if (!sAreaTableStore.LookupEntry(9531) ||                // last area added in 7.3.5 (25996)
+        !sCharTitlesStore.LookupEntry(522) ||                // last char title added in 7.3.5 (25996)
+        !sGemPropertiesStore.LookupEntry(3632) ||            // last gem property added in 7.3.5 (25996)
+        !sItemStore.LookupEntry(157831) ||                   // last item added in 7.3.5 (25996)
+        !sItemExtendedCostStore.LookupEntry(6300) ||         // last item extended cost added in 7.3.5 (25996)
+        !sMapStore.LookupEntry(1903) ||                      // last map added in 7.3.5 (25996)
+        !sSpellStore.LookupEntry(263166))                    // last spell added in 7.3.5 (25996)
+    {
+        TC_LOG_ERROR(LOG_FILTER_GENERAL, "You have _outdated_ DB2 files. Please extract correct versions from current using client.");
+        exit(1);
+    }
+
+
     InitDB2CustomStores();
 
-    TC_LOG_INFO("server.loading", ">> Initialized " SZFMTD " DB2 data stores in %u ms", _stores.size(), GetMSTimeDiffToNow(oldMSTime));
-
-    return availableDb2Locales;
+    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Initialized " SZFMTD " DB2 data stores in %u ms", _stores.size(), GetMSTimeDiffToNow(oldMSTime));
 }
 
 void DB2Manager::InitDB2CustomStores()
@@ -1708,12 +1065,7 @@ void DB2Manager::InitDB2CustomStores()
     }
 
     for (QuestPackageItemEntry const* questPackageItem : sQuestPackageItemStore)
-    {
-        if (questPackageItem->DisplayType != QUEST_PACKAGE_FILTER_UNMATCHED)
-            _questPackages[questPackageItem->PackageID].first.push_back(questPackageItem);
-        else
-            _questPackages[questPackageItem->PackageID].second.push_back(questPackageItem);
-    }
+        _questPackages[questPackageItem->PackageID].push_back(questPackageItem);
 
     for (GameObjectsEntry const* store : sGameObjectsStore)
         _gameObjectsList.push_back(store->ID);
@@ -1747,9 +1099,9 @@ void DB2Manager::InitDB2CustomStores()
     {
         if (sTaxiNodesStore.GetNumRows())
         {
-            // ASSERT(TaxiMaskSize >= ((sTaxiNodesStore.GetNumRows() - 1) / 8) + 1,
-            // "TaxiMaskSize is not large enough to contain all taxi nodes! (current value %d, required %d)",
-            // TaxiMaskSize, uint32(((sTaxiNodesStore.GetNumRows() - 1) / 8) + 1));
+             ASSERT(TaxiMaskSize >= ((sTaxiNodesStore.GetNumRows() - 1) / 8) + 1,
+             "TaxiMaskSize is not large enough to contain all taxi nodes! (current value %d, required %d)",
+             TaxiMaskSize, uint32(((sTaxiNodesStore.GetNumRows() - 1) / 8) + 1));
         }
 
         sTaxiNodesMaskV.resize(TaxiMaskSize, 0);
@@ -1841,9 +1193,10 @@ void DB2Manager::InitDB2CustomStores()
         }
     }
 
-    for (NamesReservedEntry const* namesReserved : sNamesReservedStore)
+    for (NamesReservedLocaleEntry const* namesReserved : sNamesReservedLocaleStore)
     {
-        std::wstring name;
+        ASSERT(!(namesReserved->LocaleMask & ~((1u << TOTAL_LOCALES) - 1)));
+		std::wstring name;
         ASSERT(Utf8toWStr(namesReserved->Name, name));
         _nameValidators[MAX_LOCALES].emplace_back(name, boost::regex::icase | boost::regex::optimize);
     }
@@ -1875,7 +1228,7 @@ void DB2Manager::InitDB2CustomStores()
                 data.points.push_back(ResearchPOIPoint(poi->X, poi->Y));
 
         if (data.points.empty())
-            TC_LOG_DEBUG("server.loading", "Research siteID %u QuestPoiBlobId %u MapID %u has 0 points points in DB2!", rs->ID, rs->QuestPoiBlobID, rs->MapID);
+            TC_LOG_DEBUG(LOG_FILTER_SERVER_LOADING, "Research siteID %u QuestPoiBlobId %u MapID %u has 0 points points in DB2!", rs->ID, rs->QuestPoiBlobID, rs->MapID);
     }
 
     for (ResearchProjectEntry const* rp : sResearchProjectStore)
@@ -2144,8 +1497,8 @@ void DB2Manager::InitDB2CustomStores()
     for (ArtifactUnlockEntry const* entry : sArtifactUnlockStore)
         _artifactToUnlockContainer[entry->ArtifactID] = entry;
 
-    // for (WorldStateExpressionEntry const* entry : sWorldStateExpressionStore) // Need for convert WorldStateExpressionID -> WorldStateID
-        // entry->Eval(NULL);
+     for (WorldStateExpressionEntry const* entry : sWorldStateExpressionStore) // Need for convert WorldStateExpressionID -> WorldStateID
+         entry->Eval(NULL);
 
     for (PhaseXPhaseGroupEntry const* group : sPhaseXPhaseGroupStore)
         if (PhaseEntry const* phase = sPhaseStore.LookupEntry(group->PhaseID))
@@ -2199,8 +1552,10 @@ void DB2Manager::InitDB2CustomStores()
     for (SandboxScalingEntry const* entry : sSandboxScalingStore)
         _sandboxScalingContainer[entry->MaxLevel][entry->MinLevel] = entry->ID;
 
-    for (SpellVisualEntry const* entry : sSpellVisualStore)
-        _hostileSpellVisualIdContainer[entry->ID] = entry->HostileSpellVisualID;
+    
+
+    for (MapEntry const* entry : sMapStore)
+        _mapEntryContainer[entry->ID] = entry;
 }
 
 DB2StorageBase const* DB2Manager::GetStorage(uint32 type)
@@ -2423,7 +1778,7 @@ void DB2Manager::LoadHotfixData()
     auto result = HotfixDatabase.Query("SELECT Id, TableHash, RecordId, Deleted FROM hotfix_data ORDER BY Id");
     if (!result)
     {
-        TC_LOG_INFO("server.loading", ">> Loaded 0 hotfix info entries.");
+        TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 hotfix info entries.");
         return;
     }
 
@@ -2440,7 +1795,7 @@ void DB2Manager::LoadHotfixData()
         auto deleted = fields[3].GetBool();
         if (_stores.find(tableHash) == _stores.end())
         {
-            TC_LOG_INFO("sql.sql", "Table `hotfix_data` references unknown DB2 store by hash 0x%X in hotfix id %d", tableHash, id);
+            TC_LOG_INFO(LOG_FILTER_SQL, "Table `hotfix_data` references unknown DB2 store by hash 0x%X in hotfix id %d", tableHash, id);
             continue;
         }
 
@@ -2455,7 +1810,7 @@ void DB2Manager::LoadHotfixData()
             if (auto store = Trinity::Containers::MapGetValuePtr(_stores, deletedRecord.first.first))
                 store->EraseRecord(deletedRecord.first.second);
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u hotfix records in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u hotfix records in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void DB2Manager::InsertNewHotfix(uint32 tableHash, uint32 recordId)
@@ -2771,7 +2126,7 @@ DB2Manager::LanguageWordsContainer const* DB2Manager::GetLanguageWordMap(uint32 
     return Trinity::Containers::MapGetValuePtr(_languageWordsMap, langID);
 }
 
-std::vector<std::string> const* DB2Manager::GetLanguageWordsBySize(uint32 langID, uint32 size)
+StringVector const* DB2Manager::GetLanguageWordsBySize(uint32 langID, uint32 size)
 {
     if (auto wordMap = GetLanguageWordMap(langID))
         return Trinity::Containers::MapGetValuePtr(*wordMap, size);
@@ -2781,20 +2136,7 @@ std::vector<std::string> const* DB2Manager::GetLanguageWordsBySize(uint32 langID
 
 std::vector<QuestPackageItemEntry const*> const* DB2Manager::GetQuestPackageItems(uint32 questPackageID) const
 {
-    auto itr = _questPackages.find(questPackageID);
-    if (itr != _questPackages.end())
-        return &itr->second.first;
-
-    return nullptr;
-}
-
-std::vector<QuestPackageItemEntry const*> const* DB2Manager::GetQuestPackageItemsFallback(uint32 questPackageID) const
-{
-    auto itr = _questPackages.find(questPackageID);
-    if (itr != _questPackages.end())
-        return &itr->second.second;
-
-    return nullptr;
+    return Trinity::Containers::MapGetValuePtr(_questPackages, questPackageID);
 }
 
 MountEntry const* DB2Manager::GetMount(uint32 spellId) const
@@ -2886,6 +2228,21 @@ std::set<ItemBonusTreeNodeEntry const*> const* DB2Manager::GetItemBonusSet(uint3
 HeirloomEntry const* DB2Manager::GetHeirloomByItemId(uint32 itemId) const
 {
     return Trinity::Containers::MapGetValuePtr(_heirlooms, itemId);
+}
+
+HeirloomEntry const* DB2Manager::FindHeirloom(uint32 itemId) const
+{
+    for (auto heirloom : _heirlooms)
+        if (heirloom.first == itemId
+            || heirloom.second->LegacyItemID == itemId
+            || heirloom.second->LegacyUpgradedItemID == itemId
+            || heirloom.second->UpgradeItemID[0] == itemId
+            || heirloom.second->UpgradeItemID[1] == itemId
+            || heirloom.second->UpgradeItemID[2] == itemId 
+            || heirloom.second->UpgradeItemID[3] == itemId)
+            return heirloom.second;
+
+    return nullptr;
 }
 
 bool DB2Manager::IsToyItem(uint32 toy) const
@@ -3080,16 +2437,6 @@ ResponseCodes DB2Manager::ValidateName(std::wstring const& name, LocaleConstant 
             return CHAR_NAME_RESERVED;
 
     return CHAR_NAME_SUCCESS;
-}
-
-uint8 DB2Manager::GetMaxPrestige() const
-{
-    uint8 max = 0;
-    for (PrestigeLevelInfoEntry const* prestigeLevelInfo : sPrestigeLevelInfoStore)
-        if (!prestigeLevelInfo->IsDisabled())
-            max = std::max(prestigeLevelInfo->PrestigeLevel, max);
-
-    return max;
 }
 
 uint32 DB2Manager::GetQuestUniqueBitFlag(uint32 questID)
@@ -3318,9 +2665,9 @@ bool ChrClassesXPowerTypesEntryComparator::Compare(ChrClassesXPowerTypesEntry co
     return left->PowerType < right->PowerType;
 }
 
-uint32 DB2Manager::GetPowerIndexByClass(Powers power, uint32 classId) const
+uint32 DB2Manager::GetPowerIndexByClass(uint32 powerType, uint32 classId) const
 {
-    return _powersByClass[classId][power];
+    return _powersByClass[classId][powerType];
 }
 
 AreaTableEntry const* DB2Manager::FindAreaEntry(uint32 area)
@@ -3667,6 +3014,53 @@ std::vector<double> DB2Manager::GetChallngesWeight()
 
 double DB2Manager::GetChallngeWeight(uint32 mapID)
 {
+    if (sWorld->getBoolConfig(CONFIG_ARGUSWOW_ENABLE))
+    {
+        switch(sWorld->getIntConfig(CONFIG_DUNGEON_ACTIVE_STEP))
+        {
+            case 0: // Disable all dungeons
+            case 1: // step 7.0.3
+                switch(mapID)
+                {
+                    case 1651: // Upper and Lower Karazhan
+                    case 1571: // Court of Stars
+                    case 1516: // The Arcway
+                    case 1677: // Cathedral of Eternal Night
+                    case 1753: // Seat of the Triumvirate
+                        return 0.0;
+                }
+                break;
+            case 2: // step 7.1.0
+                switch(mapID)
+                {
+                    case 1571: // Court of Stars
+                    case 1516: // The Arcway
+                    case 1677: // Cathedral of Eternal Night
+                    case 1753: // Seat of the Triumvirate
+                        return 0.0;
+                }
+                break;
+            case 3: // step 7.1.5
+                switch(mapID)
+                {
+                    case 1677: // Cathedral of Eternal Night
+                    case 1753: // Seat of the Triumvirate
+                        return 0.0;
+                }
+                break;
+            case 4: // step 7.2.5
+                switch(mapID)
+                {
+                    case 1753: // Seat of the Triumvirate
+                        return 0.0;
+                }
+                break;
+            case 5: // step 7.3.2
+            default:
+                break;
+        }
+    }
+
     switch(mapID)
     {
         case 1492: // Maw of Souls
@@ -3834,10 +3228,59 @@ uint32 DB2Manager::GetScalingByLevel(uint8 MinLevel, uint16 MaxLevel) const
     return iter->second;
 }
 
+MapEntry const* DB2Manager::GetMapByID(uint32 mapID)
+{
+    auto itr = _mapEntryContainer.find(mapID);
+
+    if (itr != _mapEntryContainer.end())
+        return itr->second;
+
+    return 0;
+}
+
 uint32 DB2Manager::GetHostileSpellVisualId(uint32 spellVisualId)
 {
     auto itr = _hostileSpellVisualIdContainer.find(spellVisualId);
     if (itr != _hostileSpellVisualIdContainer.end())
         return itr->second;
     return 0;
+}
+
+std::vector<uint32> DB2Manager::GetSpecializationIDsForClass(uint32 classID)
+{
+    auto specializationIDList = std::vector<uint32>();
+    if (!classID)
+        return specializationIDList;
+
+    for (auto spec : sChrSpecializationStore)
+        if (spec->ClassID == classID)
+            specializationIDList.push_back(spec->ID);
+
+    return specializationIDList;
+}
+
+std::vector<uint32> DB2Manager::GetArtifactIDsForSpecialization(uint32 specializationID)
+{
+    auto artifactIdList = std::vector<uint32>();
+    if (!specializationID)
+        return artifactIdList;
+
+    for (auto artifact : sArtifactStore)
+        if (artifact->ChrSpecializationID == specializationID)
+            artifactIdList.push_back(artifact->ID);
+
+    return artifactIdList;
+}
+
+std::vector<uint32> DB2Manager::GetItemModifiedAppearanceIDsForItem(uint32 itemID)
+{
+    auto itemModifiedAppearanceIDList = std::vector<uint32>();
+    if (!itemID)
+        return itemModifiedAppearanceIDList;
+
+    for (auto itemModifiedAppearance : sItemModifiedAppearanceStore)
+        if (itemModifiedAppearance->ItemID == itemID)
+            itemModifiedAppearanceIDList.push_back(itemModifiedAppearance->ItemAppearanceID);
+
+    return itemModifiedAppearanceIDList;
 }

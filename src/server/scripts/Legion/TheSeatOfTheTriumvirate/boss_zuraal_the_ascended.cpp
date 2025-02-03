@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     The Seat of the Triumvirate: Zuraal the Ascended [heroic & mythic]
 
 */
@@ -117,7 +118,7 @@ public:
             me->SetDisableGravity(true);
             AddsDiedCount = 0;
             phase = 0;
-            if (me->IsAlive())
+            if (me->isAlive())
                 SummonAdds();
         }
 
@@ -223,7 +224,7 @@ public:
                 for (uint8 i = 0; i < 12; ++i)
                 {
                     _range += 2;
-                    pos = me->GetNearPosition(_range, angle + frand(-0.7f, 0.7f));
+                    me->GetNearPosition(pos, _range, angle + frand(-0.7f, 0.7f));
                     me->AddDelayedEvent(i * 100, [this, pos]() -> void
                     {
                         me->CastSpell(pos, 246135, true);
@@ -278,7 +279,7 @@ public:
             Map::PlayerList const &players = me->GetMap()->GetPlayers();
             for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 if (Player* player = itr->getSource()->ToPlayer())
-                    if (!player->isGameMaster() && player->IsAlive())
+                    if (!player->isGameMaster() && player->isAlive())
                         if (player->IsRangedDamageDealer(false) || player->IsMeleeDamageDealer())
                             DPSSelector.push_back(player);
                     
@@ -663,7 +664,7 @@ public:
         {
             instance = me->GetInstanceScript();
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            if (me->IsAlive())
+            if (me->isAlive())
                 instance->SetBossState(DATA_ALLERIA2, NOT_STARTED);
         }
 

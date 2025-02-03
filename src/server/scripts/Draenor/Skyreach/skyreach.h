@@ -1,11 +1,12 @@
 /*
+    http://epicwow.com/
     Dungeon : Skyreach 97 - 99
 */
 
+#include "Position.h"
+
 #ifndef UPPER_SKYREACH_H_
 #define UPPER_SKYREACH_H_
-
-#define DataHeader "SR"
 
 enum eData
 {

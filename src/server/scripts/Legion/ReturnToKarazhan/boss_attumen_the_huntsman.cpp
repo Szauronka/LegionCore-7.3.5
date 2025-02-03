@@ -1,4 +1,5 @@
 /*
+    https://uwow.biz/
 
     Need implement: EVENT_SPECTRAL_CHARGE
 */
@@ -175,14 +176,14 @@ public:
 
                 for (uint8 i = 0; i < 11; i++)
                 {
-                    pos1 = me->GetNearPosition(dist, angle + frand(float(- M_PI / 2), float(M_PI / 2)));
+                    me->GetNearPosition(pos1, dist, angle + frand(-M_PI/2, M_PI/2));
                     me->CastSpell(pos1, SPELL_SPECTRAL_CHARGE_AT, true);
                     dist += 4;
                 }
 
                 for (uint8 i = 0; i < 6; i++)
                 {
-                    pos2 = me->GetNearPosition(dist, angle2 + frand(float(- M_PI / 2), float(M_PI / 2)));
+                    me->GetNearPosition(pos2, dist, angle2 + frand(-M_PI/2, M_PI/2));
                     me->CastSpell(pos2, SPELL_SPECTRAL_CHARGE_AT, true);
                     dist2 += 4;
                 }
@@ -307,7 +308,8 @@ public:
                     case EVENT_MOVING_TO_HUNTSMAN:
                         if (Creature* huntsman = me->FindNearestCreature(NPC_ATTUMEN_THE_HUNTSMAN, 80.0f))
                         {
-                            Position pos = huntsman->GetNearPosition(6.0f, frand(0.0f, 6.28f));
+                            Position pos;
+                            huntsman->GetNearPosition(pos, 6.0f, frand(0.0f, 6.28f));
                             me->GetMotionMaster()->MovePoint(1, pos);
                         }
                         break;
@@ -360,7 +362,7 @@ public:
             switch (action)
             {
                 case ACTION_1:
-                    if (me->IsAlive())
+                    if (me->isAlive())
                         Talk(SAY_RIDERLESS);
                     ride = false;
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -375,11 +377,11 @@ public:
                         DoCast(owner, 46598, true); //Ride veh
                     break;
                 case ACTION_3:
-                    if (me->IsAlive())
+                    if (me->isAlive())
                         Talk(SAY_INTANGIBLE_PRESENCE);
                     break;
                 case ACTION_4:
-                    if (me->IsAlive())
+                    if (me->isAlive())
                         Talk(SAY_MIGHTY_STOMP);
                     break;
                 case ACTION_5:
@@ -412,7 +414,7 @@ public:
 
                     if (auto owner = me->GetAnyOwner())
                     {
-                        if (owner->IsAlive())
+                        if (owner->isAlive())
                             owner->GetAI()->DoAction(ACTION_1);
                     }
                 }

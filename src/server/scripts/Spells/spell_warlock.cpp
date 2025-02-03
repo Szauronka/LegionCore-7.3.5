@@ -27,14 +27,205 @@
 #include "CreatureAI.h"
 #include "ObjectVisitors.hpp"
 #include "AreaTrigger.h"
-
+#include "AreaTriggerAI.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h" 
 #include "Cell.h"
 #include "CellImpl.h"
 #include "Packets/SpellPackets.h"
 
-// Burning Rush - 111400
+enum ProjectWarlockSpells
+{
+    // Soul Swap
+    SPELL_WARLOCK_SOUL_SWAP_BUFF = 86211,
+    SPELL_WARLOCK_SOUL_SWAP_VISUAL = 92795,
+    SPELL_WARLOCK_SOUL_SWAP_NO_COST = 92794,
+
+    // Dark Apotheosis spells
+    SPELL_WARLOCK_TWILIGHT_WARD = 6229,
+    SPELL_WARLOCK_FURY_WARD = 119839,
+    SPELL_WARLOCK_SOULSHATTER = 29858,
+    SPELL_WARLOCK_PROVOCATION = 97827,
+    SPELL_WARLOCK_SHADOWBOLT = 686,
+    SPELL_WARLOCK_DEMONIC_SLASH = 114175,
+    SPELL_WARLOCK_FEAR = 5782,
+    SPELL_WARLOCK_SLEEP = 104045,
+
+    // triggered at spell tick
+    SPELL_WARLOCK_AGONY_SPELL_TICK_TRIGGERED = 131737,
+    SPELL_WARLOCK_UNSTABLE_AFFLICTION_TICK_TRIGGERED = 131736,
+    SPELL_WARLOCK_CORRUPTION_TICK_TRIGGERED = 131740,
+
+    // Soulburn
+    SPELL_WARLOCK_SOULBURN = 74434,
+    SPELL_WARLOCK_SOULBURN_UNENDING_BREATH = 104242,
+    SPELL_WARLOCK_SOULBURN_DEMONIC_CIRCLE = 79438,
+
+    SPELL_WARLOCK_GLYPH_OF_FEAR = 56244,
+    SPELL_WARLOCK_GLYPH_OF_HAVOC = 146962,
+    SPELL_WARLOCK_PET_FEL_FIREBOLT = 104318,
+
+    // pet spells
+    SPELL_WARLOCK_PET_LESSER_INVISIBILITY = 7870,
+    SPELL_WARLOCK_PET_FIREBOLT = 3110,
+    SPELL_WARLOCK_PET_FELSTORM = 89751,
+    SPELL_WARLOCK_PET_LEGION_STRIKE = 30213,
+    SPELL_WARLOCK_PET_SHADOW_BITE = 54049,
+    SPELL_WARLOCK_PET_WHIPLASH = 6360,
+    SPELL_WARLOCK_PET_FELLASH = 115770,
+    SPELL_WARLOCK_PET_LASH_OF_PAIN = 7814,
+    SPELL_WARLOCK_PET_TORMENT = 3716,
+
+    // set bonuses
+    SPELL_WARLOCK_PVP_4P_BONUS = 143395,
+    SPELL_WARLOCK_T14_BONUS = 123141,
+    SPELL_WARLOCK_T15_2P_BONUS = 138129,
+    SPELL_WARLOCK_T15_2P_BONUS_TRIGGERED = 138483,
+    SPELL_WARLOCK_T16_4P = 145091,
+    SPELL_WARLOCK_T16_4P_TRIGGERED = 145164,
+    SPELL_WARLOCK_T16_4P_INTERNAL_CD = 145165,
+
+
+    // ADDED IN LEGION
+    SPELL_WARLOCK_DARKGLARE_EYE_BEAM = 205231,
+    SPELL_WARLOCK_DARKGLARE_SUMMON = 205180,
+    SPELL_WARLOCK_TEAR_CHAOS_BARRAGE = 187394,
+    SPELL_WARLOCK_TEAR_CHAOS_BOLT = 215279,
+    SPELL_WARLOCK_TEAR_SHADOW_BOLT = 196657,
+    SPELL_WARLOCK_IMMOLATE_DOT = 157736,
+    SPELL_WARLOCK_CHANNEL_DEMONFIRE_ACTIVATOR = 228312,
+    SPELL_WARLOCK_CHANNEL_DEMONFIRE_DAMAGE = 196448,
+    SPELL_WARLOCK_DEADWIND_HARVERST = 216708,
+    SPELL_WARLOCK_TORMENTED_SOULS = 216695,
+    SPELL_WARLOCK_THALKIELS_CONSUMPTION_DAMAGE = 211715,
+    SPELL_WARLOCK_PHANTOM_SINGULARITY_DAMAGE = 205246,
+    SPELL_WARLOCK_SOUL_FLAME_PROC = 199581,
+    SPELL_WARLOCK_WRATH_OF_CONSUMPTION_PROC = 199646,
+    SPELL_WARLOCK_ETERNAL_STRUGGLE_PROC = 196304,
+    SPELL_WARLOCK_DEVOURER_OF_LIFE_PROC = 215165,
+    SPELL_WARLOCK_CONFLAGRATION_OF_CHAOS = 196546,
+    SPELL_WARLOCK_SOULSNATCHER_PROC = 196234,
+    SPELL_WARLOCK_DIMENSIONAL_RIFT = 196586,
+    SPELL_WARLOCK_DRAIN_SOUL_ENERGIZE = 205292,
+    SPELL_WARLOCK_HEALTH_FUNNEL_HEAL = 217979,
+    SPELL_WARLOCK_IMMOLATION_TRIGGERED = 20153,
+    SPELL_WARLOCK_UNSTABLE_AFFLICTION_DOT1 = 233490,
+    SPELL_WARLOCK_UNSTABLE_AFFLICTION_DOT2 = 233496,
+    SPELL_WARLOCK_UNSTABLE_AFFLICTION_DOT3 = 233497,
+    SPELL_WARLOCK_UNSTABLE_AFFLICTION_DOT4 = 233498,
+    SPELL_WARLOCK_UNSTABLE_AFFLICTION_DOT5 = 233499,
+    SPELL_WARLOCK_UNSTABLE_AFFLICTION_DISPEL = 196364,
+    SPELL_WARLOCK_UNSTABLE_AFFLICTION_RANK2 = 231791,
+    SPELL_WARLOCK_UNSTABLE_AFFLICTION_ENERGIZE = 31117,
+    SPELL_WARLOCK_SOUL_LEECH_SHIELD = 108366,
+    SPELL_WARLOCK_CALL_DREADSTALKERS_SUMMON = 193331,
+    SPELL_WARLOCK_DREADSTALKER_CHARGE = 194247,
+    SPELL_WARLOCK_DEMONWRATH_AURA = 193440,
+    SPELL_WARLOCK_DEMONWRATH_ENERGIZE = 194379,
+    SPELL_WARLOCK_DOOM_ENERGIZE = 193318,
+    SPELL_WARLOCK_RAIN_OF_FIRE_DAMAGE = 42223,
+    SPELL_WARLOCK_CONTAGION = 196105,
+    SPELL_WARLOCK_CONTAGION_DEBUFF = 233494,
+    SPELL_WARLOCK_ABSOLUTE_CORRUPTION = 196103,
+    SPELL_WARLOCK_SOW_THE_SEEDS = 196226,
+    SPELL_WARLOCK_DEMON_SKIN = 219272,
+    SPELL_WARLOCK_SOUL_EFFIGY_AURA = 205247,
+    SPELL_WARLOCK_SOUL_EFFIGY_DAMAGE = 205260,
+    SPELL_WARLOCK_SOUL_EFFIGY_VISUAL = 205277,
+    SPELL_WARLOCK_DEMONWRATH_DAMAGE = 193439,
+    SPELL_WARLOCK_IMPENDING_DOOM = 196270,
+    SPELL_WARLOCK_IMPROVED_DREADSTALKERS = 196272,
+    SPELL_WARLOCK_IMPLOSION_JUMP = 205205,
+    SPELL_WARLOCK_IMPLOSION_DAMAGE = 196278,
+    SPELL_WARLOCK_HAND_OF_DOOM = 196283,
+    SPELL_WARLOCK_POWER_TRIP = 196605,
+    SPELL_WARLOCK_POWER_TRIP_ENERGIZE = 216125,
+    SPELL_WARLOCK_GRIMOIRE_OF_SYNERGY = 171982,
+    SPELL_WARLOCK_EYE_LASER = 205231,
+    SPELL_WARLOCK_BACKDRAFT = 196406,
+    SPELL_WARLOCK_ROARING_BLAZE = 205184,
+    SPELL_WARLOCK_FIREBOLT_BONUS = 231795,
+    SPELL_WARLOCK_ESSENCE_DRAIN = 221711,
+    SPELL_WARLOCK_ESSENCE_DRAIN_DEBUFF = 221715,
+    SPELL_WARLOCK_CASTING_CIRCLE_BUFF = 221705,
+    SPELL_WARLOCK_SOULSHATTER_ENERGIZE = 212921,
+    SPELL_WARLOCK_SOULSHATTER_HASTE = 236471,
+    SPELL_WARLOCK_ROT_AND_DECAY = 212371,
+    SPELL_WARLOCK_CURSE_OF_SHADOWS_DAMAGE = 236615,
+    SPELL_WARLOCK_SINGE_MAGIC = 212620,
+    SPELL_WARLOCK_FEL_LORD_CLEAVE = 213688,
+    SPELL_WARLOCK_SUMMON_OBSERVER = 201996,
+    SPELL_WARLOCK_OBSERVER_AURA = 212580,
+    SPELL_WARLOCK_LASERBEAM = 212529,
+    SPELL_WARLOCK_FEL_FISSURE_DEBUFF = 200587,
+    SPELL_WARLOCK_BANE_OF_HAVOC_DEBUFF = 200548,
+    SPELL_WARLOCK_FATAL_ECHOES = 199257,
+    SPELL_WARLOCK_SWEET_SOULS = 199220,
+    SPELL_WARLOCK_SWEET_SOULS_HEAL = 199221,
+    SPELL_WARLOCK_COMPOUNDING_HORROR = 199281,
+    SPELL_WARLOCK_COMPOUNDING_HORROR_DAMAGE = 231489,
+    SPELL_WARLOCK_SHARPENED_DREADFANGS = 211123,
+    SPELL_WARLOCK_SHARPENED_DREADFANGS_BUFF = 215111,
+    SPELL_WARLOCK_SOUL_SKIN = 218567,
+    SPELL_WARLOCK_DOOM_DOUBLED = 218572,
+    SPELL_WARLOCK_INFERNAL_FURNACE = 211119,
+    SPELL_WARLOCK_STOLEN_POWER = 211530,
+    SPELL_WARLOCK_STOLEN_POWER_COUNTER = 211529,
+    SPELL_WARLOCK_STOLEN_POWER_BUFF = 211583,
+    SPELL_WARLOCK_THE_EXPANDABLES = 211219,
+    SPELL_WARLOCK_THE_EXPANDABLES_BUFF = 211218,
+    SPELL_WARLOCK_THALKIES_DISCORD_DAMAGE = 211727,
+    SPELL_WARLOCK_IMPERATOR = 211158,
+    SPELL_WARLOCK_PLANESWALKER = 196675,
+    SPELL_WARLOCK_PLANESWALKER_BUFF = 196674,
+    SPELL_WARLOCK_LORD_OF_THE_FLAMES_CD = 226802,
+    SPELL_WARLOCK_LORD_OF_THE_FLAMES = 224103,
+    SPELL_WARLOCK_LORD_OF_THE_FLAMES_SUMMON = 224105,
+    SPELL_WARLOCK_DEMONOLOGY_WARLOCK = 137044,
+
+    SPELL_WARLOCK_ERADICATION_AURA = 196412,
+    SPELL_WARLOCK_ERADICATION_DEBUF = 196414,
+
+    SPELL_WARLOCK_INTERNAL_COMBUSTION_TALENT_AURA = 266134,
+    SPELL_WARLOCK_INTERNAL_COMBUSTION_DMG = 266136,
+
+    SPELL_ARENA_DAMPENING = 110310,
+    SPELL_WARLOCK_SOUL_SHARDS_AURA = 246985,
+    SPELL_WARLOCK_AGONY = 980,
+    SPELL_WARLOCK_AGONY_SOUL_SHARD_DRIVER = 251404,
+    SPELL_WARLOCK_AGONY_ENERGIZE = 17941,
+    SPELL_DEATHBOLT = 264106,
+    SPELL_CORRUPTION_DOT = 146739,
+    SPELL_ABSOLUTE_CORRUPTION_BUFF = 196103,
+    SPELL_DARK_PACT = 108416,
+    SPELL_SOUL_CONDUIT = 215941,
+    SPELL_SOUL_CONDUIT_ENERGIZE = 215942,
+    SPELL_SHADOW_BOLT = 686,
+    SPELL_NIGHTFALL_AURA = 108558,
+    SPELL_NIGHTFALL_BUFF = 264571,
+
+    SPELL_INCINERATE = 29722,
+    SPELL_INCINERATE_NORMAL_ENERGIZE = 244670,
+    SPELL_WARLOCK_FIRE_AND_BRIMSTONE = 196408,
+    SPELL_CONFLAGRATE = 17962,
+    SPELL_CONFLAGRATE_ENERGIZE = 245330,
+    SPELL_ERADICATION_BUFF = 196412,
+    SPELL_ERADICATION_DEBUFF = 196414,
+    SPELL_CHAOS_BOLT = 116858,
+    SPELL_DEMONBOLT = 264178,
+    SPELL_DEMONBOLT_ENERGIZE = 280127,
+    SPELL_SOULFIRE = 6353,
+    SPELL_SOULFIRE_ENERGIZE = 281490,
+    SPELL_RAIN_OF_FIRE_DAMAGE_OF_TICK = 42223,
+    SPELL_INFERNO_AURA = 270545,
+    SPELL_RAIN_OF_FIRE_ENERGIZE = 270548,
+
+    SPELL_WARLOCK_UNENDING_RESOLVE_AURA = 104773,
+    SPELL_WARLOCK_CASTING_CIRCLE = 221703,
+};
+
+ 
+ // Burning Rush - 111400
 class spell_warl_burning_rush : public SpellScriptLoader
 {
     public:
@@ -1069,9 +1260,9 @@ class spell_warl_demon_skin : public SpellScriptLoader
                     float addAbsorb = CalculatePct(caster->GetMaxHealth(), perc);
                     float maxPerc = 20.f;
 
-                    Unit::AuraEffectList const& mAbsorbtionPercent = caster->GetAuraEffectsByType(SPELL_AURA_MOD_ABSORB_AMOUNT);
-                    for (Unit::AuraEffectList::const_iterator i = mAbsorbtionPercent.begin(); i != mAbsorbtionPercent.end(); ++i)
-                        AddPct(addAbsorb, (*i)->GetAmount());
+                    if (Unit::AuraEffectList const* mAbsorbtionPercent = caster->GetAuraEffectsByType(SPELL_AURA_MOD_ABSORB_AMOUNT))
+                        for (Unit::AuraEffectList::const_iterator i = mAbsorbtionPercent->begin(); i != mAbsorbtionPercent->end(); ++i)
+                            AddPct(addAbsorb, (*i)->GetAmount());
 
                     if (Aura* aura = GetAura())
                     {
@@ -1092,6 +1283,20 @@ class spell_warl_demon_skin : public SpellScriptLoader
                                     allAbsorb = maxAbsorb;
 
                                 auraEff->SetAmount(allAbsorb);
+
+								//Soul Link Mechanic
+								if (caster->HasAura(108446)) 
+								{
+									if (allAbsorb < maxAbsorb) 
+									{
+										int32 soulLinkHeal = addAbsorb;
+										int32 ownerPerc = sSpellMgr->GetSpellInfo(108446)->Effects[EFFECT_1]->BasePoints;
+										int32 petPerc = sSpellMgr->GetSpellInfo(108446)->Effects[EFFECT_2]->BasePoints;
+										float bp0 = CalculatePct(soulLinkHeal, ownerPerc);
+										float bp1 = CalculatePct(soulLinkHeal, petPerc);
+										caster->CastCustomSpell(caster, 108447, &bp0, &bp1, NULL, true);
+									}
+								}
                             }
                             else
                             {
@@ -2379,6 +2584,200 @@ class spell_warl_incinerate : public SpellScript
     }
 };
 
+// ID - 698 Ritual of Summoning
+class spell_warl_ritual_of_summoning : public SpellScriptLoader
+{
+public:
+	spell_warl_ritual_of_summoning() : SpellScriptLoader("spell_warl_ritual_of_summoning") { }
+
+	class spell_warl_ritual_of_summoning_SpellScript : public SpellScript
+	{
+		PrepareSpellScript(spell_warl_ritual_of_summoning_SpellScript);
+
+		SpellCastResult CheckCast()
+		{
+			if (Unit* caster = GetCaster())
+				if (caster->ToPlayer())
+					if (caster->ToPlayer()->InBattleground())
+						return SPELL_FAILED_YOU_CANNOT_USE_THAT_IN_PVP_INSTANCE;
+
+			return SPELL_CAST_OK;
+		}
+
+		void Register() override
+		{
+			OnCheckCast += SpellCheckCastFn(spell_warl_ritual_of_summoning_SpellScript::CheckCast);
+		}
+	};
+	SpellScript* GetSpellScript() const override
+	{
+		return new spell_warl_ritual_of_summoning_SpellScript();
+	}
+};
+
+class playerscript_warlock_glyph_of_soulshard_checker : public PlayerScript
+{
+public:
+    playerscript_warlock_glyph_of_soulshard_checker() : PlayerScript("playerscript_warlock_glyph_of_soulshard_checker") {}
+
+    void OnUpdate(Player* player, uint32 diff) override
+    {
+        if (player->getClass() != CLASS_WARLOCK)
+            return;
+
+        if (player->HasAura(246975) /*Glyph of Ember Shards*/
+            || player->HasAura(246972) /*Glyph of Floating Shards*/
+            || player->HasAura(246997) /*Glyph of Fel-Touched Shards*/)
+        {
+            hasSoulShardGlyph = false;
+            uint32 spellIdsToUnlearn[2];
+            uint32 spellIdToLearn = 0;
+
+            for (uint32 glyphId : player->GetGlyphs(player->GetActiveTalentGroup()))
+            {
+                spellIdToLearn = sGlyphPropertiesStore.AssertEntry(glyphId)->SpellID;
+
+                switch (glyphId)
+                {
+                case 1296: // 246975 Glyph of Ember Shards
+                    spellIdsToUnlearn[0] = 246972;
+                    spellIdsToUnlearn[1] = 246997;
+                    hasSoulShardGlyph = true;
+                    break;
+                case 1297: // 246972 Glyph of Floating Shards
+                    spellIdsToUnlearn[0] = 246975;
+                    spellIdsToUnlearn[1] = 246997;
+                    hasSoulShardGlyph = true;
+                    break;
+                case 1298: // 246997 Glyph of Fel-Touched Shards
+                    spellIdsToUnlearn[0] = 246975;
+                    spellIdsToUnlearn[1] = 246972;
+                    hasSoulShardGlyph = true;
+                    break;
+                }
+            }
+
+            // unlearn other glyph spells
+            for (uint32 spellIdToUnlearn : spellIdsToUnlearn)
+            {
+                if (player->HasSpell(spellIdToUnlearn))
+                    player->removeSpell(spellIdToUnlearn, false, true, false);
+
+                // remove old aura to not get mixed colors
+                if (player->HasAura(spellIdToUnlearn))
+                    player->RemoveAura(spellIdToUnlearn);
+            }
+
+            // learn actual glyph spell to be eligible for the condition of visual effects
+            if (spellIdToLearn && !player->HasSpell(spellIdToLearn))
+                player->learnSpell(spellIdToLearn, false, 0, false);
+
+            // add soul shard visual
+            if (hasSoulShardGlyph)
+            {
+                int8 soulShards = player->GetPower(POWER_SOUL_SHARDS) / 10;
+
+                if (soulShards != oldShardCount)
+                {
+                    for (uint32 spellIdToAdd : soulShardVisuals[soulShards])
+                        if (!player->HasAura(spellIdToAdd))
+                            player->AddAura(spellIdToAdd, player);
+
+                    std::vector<uint32> spellIdsToRemove;
+                    std::set_difference(soulShardVisuals[5].begin(), soulShardVisuals[5].end(), soulShardVisuals[soulShards].begin(), soulShardVisuals[soulShards].end(),
+                        std::inserter(spellIdsToRemove, spellIdsToRemove.begin()));
+
+                    for (uint32 spellIdToRemove : spellIdsToRemove)
+                        if (player->HasAura(spellIdToRemove))
+                            player->RemoveAura(spellIdToRemove);
+                }
+
+                oldShardCount = soulShards;
+            }
+        }
+        else
+        {
+            // Remove shard visual if not eligible for it
+            for (uint32 visualSpellId : soulShardVisuals[5])
+                if (player->HasAura(visualSpellId))
+                    player->RemoveAura(visualSpellId);
+        }
+    }
+
+private:
+    // 104756 (one shard middle), 104759 (two shards side), 123171 (two shards middle)
+    std::map<int8, std::vector<uint32>> soulShardVisuals =
+    {
+        {1, {104756}},
+        {2, {104759}},
+        {3, {104756, 104759}},
+        {4, {104759, 123171}},
+        {5, {104756, 104759, 123171}},
+    };
+    bool hasSoulShardGlyph;
+    int8 oldShardCount;
+};
+
+// 5740 - Rain of Fire
+// MiscId - 5420
+struct at_warlock_rain_of_fire : AreaTriggerAI
+{
+    at_warlock_rain_of_fire(AreaTrigger* areatrigger) : AreaTriggerAI(areatrigger) { }
+
+        void OnUpdate(uint32 diff) override
+        {
+            Unit* caster = at->GetCaster();
+            if (!caster)
+                return;
+
+            int32 timer = at->Variables.GetValue<int32>("Spells.RainOfFireTimer") + diff;
+            if (timer < 1000)
+            {
+                at->Variables.Set("Spells.RainOfFireTimer", timer);
+                return;
+            }
+
+            for (ObjectGuid guid : at->GetInsideUnits())
+                if (Unit* unit = ObjectAccessor::GetUnit(*caster, guid))
+                    if (caster->IsValidAttackTarget(unit))
+                        caster->CastSpell(unit, SPELL_WARLOCK_RAIN_OF_FIRE_DAMAGE, true);
+
+            at->Variables.Set<int32>("Spells.RainOfFireTimer", int32(timer - 1000));
+        }
+};
+
+// 42223 - Rain of fire damage
+class spell_warlock_rain_of_fire_damage : public SpellScriptLoader
+{
+public:
+    spell_warlock_rain_of_fire_damage() : SpellScriptLoader("spell_warlock_rain_of_fire_damage") { }
+
+    class spell_warlock_rain_of_fire_damage_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_warlock_rain_of_fire_damage_SpellScript);
+
+        void HandleHit(SpellEffIndex /*effIndex*/)
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            if (caster->HasAura(SPELL_INFERNO_AURA) && roll_chance_i(sSpellMgr->GetSpellInfo(SPELL_INFERNO_AURA)->GetEffect(EFFECT_0)->BasePoints))
+                caster->CastSpell(caster, SPELL_RAIN_OF_FIRE_ENERGIZE, true);
+        }
+
+        void Register() override
+        {
+            OnEffectHit += SpellEffectFn(spell_warlock_rain_of_fire_damage_SpellScript::HandleHit, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+        }
+    };
+
+    SpellScript* GetSpellScript() const override
+    {
+        return new spell_warlock_rain_of_fire_damage_SpellScript();
+    }
+};
+
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_burning_rush();
@@ -2435,4 +2834,8 @@ void AddSC_warlock_spell_scripts()
     RegisterSpellScript(spell_warl_create_healthstone);
     RegisterSpellScript(spell_warl_incinerate);
     RegisterAuraScript(spell_warl_searing_bolts);
+	new spell_warl_ritual_of_summoning();
+	new playerscript_warlock_glyph_of_soulshard_checker();
+	RegisterAreaTriggerAI(at_warlock_rain_of_fire);
+    new spell_warlock_rain_of_fire_damage();
 }

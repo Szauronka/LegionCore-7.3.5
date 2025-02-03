@@ -139,8 +139,7 @@ const float PosGroundDeadSide[4] = {2693.5f, -3334.6f, 267.68f, 4.67f};
 const float PosPlatform[4] = {2640.5f, -3360.6f, 285.26f, 0.0f};
 
 // Predicate function to check that the r   efzr unit is NOT on the same side as the source.
-struct NotOnSameSide
-{
+struct NotOnSameSide {
     bool m_inLiveSide;
     NotOnSameSide(Unit *pSource) : m_inLiveSide(IN_LIVE_SIDE(pSource)) {}
     bool operator() (const Unit *pTarget) {
@@ -198,7 +197,7 @@ public:
 
             if (LiveTriggerGUID.size() < POS_LIVE || DeadTriggerGUID.size() < POS_DEAD)
             {
-                TC_LOG_ERROR("misc", "Script Gothik: cannot summon triggers!");
+                TC_LOG_ERROR(LOG_FILTER_GENERAL, "Script Gothik: cannot summon triggers!");
                 EnterEvadeMode();
                 return;
             }
@@ -327,7 +326,7 @@ public:
                 {
                     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                     {
-                        if (i->getSource() && i->getSource()->IsAlive() &&
+                        if (i->getSource() && i->getSource()->isAlive() &&
                             i->getSource()->GetPositionX() <= POS_X_NORTH &&
                             i->getSource()->GetPositionX() >= POS_X_SOUTH &&
                             i->getSource()->GetPositionY() <= POS_Y_GATE &&
@@ -335,7 +334,7 @@ public:
                         {
                             checklife = true;
                         }
-                        else if (i->getSource() && i->getSource()->IsAlive() &&
+                        else if (i->getSource() && i->getSource()->isAlive() &&
                             i->getSource()->GetPositionX() <= POS_X_NORTH &&
                             i->getSource()->GetPositionX() >= POS_X_SOUTH &&
                             i->getSource()->GetPositionY() >= POS_Y_GATE &&
@@ -576,7 +575,7 @@ public:
                 {
                     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                     {
-                        if (i->getSource() && i->getSource()->IsAlive() && isOnSameSide(i->getSource()))
+                        if (i->getSource() && i->getSource()->isAlive() && isOnSameSide(i->getSource()))
                         {
                             AttackStart(i->getSource());
                             return;

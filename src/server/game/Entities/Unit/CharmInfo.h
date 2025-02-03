@@ -55,7 +55,7 @@ enum ActionBarIndex
 
 static uint32 constexpr MAX_UNIT_ACTION_BAR_INDEX = ACTION_BAR_INDEX_END - ACTION_BAR_INDEX_START;
 
-struct TC_GAME_API CharmInfo
+struct CharmInfo
 {
     explicit CharmInfo(Unit* unit);
     ~CharmInfo();
@@ -71,7 +71,7 @@ struct TC_GAME_API CharmInfo
     void InitPetActionBar();
     void InitEmptyActionBar(bool withAttack = true);
 
-    bool AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates newstate = ACT_DECIDE, uint8 preferredSlot = 0);
+    bool AddSpellToActionBar(SpellInfo const* spellInfo, ActiveStates newstate = ACT_DECIDE);
     bool RemoveSpellFromActionBar(uint32 spell_id);
     void LoadPetActionBar(std::string const& data);
     void SetSpellAutocast(SpellInfo const* spellInfo, bool state);
@@ -82,6 +82,7 @@ struct TC_GAME_API CharmInfo
 
     void SetIsCommandAttack(bool val);
     bool IsCommandAttack();
+    void SetIsCommandFollow(bool val);
     void SetIsAtStay(bool val);
     bool IsAtStay();
     void SetIsFollowing(bool val);
@@ -101,7 +102,8 @@ private:
     uint32 m_petnumber;
 
     bool m_isCommandAttack;
-    bool m_isAtStay;
+    bool _isCommandFollow;
+	bool m_isAtStay;
     bool m_isFollowing;
     bool m_isReturning;
 };

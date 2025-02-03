@@ -22,6 +22,8 @@
 #include "ItemEnchantmentMgr.h"
 #include "SharedDefines.h"
 #include "ConditionMgr.h"
+#include "HashFuctor.h"
+#include "ObjectGuid.h"
 
 namespace WorldPackets
 {
@@ -38,6 +40,8 @@ namespace WorldPackets
 
 struct Loot;
 class Challenge;
+
+typedef cds::container::FeldmanHashSet< cds::gc::HP, ObjectGuid, ObjectGuidHashAccessor > GuidHashSet;
 
 enum RollType
 {
@@ -149,25 +153,23 @@ class Player;
 class LootStore;
 class ConditionMgr;
 
-struct TC_GAME_API LootStoreItem
+struct LootStoreItem
 {
-    std::list<Condition*>  conditions;                      // additional loot condition
-    uint32  itemid;                                         // id of the item
-    uint32  currencyid;                                     // id of the currency
-    uint32  reference;                                      // reference template id
+    std::list<Condition*>  conditions;                               // additional loot condition
     float   chance;                                         // always positive, chance to drop for both quest and non-quest items, chance to be used for refs
-    bool    needs_quest : 1;                                // quest drop (quest is required for item to drop)
-    int32   mincount;                                       // mincount for drop items
-    uint32  maxcount;                                       // max drop count for the item mincount or ref multiplier
+    uint32  itemid;                                         // id of the item
+    int32   mincountOrRef;                                  // mincount for drop items (positive) or minus referenced TemplateleId (negative)
+    uint32  maxcount;                                       // max drop count for the item (mincountOrRef positive) or Ref multiplicator (mincountOrRef negative)
     uint16  lootmode;
     uint8   type;                                           // 0 = item, 1 = currency
-    uint8   groupid : 7;
+    uint8   group :7;
     uint8   ClassificationMask{};
     bool    shared{};
+    bool    needs_quest :1;                                 // quest drop (negative ChanceOrQuestChance in DB)
 
-    // Constructor
+    // Constructor, converting ChanceOrQuestChance -> (chance, needs_quest)
     // displayid is filled in IsValid() which must be called after
-    LootStoreItem(uint32 _itemid, uint32 _currencyid, uint32 _reference, float _chance, bool _needs_quest, uint16 _lootmode, uint8 _groupid, int32 _mincount, uint32 _maxcount);
+    LootStoreItem(uint32 _itemid, uint8 _type, float _chanceOrQuestChance, uint16 _lootmode, uint8 _group, int32 _mincountOrRef, uint32 _maxcount);
 
     bool Roll(bool rate, bool isDungeon = false, bool isZoneLoot = false) const;                             // Checks if the entry takes it's chance (at loot generation)
     bool IsValid(LootStore const& store, uint32 entry) const;
@@ -187,12 +189,11 @@ struct CurrencyLoot
     CurrencyLoot(uint32 _entry, uint8 _type, uint32 _CurrencyId, uint32 _CurrencyAmount, uint32 _CurrencyMaxAmount, uint8 _lootmode, float _chance);
 };
 
-struct TC_GAME_API LootItem
+struct LootItem
 {
     struct
     {
         uint32 ItemID = 0;
-        uint32 CurrencyID = 0;
         uint32 RandomPropertiesSeed = 0;
         ItemRandomEnchantmentId RandomPropertiesID;
         int32 UpgradeID = 0;
@@ -224,11 +225,11 @@ struct TC_GAME_API LootItem
     LootItem();
 
     // Constructor, copies most fields from LootStoreItem, generates random count and random suffixes/properties
-    // Should be called for non-reference LootStoreItem entries only (reference = 0)
+    // Should be called for non-reference LootStoreItem entries only (mincountOrRef > 0)
     explicit LootItem(LootStoreItem const& li, Loot* loot);
     void init(Loot* loot);
 
-    void InitItem(uint32 itemID, uint32 currencyID, uint32 count, Loot* loot, bool isCurrency = false);
+    void InitItem(uint32 itemID, uint32 count, Loot* loot, bool isCurrency = false);
 
     // Basic checks for player/item compatibility - if false no chance to see the item in the loot
     bool AllowedForPlayer(Player const* player) const;
@@ -258,7 +259,7 @@ typedef std::unordered_map<uint32, LootTemplate*> LootTemplateMap;
 
 typedef std::set<uint32> LootIdSet;
 
-class TC_GAME_API LootStore
+class LootStore
 {
     public:
         explicit LootStore(std::string name, std::string entryName, bool ratesAllowed, std::string addColum);
@@ -270,7 +271,7 @@ class TC_GAME_API LootStore
         uint32 LoadAndCollectLootIds(LootIdSet& ids_set);
         void CheckLootRefs(LootIdSet* ref_set = nullptr) const; // check existence reference and remove it from ref_set
         void ReportUnusedIds(LootIdSet const& ids_set) const;
-        void ReportNonExistingId(uint32 id) const;
+        void ReportNotExistedId(uint32 id) const;
 
         bool HaveLootFor(uint32 loot_id) const { return m_LootTemplates.find(loot_id) != m_LootTemplates.end(); }
         bool HaveQuestLootFor(uint32 loot_id) const;
@@ -335,7 +336,7 @@ class LootTemplate
         LootGroups        PersonalGroups;
 };
 
-struct TC_GAME_API Loot
+struct Loot
 {
     QuestItemMap const& GetPlayerCurrencies() const { return PlayerCurrencies; }
     QuestItemMap const& GetPlayerQuestItems() const { return PlayerQuestItems; }
@@ -391,8 +392,8 @@ struct TC_GAME_API Loot
 
     void SetSource(ObjectGuid const& source) { LootSourceGuid = source; }
 
-    LootItem* GetLootItem(uint32 itemID, uint32 currencyID);
-    void AddOrReplaceItem(uint32 itemID, uint32 currencyID, uint32 _count, bool isRes = false, bool update = false);
+    LootItem* GetLootItem(uint32 entry);
+    void AddOrReplaceItem(uint32 itemID, uint32 _count, bool isRes = false, bool update = false);
 
     void clear();
     bool empty() const { return items.empty() && gold == 0; }
@@ -416,7 +417,7 @@ struct TC_GAME_API Loot
     void AddItem(LootStoreItem const& item, std::vector<uint32> const& bonusListIDs = std::vector<uint32>());
 
     // Basic checks for player/item compatibility - if false no chance to see the item in the loot
-    bool AllowedForPlayer(Player const* player, uint32 ItemID, uint32 CurrencyID, uint8 type, bool needs_quest, LootItem* lootItem = nullptr) const;
+    bool AllowedForPlayer(Player const* player, uint32 ItemID, uint8 type, bool needs_quest, LootItem* lootItem = nullptr) const;
 
     LootItem const* GetItemInSlot(uint32 lootSlot) const;
     LootItem* LootItemInSlot(uint32 lootslot, Player* player, QuestItem** qitem = nullptr, QuestItem** ffaitem = nullptr, QuestItem** conditem = nullptr, QuestItem** currency = nullptr);
@@ -443,7 +444,7 @@ private:
     QuestItemList* FillQuestLoot(Player* player);
     QuestItemList* FillNonQuestNonFFAConditionalLoot(Player* player, bool presentAtLooting);
 
-    GuidSet PlayersLooting;
+    GuidHashSet PlayersLooting;
     QuestItemMap PlayerCurrencies;
     QuestItemMap PlayerQuestItems;
     QuestItemMap PlayerFFAItems;
@@ -455,38 +456,38 @@ private:
 
 typedef std::map<ObjectGuid, Loot> PersonalLootMap;
 
-TC_GAME_API extern LootStore LootTemplates_Creature;
-TC_GAME_API extern LootStore LootTemplates_Fishing;
-TC_GAME_API extern LootStore LootTemplates_Gameobject;
-TC_GAME_API extern LootStore LootTemplates_Item;
-TC_GAME_API extern LootStore LootTemplates_Mail;
-TC_GAME_API extern LootStore LootTemplates_Milling;
-TC_GAME_API extern LootStore LootTemplates_Pickpocketing;
-TC_GAME_API extern LootStore LootTemplates_Reference;
-TC_GAME_API extern LootStore LootTemplates_Skinning;
-TC_GAME_API extern LootStore LootTemplates_Disenchant;
-TC_GAME_API extern LootStore LootTemplates_Prospecting;
-TC_GAME_API extern LootStore LootTemplates_Spell;
-TC_GAME_API extern LootStore LootTemplates_World;
-TC_GAME_API extern LootStore LootTemplates_Luck;
-TC_GAME_API extern LootStore LootTemplates_Zone;
+extern LootStore LootTemplates_Creature;
+extern LootStore LootTemplates_Fishing;
+extern LootStore LootTemplates_Gameobject;
+extern LootStore LootTemplates_Item;
+extern LootStore LootTemplates_Mail;
+extern LootStore LootTemplates_Milling;
+extern LootStore LootTemplates_Pickpocketing;
+extern LootStore LootTemplates_Reference;
+extern LootStore LootTemplates_Skinning;
+extern LootStore LootTemplates_Disenchant;
+extern LootStore LootTemplates_Prospecting;
+extern LootStore LootTemplates_Spell;
+extern LootStore LootTemplates_World;
+extern LootStore LootTemplates_Luck;
+extern LootStore LootTemplates_Zone;
 
-TC_GAME_API void LoadLootTemplates_Creature();
-TC_GAME_API void LoadLootTemplates_Fishing();
-TC_GAME_API void LoadLootTemplates_Gameobject();
-TC_GAME_API void LoadLootTemplates_Item();
-TC_GAME_API void LoadLootTemplates_Mail();
-TC_GAME_API void LoadLootTemplates_Milling();
-TC_GAME_API void LoadLootTemplates_Pickpocketing();
-TC_GAME_API void LoadLootTemplates_Skinning();
-TC_GAME_API void LoadLootTemplates_Disenchant();
-TC_GAME_API void LoadLootTemplates_Prospecting();
+void LoadLootTemplates_Creature();
+void LoadLootTemplates_Fishing();
+void LoadLootTemplates_Gameobject();
+void LoadLootTemplates_Item();
+void LoadLootTemplates_Mail();
+void LoadLootTemplates_Milling();
+void LoadLootTemplates_Pickpocketing();
+void LoadLootTemplates_Skinning();
+void LoadLootTemplates_Disenchant();
+void LoadLootTemplates_Prospecting();
 
-TC_GAME_API void LoadLootTemplates_Spell();
-TC_GAME_API void LoadLootTemplates_World();
-TC_GAME_API void LoadLootTemplates_Reference();
-TC_GAME_API void LoadLootTemplates_Luck();
-TC_GAME_API void LoadLootTemplates_Zone();
+void LoadLootTemplates_Spell();
+void LoadLootTemplates_World();
+void LoadLootTemplates_Reference();
+void LoadLootTemplates_Luck();
+void LoadLootTemplates_Zone();
 
 inline void LoadLootTables()
 {
@@ -508,14 +509,17 @@ inline void LoadLootTables()
     LoadLootTemplates_Reference();
 }
 
-class TC_GAME_API LootMgr
+class LootMgr
 {
         LootMgr() {}
         ~LootMgr() {}
 
     public:
-        static LootMgr* instance();
-
+        static LootMgr* instance()
+        {
+            static LootMgr instance;
+            return &instance;
+        }
         typedef std::map<ObjectGuid, Loot*> LootsMap;
 
         Loot* GetLoot(ObjectGuid const& guid);

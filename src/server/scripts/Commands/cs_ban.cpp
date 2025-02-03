@@ -15,19 +15,13 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-Name: ban_commandscript
-%Complete: 100
-Comment: All ban related commands
-Category: commandscripts
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "Chat.h"
 #include "AccountMgr.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "GlobalFunctional.h"
+#include "DatabaseEnv.h"
 
 class ban_commandscript : public CommandScript
 {
@@ -290,28 +284,36 @@ public:
 
     static bool HandleBanInfoHelper(uint32 accountId, char const* accountName, ChatHandler* handler)
     {
-        QueryResult result = LoginDatabase.PQuery("SELECT FROM_UNIXTIME(bandate), unbandate-bandate, active, unbandate, banreason, bannedby FROM account_banned WHERE id = '%u' ORDER BY bandate ASC", accountId);
-        if (!result)
+        uint32 account = handler->GetSession()->GetAccountId();
+        LoginDatabase.CallBackQuery(Trinity::StringFormat("SELECT FROM_UNIXTIME(bandate), unbandate-bandate, active, unbandate, banreason, bannedby FROM account_banned WHERE id = '%u' ORDER BY bandate ASC", accountId).c_str(), [account, accountName](QueryResult result) -> void
         {
-            handler->PSendSysMessage(LANG_BANINFO_NOACCOUNTBAN, accountName);
-            return true;
-        }
+            WorldSessionPtr sess = sWorld->FindSession(account);
+            if (!sess)
+                return;
 
-        handler->PSendSysMessage(LANG_BANINFO_BANHISTORY, accountName);
-        do
-        {
-            Field* fields = result->Fetch();
+            ChatHandler chH = ChatHandler(&*sess);
+            if (!result)
+            {
+                chH.PSendSysMessage(LANG_BANINFO_NOACCOUNTBAN, accountName);
+                return;
+            }
 
-            time_t unbanDate = time_t(fields[3].GetUInt32());
-            bool active = false;
-            if (fields[2].GetBool() && (fields[1].GetUInt64() == uint64(0) || unbanDate >= GameTime::GetGameTime()))
-                active = true;
-            bool permanent = (fields[1].GetUInt64() == uint64(0));
-            std::string banTime = permanent ? handler->GetTrinityString(LANG_BANINFO_INFINITE) : secsToTimeString(fields[1].GetUInt64(), true);
-            handler->PSendSysMessage(LANG_BANINFO_HISTORYENTRY,
-                fields[0].GetCString(), banTime.c_str(), active ? handler->GetTrinityString(LANG_BANINFO_YES) : handler->GetTrinityString(LANG_BANINFO_NO), fields[4].GetCString(), fields[5].GetCString());
-        }
-        while (result->NextRow());
+            chH.PSendSysMessage(LANG_BANINFO_BANHISTORY, accountName);
+            do
+            {
+                Field* fields = result->Fetch();
+
+                time_t unbanDate = time_t(fields[3].GetUInt32());
+                bool active = false;
+                if (fields[2].GetBool() && (fields[1].GetUInt64() == uint64(0) || unbanDate >= time(NULL)))
+                    active = true;
+                bool permanent = (fields[1].GetUInt64() == uint64(0));
+                std::string banTime = permanent ? chH.GetTrinityString(LANG_BANINFO_INFINITE) : secsToTimeString(fields[1].GetUInt64(), true);
+                chH.PSendSysMessage(LANG_BANINFO_HISTORYENTRY,
+                    fields[0].GetCString(), banTime.c_str(), active ? chH.GetTrinityString(LANG_BANINFO_YES) : chH.GetTrinityString(LANG_BANINFO_NO), fields[4].GetCString(), fields[5].GetCString());
+            }
+            while (result->NextRow());
+        });
 
         return true;
     }
@@ -339,7 +341,7 @@ public:
             targetGuid = target->GetGUID();
        
 
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_BANINFO);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_BANINFO);
         stmt->setUInt64(0, targetGuid.GetGUIDLow());
         PreparedQueryResult result = CharacterDatabase.Query(stmt);
         if (!result)
@@ -354,7 +356,7 @@ public:
             Field* fields = result->Fetch();
             time_t unbanDate = time_t(fields[3].GetUInt32());
             bool active = false;
-            if (fields[2].GetUInt8() && (!fields[1].GetUInt32() || unbanDate >= GameTime::GetGameTime()))
+            if (fields[2].GetUInt8() && (!fields[1].GetUInt32() || unbanDate >= time(NULL)))
                 active = true;
             bool permanent = (fields[1].GetUInt32() == uint32(0));
             std::string banTime = permanent ? handler->GetTrinityString(LANG_BANINFO_INFINITE) : secsToTimeString(fields[1].GetUInt32(), true);
@@ -381,25 +383,37 @@ public:
         std::string IP = ipStr;
 
         LoginDatabase.EscapeString(IP);
-        QueryResult result = LoginDatabase.PQuery("SELECT ip, FROM_UNIXTIME(bandate), FROM_UNIXTIME(unbandate), unbandate-UNIX_TIMESTAMP(), banreason, bannedby, unbandate-bandate FROM ip_banned WHERE ip = '%s'", IP.c_str());
-        if (!result)
-        {
-            handler->PSendSysMessage(LANG_BANINFO_NOIP);
-            return true;
-        }
 
-        Field* fields = result->Fetch();
-        bool permanent = !fields[6].GetUInt64();
-        handler->PSendSysMessage(LANG_BANINFO_IPENTRY,
-            fields[0].GetCString(), fields[1].GetCString(), permanent ? handler->GetTrinityString(LANG_BANINFO_NEVER) : fields[2].GetCString(),
-            permanent ? handler->GetTrinityString(LANG_BANINFO_INFINITE) : secsToTimeString(fields[3].GetUInt64(), true).c_str(), fields[4].GetCString(), fields[5].GetCString());
+        uint32 accountId = handler->GetSession()->GetAccountId();
+        LoginDatabase.CallBackQuery(Trinity::StringFormat("SELECT ip, FROM_UNIXTIME(bandate), FROM_UNIXTIME(unbandate), unbandate-UNIX_TIMESTAMP(), banreason, bannedby, unbandate-bandate FROM ip_banned WHERE ip = '%s'", IP.c_str()).c_str(), [accountId, handler](QueryResult result) -> void
+        {
+            WorldSessionPtr sess = sWorld->FindSession(accountId);
+            if (!sess)
+                return;
+
+            ChatHandler chH = ChatHandler(&*sess);
+
+            if (!result)
+            {
+                chH.PSendSysMessage(LANG_BANINFO_NOIP);
+                return;
+            }
+
+            Field* fields = result->Fetch();
+            bool permanent = !fields[6].GetUInt64();
+            chH.PSendSysMessage(LANG_BANINFO_IPENTRY,
+                fields[0].GetCString(), fields[1].GetCString(), permanent ? chH.GetTrinityString(LANG_BANINFO_NEVER) : fields[2].GetCString(),
+                permanent ? chH.GetTrinityString(LANG_BANINFO_INFINITE) : secsToTimeString(fields[3].GetUInt64(), true).c_str(), fields[4].GetCString(), fields[5].GetCString());
+
+        });
+
 
         return true;
     }
 
     static bool HandleBanListAccountCommand(ChatHandler* handler, char const* args)
     {
-        LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_DEL_EXPIRED_IP_BANS);
+        PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_DEL_EXPIRED_IP_BANS);
         LoginDatabase.Execute(stmt);
 
         char* filterStr = strtok((char*)args, " ");
@@ -410,24 +424,19 @@ public:
         if (filter.empty())
         {
             stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_BANNED_ALL);
-            result = LoginDatabase.Query(stmt);
         }
         else
         {
             stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_BANNED_BY_USERNAME);
             stmt->setString(0, filter);
-            result = LoginDatabase.Query(stmt);
-        }
-
-        if (!result)
-        {
-            handler->PSendSysMessage(LANG_BANLIST_NOACCOUNT);
-            return true;
         }
 
         uint32 accountId = handler->GetSession()->GetAccountId();
-        if (WorldSessionPtr sess = sWorld->FindSession(accountId))
-            sess->BanListHelper(result);
+        LoginDatabase.CallBackQuery(stmt, [accountId](PreparedQueryResult result) -> void
+        {
+            if (WorldSessionPtr sess = sWorld->FindSession(accountId))
+                sess->BanListHelper(result);
+        });
 
         return true;
     }
@@ -442,7 +451,7 @@ public:
             return false;
 
         std::string filter(filterStr);
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GUID_BY_NAME_FILTER);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_GUID_BY_NAME_FILTER);
         stmt->setString(0, filter);
         PreparedQueryResult result = CharacterDatabase.Query(stmt);
         if (!result)
@@ -459,7 +468,7 @@ public:
             do
             {
                 Field* fields = result->Fetch();
-                CharacterDatabasePreparedStatement* stmt2 = CharacterDatabase.GetPreparedStatement(CHAR_SEL_BANNED_NAME);
+                PreparedStatement* stmt2 = CharacterDatabase.GetPreparedStatement(CHAR_SEL_BANNED_NAME);
                 stmt2->setUInt64(0, fields[0].GetUInt64());
                 PreparedQueryResult banResult = CharacterDatabase.Query(stmt2);
                 if (banResult)
@@ -481,7 +490,7 @@ public:
 
                 std::string char_name = fields[1].GetString();
 
-                CharacterDatabasePreparedStatement* stmt2 = CharacterDatabase.GetPreparedStatement(CHAR_SEL_BANINFO_LIST);
+                PreparedStatement* stmt2 = CharacterDatabase.GetPreparedStatement(CHAR_SEL_BANINFO_LIST);
                 stmt2->setUInt64(0, fields[0].GetUInt64());
                 PreparedQueryResult banInfo = CharacterDatabase.Query(stmt2);
                 if (banInfo)
@@ -522,7 +531,7 @@ public:
 
     static bool HandleBanListIPCommand(ChatHandler* handler, char const* args)
     {
-        LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_DEL_EXPIRED_IP_BANS);
+        PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_DEL_EXPIRED_IP_BANS);
         LoginDatabase.Execute(stmt);
 
         char* filterStr = strtok((char*)args, " ");
@@ -533,12 +542,12 @@ public:
 
         if (filter.empty())
         {
-            LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_IP_BANNED_ALL);
+            PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_IP_BANNED_ALL);
             result = LoginDatabase.Query(stmt);
         }
         else
         {
-            LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_IP_BANNED_BY_IP);
+            PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_IP_BANNED_BY_IP);
             stmt->setString(0, filter);
             result = LoginDatabase.Query(stmt);
         }
@@ -706,7 +715,7 @@ public:
             return false;
         }
 
-        LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_ID_BY_NAME);
+        PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_ID_BY_NAME);
         stmt->setString(0, account);
         PreparedQueryResult resultAccounts = LoginDatabase.Query(stmt);
         if (!resultAccounts)

@@ -20,9 +20,8 @@ class instance_shadowfang_keep : public InstanceMapScript
 
         struct instance_shadowfang_keep_InstanceMapScript : public InstanceScript
         {
-            instance_shadowfang_keep_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+            instance_shadowfang_keep_InstanceMapScript(Map* pMap) : InstanceScript(pMap) 
             {
-                SetHeaders(DataHeader);
                 SetBossNumber(EncounterCount);
                 LoadDoorData(doorData);
                 uiAshburyGUID.Clear();
@@ -33,13 +32,13 @@ class instance_shadowfang_keep : public InstanceMapScript
                 teamInInstance = 0;
             };
 
-            void OnPlayerEnter(Player* player) override
+            void BeforePlayerEnter(Player* pPlayer)
             {
                 if (!teamInInstance)
-                    teamInInstance = player->GetTeam();
+                    teamInInstance = pPlayer->GetTeam();
             }
 
-            void OnCreatureCreate(Creature* creature)
+            void OnCreatureCreate(Creature* pCreature)
             {
                 if (!teamInInstance)
                 {
@@ -49,50 +48,50 @@ class instance_shadowfang_keep : public InstanceMapScript
                             teamInInstance = player->GetTeam();
                 }
 
-                switch(creature->GetEntry())
+                switch(pCreature->GetEntry())
                 {
                     case NPC_BELMONT:
                         if (teamInInstance == ALLIANCE)
-                            creature->UpdateEntry(NPC_IVAR);
+                            pCreature->UpdateEntry(NPC_IVAR);
                         break;
                     case NPC_GUARD_HORDE1:
                         if (teamInInstance == ALLIANCE)
-                            creature->UpdateEntry(NPC_GUARD_ALLY);
+                            pCreature->UpdateEntry(NPC_GUARD_ALLY);
                         break;
                     case NPC_GUARD_HORDE2:
                         if (teamInInstance == ALLIANCE)
-                            creature->UpdateEntry(NPC_GUARD_ALLY);
+                            pCreature->UpdateEntry(NPC_GUARD_ALLY);
                         break;
                     case NPC_CROMUSH:
                         if (teamInInstance == ALLIANCE)
-                            creature->SetPhaseMask(2, true);
+                            pCreature->SetPhaseMask(2, true);
                         break;
                     case NPC_ASHBURY:
-                        uiAshburyGUID = creature->GetGUID();
+                        uiAshburyGUID = pCreature->GetGUID();
                         break;
                     case NPC_SILVERLAINE:
-                        uiSilverlaineGUID = creature->GetGUID();
+                        uiSilverlaineGUID = pCreature->GetGUID();
                         break;
                     case NPC_SPRINGVALE:
-                        uiSpringvaleGUID = creature->GetGUID();
+                        uiSpringvaleGUID = pCreature->GetGUID();
                         break;
                     case NPC_VALDEN:
-                        uiValdenGUID = creature->GetGUID();
+                        uiValdenGUID = pCreature->GetGUID();
                         break;
                     case NPC_GODFREY:
-                        uiGodfreyGUID = creature->GetGUID();
+                        uiGodfreyGUID = pCreature->GetGUID();
                         break;
                 }
             }
 
-            void OnGameObjectCreate(GameObject* go)
+            void OnGameObjectCreate(GameObject* pGo)
             {
-                switch(go->GetEntry())
+                switch(pGo->GetEntry())
                 {
                     case GO_COURTYARD_DOOR:
                     case GO_SORCERER_DOOR:
                     case GO_ARUGAL_DOOR:
-                        AddDoor(go, true);
+                        AddDoor(pGo, true);
                         break;
                 }
             }
@@ -112,6 +111,17 @@ class instance_shadowfang_keep : public InstanceMapScript
                 return 0;
             }
 
+            std::string GetSaveData()
+            {
+                OUT_SAVE_INST_DATA;
+
+                std::ostringstream saveStream;
+                saveStream << "S K " << GetBossSaveData();
+
+                OUT_SAVE_INST_DATA_COMPLETE;
+                return saveStream.str();
+            }
+
             ObjectGuid GetGuidData(uint32 data) const
             {
                 switch (data)
@@ -125,6 +135,38 @@ class instance_shadowfang_keep : public InstanceMapScript
                 return ObjectGuid::Empty;
             }
 
+            void Load(const char* str)
+            {
+                if (!str)
+                {
+                    OUT_LOAD_INST_DATA_FAIL;
+                    return;
+                }
+
+                OUT_LOAD_INST_DATA(str);
+
+                char dataHead1, dataHead2;
+
+                std::istringstream loadStream(str);
+                loadStream >> dataHead1 >> dataHead2;
+
+                if (dataHead1 == 'S' && dataHead2 == 'K')
+                {
+                    for (uint32 i = 0; i < EncounterCount; ++i)
+                    {
+                        uint32 tmpState;
+                        loadStream >> tmpState;
+                        if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                            tmpState = NOT_STARTED;
+                        SetBossState(i, EncounterState(tmpState));
+                    }
+                }
+                else
+                    OUT_LOAD_INST_DATA_FAIL;
+
+                OUT_LOAD_INST_DATA_COMPLETE;
+            }
+        
         private:
             ObjectGuid uiAshburyGUID;
             ObjectGuid uiSilverlaineGUID;

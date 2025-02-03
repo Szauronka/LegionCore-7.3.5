@@ -1,18 +1,19 @@
 /*
- * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #include "Arena.h"
@@ -59,7 +60,7 @@ void Arena::PostUpdateImpl(uint32 diff)
         CheckWinConditions();
 
     if (elapsedTime > Minutes(2))
-        UpdateWorldState(ARENA_END_TIMER, int32(GameTime::GetGameTime() + std::chrono::duration_cast<Seconds>(Minutes(25) - elapsedTime).count()));
+        UpdateWorldState(ARENA_END_TIMER, int32(time(nullptr) + std::chrono::duration_cast<Seconds>(Minutes(25) - elapsedTime).count()));
 
     ModifyStartDelayTime(Milliseconds(diff));
 }
@@ -103,7 +104,7 @@ void Arena::AddPlayer(Player* player)
 
     if (Pet* pet = player->GetPet())
     {
-        if (!pet->IsAlive())
+        if (!pet->isAlive())
             pet->setDeathState(ALIVE);
 
         pet->SetHealth(pet->GetMaxHealth());
@@ -111,7 +112,7 @@ void Arena::AddPlayer(Player* player)
 
         if (player->HasSpell(155228) || player->HasSpell(205024) || player->GetSpecializationId() == SPEC_MAGE_FIRE &&
             player->GetSpecializationId() == SPEC_MAGE_ARCANE || player->GetSpecializationId() == SPEC_DK_BLOOD || player->GetSpecializationId() == SPEC_DK_FROST)
-            player->RemovePet(pet, PET_SAVE_NOT_IN_SLOT);
+            player->RemovePet(pet);
     }
 
     player->RemoveArenaEnchantments(TEMP_ENCHANTMENT_SLOT);
@@ -157,7 +158,7 @@ void Arena::RemovePlayer(Player* /*player*/, ObjectGuid /*guid*/, uint32 /*team*
 void Arena::FillInitialWorldStates(WorldPackets::WorldState::InitWorldStates& packet)
 {
     packet.Worldstates.emplace_back(ARENA_SHOW_END_TIMER, GetStatus() == STATUS_IN_PROGRESS);
-    packet.Worldstates.emplace_back(ARENA_END_TIMER, int32(GameTime::GetGameTime() + std::chrono::duration_cast<Seconds>(Minutes(25) - GetElapsedTime()).count()));
+    packet.Worldstates.emplace_back(ARENA_END_TIMER, int32(time(nullptr) + std::chrono::duration_cast<Seconds>(Minutes(25) - GetElapsedTime()).count()));
     packet.Worldstates.emplace_back(ARENA_ALIVE_PLAYERS_GREEN, GetAlivePlayersCountByTeam(HORDE));
     packet.Worldstates.emplace_back(ARENA_ALIVE_PLAYERS_GOLD, GetAlivePlayersCountByTeam(ALLIANCE));
     packet.Worldstates.emplace_back(BG_RV_WORLD_STATE, 1);
@@ -210,7 +211,7 @@ void Arena::StartingEventOpenDoors()
     _logData = {};
     _logData.RealmID = realm.Id.Realm;
     _logData.MapID = GetMapId();
-    _logData.Arena.emplace();
+    _logData.Arena = boost::in_place();
     _logData.Arena->JoinType = GetJoinType();
 
     for (const auto& itr : GetPlayers())
@@ -222,7 +223,7 @@ void Arena::StartingEventOpenDoors()
                 if (!player->GetGuild() || !group->IsGuildGroup())
                     continue;
 
-                _logData.Guild.emplace();
+                _logData.Guild = boost::in_place();
                 _logData.Guild->GuildID = player->GetGuildId();
                 _logData.Guild->GuildFaction = player->GetTeamId();
                 _logData.Guild->GuildName = player->GetGuildName();
@@ -265,7 +266,7 @@ void Arena::CheckWinConditions()
 
 void Arena::ApplyDampeningIfNeeded()
 {
-    auto applyDampening([=, this]() -> void
+    auto applyDampening([=]() -> void
     {
         for (auto const& itr : GetPlayers())
             if (auto const& player = GetPlayer(itr, "ApplyDampeningIfNeeded"))

@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Invasion Valshara
 */
 
@@ -19,7 +20,7 @@ public:
 
     struct instance_invasion_valshara_InstanceMapScript : public InstanceScript
     {
-        instance_invasion_valshara_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_invasion_valshara_InstanceMapScript(Map* map) : InstanceScript(map) {}
         
         WorldLocation loc_res_pla;  // for respawn
         GuidList StartedGroup;
@@ -56,8 +57,9 @@ public:
         // OnPlayerDeath
         {            
             // Init data
-            loc_res_pla.WorldRelocate(1704, x, y, z);
-
+            loc_res_pla.Relocate(x, y, z);
+            loc_res_pla.SetMapId(1704);
+            
             uint32 graveyardId = 5885;
             if (getScenarionStep() >= 1 && getScenarionStep() <= 6)
                 graveyardId = 5887;
@@ -66,7 +68,8 @@ public:
 
             if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
             {
-                loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                loc_res_pla.SetMapId(gy->MapID);
             }
             
             return &loc_res_pla;

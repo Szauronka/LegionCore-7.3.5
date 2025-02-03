@@ -73,7 +73,7 @@ class spell_monk_storm_earth_and_fire : public SpellScriptLoader
 
             void Register() override
             {
-                OnEffectRemove += AuraEffectRemoveFn(spell_monk_storm_earth_and_fire_AuraScript::RemoveEff, EFFECT_0, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_monk_storm_earth_and_fire_AuraScript::RemoveEff, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
@@ -152,7 +152,7 @@ class areatrigger_at_windwalking : public AreaTriggerScript
 
         bool IsValidTarget(Unit* caster, Unit* target, AreaTriggerActionMoment actionM) override
         {
-            if (caster && !caster->IsAlive())
+            if (caster && !caster->isAlive())
                 return false;
 
             if (target->GetGUID() == at->GetCasterGUID())
@@ -202,7 +202,7 @@ class areatrigger_at_windwalking : public AreaTriggerScript
         {
             if (Unit* caster = at->GetCaster())
             {
-                if (!caster->IsAlive())
+                if (!caster->isAlive())
                     return;
 
                 for (GuidList::iterator itr = affectedPlayers.begin(), next; itr != affectedPlayers.end(); itr = next)
@@ -270,7 +270,7 @@ class areatrigger_at_ring_of_peace : public AreaTriggerScript
         {
             if (Unit* caster = at->GetCaster())
             {
-                caster->CastSpell(at->GetPositionX(), at->GetPositionY(), at->GetPositionZ(), RingOfPeaceLongKnockBack, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_CASTED_BY_AREATRIGGER));
+                caster->CastSpell(at->GetPositionX(), at->GetPositionY(), at->GetPositionZH(), RingOfPeaceLongKnockBack, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_CASTED_BY_AREATRIGGER));
             }
         }
 
@@ -289,7 +289,7 @@ class areatrigger_at_ring_of_peace : public AreaTriggerScript
                         {
                             if (!plr->GetKnockBackTime())
                             {
-                                caster->CastSpell(at->GetPositionX(), at->GetPositionY(), at->GetPositionZ(), RingOfPeaceShortKnockBack, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_CASTED_BY_AREATRIGGER));
+                                caster->CastSpell(at->GetPositionX(), at->GetPositionY(), at->GetPositionZH(), RingOfPeaceShortKnockBack, TriggerCastFlags(TRIGGERED_FULL_MASK | TRIGGERED_CASTED_BY_AREATRIGGER));
                                 return;
                             }
                         }
@@ -1310,8 +1310,10 @@ class spell_monk_chi_wave_filter : public SpellScriptLoader
                     if (!unitb)
                         return false;
 
-                    Position posA = unita->GetPosition();
-                    Position posB = unitb->GetPosition();
+                    Position posA;
+                    Position posB;
+                    unita->GetPosition(&posA);
+                    unitb->GetPosition(&posB);
                     float distA = _caster->GetDistance(posA);
                     float distB = _caster->GetDistance(posB);
 
@@ -1551,9 +1553,31 @@ class spell_monk_whirling_dragon_punch_activater : public SpellScriptLoader
             {
                 if (Player* _plr = GetCaster()->ToPlayer())
                 {
-                    uint32 cooldown1 = _plr->GetSpellCooldownDelay(113656);
-                    uint32 cooldown2 = _plr->GetChargesCooldown(107428);
-                    if (cooldown1 && cooldown2)
+                    bool activate = false;
+					
+					if (GetSpellInfo()->Id == 107428)
+					{						
+						if (_plr->HasSpellCooldown(113656))
+							activate = true;
+					}						
+
+					if (GetSpellInfo()->Id == 113656)
+					{
+						SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(107428);
+						if (!spellInfo)
+							return;
+
+						SpellCategoryEntry const* categoryStore = sSpellCategoryStore.LookupEntry(spellInfo->Categories.ChargeCategory);
+						if (!categoryStore)
+							return;
+
+						int32 timer = _plr->GetSpellCategoryChargesTimer(categoryStore, spellInfo);
+
+						if (_plr->GetChargesCooldown(107428) < timer)
+							activate = true;
+					}
+						
+                    if (activate)
                         _plr->CastSpell(_plr, 196742, true);
                 }
             }
@@ -2261,7 +2285,7 @@ class spell_monk_renewing_mist_main : public SpellScriptLoader
                                             if (player->GetGUID() == target->GetGUID())
                                                 continue;
 
-                                            if (!player->IsInWorld() || !player->IsAlive())
+                                            if (!player->IsInWorld() || !player->isAlive())
                                                 continue;
 
                                             if (!player->IsWithinDistInMap(target, 50.f))
@@ -2357,7 +2381,7 @@ class spell_monk_renewing_mist : public SpellScriptLoader
                                         if (player->GetGUID() == target->GetGUID())
                                             continue;
 
-                                        if (!player->IsInWorld() || !player->IsAlive())
+                                        if (!player->IsInWorld() || !player->isAlive())
                                             continue;
 
                                         if (player->IsFullHealth())
@@ -2396,6 +2420,7 @@ class spell_monk_renewing_mist : public SpellScriptLoader
 };
 
 // Soothing Mist - 115175, 209525, 198533
+// Modified by ScorioN7
 class spell_monk_soothing_mist : public SpellScriptLoader
 {
 public:
@@ -2419,29 +2444,35 @@ public:
             }
         }
 
-        void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
-        {
-            if (GetId() == 198533)
-                return;
+		void HandleApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+		{
+			if (GetId() == 198533)
+				return;
 
-            if (Unit* caster = GetCaster())
-            {
-                if (Unit* target = GetUnitOwner())
-                {
-                    if (GuidList* summonList = caster->GetSummonList(60849))
-                    {
-                        for (GuidList::const_iterator iter = summonList->begin(); iter != summonList->end(); ++iter)
-                        {
-                            if (Unit* summon = ObjectAccessor::GetUnit(*caster, (*iter)))
-                            {
-                                if (summon->IsWithinLOSInMap(target))
-                                    summon->CastSpell(target, 198533, true);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+			if (Unit* caster = GetCaster())
+			{
+				if (Unit* target = GetUnitOwner())
+				{
+					if (GuidList* summonList = caster->GetSummonList(60849))
+					{
+						for (GuidList::const_iterator itr = summonList->begin(); itr != summonList->end(); ++itr)
+						{
+							if (Unit* statue = ObjectAccessor::GetUnit(*caster, (*itr)))
+								statue->InterruptSpell(CURRENT_CHANNELED_SPELL);
+						}
+
+						for (GuidList::const_iterator iter = summonList->begin(); iter != summonList->end(); ++iter)
+						{
+							if (Unit* summon = ObjectAccessor::GetUnit(*caster, (*iter)))
+							{
+								if (summon->IsWithinLOSInMap(target))
+									summon->CastSpell(target, 198533, true);
+							}
+						}
+					}
+				}
+			}
+		}
 
         void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
@@ -2462,7 +2493,7 @@ public:
         {
             OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_soothing_mist_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
             OnEffectApply += AuraEffectApplyFn(spell_monk_soothing_mist_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
-            OnEffectRemove += AuraEffectRemoveFn(spell_monk_soothing_mist_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+            //OnEffectRemove += AuraEffectRemoveFn(spell_monk_soothing_mist_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
         }
     };
 
@@ -3015,11 +3046,119 @@ public:
 	}
 };
 
+//ID - 238094 Effusive Mists
+class spell_monk_effusive_mists : public SpellScriptLoader
+{
+public:
+	spell_monk_effusive_mists() : SpellScriptLoader("spell_monk_effusive_mists") { }
+
+	class spell_monk_effusive_mists_AuraScript : public AuraScript
+	{
+		PrepareAuraScript(spell_monk_effusive_mists_AuraScript);
+
+		void HandleProc(AuraEffect const* /*auraEffect*/, ProcEventInfo& eventInfo)
+		{
+			if (eventInfo.GetSpellInfo()) {
+				if (eventInfo.GetSpellInfo()->Id == 116694) {
+					if (Unit* caster = GetCaster()) {
+						caster->CastSpell(caster, 214501, true);  //Sheilun's Gift at						
+					}
+				}
+			}
+		}
+
+		void Register() override
+		{
+			OnEffectProc += AuraEffectProcFn(spell_monk_effusive_mists_AuraScript::HandleProc, EFFECT_0, SPELL_AURA_DUMMY);
+		}
+	};
+	AuraScript* GetAuraScript() const override
+	{
+		return new spell_monk_effusive_mists_AuraScript();
+	}
+};
+
+// 113656 Fists of Fury
+class spell_fists_of_fury : public SpellScriptLoader
+{
+public:
+	spell_fists_of_fury() : SpellScriptLoader("spell_fists_of_fury") { }
+
+	class spell_fists_of_fury_SpellScript : public SpellScript
+	{
+		PrepareSpellScript(spell_fists_of_fury_SpellScript);
+
+		SpellCastResult Check()
+		{			
+			if (Unit* caster = GetCaster())
+			{
+				if (caster->HasAuraType(SPELL_AURA_MOD_DISARM) || caster->HasAuraType(SPELL_AURA_MOD_DISARM_OFFHAND))
+					return SPELL_FAILED_TARGET_NO_WEAPONS;
+				else
+					return SPELL_CAST_OK;
+			}				
+
+			return SPELL_FAILED_ERROR;
+		}
+
+		void Register() override
+		{
+			OnCheckCast += SpellCheckCastFn(spell_fists_of_fury_SpellScript::Check);
+		}
+	};
+	SpellScript* GetSpellScript() const override
+	{
+		return new spell_fists_of_fury_SpellScript();
+	}
+};
+
+//ID - 137639 Storm, Earth, and Fire
+class spell_monk_storm_earth_fire : public SpellScriptLoader
+{
+public:
+	spell_monk_storm_earth_fire() : SpellScriptLoader("spell_monk_storm_earth_fire") { }
+
+	class spell_monk_storm_earth_fire_AuraScript : public AuraScript
+	{
+		PrepareAuraScript(spell_monk_storm_earth_fire_AuraScript);
+
+		void Remove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
+		{
+			if (Unit* caster = GetCaster())
+				if (Player* player = caster->ToPlayer())
+				{
+					for (Unit::ControlList::iterator itr = caster->m_Controlled.begin(); itr != caster->m_Controlled.end(); ++itr)
+					{
+						if (Creature* creature = ObjectAccessor::GetCreatureOrPetOrVehicle(*caster, *itr))
+						{
+							switch (creature->GetEntry())
+							{
+								case 69792:
+								case 69791:
+									creature->DespawnOrUnsummon();
+									break;
+							}
+						}
+					}
+				}
+		}
+
+		void Register() override
+		{
+			OnEffectRemove += AuraEffectRemoveFn(spell_monk_storm_earth_fire_AuraScript::Remove, EFFECT_0, SPELL_AURA_ADD_PCT_MODIFIER, AURA_EFFECT_HANDLE_REAL);
+		}
+	};
+	AuraScript* GetAuraScript() const override
+	{
+		return new spell_monk_storm_earth_fire_AuraScript();
+	}
+};
+
 void AddSC_monk_spell_scripts()
 {
-    new spell_monk_clone_cast();
-    new spell_monk_storm_earth_and_fire_clone_visual();
-    new spell_monk_storm_earth_and_fire();
+    //new spell_monk_clone_cast();
+    //new spell_monk_storm_earth_and_fire_clone_visual();
+    //new spell_monk_storm_earth_and_fire();
     new spell_monk_diffuse_magic();
     new spell_monk_zen_flight_check();
     new spell_monk_power_strikes();
@@ -3075,4 +3214,8 @@ void AddSC_monk_spell_scripts()
     RegisterSpellScript(spell_monk_breath_of_fire);
     RegisterAuraScript(spell_monk_t20_brew_2p);
 	new spell_monk_fixate();
+
+	new spell_monk_effusive_mists();
+	new spell_fists_of_fury();
+	new spell_monk_storm_earth_fire();
 }

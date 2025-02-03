@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "the_nighthold.h"
 
 Position const anomalySumPos[12] =
@@ -193,7 +197,7 @@ public:
 
                 me->AddDelayedEvent(1000, [this]() -> void
                 {
-                    if (me->IsAlive() && me->isInCombat())
+                    if (me->isAlive() && me->isInCombat())
                         SetAnomalySpeed();
                 });
             }
@@ -630,7 +634,7 @@ public:
                         float angle = 1.57f;
                         for (uint8 i = 0; i < 4; i++)
                         {
-                            pos = me->GetNearPosition(6.0f, angle);
+                            me->GetNearPosition(pos, 6.0f, angle);
                             owner->SummonCreature(NPC_FRAGMENTED_TIME, pos);
                             angle += 1.57f;
                         }
@@ -1235,7 +1239,7 @@ class spell_anomaly_temporal_orb : public SpellScriptLoader
             void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes mode)
             {
                 Unit* caster = GetCaster();
-                if (!caster || !GetTarget() || !caster->IsAlive() || !caster->isInCombat())
+                if (!caster || !GetTarget() || !caster->isAlive() || !caster->isInCombat())
                     return;
 
                 if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
@@ -1244,10 +1248,10 @@ class spell_anomaly_temporal_orb : public SpellScriptLoader
                     float angle = 3.14f;
                     for (uint8 i = 0; i < 36; i++)
                     {
-                        pos = GetTarget()->GetNearPosition(20.0f, angle);
+                        GetTarget()->GetNearPosition(pos, 20.0f, angle);
                         caster->CastSpell(pos, SPELL_TEMPORAL_ORB_AT, true);
 
-                        pos = GetTarget()->GetNearPosition(20.0f, angle + 0.08525f);
+                        GetTarget()->GetNearPosition(pos, 20.0f, angle + 0.08525f);
 
                         uint32 spellID = SPELL_TEMPORAL_ORB_AT_2;
                         caster->AddDelayedEvent(2000, [caster, pos, spellID]() -> void
@@ -1255,7 +1259,7 @@ class spell_anomaly_temporal_orb : public SpellScriptLoader
                             if (!caster)
                                 return;
 
-                            if (caster->IsAlive() && caster->isInCombat())
+                            if (caster->isAlive() && caster->isInCombat())
                                 caster->CastSpell(pos, spellID, true);
                         });
                         angle += 0.1744f;

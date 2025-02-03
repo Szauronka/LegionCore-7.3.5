@@ -37,8 +37,6 @@ namespace WorldPackets
 
             struct EuropaTicketConfig
             {
-                EuropaTicketConfig() { } // allows emplace() with clang
-
                 SavedThrottleObjectState ThrottleState;
                 bool TicketsEnabled = false;
                 bool BugsEnabled = false;
@@ -162,7 +160,7 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            std::vector<std::string> const* Text = nullptr;
+            StringVector const* Text = nullptr;
         };
 
         class SetTimeZoneInformation final : public ServerPacket

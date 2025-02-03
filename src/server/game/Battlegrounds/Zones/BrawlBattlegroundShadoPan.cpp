@@ -1,3 +1,21 @@
+/*
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
+ */
+
 #include "BrawlBattlegroundShadoPan.h"
 #include "WorldStatePackets.h"
 #include "ScriptedCreature.h"
@@ -48,7 +66,7 @@ void BrawlBattlegroundShadoPan::StartingEventOpenDoors()
         });
 
     UpdateWorldState(WorldStates::ARENA_SHOW_END_TIMER, 1);
-    UpdateWorldState(WorldStates::ARENA_END_TIMER, int32(GameTime::GetGameTime() + std::chrono::duration_cast<Seconds>(Minutes(15)).count()));
+    UpdateWorldState(WorldStates::ARENA_END_TIMER, int32(time(nullptr) + std::chrono::duration_cast<Seconds>(Minutes(15)).count()));
 }
 
 bool BrawlBattlegroundShadoPan::SetupBattleground()
@@ -89,20 +107,16 @@ void BrawlBattlegroundShadoPan::PostUpdateImpl(uint32 diff)
         Battleground::BattlegroundTimedWin();
 
     if (m_waitChestRespawn)
-    {
         if (m_chestRespawnTimer <= diff)
         {
             SpawnBGObject(urand(BG_SP_CHEST_1, BG_SP_CHEST_2), RESPAWN_IMMEDIATELY);
 
-            if (Creature *controller = GetBGCreature(SP_CONTROLLER))
+            if(Creature* controller = GetBGCreature(SP_CONTROLLER))
                 controller->AI()->ZoneTalk(2);
             m_waitChestRespawn = false;
         }
         else
-        {
             m_chestRespawnTimer -= diff;
-        }
-    }
 }
 
 void BrawlBattlegroundShadoPan::AddPlayer(Player * player)
@@ -153,7 +167,7 @@ void BrawlBattlegroundShadoPan::FillInitialWorldStates(WorldPackets::WorldState:
     if (GetStatus() == STATUS_IN_PROGRESS)
     {
         packet.Worldstates.emplace_back(WorldStates::ARENA_SHOW_END_TIMER, 1);
-        packet.Worldstates.emplace_back(WorldStates::ARENA_END_TIMER, int32(GameTime::GetGameTime() + std::chrono::duration_cast<Seconds>(Minutes(15) - GetElapsedTime()).count()));
+        packet.Worldstates.emplace_back(WorldStates::ARENA_END_TIMER, int32(time(nullptr) + std::chrono::duration_cast<Seconds>(Minutes(15) - GetElapsedTime()).count()));
     }
     else
     {
@@ -198,8 +212,7 @@ void BrawlBattlegroundShadoPan::CheckAndUpdatePointStatus(uint32 diff)
     int8 changeAmount = 0;
     for (auto itr : GetPlayers())
         if (Player* player = ObjectAccessor::FindPlayer(GetBgMap(), itr.first))
-        {
-            if (player->IsAlive() && player->GetDistance2d(controller) <= 10.0f)
+            if (player->isAlive() && player->GetDistance2d(controller) <= 10.0f)
             {
                 player->SendUpdateWorldState(WorldStates::BG_SP_SHOW_BAR, true, false);
                 player->SendUpdateWorldState(WorldStates::BG_SP_BAR_STATUS, m_score, false);
@@ -207,10 +220,7 @@ void BrawlBattlegroundShadoPan::CheckAndUpdatePointStatus(uint32 diff)
                 changeAmount += (player->GetBGTeamId() == TEAM_ALLIANCE ? 1 : -1);
             }
             else
-            {
                 player->SendUpdateWorldState(WorldStates::BG_SP_SHOW_BAR, false, false);
-            }
-        }
 
     m_pointUpdateTimer = 0;
 

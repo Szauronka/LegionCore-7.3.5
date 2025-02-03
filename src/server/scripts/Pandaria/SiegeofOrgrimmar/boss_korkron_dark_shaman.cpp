@@ -141,10 +141,10 @@ static SpecialModifier mod[] =
     { 10.0f, 1.570796326795f },
     { 15.0f, 1.570796326795f },
     { 20.0f, 1.570796326795f },
-    { 5.0f,  float(M_PI + 1.570796326795f) },
-    { 10.0f, float(M_PI + 1.570796326795f) },
-    { 15.0f, float(M_PI + 1.570796326795f) },
-    { 20.0f, float(M_PI + 1.570796326795f) },
+    { 5.0f,  M_PI + 1.570796326795f },
+    { 10.0f, M_PI + 1.570796326795f },
+    { 15.0f, M_PI + 1.570796326795f },
+    { 20.0f, M_PI + 1.570796326795f },
 };
 
 float const minx = 1483.13f;
@@ -198,7 +198,7 @@ public:
         {
             if (instance)
                 if (Creature* oshaman = me->GetCreature(*me, instance->GetGuidData(me->GetEntry() == NPC_WAVEBINDER_KARDRIS ? NPC_EARTHBREAKER_HAROMM : NPC_WAVEBINDER_KARDRIS)))
-                    if (oshaman->IsAlive())
+                    if (oshaman->isAlive())
                         return oshaman;
             return NULL;
         }
@@ -596,7 +596,8 @@ public:
                 case EVENT_FALLING_ASH:
                     if (Unit* target = me->getVictim())
                     {
-                        Position pos = target->GetPosition();
+                        Position pos;
+                        target->GetPosition(&pos);
                         me->SummonCreature(NPC_FALLING_ASH_GROUND_STALKER, pos, TEMPSUMMON_TIMED_DESPAWN, 17000);
                     }
                     events.RescheduleEvent(EVENT_FALLING_ASH, 30000);
@@ -816,7 +817,7 @@ public:
             instance = creature->GetInstanceScript();
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-            me->SetAnimTier(AnimTier::Fly);
+            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
             DoCast(me, SPELL_TOXIC_TORNADO_TR_AURA, true);
         }
 

@@ -1,7 +1,8 @@
 /*
+    http://uwow.biz
 */
  
-#include "ScriptPCH.h"
+#include "PrecompiledHeaders/ScriptPCH.h"
 
 enum eSay
 {

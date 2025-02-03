@@ -24,7 +24,7 @@
 
 enum HotfixDatabaseStatements : uint32;
 
-struct TC_SHARED_API DB2LoadInfo : public DB2FileLoadInfo
+struct DB2LoadInfo : public DB2FileLoadInfo
 {
     DB2LoadInfo();
     DB2LoadInfo(DB2FieldMeta const* fields, std::size_t fieldCount, DB2Meta const* meta, HotfixDatabaseStatements statement);
@@ -37,12 +37,12 @@ class DB2DatabaseLoader
 public:
     DB2DatabaseLoader(std::string const& storageName, DB2LoadInfo const* loadInfo) : _storageName(storageName), _loadInfo(loadInfo) { }
 
-    char* Load(uint32& records, char**& indexTable, char*& stringHolders, std::vector<char*>& stringPool, uint32& minId);
+    char* Load(uint32& records, char**& indexTable, char*& stringHolders, std::vector<char*>& stringPool);
     void LoadStrings(uint32 locale, uint32 records, char** indexTable, std::vector<char*>& stringPool);
     static char* AddString(char const** holder, std::string const& value);
 
 private:
-    std::string const& _storageName;
+    std::string _storageName;
     DB2LoadInfo const* _loadInfo;
 };
 

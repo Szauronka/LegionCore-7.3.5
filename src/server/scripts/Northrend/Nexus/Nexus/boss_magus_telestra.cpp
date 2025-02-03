@@ -200,7 +200,7 @@ public:
 
         void SummonedCreatureDespawn(Creature* summon) override
         {
-            if (summon->IsAlive())
+            if (summon->isAlive())
                 return;
 
             if (summon->GetGUID() == uiFireMagusGUID)

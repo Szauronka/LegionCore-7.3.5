@@ -20,7 +20,7 @@
 WorldPacket const* WorldPackets::ClientConfig::AccountDataTimes::Write()
 {
     _worldPacket << PlayerGuid;
-    _worldPacket << ServerTime;
+    _worldPacket << uint32(ServerTime);
     _worldPacket.append(AccountTimes, NUM_ACCOUNT_DATA_TYPES);
 
     return &_worldPacket;

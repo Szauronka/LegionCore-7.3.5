@@ -101,7 +101,7 @@ struct boss_murozond : public BossAI
         for (auto& mirrors : mirrorList)
         {
             if (auto mirror = mirrors->ToCreature())
-                if (mirror->IsAlive() && mirror->IsInWorld())
+                if (mirror->isAlive() && mirror->IsInWorld())
                     mirror->AI()->DoAction(ACTION_HOURGLASS);
         }
     }
@@ -332,13 +332,13 @@ struct npc_murozond_mirror_image : public ScriptedAI
                 if (!m_owner)
                     return;
 
-                if (!m_owner->IsAlive())
+                if (!m_owner->isAlive())
                     m_owner->ResurrectPlayer(1.0f, false);
 
                 m_owner->RemoveAura(SPELL_TEMPORAL_BLAST);
 
                 m_owner->SetHealth(m_owner->GetMaxHealth());
-                m_owner->SetPower(m_owner->GetPowerType(), m_owner->GetMaxPower(m_owner->GetPowerType()));
+                m_owner->SetPower(m_owner->getPowerType(), m_owner->GetMaxPower(m_owner->getPowerType()));
 
                 m_owner->CastSpell(m_owner, SPELL_BLESSING_OF_BRONZE_DRAGONS, true);
                 m_owner->NearTeleportTo(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), true);

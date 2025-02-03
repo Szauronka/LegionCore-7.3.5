@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #ifndef ArmyTrainingH_
 #define ArmyTrainingH_
 

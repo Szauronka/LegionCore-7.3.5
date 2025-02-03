@@ -532,7 +532,8 @@ public:
 
                 if (Creature* l_SLG = Creature::GetCreature(*me, l_Ashran->GetGenericMoPGuid(l_Ashran->GetCurrentBattleType())))
                 {
-                    Position l_Pos = l_SLG->GetPosition();
+                    Position l_Pos;
+                    l_SLG->GetPosition(&l_Pos);
                     me->GetMotionMaster()->MoveJump(l_Pos.m_positionX, l_Pos.m_positionY, l_Pos.m_positionZ, 100.0f, 100.0f, me->GetOrientation(), 1);
                 }
             }
@@ -544,7 +545,8 @@ public:
             {
                 me->CastSpell(me, SpellOgreicLanding, true);
 
-                Position l_Pos = me->GetPosition();
+                Position l_Pos;
+                me->GetPosition(&l_Pos);
                 me->SetHomePosition(l_Pos);
             }
         }
@@ -1608,7 +1610,7 @@ public:
         player->PrepareGossipMenu(creature, GossipMenuId, false);
         GossipMenuItem const* l_Item = player->PlayerTalkClass->GetGossipMenu().GetItem(FirstNpcTextID);
 
-        player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, l_Item ? l_Item->Message : "Why are you here?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, l_Item ? l_Item->Message : "Why are you here?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
         player->SEND_GOSSIP_MENU(MiscDatas::FirstNpcTextID, creature->GetGUID());
 
         return true;
@@ -1642,7 +1644,7 @@ public:
 void AddSC_AshranNPCNeutral()
 {
     new npc_ashran_herald();
-    //new npc_slg_generic_mop();
+    new npc_slg_generic_mop();
     new npc_faction_boss();
     new npc_ashran_flight_masters();
     new npc_ashran_spirit_healer();

@@ -17,6 +17,10 @@
  */
 
 #include "siege_of_orgrimmar.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellAuraEffects.h"
+#include "SpellMgr.h"
 
 enum eSpells
 {
@@ -368,7 +372,7 @@ public:
             me->RemoveAurasDueToSpell(SPELL_SUBMERGE_2);
             me->RemoveAurasDueToSpell(SPELL_SWELLING_CORRUPTION);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
-            me->SetPowerType(POWER_ENERGY);
+            me->setPowerType(POWER_ENERGY);
             me->SetMaxPower(POWER_ENERGY, 100);
             me->SetPower(POWER_ENERGY, 100);
             lasthp = me->GetMaxHealth();
@@ -1277,7 +1281,7 @@ public:
         {
             if (GetCaster() && GetCaster()->ToCreature())
             {
-                if (GetCaster()->IsAlive() && GetCaster()->isInCombat())
+                if (GetCaster()->isAlive() && GetCaster()->isInCombat())
                 {
                     GetCaster()->RemoveAurasDueToSpell(SPELL_SWIRL_AURA_DUMMY);
                     GetCaster()->ToCreature()->AI()->DoAction(ACTION_RE_ATTACK_SWIRL);
@@ -1441,7 +1445,7 @@ public:
 
     bool operator()(WorldObject* unit)
     {
-        if (_caster->isInFront(unit, float(M_PI / 4)))
+        if (_caster->isInFront(unit, M_PI / 4))
             return false;
         return true;
     }
@@ -1498,7 +1502,7 @@ public:
         void HandleScript(SpellEffIndex effIndex)
         {
             if (GetCaster() && GetCaster()->ToCreature())
-                if (GetCaster()->IsAlive() && GetCaster()->isInCombat())
+                if (GetCaster()->isAlive() && GetCaster()->isInCombat())
                     GetCaster()->ToCreature()->AI()->DoAction(ACTION_SPAWN_WAVE);
         }
 

@@ -1,9 +1,14 @@
 /*
+    http://epicwow.com/
     Dungeon : Upper Blackrock Spire 90-100
     Encounter: Commander Tharbek
 */
 
 #include "upper_blackrock_spire.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "Vehicle.h"
+#include "GameEventMgr.h"
 
 #define MIN_X 111.0f
 #define MAX_X 194.0f
@@ -189,7 +194,7 @@ struct boss_commander_tharbek : public BossAI
             {
                 if (Player* plr = i->getSource())
                 {
-                    if (!plr->IsAlive() || plr->isGameMaster())
+                    if (!plr->isAlive() || plr->isGameMaster())
                         break;
 
                     if (plr->GetPositionX() > MIN_X && plr->GetPositionX() < MAX_X && plr->GetPositionY() > MIN_Y && plr->GetPositionY() < MAX_Y && plr->GetPositionZ() > MIN_Z && plr->GetPositionZ() < MAX_Z)
@@ -346,7 +351,7 @@ struct npc_ironbarb_skyreaver : public ScriptedAI
                 tharbek->CastSpell(me, SPELL_RIDE_VEHICLE, true);
             break;
         case 6:
-            me->SetAnimTier(AnimTier::Ground);
+            me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
             me->SetReactState(REACT_AGGRESSIVE);
 
             if (auto tharbek = me->GetAnyOwner())

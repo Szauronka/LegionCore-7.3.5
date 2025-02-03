@@ -1,10 +1,16 @@
 /*
+    http://uwow.biz
     Dungeon : Black Rook Hold Dungeon 100-110
     Encounter: Smashspite the Hateful
     Normal: 100%, Heroic: 100%, Mythic: 100%
 */
 
 #include "black_rook_hold_dungeon.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "SpellScript.h"
+#include "SpellAuraEffects.h"
 
 enum Says
 {
@@ -114,7 +120,7 @@ struct boss_smashspite_the_hateful : public BossAI
             Talk(SAY_HATEFUL_GAZE_CHARGE);
             me->SetFacingTo(target);
             me->CastSpell(target, SPELL_HATEFUL_CHARGE_DMG, true);
-            me->GetMotionMaster()->MoveCharge(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 30.0f, SPELL_HATEFUL_CHARGE);
+            me->GetMotionMaster()->MoveCharge(target->GetPosition(), 30.0f, SPELL_HATEFUL_CHARGE);
         }
     }
 
@@ -183,7 +189,7 @@ struct boss_smashspite_the_hateful : public BossAI
                         me->StopMoving();
                         me->StopAttack();
                         me->CastSpellDelay(target, SPELL_HATEFUL_GAZE, false, 200);
-                        events.RescheduleEvent(EVENT_EARTHSHAKING_STOMP, 10000);
+                        events.RecalcEventTimer(EVENT_EARTHSHAKING_STOMP, 10000);
                     }
                     events.RescheduleEvent(EVENT_HATEFUL_GAZE, 25000);
                     break;
@@ -216,7 +222,8 @@ struct npc_smashspite_fel_bat : public ScriptedAI
             if (!owner || !owner->isInCombat())
                 return;
 
-            Position pos = target->GetNearPosition(abs(35.0f - target->GetExactDist2d(me)), target->GetRelativeAngle(me));
+            Position pos;
+            target->GetNearPosition(pos, abs(35.0f - target->GetExactDist2d(me)), target->GetRelativeAngle(me));
             float angle = pos.GetRelativeAngle(target);
             uint32 delay = 0;
 
@@ -357,5 +364,6 @@ void AddSC_boss_smashspite_the_hateful()
     RegisterCreatureAI(boss_smashspite_the_hateful);
     RegisterCreatureAI(npc_smashspite_fel_bat);
     RegisterCreatureAI(npc_brh_fel_bat);
+
     RegisterAuraScript(spell_smashpite_brutality_proc);
 }

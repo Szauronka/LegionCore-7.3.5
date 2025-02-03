@@ -1,19 +1,19 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #include "World.h"
@@ -107,7 +107,7 @@ void BattlegroundEyeOfTheStorm::PostUpdateImpl(uint32 diff)
     {
         GetBgMap()->ApplyOnEveryPlayer([](Player* player)
         {
-            if (player->IsAlive())
+            if (player->isAlive())
                 player->CastSpell(player, BG_EY_BRAWL_GRAVITY_LAPSE, true);
         });
 
@@ -198,7 +198,7 @@ void BattlegroundEyeOfTheStorm::_CheckSomeoneJoinedPoint()
                 Player* player = ObjectAccessor::FindPlayer(_playersNearPoint[EY_POINTS_MAX][j]);
                 if (!player)
                 {
-                    TC_LOG_ERROR("bg.battleground", "BattlegroundEyeOfTheStorm:_CheckSomeoneJoinedPoint: Player (GUID: %lu) not found!", _playersNearPoint[EY_POINTS_MAX][j].GetCounter());
+                    TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattlegroundEyeOfTheStorm:_CheckSomeoneJoinedPoint: Player (GUID: %u) not found!", _playersNearPoint[EY_POINTS_MAX][j].GetCounter());
                     ++j;
                     continue;
                 }
@@ -237,7 +237,7 @@ void BattlegroundEyeOfTheStorm::_CheckSomeoneLeftPoint()
                 Player* player = ObjectAccessor::FindPlayer(_playersNearPoint[i][j]);
                 if (!player)
                 {
-                    TC_LOG_ERROR("bg.battleground", "BattlegroundEyeOfTheStorm:_CheckSomeoneLeftPoint Player (GUID: %lu) not found!", _playersNearPoint[i][j].GetCounter());
+                    TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattlegroundEyeOfTheStorm:_CheckSomeoneLeftPoint Player (GUID: %u) not found!", _playersNearPoint[i][j].GetCounter());
                     //move not existed player to "free space" - this will cause many error showing in log, but it is a very important bug
                     _playersNearPoint[EY_POINTS_MAX].push_back(_playersNearPoint[i][j]);
                     _playersNearPoint[i].erase(_playersNearPoint[i].begin() + j);
@@ -457,7 +457,7 @@ bool BattlegroundEyeOfTheStorm::SetupBattleground()
         || !AddObject(BG_EY_OBJECT_TOWER_CAP_MAGE_TOWER, BG_OBJECT_HU_TOWER_CAP_EY_ENTRY, 2282.121582f, 1760.006958f, 1189.707153f, 1.919862f, 0, 0, 0.819152f, 0.573576f, RESPAWN_ONE_DAY)
         )
     {
-        TC_LOG_ERROR("sql.sql", "BatteGroundEY: Failed to spawn some object Battleground not created!");
+        TC_LOG_ERROR(LOG_FILTER_SQL, "BatteGroundEY: Failed to spawn some object Battleground not created!");
         return false;
     }
 
@@ -467,27 +467,27 @@ bool BattlegroundEyeOfTheStorm::SetupBattleground()
         AreaTriggerEntry const* at = sAreaTriggerStore.LookupEntry(_pointsTrigger[i]);
         if (!at)
         {
-            TC_LOG_ERROR("bg.battleground", "BattlegroundEyeOfTheStorm: Unknown trigger: %u", _pointsTrigger[i]);
+            TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattlegroundEyeOfTheStorm: Unknown trigger: %u", _pointsTrigger[i]);
             continue;
         }
         if (!AddObject(BG_EY_OBJECT_SPEEDBUFF_FEL_REAVER + i * 3, Buff_Entries[0], at->Pos.X, at->Pos.Y, at->Pos.Z, 0.907571f, 0, 0, 0.438371f, 0.898794f, RESPAWN_ONE_DAY)
             || !AddObject(BG_EY_OBJECT_SPEEDBUFF_FEL_REAVER + i * 3 + 1, Buff_Entries[1], at->Pos.X, at->Pos.Y, at->Pos.Z, 0.907571f, 0, 0, 0.438371f, 0.898794f, RESPAWN_ONE_DAY)
             || !AddObject(BG_EY_OBJECT_SPEEDBUFF_FEL_REAVER + i * 3 + 2, Buff_Entries[2], at->Pos.X, at->Pos.Y, at->Pos.Z, 0.907571f, 0, 0, 0.438371f, 0.898794f, RESPAWN_ONE_DAY)
             )
-            TC_LOG_ERROR("bg.battleground", "BattlegroundEyeOfTheStorm: Cannot spawn buff");
+            TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattlegroundEyeOfTheStorm: Cannot spawn buff");
     }
 
     WorldSafeLocsEntry const* sg = sWorldSafeLocsStore.LookupEntry(EY_GRAVEYARD_MAIN_ALLIANCE);
     if (!sg || !AddSpiritGuide(EY_SPIRIT_MAIN_ALLIANCE, sg->Loc, TEAM_ALLIANCE))
     {
-        TC_LOG_ERROR("sql.sql", "BatteGroundEY: Failed to spawn spirit guide! Battleground not created!");
+        TC_LOG_ERROR(LOG_FILTER_SQL, "BatteGroundEY: Failed to spawn spirit guide! Battleground not created!");
         return false;
     }
 
     sg = sWorldSafeLocsStore.LookupEntry(EY_GRAVEYARD_MAIN_HORDE);
     if (!sg || !AddSpiritGuide(EY_SPIRIT_MAIN_HORDE, sg->Loc, TEAM_HORDE))
     {
-        TC_LOG_ERROR("sql.sql", "BatteGroundEY: Failed to spawn spirit guide! Battleground not created!");
+        TC_LOG_ERROR(LOG_FILTER_SQL, "BatteGroundEY: Failed to spawn spirit guide! Battleground not created!");
         return false;
     }
 
@@ -732,7 +732,7 @@ void BattlegroundEyeOfTheStorm::EventTeamCapturedPoint(Player* Source, uint32 Po
 
     WorldSafeLocsEntry const* sg = sWorldSafeLocsStore.LookupEntry(m_CapturingPointTypes[Point].GraveYardId);
     if (!sg || !AddSpiritGuide(Point, sg->Loc, Source->GetBGTeamId()))
-        TC_LOG_ERROR("bg.battleground", "BatteGroundEY: Failed to spawn spirit guide! point: %u, team: %u, graveyard_id: %u", Point, Team, m_CapturingPointTypes[Point].GraveYardId);
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BatteGroundEY: Failed to spawn spirit guide! point: %u, team: %u, graveyard_id: %u", Point, Team, m_CapturingPointTypes[Point].GraveYardId);
 
     //    SpawnBGCreature(Point, RESPAWN_IMMEDIATELY);
 
@@ -862,7 +862,7 @@ WorldSafeLocsEntry const* BattlegroundEyeOfTheStorm::GetClosestGraveYard(Player*
     WorldSafeLocsEntry const* nearestEntry = entry;
     if (!entry)
     {
-        TC_LOG_ERROR("bg.battleground", "BattlegroundEyeOfTheStorm: Not found the main team graveyard. Graveyard system isn't working!");
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattlegroundEyeOfTheStorm: Not found the main team graveyard. Graveyard system isn't working!");
         return nullptr;
     }
 
@@ -879,7 +879,7 @@ WorldSafeLocsEntry const* BattlegroundEyeOfTheStorm::GetClosestGraveYard(Player*
         {
             entry = sWorldSafeLocsStore.LookupEntry(m_CapturingPointTypes[i].GraveYardId);
             if (!entry)
-                TC_LOG_ERROR("bg.battleground", "BattlegroundEyeOfTheStorm: Not found graveyard: %u", m_CapturingPointTypes[i].GraveYardId);
+                TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattlegroundEyeOfTheStorm: Not found graveyard: %u", m_CapturingPointTypes[i].GraveYardId);
             else
             {
                 distance = (entry->Loc.X - plr_x)*(entry->Loc.X - plr_x) + (entry->Loc.Y - plr_y)*(entry->Loc.Y - plr_y) + (entry->Loc.Z - plr_z)*(entry->Loc.Z - plr_z);

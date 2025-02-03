@@ -36,14 +36,14 @@ enum ZoneType
     ZONE_TYPE_INSTANCE  = 1,
 };
 
-class TC_GAME_API ZoneScript
+class ZoneScript
 {
         uint8 m_type;
     public:
-        ZoneScript() : m_type(ZONE_TYPE_MAP) { }
+        ZoneScript();
         virtual ~ZoneScript() = default;
 
-        void SetType(uint8 type) { m_type = type; }
+        void SetType(uint8 type);
         virtual uint32 GetCreatureEntry(uint32 /*guidlow*/, CreatureData const* data);
         virtual uint32 GetGameObjectEntry(uint32 /*guidlow*/, uint32 entry) { return entry; }
 
@@ -77,6 +77,8 @@ class TC_GAME_API ZoneScript
         virtual void SetData(uint32 /*DataId*/, uint32 /*Value*/) {}
 
         virtual void ProcessEvent(WorldObject* /*obj*/, uint32 /*eventId*/) {}
+
+        InstanceScript* ToInstanceScript();
 };
 
 #endif

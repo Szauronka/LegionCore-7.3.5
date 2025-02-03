@@ -1,5 +1,6 @@
 #include "AchievementMgr.h"
 #include "BrawlersGuild.h"
+#include "SpellScript.h"
 
 enum eSpells
 {
@@ -87,7 +88,7 @@ public:
         {
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL);      
             events.Reset();
-            if (me->IsAlive() && me->GetAnyOwner())
+            if (me->isAlive() && me->GetAnyOwner())
                 AttackStart(me->GetAnyOwner());
         }
         
@@ -156,7 +157,7 @@ public:
                 {
                     case EVENT_1:
                     Position pos;
-                    me->GetNearPoint2D(pos, 15.0f, frand(float(- M_PI / 3), float(M_PI / 3)));
+                    me->GetNearPoint2D(pos, 15.0f, frand(-M_PI/3, M_PI/3));
                     me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_WATER_ORB);
                     events.RescheduleEvent(EVENT_1, urand (17000, 19000));
                     break;
@@ -238,7 +239,7 @@ public:
                             me->CastSpell(me, SPELL_BURNING_GROUND);
                         break;
                     case EVENT_2:
-                        if (!me->GetAnyOwner() || !me->GetAnyOwner()->IsAlive())
+                        if (!me->GetAnyOwner() || !me->GetAnyOwner()->isAlive())
                             me->DespawnOrUnsummon();
                         else
                             events.RescheduleEvent(EVENT_2, 1000);
@@ -729,7 +730,7 @@ public:
 
 
 
-void AddSC_brawlers_guild_bosses_rank_four()
+void AddSC_the_brawlers_guild_bosses_rank_four()
 {
     new boss_brawguild_burnstachio();
     new npc_brawguild_burnstachio_ground();

@@ -54,6 +54,8 @@ namespace WorldStatesData
     };
 }
 
+typedef cds::container::FeldmanHashSet< cds::gc::HP, ObjectGuid, ObjectGuidHashAccessor > GuidHashSet;
+
 struct WorldStateTemplate
 {
     WorldStateTemplate(uint32 variableID = 0, uint32 type = 0, uint32 _condition = 0, uint32 flags = 0, uint32 defaultValue = 0);
@@ -78,8 +80,6 @@ struct WorldState
 
     void Reload();
 
-    void Unload();
-
     void AddClient(ObjectGuid const& guid);
     bool HasClient(ObjectGuid const& guid);
     void RemoveClient(ObjectGuid const& guid);
@@ -93,7 +93,7 @@ struct WorldState
     void SetValue(uint32 value, bool hidden);
 
     WorldStateTemplate const* StateTemplate;
-    GuidUnorderedSet ClientGuids;
+    GuidHashSet ClientGuids;
     ObjectGuid LinkedGuid;
     uint32 VariableID;
     uint32 Type;

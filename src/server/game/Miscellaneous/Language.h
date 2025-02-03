@@ -703,7 +703,10 @@ enum TrinityStrings
     LANG_SQLDRIVER_QUERY_LOGGING_ENABLED  = 1027,
     LANG_SQLDRIVER_QUERY_LOGGING_DISABLED = 1028,
     LANG_ACCOUNT_INVALID_BNET_NAME = 1029,
-    // Room for more level 4              1029-1099 not used
+    LANG_ACCOUNT_PASS_TOO_LONG          = 1031,
+    LANG_ACCOUNT_CREATED_BNET_WITH_GAME = 1032,
+    LANG_ACCOUNT_CREATED_BNET           = 1033,
+    // Room for more level 4              1034-1099 not used
 
     // Level 3 (continue)
     LANG_ACCOUNT_SETADDON               = 1100,
@@ -758,7 +761,13 @@ enum TrinityStrings
     LANG_LIST_MAIL_INFO_3               = 1154,
     LANG_LIST_MAIL_INFO_ITEM            = 1155,
     LANG_LIST_MAIL_NOT_FOUND            = 1156,
-    // Room for more level 3              1157-1199 not used
+    // Room for more level 3              1157-1184 not used
+	LANG_ACCOUNT_BNET_LINKED            = 1185,
+    LANG_ACCOUNT_OR_BNET_DOES_NOT_EXIST = 1186,
+    LANG_ACCOUNT_ALREADY_LINKED         = 1187,
+    LANG_ACCOUNT_BNET_UNLINKED          = 1188,
+    LANG_ACCOUNT_BNET_NOT_LINKED        = 1189,
+    // Room for more level 3              1190-1199 not used
 
     // Debug commands
     LANG_CINEMATIC_NOT_EXIST            = 1200,
@@ -766,9 +775,8 @@ enum TrinityStrings
     LANG_DEBUG_AREATRIGGER_ON           = 1202,
     LANG_DEBUG_AREATRIGGER_OFF          = 1203,
     LANG_DEBUG_AREATRIGGER_ENTERED      = 1204,
-    // 1205-1264 are (incorrectly) used for some BG?
-    LANG_DEBUG_AREATRIGGER_LEFT         = 1265,
-    // Room for more debug                1266-1299 not used
+    LANG_DEBUG_AREATRIGGER_LEFT         = 1205,
+    // Room for more debug                1206-1299 not used
 
     // AV
     LANG_BG_AV_ALLY                     = 1300,
@@ -989,7 +997,7 @@ enum TrinityStrings
     LANG_INVALID_REALMID                = 11001,
     LANG_NPC_LIST_CHAT                  = 11002,
 
-    LANG_NPCINFO_MOVEMENT_DATA          = 11100,
+    LANG_LEVEL_MINREQUIRED_MAP          = 11003,
 
     LANG_ARENA_CLOSESEASON_START        = 12000,
     LANG_ARENA_CLOSESEASON_BEG_1_TYPE   = 12001,

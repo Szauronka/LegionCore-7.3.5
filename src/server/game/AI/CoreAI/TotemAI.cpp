@@ -68,7 +68,7 @@ void TotemAI::UpdateAI(uint32 /*diff*/)
     if (me->ToTotem()->GetTotemType() != TOTEM_ACTIVE)
         return;
 
-    if (!me->IsAlive())
+    if (!me->isAlive())
         return;
 
     // Search spell

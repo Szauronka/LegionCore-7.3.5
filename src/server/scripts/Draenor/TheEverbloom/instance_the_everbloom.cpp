@@ -1,8 +1,11 @@
 /*
+    http://epicwow.com/
     Dungeon : The Everbloom 100
 */
 
 #include "the_everbloom.h"
+#include "ScriptMgr.h"
+#include "InstanceScript.h"
 
 DoorData const doorData[] =
 {
@@ -23,9 +26,8 @@ public:
 
     struct instance_the_everbloom_InstanceMapScript : public InstanceScript
     {
-        instance_the_everbloom_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_the_everbloom_InstanceMapScript(Map* map) : InstanceScript(map) 
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 

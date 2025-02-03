@@ -1,3 +1,11 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//  Copyright 2017 Uwow; EpicWoW
+//  Copyright 2016 Millenium-studio SARL
+//  All Rights Reserved.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 #ifndef VIGNETTE_H
 #define VIGNETTE_H
 
@@ -16,7 +24,7 @@ enum class Type : uint8
     SourceScript              ///< Used for script, that kind of vignette are never remove automaticaly
 };
 
-class TC_GAME_API Entity
+class Entity
 {
     friend class Manager;
 

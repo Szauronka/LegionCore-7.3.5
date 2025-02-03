@@ -170,12 +170,13 @@ enum SpellEffectHandleMode
     SPELL_EFFECT_HANDLE_HIT_TARGET,
 };
 
-class TC_GAME_API Spell
+class Spell
 {
     friend void Unit::SetCurrentCastedSpell(Spell* pSpell);
     friend class SpellScript;
     friend class AreaTrigger;
     public:
+		Trinity::AnyData Variables;
         void EffectNULL(SpellEffIndex effIndex);
         void EffectUnused(SpellEffIndex effIndex);
         void EffectDistract(SpellEffIndex effIndex);
@@ -266,7 +267,7 @@ class TC_GAME_API Spell
         void EffectKnockBack(SpellEffIndex effIndex);
         void EffectPullTowards(SpellEffIndex effIndex);
         void EffectDispelMechanic(SpellEffIndex effIndex);
-        void EffectResurrectPet(SpellEffIndex);
+        void EffectSummonDeadPet(SpellEffIndex effIndex);
         void EffectDurabilityDamage(SpellEffIndex effIndex);
         void EffectSkill(SpellEffIndex effIndex);
         void EffectTaunt(SpellEffIndex effIndex);
@@ -758,7 +759,6 @@ class TC_GAME_API Spell
         bool m_skipCheck;
         uint32 m_spellMissMask;
         uint32 m_auraScaleMask;
-        std::unique_ptr<PathGenerator> m_preGeneratedPath;
 
         std::vector<SpellLogEffectPowerDrainParams> _powerDrainTargets[MAX_SPELL_EFFECTS];
         std::vector<SpellLogEffectExtraAttacksParams> _extraAttacksTargets[MAX_SPELL_EFFECTS];
@@ -768,11 +768,27 @@ class TC_GAME_API Spell
         std::vector<SpellLogEffectFeedPetParams> _feedPetTargets[MAX_SPELL_EFFECTS];
 
         uint16 m_currentExecutedEffect;       //pointer for get current executed effect in effect functions
+
+    // Fluxurion >
+    public:
+        bool IsWarboardSpell(uint32 spellId)
+        {
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+
+            for (int i = 0; i < 3; i++)
+            {
+                if (spellInfo->GetEffect(i)->Effect == SPELL_EFFECT_QUEST_START && spellId > 257809 && spellId < 258608)
+                    return true;
+            }
+
+            return false;
+        }
+    // < Fluxurion
 };
 
 namespace Trinity
 {
-    struct TC_GAME_API WorldObjectSpellTargetCheck
+    struct WorldObjectSpellTargetCheck
     {
         Unit* _caster;
         Unit* _referer;
@@ -786,7 +802,7 @@ namespace Trinity
         bool operator()(WorldObject* target);
     };
 
-    struct TC_GAME_API WorldObjectSpellNearbyTargetCheck : WorldObjectSpellTargetCheck
+    struct WorldObjectSpellNearbyTargetCheck : WorldObjectSpellTargetCheck
     {
         float _range;
         Position const* _position;
@@ -794,7 +810,7 @@ namespace Trinity
         bool operator()(WorldObject* target);
     };
 
-    struct TC_GAME_API WorldObjectSpellAreaTargetCheck : WorldObjectSpellTargetCheck
+    struct WorldObjectSpellAreaTargetCheck : WorldObjectSpellTargetCheck
     {
         float _range;
         Position const* _position;
@@ -803,7 +819,7 @@ namespace Trinity
         bool operator()(WorldObject* target);
     };
 
-    struct TC_GAME_API WorldObjectSpellBetweenTargetCheck : WorldObjectSpellAreaTargetCheck
+    struct WorldObjectSpellBetweenTargetCheck : WorldObjectSpellAreaTargetCheck
     {
         float _width, _range;
         Position const* _position;
@@ -811,14 +827,14 @@ namespace Trinity
         bool operator()(WorldObject* target);
     };
 
-    struct TC_GAME_API WorldObjectSpellConeTargetCheck : WorldObjectSpellAreaTargetCheck
+    struct WorldObjectSpellConeTargetCheck : WorldObjectSpellAreaTargetCheck
     {
         float _coneAngle;
         WorldObjectSpellConeTargetCheck(float coneAngle, float range, Unit* caster, SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionList* condList);
         bool operator()(WorldObject* target);
     };
 
-    struct TC_GAME_API WorldObjectSpellTrajTargetCheck : WorldObjectSpellAreaTargetCheck
+    struct WorldObjectSpellTrajTargetCheck : WorldObjectSpellAreaTargetCheck
     {
         WorldObjectSpellTrajTargetCheck(float range, Position const* position, Unit* caster, SpellInfo const* spellInfo);
         bool operator()(WorldObject* target);
@@ -827,7 +843,7 @@ namespace Trinity
 
 typedef void(Spell::*pEffect)(SpellEffIndex effIndex);
 
-class TC_GAME_API SpellEvent : public BasicEvent
+class SpellEvent : public BasicEvent
 {
     public:
         SpellEvent(Spell* spell);

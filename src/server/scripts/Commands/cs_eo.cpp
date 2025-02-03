@@ -15,13 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-Name: eo_commandscript
-%Complete: 100
-Comment: All npc related commands
-Category: commandscripts
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "ObjectMgr.h"
 #include "Chat.h"
@@ -138,7 +131,7 @@ public:
 
         Player* player = handler->GetSession()->GetPlayer();
 
-        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_EVENTOBJECT_NEAREST);
+        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_EVENTOBJECT_NEAREST);
         stmt->setFloat(0, player->GetPositionX());
         stmt->setFloat(1, player->GetPositionY());
         stmt->setFloat(2, player->GetPositionZ());

@@ -688,7 +688,7 @@ template<class T> class DB2Storage;
 struct ItemEffectEntry;
 struct ChrSpecializationEntry;
 
-struct TC_GAME_API ItemTemplate
+struct ItemTemplate
 {
     ItemEntry const* BasicData;
     ItemSparseEntry const* ExtendedData;
@@ -728,6 +728,7 @@ struct TC_GAME_API ItemTemplate
     int32 GetItemRandomSuffixGroupID() const { return ExtendedData->ItemRandomSuffixGroupID; }
     uint32 GetSpellWeightCategory() const { return ExtendedData->SpellWeightCategory; }
     uint32 GetSpellWeight() const { return ExtendedData->SpellWeight; }
+    uint32 GetBuyCount() const { return std::max<uint32>(ExtendedData->VendorStackCount, 1u); }
     int32 GetBuyPrice() const { return ExtendedData->BuyPrice; }
     uint32 GetSellPrice() const { return ExtendedData->SellPrice; }
     uint32 GetItemNameDescriptionID() const { return ExtendedData->ItemNameDescriptionID; }
@@ -806,8 +807,7 @@ struct TC_GAME_API ItemTemplate
 
     uint32 GetArmor(uint32 itemLevel) const;
     void GetDamage(uint32 itemLevel, float& minDamage, float& maxDamage) const;
-    bool IsUsableByLootSpecialization(Player const* player, bool alwaysAllowBoundToAccount) const;
-    bool IsUsableBySpecialization(uint32 spec, uint32 level, bool alwaysAllowBoundToAccount) const;
+    bool IsUsableBySpecialization(uint32 specId, uint8 level) const;
     static std::size_t CalculateItemSpecBit(ChrSpecializationEntry const* spec);
 
     bool HasStats() const;

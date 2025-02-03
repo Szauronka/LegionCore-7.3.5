@@ -321,7 +321,7 @@ public:
             Map::PlayerList const &players = me->GetMap()->GetPlayers();
             for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 if (Player* player = itr->getSource()->ToPlayer())
-                    if (!player->isGameMaster() && player->IsAlive())
+                    if (!player->isGameMaster() && player->isAlive())
                         PlayerSelect.push_back(player);
 
             if (PlayerSelect.empty())

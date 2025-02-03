@@ -1,11 +1,12 @@
 /*
+    http://uwow.biz
     Dungeon : Black Rook Hold Dungeon 100-110
 */
 
 #ifndef BLACK_ROOK_HOLD_DUNGEON_H_
 #define BLACK_ROOK_HOLD_DUNGEON_H_
 
-#define DataHeader "BRH"
+#include "ScriptMgr.h"
 
 enum eData
 {

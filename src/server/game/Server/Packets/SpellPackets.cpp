@@ -59,8 +59,8 @@ namespace WorldPackets
             TargetLevel = target->getLevel();
             Expansion = creatureTemplate->RequiredExpansion;
             Class = creatureTemplate->unit_class;
-            TargetMinScalingLevel = creatureTemplate->levelScaling->MinLevel;
-            TargetMaxScalingLevel = creatureTemplate->levelScaling->MaxLevel;
+            TargetMinScalingLevel = creatureTemplate->ScaleLevelMin;
+            TargetMaxScalingLevel = creatureTemplate->ScaleLevelMax;
             TargetScalingLevelDelta = int8(attacker->GetInt32Value(UNIT_FIELD_SCALING_LEVEL_DELTA));
             return true;
         }
@@ -78,8 +78,8 @@ namespace WorldPackets
             TargetLevel = target->getLevel();
             Expansion = creatureTemplate->RequiredExpansion;
             Class = creatureTemplate->unit_class;
-            TargetMinScalingLevel = creatureTemplate->levelScaling->MinLevel;
-            TargetMaxScalingLevel = creatureTemplate->levelScaling->MaxLevel;
+            TargetMinScalingLevel = creatureTemplate->ScaleLevelMin;
+            TargetMaxScalingLevel = creatureTemplate->ScaleLevelMax;
             TargetScalingLevelDelta = int8(target->GetInt32Value(UNIT_FIELD_SCALING_LEVEL_DELTA));
             return true;
         }
@@ -97,8 +97,8 @@ namespace WorldPackets
             TargetLevel = target->getLevel();
             Expansion = creatureTemplate->RequiredExpansion;
             Class = creatureTemplate->unit_class;
-            TargetMinScalingLevel = creatureTemplate->levelScaling->MinLevel;
-            TargetMaxScalingLevel = creatureTemplate->levelScaling->MaxLevel;
+            TargetMinScalingLevel = creatureTemplate->ScaleLevelMin;
+            TargetMaxScalingLevel = creatureTemplate->ScaleLevelMax;
             TargetScalingLevelDelta = int8(attacker->GetInt32Value(UNIT_FIELD_SCALING_LEVEL_DELTA));
             return true;
         }
@@ -186,6 +186,7 @@ WorldPacket const* WorldPackets::Spells::UpdateActionButtons::Write()
 void WorldPackets::Spells::SetActionButton::Read()
 {
     _worldPacket >> Action;
+    _worldPacket >> Type;
     _worldPacket >> Index;
 }
 
@@ -207,13 +208,13 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::AuraDataInfo cons
     data << uint32(auraData.ActiveFlags);
     data << uint16(auraData.CastLevel);
     data << uint8(auraData.Applications);
-    data.WriteBit(auraData.CastUnit.has_value());
-    data.WriteBit(auraData.Duration.has_value());
-    data.WriteBit(auraData.Remaining.has_value());
-    data.WriteBit(auraData.TimeMod.has_value());
+    data.WriteBit(auraData.CastUnit.is_initialized());
+    data.WriteBit(auraData.Duration.is_initialized());
+    data.WriteBit(auraData.Remaining.is_initialized());
+    data.WriteBit(auraData.TimeMod.is_initialized());
     data.WriteBits(auraData.EstimatedPoints.size(), 6);
     data.WriteBits(auraData.Points.size(), 6);
-    data.WriteBit(auraData.SandboxScaling.has_value());
+    data.WriteBit(auraData.SandboxScaling.is_initialized());
     data.FlushBits();
 
     if (auraData.SandboxScaling)
@@ -243,7 +244,7 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::AuraDataInfo cons
 ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::AuraInfo const& aura)
 {
     data << aura.Slot;
-    data.WriteBit(aura.AuraData.has_value());
+    data.WriteBit(aura.AuraData.is_initialized());
     data.FlushBits();
 
     if (aura.AuraData)
@@ -278,7 +279,7 @@ ByteBuffer& operator>>(ByteBuffer& buffer, WorldPackets::Spells::TargetLocation&
 
 ByteBuffer& operator>>(ByteBuffer& buffer, Optional<WorldPackets::Spells::TargetLocation>& location)
 {
-    location.emplace();
+    location = boost::in_place();
     buffer >> location->Transport;
     buffer >> location->Location.m_positionX;
     buffer >> location->Location.m_positionY;
@@ -394,10 +395,10 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::TargetLocation co
 ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellTargetData const& spellTargetData)
 {
     data.WriteBits(spellTargetData.Flags, 25);
-    data.WriteBit(spellTargetData.SrcLocation.has_value());
-    data.WriteBit(spellTargetData.DstLocation.has_value());
-    data.WriteBit(spellTargetData.Orientation.has_value());
-    data.WriteBit(spellTargetData.MapID.has_value());
+    data.WriteBit(spellTargetData.SrcLocation.is_initialized());
+    data.WriteBit(spellTargetData.DstLocation.is_initialized());
+    data.WriteBit(spellTargetData.Orientation.is_initialized());
+    data.WriteBit(spellTargetData.MapID.is_initialized());
     data.WriteBits(spellTargetData.Name.size(), 7);
     data.FlushBits();
 
@@ -486,7 +487,7 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellCastData con
 {
     data << spellCastData.CasterGUID;
     data << spellCastData.CasterUnit;
-    data << spellCastData.CastGuid;
+	data << spellCastData.CastGuid;
     data << spellCastData.CastGuid2;
 
     data << int32(spellCastData.SpellID);
@@ -503,7 +504,7 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellCastData con
     data.WriteBits(spellCastData.MissTargets.size(), 16);
     data.WriteBits(spellCastData.MissStatus.size(), 16);
     data.WriteBits(spellCastData.RemainingPower.size(), 9);
-    data.WriteBit(spellCastData.RemainingRunes.has_value());
+    data.WriteBit(spellCastData.RemainingRunes.is_initialized());
     data.WriteBits(spellCastData.TargetPoints.size(), 16);
     data.FlushBits();
 
@@ -759,8 +760,8 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Spells::SpellHistoryEntry
 
     data << float(historyEntry.ModRate);
 
-    data.WriteBit(historyEntry.unused622_1.has_value());
-    data.WriteBit(historyEntry.unused622_2.has_value());
+    data.WriteBit(historyEntry.unused622_1.is_initialized());
+    data.WriteBit(historyEntry.unused622_2.is_initialized());
     data.WriteBit(historyEntry.OnHold);
     data.FlushBits();
 
@@ -894,8 +895,8 @@ WorldPacket const* WorldPackets::Spells::SpellChannelStart::Write()
     _worldPacket << int32(SpellID);
     _worldPacket << int32(SpellXSpellVisualID);
     _worldPacket << uint32(ChannelDuration);
-    _worldPacket.WriteBit(InterruptImmunities.has_value());
-    _worldPacket.WriteBit(HealPrediction.has_value());
+    _worldPacket.WriteBit(InterruptImmunities.is_initialized());
+    _worldPacket.WriteBit(HealPrediction.is_initialized());
     _worldPacket.FlushBits();
 
     if (InterruptImmunities)
@@ -1026,9 +1027,9 @@ WorldPacket const* WorldPackets::Spells::PlaySpellVisual::Write()
 WorldPacket const* WorldPackets::Spells::PlaySpellVisualKit::Write()
 {
     _worldPacket << Unit;
-    _worldPacket << KitRecID;
     _worldPacket << KitType;
-    _worldPacket << Duration;
+    _worldPacket << KitRecID;
+	_worldPacket << Duration;
 
     return &_worldPacket;
 }
@@ -1065,7 +1066,7 @@ WorldPacket const* WorldPackets::Spells::ResumeCastBar::Write()
     _worldPacket << SpellXSpellVisualID;
     _worldPacket << TimeRemaining;
     _worldPacket << TotalTime;
-    _worldPacket.WriteBit(Immunities.has_value());
+    _worldPacket.WriteBit(Immunities.is_initialized());
     if (Immunities)
         _worldPacket << *Immunities;
 
@@ -1157,8 +1158,8 @@ ByteBuffer& operator<<(ByteBuffer& data, AreaTriggerSpline const& triggerSplineD
 ByteBuffer& operator<<(ByteBuffer& data, AreaTriggerCircle const& triggerCircleData)
 {
     data.FlushBits();
-    data.WriteBit(triggerCircleData.PathTarget.has_value());
-    data.WriteBit(triggerCircleData.Center.has_value());
+    data.WriteBit(triggerCircleData.PathTarget.is_initialized());
+    data.WriteBit(triggerCircleData.Center.is_initialized());
     data.WriteBit(triggerCircleData.CounterClockwise);
     data.WriteBit(triggerCircleData.CanLoop);
 
@@ -1207,8 +1208,8 @@ WorldPacket const* WorldPackets::Spells::AreaTriggerReShape::Write()
 {
     _worldPacket << TriggerGUID;
     _worldPacket.FlushBits();
-    _worldPacket.WriteBit(Spline.has_value());
-    _worldPacket.WriteBit(Circle.has_value());
+    _worldPacket.WriteBit(Spline.is_initialized());
+    _worldPacket.WriteBit(Circle.is_initialized());
 
     if (Spline)
         _worldPacket << *Spline;
@@ -1290,8 +1291,8 @@ WorldPacket const* WorldPackets::Spells::SpellDispellLog::Write()
     {
         _worldPacket << x.SpellID;
         _worldPacket.WriteBit(x.IsHarmful);
-        _worldPacket.WriteBit(x.Rolled.has_value());
-        _worldPacket.WriteBit(x.Needed.has_value());
+        _worldPacket.WriteBit(x.Rolled.is_initialized());
+        _worldPacket.WriteBit(x.Needed.is_initialized());
         _worldPacket.FlushBits();
         if (x.Rolled)
             _worldPacket << *x.Rolled;
@@ -1311,7 +1312,7 @@ WorldPacket const* WorldPackets::Spells::SpellAbsorbLog::Write()
     _worldPacket << ShieldTargetGUID;
     _worldPacket << Absorbed;
     _worldPacket.FlushBits();
-    if (_worldPacket.WriteBit(LogData.has_value()))
+    if (_worldPacket.WriteBit(LogData.is_initialized()))
         _worldPacket << *LogData;
 
     return &_worldPacket;
@@ -1363,7 +1364,7 @@ void WorldPackets::Spells::UpdateMissileTrajectory::Read()
     _worldPacket.ResetBitPos();
     if (hasStatus)
     {
-        Status.emplace();
+        Status = boost::in_place();
         _worldPacket >> *Status;
     }
 }

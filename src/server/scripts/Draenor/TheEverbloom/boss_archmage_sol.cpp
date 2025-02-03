@@ -1,9 +1,13 @@
 /*
+    http://epicwow.com/
     Dungeon : The Everbloom 100
     Encounter: Archmage Sol
 */
 
 #include "the_everbloom.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
 
 enum Says
 {
@@ -207,7 +211,7 @@ struct boss_archmage_sol : public BossAI
                 float range = float(urand(10, 30));
                 float ang = float(urand(0, 5));
                 Position pos;
-                pos = me->GetNearPosition(range, ang);
+                me->GetNearPosition(pos, range, ang);
                 me->SummonCreature(NPC_FROZEN_RAIN, pos);
                 events.RescheduleEvent(EVENT_FROZEN_RAIN, 10000, 0, PHASE_FROST);
                 break;

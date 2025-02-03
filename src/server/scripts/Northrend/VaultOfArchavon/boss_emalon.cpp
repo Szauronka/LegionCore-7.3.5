@@ -104,7 +104,7 @@ class boss_emalon : public CreatureScript
                     for (GuidList::const_iterator itr = summons.begin(); itr != summons.end(); ++itr)
                     {
                         Creature* minion = Unit::GetCreature(*me, *itr);
-                        if (minion && minion->IsAlive() && !minion->getVictim() && minion->AI())
+                        if (minion && minion->isAlive() && !minion->getVictim() && minion->AI())
                             minion->AI()->AttackStart(who);
                     }
                 }
@@ -144,7 +144,7 @@ class boss_emalon : public CreatureScript
                             if (!summons.empty())
                             {
                                 Creature* minion = Unit::GetCreature(*me, Trinity::Containers::SelectRandomContainerElement(summons));
-                                if (minion && minion->IsAlive())
+                                if (minion && minion->isAlive())
                                 {
                                     minion->CastSpell(me, SPELL_OVERCHARGED, true);
                                     minion->SetFullHealth();
@@ -197,7 +197,7 @@ class npc_tempest_minion : public CreatureScript
             {
                 if (Creature* emalon = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_EMALON)))
                 {
-                    if (emalon->IsAlive())
+                    if (emalon->isAlive())
                     {
                         emalon->SummonCreature(NPC_TEMPEST_MINION, 0, 0, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
                         Talk(EMOTE_MINION_RESPAWN);

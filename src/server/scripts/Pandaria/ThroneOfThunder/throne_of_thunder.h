@@ -1,10 +1,8 @@
-
+//UWoWCore
 //Throne of Thunder
 
 #ifndef THRONEOFTHUNDER
 #define THRONEOFTHUNDER
-
-#define DataHeader "TOT"
 
 enum eData
 {

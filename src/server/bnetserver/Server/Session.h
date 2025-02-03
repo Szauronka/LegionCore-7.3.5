@@ -89,13 +89,28 @@ namespace Battlenet
             uint32 LastPlayedTime;
         };
 
+        struct GameAccountInfo
+        {
+            void LoadResult(Field* fields);
+
+            uint32 Id;
+            std::string Name;
+            std::string DisplayName;
+            uint32 UnbanDate;
+            bool IsSuspended;
+            bool IsBanned;
+            AccountTypes SecurityLevel;
+
+            std::unordered_map<uint32 /*realmAddress*/, uint8> CharacterCounts;
+            std::unordered_map<std::string /*subRegion*/, LastPlayedCharacterInfo> LastPlayedCharacters;
+        };
+
         struct AccountInfo
         {
             void LoadResult(PreparedQueryResult result);
 
             uint32 Id;
             std::string Login;
-            std::string DisplayName;
             bool IsLockedToIP;
             std::string LockCountry;
             std::string LastIP;
@@ -104,11 +119,8 @@ namespace Battlenet
             bool IsBanned;
             uint8 IsActivated;
             uint32 Pid;
-            uint32 UnbanDate;
-            AccountTypes SecurityLevel;
 
-            std::unordered_map<uint32 /*realmAddress*/, uint8> CharacterCounts;
-            std::unordered_map<std::string /*subRegion*/, LastPlayedCharacterInfo> LastPlayedCharacters;
+            std::unordered_map<uint32, GameAccountInfo> GameAccounts;
         };
 
         explicit Session(tcp::socket&& socket);
@@ -118,6 +130,7 @@ namespace Battlenet
         bool Update() override;
 
         uint32 GetAccountId() const;
+        uint32 GetGameAccountId() const;
 
         void SendResponse(uint32 token, pb::Message const* response);
         void SendResponse(uint32 token, uint32 status);
@@ -159,6 +172,7 @@ namespace Battlenet
         MessageBuffer _packetBuffer;
 
         std::unique_ptr<AccountInfo> _accountInfo;
+        GameAccountInfo* _gameAccountInfo;          // Points at selected game account (inside _gameAccounts)
 
         std::string _locale;
         std::string _os;

@@ -23,7 +23,7 @@
 
 class Creature;
 
-class TC_GAME_API GuardAI : public ScriptedAI
+class GuardAI : public ScriptedAI
 {
     public:
         explicit GuardAI(Creature* creature);

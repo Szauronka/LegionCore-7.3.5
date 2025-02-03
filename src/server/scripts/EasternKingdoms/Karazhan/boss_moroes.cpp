@@ -206,7 +206,7 @@ public:
                 if (AddGUID[i])
                 {
                     Creature* temp = Creature::GetCreature((*me), AddGUID[i]);
-                    if (temp && temp->IsAlive())
+                    if (temp && temp->isAlive())
                         temp->DisappearAndDie();
                 }
             }
@@ -219,7 +219,7 @@ public:
                 if (AddGUID[i])
                 {
                     Creature* temp = Creature::GetCreature((*me), AddGUID[i]);
-                    if (temp && temp->IsAlive())
+                    if (temp && temp->isAlive())
                     {
                         temp->AI()->AttackStart(me->getVictim());
                         DoZoneInCombat(temp);
@@ -254,7 +254,7 @@ public:
                     if (AddGUID[i])
                     {
                         Creature* temp = Unit::GetCreature((*me), AddGUID[i]);
-                        if (temp && temp->IsAlive())
+                        if (temp && temp->isAlive())
                             if (!temp->getVictim())
                                 temp->AI()->AttackStart(me->getVictim());
                     }
@@ -363,7 +363,7 @@ struct boss_moroes_guestAI : public ScriptedAI
         if (TempGUID)
         {
             Unit* unit = Unit::GetUnit(*me, TempGUID);
-            if (unit && unit->IsAlive())
+            if (unit && unit->isAlive())
                 return unit;
         }
 
@@ -457,7 +457,7 @@ public:
             if (ManaBurn_Timer <= diff)
             {
                 if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                    if (target->GetPowerType() == POWER_MANA)
+                    if (target->getPowerType() == POWER_MANA)
                         DoCast(target, SPELL_MANABURN, false);
 
                 ManaBurn_Timer = 5000;                          // 3 sec cast

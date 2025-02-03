@@ -1,4 +1,4 @@
-#include "ScriptPCH.h"
+#include "PrecompiledHeaders/ScriptPCH.h"
 #include <ScriptMgr.h>
 #include "GameEventMgr.h"
 #include "Player.h"
@@ -68,7 +68,7 @@ public:
                             continue;
                         }
 
-                        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ITEM_INFO);
+                        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ITEM_INFO);
                         stmt->setUInt64(0, ArtIt.first.GetGUIDLow());
 
                         if (PreparedQueryResult artifactsResult = CharacterDatabase.Query(stmt))
@@ -88,7 +88,7 @@ public:
                             {
                                 item->FSetState(ITEM_REMOVED);
 
-                                CharacterDatabaseTransaction temp = CharacterDatabaseTransaction(NULL);
+                                SQLTransaction temp = SQLTransaction(NULL);
                                 item->SaveToDB(temp);                               // it also deletes item object !
                             }
                         }
@@ -100,6 +100,65 @@ public:
                     else
                         ChatHandler(player).PSendSysMessage("Notification: Your artifact with entry %d is waiting for you by mail! ", ArtIt.second);
                 }
+            }
+        });
+    }
+};
+
+class player_informated_about_rates : public PlayerScript
+{
+public:
+    player_informated_about_rates() : PlayerScript("player_informated_about_rates") {}
+
+    void OnLogin(Player* player) override
+    {
+        if (!sWorld->getRate(RATE_XP_CHANGE_MAX) || !sWorld->getRate(RATE_XP_CHANGE_STEP))
+            return;
+        
+        if (sWorld->getBoolConfig(CONFIG_FUN_OPTION_ENABLED))
+            return;
+        
+        player->AddDelayedEvent(10000, [player] () -> void
+        {
+            if (!player)
+                return;
+            
+            if (Creature* announcer = player->FindNearestCreature(230007, 30.0f, true))
+                announcer->AI()->Talk(0, player->GetGUID());
+        });
+            
+    }
+};
+
+class player_fun_welcome_info : public PlayerScript
+{
+public:
+    player_fun_welcome_info() : PlayerScript("player_fun_welcome_info") {}
+
+    void OnLogin(Player* player, bool firstLogin) override
+    {
+        if (!sWorld->getBoolConfig(CONFIG_FUN_OPTION_ENABLED) || !firstLogin)
+            return;
+        
+        player->AddDelayedEvent(5000, [player] () -> void
+        {
+            if (!player)
+                return;
+        
+            if (Creature* announcer = player->SummonCreature(230008, player->GetPositionX() + irand(-7, 7), player->GetPositionY() + irand(-7, 7), player->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 63000, player->GetGUID()))
+            {
+                // announcer->AddPlayerInPersonnalVisibilityList(player->GetGUID());
+                announcer->CastSpell(announcer, 70618);
+                announcer->AddDelayedEvent(2000, [announcer] () -> void
+                {
+                    if (Unit* owner = announcer->GetAnyOwner())
+                        announcer->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, owner->GetFollowAngle());
+                });
+                announcer->AddDelayedEvent(60000, [announcer] () -> void
+                {
+                    announcer->CastSpell(announcer, 70618);
+                    announcer->DespawnOrUnsummon(1500);
+                });
             }
         });
     }
@@ -121,7 +180,7 @@ public:
 
             MailSender sender(MAIL_NORMAL, player->GetGUIDLow(), MAIL_STATIONERY_GM);
             
-            CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+            SQLTransaction trans = CharacterDatabase.BeginTransaction();
             MailDraft("Nightmarish Hitching Post", "Thank you for your purchase!").AddItem(pItem).SendMailTo(trans, MailReceiver(player, player->GetGUIDLow()), sender);
 
             CharacterDatabase.CommitTransaction(trans);
@@ -509,11 +568,11 @@ public:
         
         if (penaltyTime > 0)
         {
-            LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_MUTE_TIME);
+            PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_MUTE_TIME);
 
             uint32 notSpeakTime = penaltyTime;
 
-            int64 muteTime = GameTime::GetGameTime() + notSpeakTime * MINUTE;
+            int64 muteTime = time(NULL) + notSpeakTime * MINUTE;
             player->GetSession()->m_muteTime = muteTime;
             stmt->setInt64(0, muteTime);
             ChatHandler(player).PSendSysMessage(LANG_YOUR_CHAT_DISABLED, notSpeakTime, reasonStr.str().c_str());
@@ -598,7 +657,7 @@ public:
         auto itr = timers.find(player->GetGUID());
 
         if (itr != timers.end())
-            if (GameTime::GetGameTime() - (*itr).second< 1)
+            if (time(NULL) - (*itr).second< 1)
                 return;
 
         if (player->isBeingLoaded() || player->IsBeingTeleported())
@@ -607,7 +666,7 @@ public:
         if (player->GetMapId() != 1669)
             return;
 
-        timers[player->GetGUID()] = GameTime::GetGameTime();
+        timers[player->GetGUID()] = time(NULL);
         for (const auto pos : windikarPos)
             if (player->GetDistance2d(pos.GetPositionX(), pos.GetPositionY()) <= 90.0f)
             {
@@ -624,10 +683,11 @@ class player_level_rewards : public PlayerScript
 public:
     player_level_rewards() : PlayerScript("player_level_rewards") { }
 
-    void OnLevelChanged(Player* player, uint8 oldLevel) override
+    void OnLevelChanged(Player* player, uint8 newLevel) override
     {
-        if (oldLevel == 109)
+        switch (newLevel)
         {
+        case 110:
             switch (player->getRace())
             {
             case RACE_VOID_ELF:
@@ -642,9 +702,8 @@ public:
             case RACE_HIGHMOUNTAIN_TAUREN:
                 AddQuestPlayer(player, 49783);
                 break;
-            default:
-                break;
             }
+            break;
         }
     }
 
@@ -941,7 +1000,7 @@ public:
 
         MailSender sender(MAIL_NORMAL, player->GetGUIDLow(), MAIL_STATIONERY_GM);
 
-        CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
         MailDraft(sObjectMgr->GetTrinityString(20091, LocaleConstant(1)), sObjectMgr->GetTrinityString(20091, LocaleConstant(0))).AddMoney(111100).SendMailTo(trans, MailReceiver(player, player->GetGUIDLow()), sender);
 
         CharacterDatabase.CommitTransaction(trans);
@@ -1014,10 +1073,49 @@ public:
     }
 };
 
+class quest_silithius_110 : public PlayerScript
+{
+public:
+    quest_silithius_110() : PlayerScript("quest_silithius_110") {}
+
+
+    void OnUpdate(Player* player, uint32 diff) override
+    {
+        if ((player->GetQuestStatus(49982) == QUEST_STATUS_INCOMPLETE) || (player->GetQuestStatus(49982) == QUEST_STATUS_COMPLETE) || (player->GetQuestStatus(49981) == QUEST_STATUS_COMPLETE) || (player->GetQuestStatus(49981) == QUEST_STATUS_INCOMPLETE) || (player->GetQuestStatus(49981) == QUEST_STATUS_REWARDED) || (player->GetQuestStatus(49982) == QUEST_STATUS_REWARDED))
+        {
+            if (!player->HasAura(255152))
+            {
+                if (player->GetMapId() == 1 && player->GetCurrentZoneID() == 1377)
+                {
+                    player->TeleportTo(1817, -6467.526f, -219.9097f, 5.90872f, 2.209932f);
+                    
+                }
+            }
+        }
+        if ((player->GetQuestStatus(50056) == QUEST_STATUS_COMPLETE))
+            if (player->GetTeam() == ALLIANCE)
+                    if (player->GetDistance(-7536.31f, 1774.1f, 1062.08f) >= 20.0f)
+                    {
+                        player->TeleportTo(1817, -7536.31f, 1774.1f, 1062.08f, 2.161f);
+
+                    }
+        if ((player->GetQuestStatus(50300) == QUEST_STATUS_COMPLETE))
+            if (player->GetTeam() == HORDE)
+                if (player->GetDistance(-7544.08f, 1778.5f, 1007.86f) >= 20.0f)
+                {
+                    player->TeleportTo(1817, -7544.08f, 1778.5f, 1007.86f, 5.383f);
+
+                }
+    }
+};
+
+
 void AddSC_player_special_scripts()
 {
     new playerScriptPvpMisc();
     new playerScriptCheckArts();
+    new player_informated_about_rates();
+    new player_fun_welcome_info();
     new player_learn_warforge();
     new System_Flood_And_RSP();
     new player_teleport_windikar();
@@ -1030,5 +1128,6 @@ void AddSC_player_special_scripts()
     new player_heirloom_achieve_check();
     new player_chineese_event();
     new player_clear_timed_titles();
+	new quest_silithius_110();
     new player_invisible_status_mod_map_handler();
 };

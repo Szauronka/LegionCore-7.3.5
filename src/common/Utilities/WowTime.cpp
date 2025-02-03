@@ -28,6 +28,14 @@ uint32 WowTime::Encode()
     return uint32((Minute & 63) | ((Hour & 31) << 6) | ((WeekDay & 7) << 11) | ((MonthDay & 63) << 14) | ((Month & 15) << 20) | ((Year & 31) << 24) | ((Unk1 & 3) << 29));
 }
 
+uint32 WowTime::Encode(time_t time)
+{
+    WowTime wTime;
+    wTime.SetUTCTimeFromPosixTime(time);
+
+    return wTime.Encode();
+}
+
 void WowTime::Decode(uint32 encodedTime)
 {
     int temp = encodedTime & 0x3F;
@@ -197,7 +205,7 @@ void WowTime::AddHolidayDuration(int32 duration)
         oldTotalMinutes = (Globals::InMinutes::Hour * Hour) + Minute;
 
     duration %= Globals::InMinutes::Day + Minute + Globals::InMinutes::Hour * Hour;
-    int64 newTotalMinute = duration - Globals::InMinutes::Day * (((((-1240768329 * int64(duration)) >> 32) + duration) >> 31) + ((((-1240768329 * int64(duration)) >> 32) + duration) >> 10));
+    int64 newTotalMinute = duration - Globals::InMinutes::Day * (((((-1240768329 * duration) >> 32) + duration) >> 31) + ((((-1240768329 * duration) >> 32) + duration) >> 10));
 
     if (newTotalMinute != oldTotalMinutes)
     {

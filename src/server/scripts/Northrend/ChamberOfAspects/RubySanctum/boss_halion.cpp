@@ -351,11 +351,11 @@ class boss_halion : public CreatureScript
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
 
                 if (Creature* twilightHalion = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_TWILIGHT_HALION)))
-                    if (twilightHalion->IsAlive())
+                    if (twilightHalion->isAlive())
                         twilightHalion->Kill(twilightHalion);
 
                 if (Creature* controller = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_HALION_CONTROLLER)))
-                    if (controller->IsAlive())
+                    if (controller->isAlive())
                         controller->Kill(controller);
             }
 
@@ -410,7 +410,7 @@ class boss_halion : public CreatureScript
                     {
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true, -SPELL_TWILIGHT_REALM))
                         {
-                            _meteorStrikePos = target->GetPosition();
+                            target->GetPosition(&_meteorStrikePos);
                             me->CastSpell(_meteorStrikePos.GetPositionX(), _meteorStrikePos.GetPositionY(), _meteorStrikePos.GetPositionZ(), SPELL_METEOR_STRIKE, true, NULL, NULL, me->GetGUID());
                             Talk(SAY_METEOR_STRIKE);
                         }
@@ -509,12 +509,12 @@ class boss_twilight_halion : public CreatureScript
                     if (me->IsDamageEnoughForLootingAndReward())
                         halion->LowerPlayerDamageReq(halion->GetMaxHealth());
 
-                    if (halion->IsAlive())
+                    if (halion->isAlive())
                         killer->Kill(halion);
                 }
 
                 if (Creature* controller = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_HALION_CONTROLLER)))
-                    if (controller->IsAlive())
+                    if (controller->isAlive())
                         controller->Kill(controller);
 
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
@@ -1018,7 +1018,7 @@ class npc_meteor_strike_initial : public CreatureScript
                     {
                         angle[i] = Position::NormalizeOrientation(angle[i]);
                         me->SetOrientation(angle[i]);
-                        newPos = me->GetNearPosition(10.0f, 0.0f); // Exact distance
+                        me->GetNearPosition(newPos, 10.0f, 0.0f); // Exact distance
                         if (Creature* meteor = me->SummonCreature(NPC_METEOR_STRIKE_NORTH + i, newPos, TEMPSUMMON_TIMED_DESPAWN, 30000))
                             _meteorList.push_back(meteor->GetGUID());
                     }
@@ -1080,7 +1080,8 @@ class npc_meteor_strike : public CreatureScript
 
                 if (_events.ExecuteEvent() == EVENT_SPAWN_METEOR_FLAME)
                 {
-                    Position pos = me->GetNearPosition(_range, 0.0f);
+                    Position pos;
+                    me->GetNearPosition(pos, _range, 0.0f);
 
                     if (Creature* flame = me->SummonCreature(NPC_METEOR_STRIKE_FLAME, pos, TEMPSUMMON_TIMED_DESPAWN, 25000))
                     {
@@ -1298,11 +1299,8 @@ class go_twilight_portal : public GameObjectScript
                 }
             }
 
-            bool GossipHello(Player* player, bool isUse) override
+            bool GossipHello(Player* player) override
             {
-                if (!isUse)
-                    return true;
-
                 if (_spellId != 0)
                     player->CastSpell(player, _spellId, true);
                 return true;
@@ -1498,7 +1496,8 @@ class spell_halion_damage_aoe_summon : public SpellScriptLoader
                 SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(uint32(GetSpellInfo()->Effects[effIndex]->MiscValueB));
                 uint32 duration = uint32(GetSpellInfo()->GetDuration());
 
-                Position pos = caster->GetPosition();
+                Position pos;
+                caster->GetPosition(&pos);
                 if (Creature* summon = caster->GetMap()->SummonCreature(entry, pos, properties, duration, caster, ObjectGuid::Empty, GetSpellInfo()->Id))
                     if (summon->IsAIEnabled)
                         summon->AI()->SetData(DATA_STACKS_DISPELLED, GetSpellValue()->EffectBasePoints[EFFECT_1]);

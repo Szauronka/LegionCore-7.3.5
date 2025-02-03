@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Dark Heart Thicket 100-110
     Encounter: Arch-druid glaidalis
     Normal: 100%, Heroic: 100%, Mythic: 100%
@@ -285,7 +286,7 @@ struct npc_glaidalis_nightmare_abomination : public ScriptedAI
                 if (!targetGUID.IsEmpty())
                 {
                     auto player = Player::GetPlayer(*me, targetGUID);
-                    if (!player || !player->IsAlive())
+                    if (!player || !player->isAlive())
                     {
                         targetGUID.Clear();
                         me->StopAttack(true, true);

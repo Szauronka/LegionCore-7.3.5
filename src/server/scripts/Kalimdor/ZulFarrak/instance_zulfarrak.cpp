@@ -100,7 +100,7 @@ public:
 
     struct instance_zulfarrak_InstanceMapScript : public InstanceScript
     {
-        instance_zulfarrak_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_zulfarrak_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint32 GahzRillaEncounter;
         ObjectGuid ZumrahGUID;
@@ -118,7 +118,6 @@ public:
 
         void Initialize()
         {
-            SetHeaders(DataHeader);
             GahzRillaEncounter = NOT_STARTED;
             ZumrahGUID.Clear();
             BlyGUID.Clear();
@@ -313,7 +312,7 @@ public:
         {
            if (Creature* npc = instance->GetCreature(GetGuidData(entry)))
            {
-               if (npc->IsAlive())
+               if (npc->isAlive())
                {
                     npc->SetWalk(true);
                     npc->GetMotionMaster()->MovePoint(1, x, y, z);
@@ -342,7 +341,7 @@ public:
             {
                 if (Creature* add = instance->GetCreature((*itr)))
                 {
-                    if (add->IsAlive())
+                    if (add->isAlive())
                         return false;
                 }
             }
@@ -350,7 +349,7 @@ public:
             {
                 if (Creature* add = instance->GetCreature(((*itr))))
                 {
-                    if (add->IsAlive())
+                    if (add->isAlive())
                         return false;
                 }
             }

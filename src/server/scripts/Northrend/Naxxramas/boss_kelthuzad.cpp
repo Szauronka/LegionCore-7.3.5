@@ -416,33 +416,38 @@ public:
 
             if (Phase == 1)
             {
-                while (uint32 eventId = events.ExecuteEvent())
+                while (uint32 eventId = events.GetEvent())
                 {
                     switch(eventId)
                     {
                         case EVENT_WASTE:
                             DoSummon(NPC_WASTE, Pos[RAND(0,3,6,9)], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
-                            events.Repeat(urand(2000,5000));
+                            events.RepeatEvent(urand(2000,5000));
                             break;
                         case EVENT_ABOMIN:
                             if (nAbomination < 8)
                             {
                                 DoSummon(NPC_ABOMINATION, Pos[RAND(1,4,7,10)], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
                                 nAbomination++;
-                                events.Repeat(20000);
+                                events.RepeatEvent(20000);
                             }
+                            else
+                                events.PopEvent();
                             break;
                         case EVENT_WEAVER:
                             if (nWeaver < 8)
                             {
                                 DoSummon(NPC_WEAVER, Pos[RAND(0,3,6,9)], 3000, TEMPSUMMON_CORPSE_TIMED_DESPAWN);
                                 nWeaver++;
-                                events.Repeat(25000);
+                                events.RepeatEvent(25000);
                             }
+                            else
+                                events.PopEvent();
                             break;
                         case EVENT_TRIGGER:
                             if (GameObject *pKTTrigger = me->GetMap()->GetGameObject(KTTriggerGUID))
                                 pKTTrigger->SetPhaseMask(2, true);
+                            events.PopEvent();
                             break;
                         case EVENT_PHASE:
                             events.Reset();
@@ -463,6 +468,7 @@ public:
                             Phase = 2;
                             break;
                         default:
+                            events.PopEvent();
                             break;
                     }
                 }
@@ -509,20 +515,21 @@ public:
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
-                if (uint32 eventId = events.ExecuteEvent())
+                if (uint32 eventId = events.GetEvent())
                 {
                     switch(eventId)
                     {
                         case EVENT_REQUEST_AID:
                             DoScriptText(SAY_ANSWER_REQUEST, me);
+                            events.PopEvent();
                             break;
                         case EVENT_BOLT:
                             DoCastVictim(RAID_MODE(SPELL_FROST_BOLT,H_SPELL_FROST_BOLT));
-                            events.Repeat(urand(5000,10000));
+                            events.RepeatEvent(urand(5000,10000));
                             break;
                         case EVENT_NOVA:
                             DoCastAOE(RAID_MODE(SPELL_FROST_BOLT_AOE,H_SPELL_FROST_BOLT_AOE));
-                            events.Repeat(urand(15000,30000));
+                            events.RepeatEvent(urand(15000,30000));
                             break;
                         case EVENT_CHAIN:
                         {
@@ -541,7 +548,7 @@ public:
                             }
                             if (!chained.empty())
                                 DoScriptText(RAND(SAY_CHAIN_1,SAY_CHAIN_2), me);
-                            events.Repeat(urand(100000,180000));
+                            events.RepeatEvent(urand(100000,180000));
                             break;
                         }
                         case EVENT_CHAINED_SPELL:
@@ -616,8 +623,10 @@ public:
                                 ++itr;
                             }
 
-                            if (!chained.empty())
-                                events.Repeat(5000);
+                            if (chained.empty())
+                                events.PopEvent();
+                            else
+                                events.RepeatEvent(5000);
 
                             break;
                         }
@@ -630,7 +639,7 @@ public:
                                 Unit * const target = (*itr)->getTarget();
 
                                 if (target->GetTypeId() == TYPEID_PLAYER
-                                        && target->GetPowerType() == POWER_MANA
+                                        && target->getPowerType() == POWER_MANA
                                         && target->GetPower(POWER_MANA))
                                 {
                                     unitList.push_back(target);
@@ -645,22 +654,23 @@ public:
                                 DoScriptText(RAND(SAY_SPECIAL_1,SAY_SPECIAL_2,SAY_SPECIAL_3), me);
                             }
 
-                            events.Repeat(urand(20000,50000));
+                            events.RepeatEvent(urand(20000,50000));
                             break;
                         }
                         case EVENT_FISSURE:
                             if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM,0))
                                 DoCast(pTarget, SPELL_SHADOW_FISURE);
-                            events.Repeat(urand(10000,45000));
+                            events.RepeatEvent(urand(10000,45000));
                             break;
                         case EVENT_BLAST:
                             if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, RAID_MODE(1,0), 0, true))
                                 DoCast(pTarget, SPELL_FROST_BLAST);
                             if (rand()%2)
                                 DoScriptText(SAY_FROST_BLAST, me);
-                            events.Repeat(urand(30000,90000));
+                            events.RepeatEvent(urand(30000,90000));
                             break;
                         default:
+                            events.PopEvent();
                             break;
                     }
                 }

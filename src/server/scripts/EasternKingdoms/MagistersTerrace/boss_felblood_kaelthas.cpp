@@ -222,7 +222,7 @@ public:
             for (i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
             {
                 Unit* unit = Unit::GetUnit(*me, (*i)->getUnitGuid());
-                if (unit && unit->IsAlive())
+                if (unit && unit->isAlive())
                 {
                     float threat = me->getThreatManager().getThreat(unit);
                     SummonedUnit->AddThreat(unit, threat);

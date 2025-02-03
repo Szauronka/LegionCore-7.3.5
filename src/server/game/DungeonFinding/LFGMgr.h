@@ -23,6 +23,7 @@
 #include "LFGQueue.h"
 #include "LFGGroupData.h"
 #include "LFGPlayerData.h"
+#include <unordered_map>
 #include "Packets/BattlegroundPackets.h"
 
 
@@ -311,7 +312,7 @@ struct LFGDungeonData
     bool seasonal;
 };
 
-class TC_GAME_API LFGMgr
+class LFGMgr
 {
     LFGMgr();
     ~LFGMgr();
@@ -369,6 +370,7 @@ public:
     void UpdateRoleCheck(ObjectGuid gguid, ObjectGuid guid = ObjectGuid::Empty, uint8 roles = PLAYER_ROLE_NONE, uint8 partyIndex = 0);
     void SetRoles(ObjectGuid guid, uint8 roles, uint32 queueId);
     void JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons);
+    void JoinLfg(Player* player, uint32 dungeonId, uint8 roles = PLAYER_ROLE_DAMAGE);
     void LeaveLfg(ObjectGuid guid, uint32 queueId = 0);
     WorldPackets::LFG::RideTicket const* GetTicket(ObjectGuid guid, uint32 queueId) const;
 
@@ -421,6 +423,10 @@ public:
 
     void InitiBattlgroundCheckRoles(Group* group, ObjectGuid playerGuid, uint32 queueid, uint8 roles, uint8 bgQueueTypeId, WorldPackets::Battleground::IgnorMapInfo ignormap, bool isSkirmish = false);
 
+    /// Toggle LFG in debug mode
+    void ToggleSoloLFG();
+    /// Check if debug mode
+    bool IsSoloLFG() const { return m_isSoloLFG; }
 
 private:
     void SetTicket(ObjectGuid guid, WorldPackets::LFG::RideTicket const& ticket, uint32 queueId);
@@ -461,15 +467,11 @@ private:
     DungeonSet GroupDungeons;
     std::recursive_mutex m_lock;
     bool m_Testing = false;
+    bool m_isSoloLFG = false;
 
     LfgCTARewardContainer CTARewardStore;              ///< Player selecter roles which were eligible for CTA reward when joining a queue
 };
 
-inline int32 format_as(LFGMgrEnum e) { return e; }
-inline int32 format_as(LfgProposalState e) { return e; }
-inline uint8 format_as(LfgTeleportError e) { return e; }
-inline int32 format_as(LfgJoinResult e) { return e; }
-inline int32 format_as(LfgRoleCheckState e) { return e; }
 } // namespace lfg
 
 #define sLFGMgr lfg::LFGMgr::instance()

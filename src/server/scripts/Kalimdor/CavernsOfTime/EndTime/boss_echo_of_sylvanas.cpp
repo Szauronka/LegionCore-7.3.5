@@ -400,7 +400,7 @@ class spell_echo_of_sylvanas_wracking_pain_dmg : public SpellScriptLoader
 
             void FilterTargets(std::list<WorldObject*>& targets)
             {
-                if (!GetCaster() || !GetCaster()->IsAlive())
+                if (!GetCaster() || !GetCaster()->isAlive())
                 {
                     targets.clear();
                     return;
@@ -415,7 +415,7 @@ class spell_echo_of_sylvanas_wracking_pain_dmg : public SpellScriptLoader
                 ObjectGuid _guid = GetCaster()->GetAI()->GetGUID(DATA_GUID);
                 if (auto pTarget = ObjectAccessor::GetCreature(*GetCaster(), _guid))
                 {
-                    if (pTarget->IsAlive())
+                    if (pTarget->isAlive())
                         targets.remove_if(WrackingPainTargetSelector(GetCaster(), pTarget));
                     else
                         targets.clear();

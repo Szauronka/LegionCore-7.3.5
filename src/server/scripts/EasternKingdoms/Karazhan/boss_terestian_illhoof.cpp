@@ -104,7 +104,7 @@ public:
                 if (TerestianGUID)
                 {
                     Unit* Terestian = Unit::GetUnit(*me, TerestianGUID);
-                    if (Terestian && Terestian->IsAlive())
+                    if (Terestian && Terestian->isAlive())
                         DoCast(Terestian, SPELL_BROKEN_PACT, true);
                 }
             }
@@ -318,7 +318,7 @@ public:
 
             if (Minion* Kilrek = me->GetFirstMinion())
             {
-                if (!Kilrek->IsAlive())
+                if (!Kilrek->isAlive())
                 {
                     Kilrek->UnSummon();
                     DoCast(me, SPELL_SUMMON_IMP, true);
@@ -380,7 +380,7 @@ public:
             if (SacrificeTimer <= diff)
             {
                 Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true);
-                if (target && target->IsAlive())
+                if (target && target->isAlive())
                 {
                     DoCast(target, SPELL_SACRIFICE, true);
                     DoCast(target, SPELL_SUMMON_DEMONCHAINS, true);

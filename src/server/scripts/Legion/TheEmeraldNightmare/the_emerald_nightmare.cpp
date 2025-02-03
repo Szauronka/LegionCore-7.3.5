@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "the_emerald_nightmare.h"
 #include "QuestData.h"
 

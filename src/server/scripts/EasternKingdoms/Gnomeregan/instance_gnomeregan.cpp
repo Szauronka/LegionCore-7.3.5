@@ -33,9 +33,8 @@ public:
 
     struct instance_gnomeregan_InstanceMapScript : public InstanceScript
     {
-        instance_gnomeregan_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_gnomeregan_InstanceMapScript(Map* map) : InstanceScript(map)
         {
-            SetHeaders(DataHeader);
         }
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];

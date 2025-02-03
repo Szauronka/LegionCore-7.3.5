@@ -19,8 +19,6 @@
 #define DEF_ULDUAR_H
 
 #include "ObjectMgr.h"
-
-#define DataHeader "UD"
 #define UlduarScriptName "instance_ulduar"
 
 enum Encounter

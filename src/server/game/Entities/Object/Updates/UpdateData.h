@@ -52,7 +52,7 @@ enum OBJECT_UPDATE_FLAGS
 
 class Player;
 
-class TC_GAME_API UpdateData
+class UpdateData
 {
     public:
         UpdateData(uint16 map);

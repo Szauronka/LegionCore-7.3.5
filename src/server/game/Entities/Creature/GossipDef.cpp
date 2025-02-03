@@ -39,9 +39,11 @@ GossipMenu::~GossipMenu()
     ClearMenu();
 }
 
-void GossipMenu::AddMenuItem(int32 menuItemId, GossipOptionNpc optionNpc, std::string const& message, uint32 sender, uint32 action, std::string const& boxMessage, uint32 boxMoney, bool coded /*= false*/)
+void GossipMenu::AddMenuItem(int32 menuItemId, uint8 icon, std::string const& message, uint32 sender, uint32 action, std::string const& boxMessage, uint32 boxMoney, uint32 boxCurrency, bool coded /*= false*/)
 {
-    ASSERT(_menuItems.size() <= GOSSIP_MAX_MENU_ITEMS);
+    if (!this || _menuItems.size() > GOSSIP_MAX_MENU_ITEMS)
+        return;
+    //ASSERT(_menuItems.size() <= GOSSIP_MAX_MENU_ITEMS);
 
     // Find a free new id - script case
     if (menuItemId == -1)
@@ -61,13 +63,15 @@ void GossipMenu::AddMenuItem(int32 menuItemId, GossipOptionNpc optionNpc, std::s
 
     GossipMenuItem menuItem;
 
-    menuItem.OptionNpc = optionNpc;
+    menuItem.OptionNPC = icon;
     menuItem.Message = message;
     menuItem.IsCoded = coded;
     menuItem.Sender = sender;
-    menuItem.Action = action;
+    menuItem.OptionType = action;
     menuItem.BoxMessage = boxMessage;
     menuItem.BoxMoney = boxMoney;
+    menuItem.BoxCurrency = boxCurrency;
+    menuItem.menuItemId = menuItemId;
 
     _menuItems[menuItemId] = menuItem;
 }
@@ -100,7 +104,7 @@ void GossipMenu::AddMenuItem(uint32 menuId, uint32 menuItemId, uint32 sender, ui
                 ObjectMgr::GetLocaleString(gossipMenuLocale->BoxText, GetLocale(), strBoxText);
         }
 
-        AddMenuItem(-1, itr->second.OptionNpc, strOptionText, sender, action, strBoxText, itr->second.BoxMoney, itr->second.BoxCoded);
+        AddMenuItem(-1, itr->second.OptionNPC, strOptionText, sender, action, strBoxText, itr->second.BoxMoney, itr->second.BoxCurrency, itr->second.BoxCoded);
     }
 }
 
@@ -147,7 +151,7 @@ uint32 GossipMenu::GetMenuItemAction(uint32 menuItemId) const
     if (itr == _menuItems.end())
         return 0;
 
-    return itr->second.Action;
+    return itr->second.OptionType;
 }
 
 bool GossipMenu::IsMenuItemCoded(uint32 menuItemId) const
@@ -168,115 +172,6 @@ void GossipMenu::ClearMenu()
 GossipMenuItemContainer const& GossipMenu::GetMenuItems() const
 {
     return _menuItems;
-}
-
-uint64 GossipMenu::GetRequiredNpcFlagForOption(GossipOptionNpc optionNpc)
-{
-    uint64 requiredNpcFlag = UNIT_NPC_FLAG_NONE;
-
-    switch (optionNpc)
-    {
-        case GossipOptionNpc::Vendor:
-            requiredNpcFlag = UNIT_NPC_FLAG_VENDOR;
-            break;
-        case GossipOptionNpc::TaxiNode:
-            requiredNpcFlag = UNIT_NPC_FLAG_FLIGHTMASTER;
-            break;
-        case GossipOptionNpc::Trainer:
-            requiredNpcFlag = UNIT_NPC_FLAG_TRAINER;
-            break;
-        case GossipOptionNpc::SpiritHealer:
-            requiredNpcFlag = UNIT_NPC_FLAG_SPIRITHEALER;
-            break;
-        case GossipOptionNpc::Binder:
-            requiredNpcFlag = UNIT_NPC_FLAG_INNKEEPER;
-            break;
-        case GossipOptionNpc::Banker:
-            requiredNpcFlag = UNIT_NPC_FLAG_BANKER;
-            break;
-        case GossipOptionNpc::PetitionVendor:
-            requiredNpcFlag = UNIT_NPC_FLAG_PETITIONER;
-            break;
-        case GossipOptionNpc::TabardVendor:
-            requiredNpcFlag = UNIT_NPC_FLAG_TABARDDESIGNER;
-            break;
-        case GossipOptionNpc::BattleMaster:
-            requiredNpcFlag = UNIT_NPC_FLAG_BATTLEMASTER;
-            break;
-        case GossipOptionNpc::Auctioneer:
-            requiredNpcFlag = UNIT_NPC_FLAG_AUCTIONEER;
-            break;
-        case GossipOptionNpc::StableMaster:
-            requiredNpcFlag = UNIT_NPC_FLAG_STABLEMASTER;
-            break;
-        case GossipOptionNpc::GuildBanker:
-            requiredNpcFlag = UNIT_NPC_FLAG_GUILD_BANKER;
-            break;
-        case GossipOptionNpc::SpellClick:
-            requiredNpcFlag = UNIT_NPC_FLAG_SPELLCLICK;
-            break;
-        case GossipOptionNpc::Mailbox:
-            requiredNpcFlag = UNIT_NPC_FLAG_MAILBOX;
-            break;
-        case GossipOptionNpc::ArtifactRespec:
-            requiredNpcFlag = UNIT_NPC_FLAG_ARTIFACT_POWER_RESPEC;
-            break;
-        case GossipOptionNpc::GarrisonArchitect:
-            requiredNpcFlag = UNIT_NPC_FLAG2_GARRISON_ARCHITECT;
-            break;
-        case GossipOptionNpc::GarrisonMission:
-            requiredNpcFlag = UNIT_NPC_FLAG2_GARRISON_MISSION_NPC;
-            break;
-        case GossipOptionNpc::ShipmentCrafter:
-            requiredNpcFlag = UNIT_NPC_FLAG2_SHIPMENT_CRAFTER;
-            break;
-        case GossipOptionNpc::GarrisonTradeskill:
-            requiredNpcFlag = UNIT_NPC_FLAG2_TRADESKILL_NPC;
-            break;
-        case GossipOptionNpc::GarrisonRecruitment:
-        case GossipOptionNpc::AdventureMap:
-        case GossipOptionNpc::GarrisonTalent:
-            requiredNpcFlag = UNIT_NPC_FLAG2_CLASS_HALL_UPGRADE;
-            break;
-//        case GossipOptionNpc::ContributionCollector:
-//            requiredNpcFlag = UNIT_NPC_FLAG_2_CONTRIBUTION_COLLECTOR;
-//            break;
-        case GossipOptionNpc::Transmogrify:
-            requiredNpcFlag = UNIT_NPC_FLAG_TRANSMOGRIFIER;
-            break;
-//        case GossipOptionNpc::AzeriteRespec:
-//            requiredNpcFlag = UNIT_NPC_FLAG_2_AZERITE_RESPEC;
-//            break;
-//        case GossipOptionNpc::IslandsMission:
-//            requiredNpcFlag = UNIT_NPC_FLAG_2_ISLANDS_QUEUE;
-//            break;
-        // case GossipOptionNpc::UIItemInteraction:
-        // case GossipOptionNpc::WorldMap:
-        // case GossipOptionNpc::Soulbind:
-        // case GossipOptionNpc::CovenantPreview:
-        // case GossipOptionNpc::RuneforgeLegendaryCrafting:
-        // case GossipOptionNpc::NewPlayerGuide:
-        // case GossipOptionNpc::RuneforgeLegendaryUpgrade:
-        // case GossipOptionNpc::CovenantRenown:
-        case GossipOptionNpc::None:
-        case GossipOptionNpc::TalentMaster:
-        case GossipOptionNpc::PetSpecializationMaster:
-        case GossipOptionNpc::DisableXPGain:
-        case GossipOptionNpc::EnableXPGain:
-        case GossipOptionNpc::WorldPVPQueue:
-        // case GossipOptionNpc::LFGDungeon:
-        // case GossipOptionNpc::CemeterySelect:
-        case GossipOptionNpc::SpecializationMaster:
-        case GossipOptionNpc::GlyphMaster:
-        // case GossipOptionNpc::QueueScenario:
-        // case GossipOptionNpc::ChromieTime:
-            requiredNpcFlag = UNIT_NPC_FLAG_GOSSIP;
-            break;
-        default:
-            break;
-    }
-
-    return requiredNpcFlag;
 }
 
 PlayerMenu::PlayerMenu(WorldSession* session) : _session(session)
@@ -326,20 +221,24 @@ bool PlayerMenu::IsGossipOptionCoded(uint32 selection) const
     return _gossipMenu.IsMenuItemCoded(selection);
 }
 
-void PlayerMenu::SendGossipMenu(uint32 titleTextId, ObjectGuid objectGUID) const
+void PlayerMenu::SendGossipMenu(uint32 titleTextId, ObjectGuid objectGUID, uint32 friendshipFactionID /*= 0*/) const
 {
+    if (!this)
+        return;
+
     WorldPackets::NPC::GossipMessage packet;
     packet.GossipGUID = objectGUID;
     packet.TextID = titleTextId;
     packet.GossipID = _gossipMenu.GetMenuId();
+    packet.FriendshipFactionID = friendshipFactionID;
 
     for (auto const& itr : _gossipMenu.GetMenuItems())
     {
         auto const& item = itr.second;
 
         WorldPackets::NPC::ClientGossipOptions opt;
-        opt.ClientOption = itr.first;
-        opt.OptionNPC = item.OptionNpc;
+        opt.ClientOption = item.menuItemId;
+        opt.OptionNPC = item.OptionNPC;
         opt.OptionFlags = item.IsCoded;
         opt.OptionCost = item.BoxMoney;
         opt.Text = item.Message;
@@ -361,7 +260,7 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, ObjectGuid objectGUID) const
             text.QuestMaxScalingLevel = quest->MaxScalingLevel;
             text.QuestFlags[0] = quest->GetFlags();
             text.QuestFlags[1] = quest->FlagsEx;
-            text.Repeatable = quest->IsAutoComplete() && quest->IsRepeatable() && !quest->IsDailyOrWeekly() && !quest->IsMonthly();
+            text.Repeatable = quest->IsRepeatable();
             auto title = quest->LogTitle;
             if (auto localeData = sQuestDataStore->GetQuestLocale(item.QuestId))
                 ObjectMgr::GetLocaleString(localeData->LogTitle, _session->GetSessionDbLocaleIndex(), title);
@@ -481,14 +380,14 @@ void PlayerMenu::SendQuestGiverQuestList(uint32 BroadcastTextID, ObjectGuid npcG
             if (QuestTemplateLocale const* ql = sQuestDataStore->GetQuestLocale(questMenuItem.QuestId))
                 ObjectMgr::GetLocaleString(ql->LogTitle, _session->GetSessionDbLocaleIndex(), title);
 
-            questList.GossipTexts.emplace_back(questMenuItem.QuestId, questMenuItem.QuestIcon, quest->Level, quest->MaxScalingLevel, quest->Flags, quest->FlagsEx, quest->IsAutoComplete() && quest->IsRepeatable() && !quest->IsDailyOrWeekly() && !quest->IsMonthly(), title);
+            questList.GossipTexts.emplace_back(questMenuItem.QuestId, questMenuItem.QuestIcon, quest->GetScaledQuestLevel(player->getLevel()), quest->MaxScalingLevel, quest->Flags, quest->FlagsEx, quest->IsRepeatable(), title);
         }
     }
 
     player->SendDirectMessage(questList.Write());
 }
 
-void PlayerMenu::SendQuestGiverStatus(QuestGiverStatus questStatus, ObjectGuid npcGUID) const
+void PlayerMenu::SendQuestGiverStatus(uint32 questStatus, ObjectGuid npcGUID) const
 {
     WorldPackets::Quest::QuestGiverStatus packet;
     packet.QuestGiver.Guid = npcGUID;
@@ -497,7 +396,7 @@ void PlayerMenu::SendQuestGiverStatus(QuestGiverStatus questStatus, ObjectGuid n
         player->SendDirectMessage(packet.Write());
 }
 
-void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGUID, bool autoLaunched, bool displayPopup, bool isAreaTrigger /*=false*/, uint32 questStartItemId /*= 0*/) const
+void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGUID, bool activateAccept, bool isAreaTrigger /*=false*/) const
 {
     Player* player = _session->GetPlayer();
     if (!player)
@@ -527,7 +426,7 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGU
 
     WorldPackets::Quest::QuestGiverQuestDetails packet;
     packet.QuestGiverGUID = npcGUID;
-    packet.InformUnit = player->GetPlayerSharingQuest();
+    packet.InformUnit = player->GetDivider();
     packet.QuestID = quest->GetQuestId();
     packet.QuestTitle = questLogTitle;
     packet.LogDescription = questLogDescription;
@@ -538,16 +437,15 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGU
     packet.PortraitTurnInName = portraitTurnInName;
     packet.PortraitGiver = quest->QuestGiverPortrait;
     packet.PortraitTurnIn = quest->QuestTurnInPortrait;
-    packet.AutoLaunched = autoLaunched;
-    packet.DisplayPopup = displayPopup;
-    packet.QuestFlags[0] = quest->GetFlags() & (sWorld->getBoolConfig(CONFIG_QUEST_IGNORE_AUTO_ACCEPT) ? ~QUEST_FLAGS_AUTO_ACCEPT : ~0);
+    packet.AutoLaunched = activateAccept;
+    packet.QuestFlags[0] = quest->GetFlags();
     packet.QuestFlags[1] = quest->FlagsEx;
     packet.SuggestedPartyMembers = quest->SuggestedPlayers;
 
     if (quest->SourceSpellID)
         packet.LearnSpells.push_back(quest->SourceSpellID);
 
-    packet.QuestStartItemID = questStartItemId;
+    packet.QuestStartItemID = 0;
 
     quest->BuildQuestRewards(packet.Rewards, player);
 
@@ -567,8 +465,6 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, ObjectGuid npcGU
         packet.Objectives[i].Amount = objs[i].Amount;
         packet.Objectives[i].Type = objs[i].Type;
     }
-
-    _session->SendPacket(packet.Write());
 
     player->SendDirectMessage(packet.Write());
 }
@@ -718,7 +614,7 @@ void PlayerMenu::SendQuestQueryResponse(uint32 questId) const
         player->SendDirectMessage(packet.Write());
 }
 
-void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, ObjectGuid npcGUID, bool autoLaunched) const
+void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, ObjectGuid npcGUID, bool enableNext) const
 {
     Player* player = _session->GetPlayer();
 
@@ -753,7 +649,7 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, ObjectGuid npcGUI
         offer.QuestGiverCreatureID = creature->GetCreatureTemplate()->Entry;
 
     offer.QuestID = quest->GetQuestId();
-    offer.AutoLaunched = autoLaunched;
+    offer.AutoLaunched = enableNext;
     offer.SuggestedPartyMembers = quest->SuggestedPlayers;
 
     for (uint32 i = 0; i < QUEST_EMOTE_COUNT && quest->OfferRewardEmote[i]; ++i)
@@ -794,7 +690,7 @@ GossipMenuItemData const* GossipMenu::GetItemData(uint32 indexId) const
     return Trinity::Containers::MapGetValuePtr(_menuItemData, indexId);
 }
 
-void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, ObjectGuid npcGUID, bool canComplete, bool autoLaunched) const
+void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, ObjectGuid npcGUID, bool canComplete, bool closeOnCancel) const
 {
     // We can always call to RequestItems, but this packet only goes out if there are actually
     // items.  Otherwise, we'll skip straight to the OfferReward
@@ -838,13 +734,9 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, ObjectGuid npcGU
     packet.QuestFlags[0] = quest->GetFlags();
     packet.QuestFlags[1] = quest->FlagsEx;
     packet.SuggestPartyMembers = quest->SuggestedPlayers;
+    packet.StatusFlags = 0xDF; // Unk, send common value
 
-    // incomplete: FD
-    // incomplete quest with item objective but item objective is complete DD
-    packet.StatusFlags = canComplete ? 0xFF : 0xFD;
-    
-    packet.MoneyToGet = 0;
-        for (QuestObjective const& obj : quest->GetObjectives())
+    for (QuestObjective const& obj : quest->GetObjectives())
     {
         switch (obj.Type)
         {
@@ -862,7 +754,7 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, ObjectGuid npcGU
         }
     }
 
-    packet.AutoLaunched = autoLaunched;
+    packet.AutoLaunched = closeOnCancel;
     packet.QuestTitle = questTitle;
     packet.CompletionText = requestItemsText;
 

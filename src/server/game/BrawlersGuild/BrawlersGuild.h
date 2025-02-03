@@ -152,7 +152,7 @@ enum BrawlersBosses
     
 };
 
-class TC_GAME_API BrawlersGuild
+class BrawlersGuild
 {
 public:
     explicit BrawlersGuild(uint32 id, Map* map);

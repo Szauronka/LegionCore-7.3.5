@@ -1,5 +1,14 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "antorus.h"
 #include "AreaTriggerAI.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "SpellScript.h"
+#include "SpellAuraEffects.h"
 
 enum Says
 {
@@ -224,7 +233,7 @@ struct boss_coven_shivarres : BossAI
 {
     explicit boss_coven_shivarres(Creature* creature) : BossAI(creature, DATA_COVEN)
     {
-        if (me->IsAlive())
+        if (me->isAlive())
         {
             me->SetReactState(REACT_PASSIVE);
             me->SetDisplayId(27823);
@@ -319,7 +328,7 @@ struct boss_coven_shivarres : BossAI
                             coven->CastSpell(coven, SPELL_SHARED_HEALTH, true);
                             coven->CastSpell(coven, SPELL_SHIVAN_PACT_AT, true);
 
-                            if (coven->IsAlive() && !coven->isInCombat())
+                            if (coven->isAlive() && !coven->isInCombat())
                                 coven->AI()->DoZoneInCombat(coven, 100.0f);
                         }
                     }
@@ -565,7 +574,7 @@ struct boss_coven_shivarres_generic : ScriptedAI
 
                 me->AddDelayedCombat(2000, [this] () -> void
                 {
-                    me->SetAnimTier(AnimTier::Fly);
+                    me->SetAnimTier(3);
                     me->SetDisableGravity(true);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                     me->RemoveAurasAllDots();
@@ -590,7 +599,7 @@ struct boss_coven_shivarres_generic : ScriptedAI
             case 1:
             case 2:
             case 3:
-                me->SetAnimTier(AnimTier::Ground);
+                me->SetAnimTier(0);
                 me->CastSpellDelay(me, SPELL_SENSE_OF_DREAD, true, 500);
                 me->CastSpellDelay(me, tormentSpellId[id], false, 500);
                 //DEBUG!!!
@@ -626,7 +635,7 @@ struct boss_coven_shivarres_generic : ScriptedAI
 
             for (uint8 i = 0; i < 3; ++i)
             {
-                pos = me->GetNearPosition(0.1f, angle);
+                me->GetNearPosition(pos, 0.1f, angle);
                 me->CastSpell(pos, SPELL_SHADOW_BLADES_SUMMON, true, nullptr, nullptr, owner->GetGUID());
                 angle += 0.15f;
             }
@@ -1010,7 +1019,7 @@ struct npc_coven_cosmic_glare : ScriptedAI
 
             for (uint8 i = 0; i < 12; ++i)
             {
-                pos = me->GetNearPosition(dist, angle);
+                me->GetNearPosition(pos, dist, angle);
                 me->CastSpellDelay(pos, SPELL_COSMIC_GLARE_DMG, true, i * 80);
                 dist += 5.5f;
             }
@@ -1204,10 +1213,12 @@ void AddSC_boss_coven_shivarres()
     RegisterCreatureAI(npc_coven_whirling_saber);
     RegisterCreatureAI(npc_coven_shadow_blade);
     RegisterCreatureAI(npc_coven_cosmic_glare);
+
     RegisterSpellScript(spell_coven_fury_subsides);
     RegisterSpellScript(spell_coven_cosmic_glare);
     RegisterSpellScript(spell_coven_cosmic_glare_dmg);
     RegisterAuraScript(spell_coven_chilled_blood);
     RegisterAuraScript(spell_coven_orb_of_frost);
+
     RegisterAreaTriggerAI(at_coven_storm_of_darkness);
 }

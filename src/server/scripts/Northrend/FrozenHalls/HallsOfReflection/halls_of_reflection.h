@@ -18,7 +18,6 @@
 #ifndef DEF_HALLS_OF_REFLECTION_H
 #define DEF_HALLS_OF_REFLECTION_H
 
-#define DataHeader "HOR"
 #define HoRScriptName "instance_halls_of_reflection"
 #define MAX_ENCOUNTER 3
 

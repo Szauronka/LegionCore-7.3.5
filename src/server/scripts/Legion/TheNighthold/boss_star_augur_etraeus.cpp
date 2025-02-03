@@ -1,3 +1,7 @@
+/*
+https://uwow.biz/
+*/
+
 #include "AreaTriggerAI.h"
 #include "the_nighthold.h"
 #include "Packets/MiscPackets.h"
@@ -1134,7 +1138,7 @@ class spell_augur_witness_the_void : public SpellScript
     {
         if (GetCaster() && GetHitUnit())
         {
-            if (!GetHitUnit()->isInFront(GetCaster(), float(M_PI / 2)))
+            if (!GetHitUnit()->isInFront(GetCaster(), M_PI / 2))
                 PreventHitDefaultEffect(EFFECT_1);
         }
     }

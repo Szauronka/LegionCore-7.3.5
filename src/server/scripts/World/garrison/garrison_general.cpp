@@ -1,3 +1,8 @@
+/*
+* Copyright (C) 2008-2015 Uwow.Biz <http://uwow.biz/>
+* Copyright (C) 2014-2015 Epicwow.com <http://epicwow.com/>
+*/
+
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "ScriptedEscortAI.h"
@@ -43,9 +48,9 @@ public:
                 uint8 idx = garr->GetGarrisonLevel() - 1;
 
                 if (plr->GetTeam() == ALLIANCE)
-                    plr->TeleportTo(garr->GetGarrisonMapID(), &hearhstoneAlliance[idx], TELE_TO_SPELL, 171253);
+                    plr->TeleportTo(garr->GetGarrisonMapID(), hearhstoneAlliance[idx].m_positionX, hearhstoneAlliance[idx].m_positionY, hearhstoneAlliance[idx].m_positionZ, hearhstoneAlliance[idx].m_orientation, TELE_TO_SPELL, 171253);
                 else
-                    plr->TeleportTo(garr->GetGarrisonMapID(), &hearhstoneHorde[idx], TELE_TO_SPELL, 171253);
+                    plr->TeleportTo(garr->GetGarrisonMapID(), hearhstoneHorde[idx].m_positionX, hearhstoneHorde[idx].m_positionY, hearhstoneHorde[idx].m_positionZ, hearhstoneHorde[idx].m_orientation, TELE_TO_SPELL, 171253);
             }
         }
 
@@ -395,7 +400,8 @@ public:
             {
                 if (tree->GetUInt32Value(GAMEOBJECT_FIELD_FLAGS) & GO_FLAG_LUMBER)
                 {
-                    Position pos = tree->GetRandomNearPosition(5.0f);
+                    Position pos;
+                    tree->GetRandomNearPosition(pos, 5.0f);
                     me->GetMotionMaster()->MovePoint(1, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
                     treeGUID = tree->GetGUID();
 

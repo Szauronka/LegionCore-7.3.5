@@ -582,92 +582,6 @@ class spell_q12634_despawn_fruit_tosser : public SpellScriptLoader
         }
 };
 
-enum DeathComesFromOnHigh
-{
-    SPELL_FORGE_CREDIT                  = 51974,
-    SPELL_TOWN_HALL_CREDIT              = 51977,
-    SPELL_SCARLET_HOLD_CREDIT           = 51980,
-    SPELL_CHAPEL_CREDIT                 = 51982,
-
-    NPC_NEW_AVALON_FORGE                = 28525,
-    NPC_NEW_AVALON_TOWN_HALL            = 28543,
-    NPC_SCARLET_HOLD                    = 28542,
-    NPC_CHAPEL_OF_THE_CRIMSON_FLAME     = 28544
-};
-
-// 51858 - Siphon of Acherus
-class spell_q12641_death_comes_from_on_high : public SpellScript
-{
-    PrepareSpellScript(spell_q12641_death_comes_from_on_high);
-
-    bool Validate(SpellInfo const* /*spellInfo*/) override
-    {
-        return ValidateSpellInfo(
-        {
-            SPELL_FORGE_CREDIT,
-            SPELL_TOWN_HALL_CREDIT,
-            SPELL_SCARLET_HOLD_CREDIT,
-            SPELL_CHAPEL_CREDIT
-        });
-    }
-
-    void HandleDummy(SpellEffIndex /*effIndex*/)
-    {
-        uint32 spellId = 0;
-
-        switch (GetHitCreature()->GetEntry())
-        {
-            case NPC_NEW_AVALON_FORGE:
-                spellId = SPELL_FORGE_CREDIT;
-                break;
-            case NPC_NEW_AVALON_TOWN_HALL:
-                spellId = SPELL_TOWN_HALL_CREDIT;
-                break;
-            case NPC_SCARLET_HOLD:
-                spellId = SPELL_SCARLET_HOLD_CREDIT;
-                break;
-            case NPC_CHAPEL_OF_THE_CRIMSON_FLAME:
-                spellId = SPELL_CHAPEL_CREDIT;
-                break;
-            default:
-                return;
-        }
-
-        GetCaster()->CastSpell(GetCaster(), spellId, true);
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_q12641_death_comes_from_on_high::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-    }
-};
-
-enum Recall_Eye_of_Acherus
-{
-    THE_EYE_OF_ACHERUS = 51852
-};
-
-// 52694 - Recall Eye of Acherus
-class spell_q12641_recall_eye_of_acherus : public SpellScript
-{
-    PrepareSpellScript(spell_q12641_recall_eye_of_acherus);
-
-    void HandleDummy(SpellEffIndex /*effIndex*/)
-    {
-        if (Player* player = GetCaster()->GetCharmerOrOwner()->ToPlayer())
-        {
-            player->StopCastingCharm();
-            player->StopCastingBindSight();
-            player->RemoveAura(THE_EYE_OF_ACHERUS);
-        }
-    }
-
-    void Register() override
-    {
-        OnEffectHitTarget += SpellEffectFn(spell_q12641_recall_eye_of_acherus::HandleDummy, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
-    }
-};
-
 // http://www.wowhead.com/quest=12683 Burning to Help
 // 52308 Take Sputum Sample
 class spell_q12683_take_sputum_sample : public SpellScriptLoader
@@ -887,7 +801,7 @@ class spell_symbol_of_life_dummy : public SpellScriptLoader
                         target->SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, 0);
                         target->SetUInt32Value(UNIT_FIELD_FLAGS_2, 0);
                         target->SetHealth(target->GetMaxHealth() / 2);
-                        target->SetPower(POWER_MANA, target->GetMaxPower(POWER_MANA) * 0.75f);
+                        target->SetPower(POWER_MANA, uint32(target->GetMaxPower(POWER_MANA) * 0.75f));
                     }
                 }
             }
@@ -1630,7 +1544,7 @@ class spell_q30050_resuscitate: public SpellScriptLoader
                 {
                     if (AuraEffect const* aurEff = caster->GetAuraEffect(108123, EFFECT_0))
                     {
-                        auto step = uint32(aurEff->GetTickNumber() / 15);
+                        int32 step = uint32(aurEff->GetTickNumber() / 15);
                         if(step > 36)
                             step -= 36;
                         else if(step > 30)
@@ -1638,11 +1552,11 @@ class spell_q30050_resuscitate: public SpellScriptLoader
                         else if(step > 24)
                             step -= 24;
                         else if(step > 18)
-                            step -= 18;
+                            step =- 18;
                         else if(step > 12)
-                            step -= 12;
+                            step =- 12;
                         else if(step > 6)
-                            step -= 6;
+                            step =- 6;
 
                         switch (step)
                         {
@@ -1666,8 +1580,6 @@ class spell_q30050_resuscitate: public SpellScriptLoader
                                 break;
                             case 6:
                                 caster->CastSpell(caster, 108114, true);
-                                break;
-                            default:
                                 break;
                         }
                     }
@@ -1808,6 +1720,7 @@ public:
     }
 };
 
+
 void AddSC_quest_spell_scripts()
 {
     new spell_q55_sacred_cleansing();
@@ -1822,8 +1735,6 @@ void AddSC_quest_spell_scripts()
     new spell_q11730_ultrasonic_screwdriver();
     new spell_q12459_seeds_of_natures_wrath();
     new spell_q12634_despawn_fruit_tosser();
-    RegisterSpellScript(spell_q12641_death_comes_from_on_high);
-    RegisterSpellScript(spell_q12641_recall_eye_of_acherus);
     new spell_q12683_take_sputum_sample();
     new spell_q12851_going_bearback();
     new spell_q12937_relief_for_the_fallen();
@@ -1850,4 +1761,8 @@ void AddSC_quest_spell_scripts()
     new spell_q30050_resuscitate();
     new spell_q_faint_ritual_circle();
     new spell_q_artifact_trait_unlock();
+
+    
+    
+
 }

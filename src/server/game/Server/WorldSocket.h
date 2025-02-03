@@ -19,12 +19,12 @@
 #ifndef __WORLDSOCKET_H__
 #define __WORLDSOCKET_H__
 
-#include "DatabaseEnvFwd.h"
-#include "MPSCQueue.h"
+#include "WorldPacketCrypt.h"
 #include "Socket.h"
 #include "Util.h"
-#include "WorldPacketCrypt.h"
 #include "WorldSession.h"
+#include "DatabaseEnvFwd.h"
+#include <chrono>
 #include <safe_ptr.h>
 
 struct z_stream_s;
@@ -96,7 +96,6 @@ public:
     void SendAuthResponseError(uint32 code);
     void HandleEnableEncryptionAck();
     void SetWorldSession(WorldSessionPtr session);
-    void SetSendBufferSize(std::size_t sendBufferSize) { _sendBufferSize = sendBufferSize; }
 
 protected:
     void OnClose() override;
@@ -113,7 +112,7 @@ protected:
     ReadDataHandlerResult ReadDataHandler();
 private:
     void CheckIpCallback(PreparedQueryResult result);
-    void InitializeHandler(boost::system::error_code const& error, std::size_t transferedBytes);
+    void InitializeHandler(boost::system::error_code error, std::size_t transferedBytes);
     void LogOpcodeText(OpcodeClient opcode, std::unique_lock<std::mutex> const& guard) const;
     void WritePacketToBuffer(EncryptablePacket const& packet, MessageBuffer& buffer);
     uint32 CompressPacket(uint8* buffer, WorldPacket const& packet);
@@ -137,7 +136,7 @@ private:
     BigNumber _decryptSeed;
     BigNumber _sessionKey;
 
-    TimePoint _LastPingTime;
+    std::chrono::steady_clock::time_point _LastPingTime;
     uint32 _OverSpeedPings;
     uint32 _accountId;
 
@@ -147,8 +146,8 @@ private:
 
     MessageBuffer _headerBuffer;
     MessageBuffer _packetBuffer;
-    MPSCQueue<EncryptablePacket> _bufferQueue;
-    std::size_t _sendBufferSize;
+    std::queue<EncryptablePacket> _bufferQueue;
+    sf::contention_free_shared_mutex< > _bufferQueueLock;
 
     z_stream_s* _compressionStream;
 

@@ -2704,17 +2704,6 @@ struct ImportPriceWeaponMeta
     }
 };
 
-struct InvasionClientDataMeta
-{
-    static DB2Meta const* Instance()
-    {
-        static char const* types = "sfiiiiiiii";
-        static uint8 const arraySizes[10] = { 1, 2, 1, 1, 1, 1, 1, 1, 1, 1 };
-        static DB2Meta instance(2, 10, 0x4C93379F, types, arraySizes, 9);
-        return &instance;
-    }
-};
-
 struct ItemMeta
 {
     static DB2Meta const* Instance()

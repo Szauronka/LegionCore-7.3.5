@@ -31,33 +31,33 @@ enum class AccountOpResult : uint8
     AOR_NAME_ALREADY_EXIST,
     AOR_NAME_NOT_EXIST,
     AOR_DB_INTERNAL_ERROR,
+	AOR_ACCOUNT_BAD_LINK
 };
 
-#define MAX_PASS_STR 16
-#define MAX_EMAIL_STR 320
+#define MAX_PASS_STR 32
+#define MAX_ACCOUNT_STR 32
+#define MAX_EMAIL_STR 64
 
 namespace AccountMgr
 {
-    TC_GAME_API AccountOpResult CreateAccount(std::string username, std::string password, bool async = true);
-#ifndef _WEB_API
-    TC_GAME_API AccountOpResult DeleteAccount(uint32 accountId);
-#endif
-    TC_GAME_API AccountOpResult ChangeUsername(uint32 accountId, std::string newUsername, std::string newPassword, bool async = true);
-    TC_GAME_API AccountOpResult ChangePassword(uint32 accountId, std::string newPassword, bool async = true);
-    TC_GAME_API bool CheckPassword(uint32 accountId, std::string password);
+    AccountOpResult CreateAccount(std::string username, std::string password, uint32 bnetAccountId = 0, uint8 bnetIndex = 0);
+    AccountOpResult DeleteAccount(uint32 accountId);
+    AccountOpResult ChangeUsername(uint32 accountId, std::string newUsername, std::string newPassword);
+    AccountOpResult ChangePassword(uint32 accountId, std::string newPassword);
+    bool CheckPassword(uint32 accountId, std::string password);
 
-    TC_GAME_API uint32 GetId(std::string username);
-    TC_GAME_API uint32 GetSecurity(uint32 accountId);
-    TC_GAME_API uint32 GetSecurity(uint32 accountId, int32 realmId);
-    TC_GAME_API bool GetName(uint32 accountId, std::string& name);
-    TC_GAME_API uint32 GetCharactersCount(uint32 accountId);
-    TC_GAME_API std::string CalculateShaPassHash(const std::string& name, const std::string& password);
+    uint32 GetId(std::string username);
+    uint32 GetSecurity(uint32 accountId);
+    uint32 GetSecurity(uint32 accountId, int32 realmId);
+    bool GetName(uint32 accountId, std::string& name);
+    uint32 GetCharactersCount(uint32 accountId);
+    std::string CalculateShaPassHash(std::string& name, std::string& password);
 
-    TC_GAME_API bool IsPlayerAccount(uint32 gmlevel);
-    TC_GAME_API bool IsModeratorAccount(uint32 gmlevel);
-    TC_GAME_API bool IsGMAccount(uint32 gmlevel);
-    TC_GAME_API bool IsAdminAccount(uint32 gmlevel);
-    TC_GAME_API bool IsConsoleAccount(uint32 gmlevel);
+    bool IsPlayerAccount(uint32 gmlevel);
+    bool IsModeratorAccount(uint32 gmlevel);
+    bool IsGMAccount(uint32 gmlevel);
+    bool IsAdminAccount(uint32 gmlevel);
+    bool IsConsoleAccount(uint32 gmlevel);
 };
 
 #endif

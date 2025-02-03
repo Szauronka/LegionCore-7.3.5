@@ -143,7 +143,7 @@ struct council_of_eldersAI : public ScriptedAI
             {
                 if (me->GetEntry() != council->GetEntry())
                 {
-                    if (council->IsAlive() && council->isInCombat())
+                    if (council->isAlive() && council->isInCombat())
                         council->AI()->EnterEvadeMode();
                     else
                     {
@@ -165,7 +165,7 @@ struct council_of_eldersAI : public ScriptedAI
         for (int32 i = 0; i < 4; i++)
             if (Creature* council = me->GetCreature(*me, instance->GetGuidData(councilentry[i])))
                 if (me->GetEntry() != council->GetEntry())
-                    if (council->IsAlive() && !council->isInCombat())
+                    if (council->isAlive() && !council->isInCombat())
                         DoZoneInCombat(council, 150.0f);
         if (instance->GetBossState(DATA_COUNCIL_OF_ELDERS) != IN_PROGRESS)
             instance->SetBossState(DATA_COUNCIL_OF_ELDERS, IN_PROGRESS);
@@ -208,7 +208,7 @@ public:
                 me->SetReactState(REACT_DEFENSIVE);
             if (me->GetEntry() == NPC_FROST_KING_MALAKK)
                 ResetGarajalSoul();
-            me->SetPowerType(POWER_ENERGY);
+            me->setPowerType(POWER_ENERGY);
             me->SetPower(POWER_ENERGY, 0);
             donehppct = 100; //default value
             timerpower = 0;
@@ -457,7 +457,8 @@ public:
                 case EVENT_SAND_TRAP:
                     if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 80.0f, true))
                     {
-                        Position pos = target->GetPosition();
+                        Position pos;
+                        target->GetPosition(&pos);
                         me->SummonCreature(NPC_LIVING_SAND, pos.GetPositionX(), pos.GetPositionY(), me->GetPositionZ());
                     }
                     events.RescheduleEvent(EVENT_SAND_TRAP, 40000);
@@ -471,7 +472,7 @@ public:
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 80.0f, true))
                     {
                         me->SetFacingToObject(target);
-                        chargepos = target->GetPosition();
+                        target->GetPosition(&chargepos);
                         target->CastSpell(target, SPELL_R_CHARGE_POINT_T);
                         DoCast(me, SPELL_R_CHARGE_VISUAL);
                     }
@@ -567,7 +568,7 @@ public:
                     for (uint8 n = 0; n < 4; n++)
                         if (Creature* council = me->GetCreature(*me, instance->GetGuidData(councilentry[n])))
                             if (council->GetEntry() != lastcouncil)
-                                if (council->IsAlive() && council->isInCombat())
+                                if (council->isAlive() && council->isInCombat())
                                     councillistGuids.push_back(council->GetGUID());
 
                     if (!councillistGuids.empty())
@@ -752,7 +753,7 @@ public:
         {
             if (Creature* council = me->GetCreature(*me, councilGuid))
             {
-                if (council->IsAlive())
+                if (council->isAlive())
                 {
                     me->GetMotionMaster()->Clear(false);
                     me->GetMotionMaster()->MoveCharge(council->GetPositionX(), council->GetPositionY(), council->GetPositionZ(), 4.0f, 0);
@@ -796,7 +797,7 @@ public:
                     me->GetMotionMaster()->Clear(false);
                     if (Creature* council = me->GetCreature(*me, councilGuid))
                     {
-                        if (council->IsAlive())
+                        if (council->isAlive())
                         {
                             DoCast(council, SPELL_BLESSED_GIFT, true);
                             me->DespawnOrUnsummon();
@@ -836,7 +837,7 @@ public:
                 case EVENT_CHECK_DISTANCE:
                 {
                     Player* pl = me->GetPlayer(*me, targetGuid);
-                    if (pl && pl->IsAlive())
+                    if (pl && pl->isAlive())
                     {
                         if (IsInControl())
                         {

@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Violet Hold Legion 100-110
 */
 
@@ -17,9 +18,8 @@ public:
 
     struct instance_violet_hold_legion_InstanceMapScript : public InstanceScript
     {
-        instance_violet_hold_legion_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_violet_hold_legion_InstanceMapScript(Map* map) : InstanceScript(map) 
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 
@@ -574,7 +574,7 @@ public:
                 if (player->isGameMaster())
                     continue;
 
-                if (player->IsAlive())
+                if (player->isAlive())
                     return false;
             }
 
@@ -600,7 +600,7 @@ public:
             for (auto itr = tempMobs.begin(); itr != tempMobs.end(); ++itr)
             {
                 if (Creature* creature = instance->GetCreature(*itr))
-                    if (creature && creature->IsAlive())
+                    if (creature && creature->isAlive())
                         creature->DespawnOrUnsummon();
             }
 
@@ -677,7 +677,7 @@ public:
             for (auto itr = tempMobs.begin(); itr != tempMobs.end(); ++itr)
             {
                 Creature* creature = instance->GetCreature(*itr);
-                if (creature && creature->IsAlive())
+                if (creature && creature->isAlive())
                 {
                     if (creature->GetEntry() == NPC_LORD_MALGATH)
                         creature->SetHealth(creature->GetHealth() * 0.7f);

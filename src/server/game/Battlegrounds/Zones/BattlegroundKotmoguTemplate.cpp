@@ -1,18 +1,19 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #include "Object.h"
@@ -409,7 +410,7 @@ class spell_brawl_pass_the_orb : public SpellScript
         if (!target || !caster)
             return SPELL_FAILED_CUSTOM_ERROR;
 
-        if (!target->IsPlayer() || !target->IsAlive() || target->ToPlayer()->GetBGTeamId() != caster->ToPlayer()->GetBGTeamId())
+        if (!target->IsPlayer() || !target->isAlive() || target->ToPlayer()->GetBGTeamId() != caster->ToPlayer()->GetBGTeamId())
             return SPELL_FAILED_CUSTOM_ERROR;
 
         if (Battleground* tempBg = caster->ToPlayer()->GetBattleground())
@@ -435,7 +436,7 @@ class spell_brawl_pass_the_orb : public SpellScript
     {
         Unit* target = GetHitUnit();
         Unit* caster = GetCaster();
-        if (!target || !caster || !target->IsAlive())
+        if (!target || !caster || !target->isAlive())
             return;
 
         Battleground* tempBg = caster->ToPlayer()->GetBattleground();

@@ -95,7 +95,7 @@ public:
             if (waypointId == 7 && instance)
             {
                 Unit* target = Unit::GetUnit(*me, instance->GetGuidData(DATA_THRALL));
-                if (target && target->IsAlive())
+                if (target && target->isAlive())
                     me->AddThreat(target, 0.0f);
             }
         }
@@ -172,7 +172,7 @@ class MarkTargetFilter
         bool operator()(WorldObject* target) const
         {
             if (Unit* unit = target->ToUnit())
-                return unit->GetPowerType() != POWER_MANA;
+                return unit->getPowerType() != POWER_MANA;
             return false;
         }
 };

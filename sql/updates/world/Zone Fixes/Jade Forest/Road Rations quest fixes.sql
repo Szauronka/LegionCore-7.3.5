@@ -1,0 +1,2 @@
+DELETE FROM `quest_template_addon` WHERE `ID`=29885;
+INSERT INTO `quest_template_addon` (`ID`, `MaxLevel`, `AllowableClasses`, `SourceSpellID`, `PrevQuestID`, `NextQuestID`, `ExclusiveGroup`, `RewardMailTemplateID`, `RewardMailDelay`, `RewardMailTitle`, `RequiredSkillID`, `RequiredSkillPoints`, `RequiredMinRepFaction`, `RequiredMaxRepFaction`, `RequiredMinRepValue`, `RequiredMaxRepValue`, `ProvidedItemCount`, `SpecialFlags`, `ScriptName`) VALUES (29885, 0, 0, 0, 29883, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, '');

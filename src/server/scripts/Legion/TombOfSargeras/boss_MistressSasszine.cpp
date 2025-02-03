@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "AreaTriggerAI.h"
 #include "tomb_of_sargeras.h"
 

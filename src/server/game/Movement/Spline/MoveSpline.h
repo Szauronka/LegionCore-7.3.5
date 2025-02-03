@@ -42,6 +42,7 @@ namespace Movement
         Location(float x, float y, float z, float o) : G3D::Vector3(x, y, z), orientation(o) { }
         Location(G3D::Vector3 const& v) : G3D::Vector3(v), orientation(0.0f) { }
         Location(G3D::Vector3 const& v, float o) : G3D::Vector3(v), orientation(o) { }
+        Location(Position pos) : G3D::Vector3(pos.m_positionX, pos.m_positionY, pos.m_positionZ), orientation(pos.m_orientation) { }
 
         float orientation;
     };
@@ -69,8 +70,6 @@ namespace Movement
         MySpline GetSpline() const { return spline; }
 
         int32 GetTimePassed() const { return time_passed; }
-
-        bool isWalking() const { return walk; } // splineflags.walkmode ?
 
     protected:
         MySpline        spline;
@@ -106,7 +105,6 @@ namespace Movement
 
         bool walk;
         float _velocity;
-        Optional<AnimTierTransition> anim_tier;
 
     public:
         const MySpline& _Spline() const { return spline; }
@@ -150,14 +148,11 @@ namespace Movement
         uint32 GetId() const { return m_Id; }
         bool Finalized() const { return splineflags.done; }
         bool isCyclic() const { return splineflags.cyclic; }
-        bool isFalling() const { return splineflags.falling; }
         bool isTransportExit() const { return splineflags.hasFlag(MoveSplineFlag::TransportExit); }
         bool isTransportEnter() const { return splineflags.hasFlag(MoveSplineFlag::TransportEnter); }
         G3D::Vector3 FinalDestination() const { return Initialized() ? spline.getPoint(spline.last()) : G3D::Vector3(); }
         G3D::Vector3 CurrentDestination() const { return Initialized() ? spline.getPoint(point_Idx+1) : G3D::Vector3(); }
         int32 currentPathIdx() const;
-
-        Optional<AnimTier> GetAnimation() const { return anim_tier ? anim_tier->AnimTier : Optional<AnimTier>{}; }
 
         bool onTransport;
         bool splineIsFacingOnly;

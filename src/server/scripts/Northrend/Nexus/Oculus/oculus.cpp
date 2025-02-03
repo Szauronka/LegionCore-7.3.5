@@ -268,7 +268,8 @@ class npc_ruby_emerald_amber_drake : public CreatureScript
                         return;
                 }
 
-                Position pos = summoner->GetPosition();
+                Position pos;
+                summoner->GetPosition(&pos);
                 me->GetMotionMaster()->MovePoint(POINT_LAND, pos);
             }
 
@@ -349,7 +350,8 @@ class npc_ruby_emerald_amber_drake : public CreatureScript
                             me->SetOrientation(2.5f);
                             me->SetSpeed(MOVE_FLIGHT, 1.0f, true);
                             Talk(SAY_DRAKES_TAKEOFF);
-                            Position pos = me->GetPosition();
+                            Position pos;
+                            me->GetPosition(&pos);
                             Position offset = { 10.0f, 10.0f, 12.0f, 0.0f };
                             pos.RelocateOffset(offset);
                             me->SetDisableGravity(true);

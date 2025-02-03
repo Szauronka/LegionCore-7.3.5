@@ -1,3 +1,8 @@
+/*
+* Copyright (C) 2017 uWoW <http://uwow.biz/>
+*
+*/
+
 #include "CommentatorPackets.h"
 
 void WorldPackets::Commentator::CommentatorEnable::Read()

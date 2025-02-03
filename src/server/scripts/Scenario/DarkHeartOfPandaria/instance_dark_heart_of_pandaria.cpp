@@ -32,7 +32,7 @@ public:
 
     struct instance_dark_heart_of_pandaria_InstanceMapScript : public InstanceScript
     {
-        instance_dark_heart_of_pandaria_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_dark_heart_of_pandaria_InstanceMapScript(Map* map) : InstanceScript(map)
         { }
 
         void Initialize() override
@@ -77,5 +77,5 @@ public:
 
 void AddSC_instance_dark_heart_of_pandaria()
 {
-    //new instance_dark_heart_of_pandaria();
+    new instance_dark_heart_of_pandaria();
 }

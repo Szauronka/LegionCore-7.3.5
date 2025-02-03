@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Dark Heart Thicket 100-110
     Encounter: Dresaron
     Normal: 100%, Heroic: 100%, Mythic: 100%
@@ -103,7 +104,7 @@ public:
                         tresh->DespawnOrUnsummon();
                     else
                     {
-                        if (!tresh->IsAlive())
+                        if (!tresh->isAlive())
                         {
                             tresh->RemoveCorpse();
                             tresh->Respawn();

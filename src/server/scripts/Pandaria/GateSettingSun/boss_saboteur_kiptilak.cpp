@@ -1,4 +1,5 @@
 /*==============
+    uwow.biz
 ==============*/
 
 #include "gate_setting_sun.h"
@@ -164,7 +165,7 @@ struct npc_munition_explosion_bunny : public ScriptedAI
             break;
         case NPC_EXPLOSION_BUNNY_S_M:
         case NPC_EXPLOSION_BUNNY_S_P:
-            orientation = float(M_PI);
+            orientation = M_PI;
             break;
         case NPC_EXPLOSION_BUNNY_E_M:
         case NPC_EXPLOSION_BUNNY_E_P:

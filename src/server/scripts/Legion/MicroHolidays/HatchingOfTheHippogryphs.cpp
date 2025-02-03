@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     The event is implemented through the SmartAI!
 */
 

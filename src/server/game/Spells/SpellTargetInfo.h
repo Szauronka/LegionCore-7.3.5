@@ -48,14 +48,12 @@ enum SpellRangeFlag
     SPELL_RANGE_RANGED              = 2,     //hunter range and ranged weapon
 };
 
-struct TC_GAME_API SpellDestination
+struct SpellDestination
 {
     SpellDestination();
     SpellDestination(float x, float y, float z, float orientation = 0.0f, uint32 mapId = MAPID_INVALID);
     SpellDestination(Position const& pos);
     SpellDestination(WorldObject const& wObj);
-
-    void Relocate(Position const& pos);
 
     WorldLocation _position;
     ObjectGuid _transportGUID;
@@ -69,7 +67,7 @@ enum TargetInfoMask
     TARGET_INFO_IS_JUMP_TARGET = 0x00000004,
 };
 
-struct TC_GAME_API TargetInfo
+struct TargetInfo
 {
     TargetInfo(ObjectGuid tGUID, uint32  effMask);
     TargetInfo();
@@ -125,7 +123,7 @@ struct ArchaeologyWeight
 
 typedef std::vector<ArchaeologyWeight> ArchaeologyWeights;
 
-class TC_GAME_API SpellCastTargets
+class SpellCastTargets
 {
     friend class Spell;
     friend class WorldSession;
@@ -137,6 +135,7 @@ class TC_GAME_API SpellCastTargets
     Item* m_itemTarget;
     ObjectGuid m_itemTargetGUID;
     ObjectGuid m_objectTargetGUID;
+    ObjectGuid m_origObjectTargetGUID;
     SpellDestination m_dst;
     SpellDestination m_src;
     uint32 m_itemTargetEntry;
@@ -155,6 +154,9 @@ public:
     void SetTargetMask(uint32 newMask);
     void SetTargetFlag(SpellCastTargetFlags flag);
 
+    ObjectGuid GetOrigUnitTargetGUID() const;
+    void SetOrigUnitTarget(Unit* target);
+    
     ObjectGuid GetUnitTargetGUID() const;
     Unit* GetUnitTarget() const;
     void SetUnitTarget(Unit* target);
@@ -189,7 +191,6 @@ public:
     void SetDst(float x, float y, float z, float orientation, uint32 mapId = MAPID_INVALID);
     void SetDst(Position const& pos);
     void SetDst(WorldObject const& wObj);
-    void SetDst(SpellDestination const& spellDest);
     void SetDst(SpellCastTargets const& spellTargets);
     void ModDst(Position const& pos);
     void RemoveDst();

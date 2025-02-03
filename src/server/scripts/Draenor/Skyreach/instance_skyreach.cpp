@@ -1,4 +1,5 @@
 /*
+    http://epicwow.com/
     Dungeon : Skyreach 97 - 99
 */
 
@@ -31,9 +32,8 @@ public:
 
     struct instance_skyreach_InstanceMapScript : public InstanceScript
     {
-        instance_skyreach_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_skyreach_InstanceMapScript(Map* map) : InstanceScript(map) 
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 

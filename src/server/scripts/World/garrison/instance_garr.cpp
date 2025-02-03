@@ -1,4 +1,5 @@
 /*
+    http://epicwow.com/
 */
 
 #include "ScriptMgr.h"
@@ -29,7 +30,7 @@ public:
 
     struct wod_garrisone_horde_lvl1_InstanceMapScript : public InstanceScript
     {
-        wod_garrisone_horde_lvl1_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        wod_garrisone_horde_lvl1_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         void Initialize() override
         {
@@ -90,7 +91,7 @@ public:
 
     struct wod_garrisone_alliance_lvl1_InstanceMapScript : public InstanceScript
     {
-        wod_garrisone_alliance_lvl1_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        wod_garrisone_alliance_lvl1_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         void Initialize() override
         {

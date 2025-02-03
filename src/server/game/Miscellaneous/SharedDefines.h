@@ -25,8 +25,6 @@
 
 #include "WorldStates.h" // include it just in specific files and remove from here
 
-float const GROUND_HEIGHT_TOLERANCE = 0.05f; // Extra tolerance to z position to check if it is in air or on ground.
-
 static uint16 const MAX_ACHIEVEMENT = 13000;
 static uint32 const MAX_CRITERIA = 40000;
 static uint32 const MAX_CRITERIA_TREE = 66000;
@@ -171,9 +169,16 @@ enum SpecTypes
 
 enum PvPStats : uint32
 {
-    MainStatValue       = 13645,
-    StaminaStatValue    = 57874,
-    SecondaryStatValue  = 6698,
+    MainStatValue       = 11475, //Original: 13645  Fix:11475
+    StaminaStatValue    = 57874, //Original: 57874
+    SecondaryStatValue  = 6698,  //Original: 6698   Fix:5079
+};
+
+enum PvpPenalizationType : uint32
+{
+	CUSTOM_MOD_DAMAGE_DONE,
+	CUSTOM_MOD_HEAL_DONE,
+	CUSTOM_MOD_MASTERY
 };
 
 // used in script definitions
@@ -208,11 +213,11 @@ constexpr uint32 GetMaxLevelForExpansion(uint32 expansion)
         case EXPANSION_CLASSIC:
             return 60;
         case EXPANSION_THE_BURNING_CRUSADE:
-            return 70;
+            return 80;
         case EXPANSION_WRATH_OF_THE_LICH_KING:
             return 80;
         case EXPANSION_CATACLYSM:
-            return 85;
+            return 90;
         case EXPANSION_MISTS_OF_PANDARIA:
             return 90;
         case EXPANSION_WARLORDS_OF_DRAENOR:
@@ -1262,8 +1267,8 @@ enum SpellEffects
     SPELL_EFFECT_SUMMON_RAID_MARKER                 = 106,
     SPELL_EFFECT_LOOT_CORPSE                        = 107,
     SPELL_EFFECT_DISPEL_MECHANIC                    = 108,
-    SPELL_EFFECT_RESURRECT_PET                      = 109,
-    SPELL_EFFECT_110                                = 110,
+    SPELL_EFFECT_SUMMON_DEAD_PET                    = 109,
+    SPELL_EFFECT_110                 = 110,
     SPELL_EFFECT_DURABILITY_DAMAGE                  = 111,
     SPELL_EFFECT_112                                = 112, // only 72759
     SPELL_EFFECT_RESURRECT_NEW                      = 113,
@@ -1411,6 +1416,24 @@ enum SpellEffects
     SPELL_EFFECT_COLLECT_ITEM_APPEARANCES_SET       = 255,
 
     TOTAL_SPELL_EFFECTS
+};
+
+enum PetTameResult
+{
+    PET_TAME_ERROR_UNKNOWN_ERROR            = 0,    // checked
+    PET_TAME_ERROR_INVALID_CREATURE         = 1,    // checked
+    PET_TAME_ERROR_TOO_MANY_PETS            = 2,    // checked
+    PET_TAME_ERROR_CREATURE_ALREADY_OWNED   = 3,    // checked
+    PET_TAME_ERROR_NOT_TAMEABLE             = 4,    // checked
+    PET_TAME_ERROR_ANOTHER_SUMMON_ACTIVE    = 5,    // checked
+    PET_TAME_ERROR_YOU_CANT_TAME            = 6,    // checked
+    PET_TAME_ERROR_NO_PET_AVAILABLE         = 7,    // checked
+    PET_TAME_ERROR_INTERNAL_ERROR           = 8,    // checked
+    PET_TAME_ERROR_TOO_HIGH_LEVEL           = 9,    // checked
+    PET_TAME_ERROR_DEAD                     = 10,   // checked
+    PET_TAME_ERROR_NOT_DEAD                 = 11,   // checked
+    PET_TAME_ERROR_CANT_CONTROL_EXOTIC      = 12,   // checked
+    PET_TAME_ERROR_INVALID_SLOT             = 13    // checked
 };
 
 enum SpellCastResult
@@ -2457,59 +2480,58 @@ enum SpellPreventionType
 
 enum GameobjectTypes // 6.2.2
 {
-    GAMEOBJECT_TYPE_DOOR                        = 0,
-    GAMEOBJECT_TYPE_BUTTON                      = 1,
-    GAMEOBJECT_TYPE_QUESTGIVER                  = 2,
-    GAMEOBJECT_TYPE_CHEST                       = 3,
-    GAMEOBJECT_TYPE_BINDER                      = 4,
-    GAMEOBJECT_TYPE_GENERIC                     = 5,
-    GAMEOBJECT_TYPE_TRAP                        = 6,
-    GAMEOBJECT_TYPE_CHAIR                       = 7,
-    GAMEOBJECT_TYPE_SPELL_FOCUS                 = 8,
-    GAMEOBJECT_TYPE_TEXT                        = 9,
-    GAMEOBJECT_TYPE_GOOBER                      = 10,
-    GAMEOBJECT_TYPE_TRANSPORT                   = 11,
-    GAMEOBJECT_TYPE_AREADAMAGE                  = 12,
-    GAMEOBJECT_TYPE_CAMERA                      = 13,
-    GAMEOBJECT_TYPE_MAP_OBJECT                  = 14,
-    GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT           = 15,
-    GAMEOBJECT_TYPE_DUEL_ARBITER                = 16,
-    GAMEOBJECT_TYPE_FISHINGNODE                 = 17,
-    GAMEOBJECT_TYPE_RITUAL                      = 18,
-    GAMEOBJECT_TYPE_MAILBOX                     = 19,
-    GAMEOBJECT_TYPE_DO_NOT_USE                  = 20,
-    GAMEOBJECT_TYPE_GUARDPOST                   = 21,
-    GAMEOBJECT_TYPE_SPELLCASTER                 = 22,
-    GAMEOBJECT_TYPE_MEETINGSTONE                = 23,
-    GAMEOBJECT_TYPE_FLAGSTAND                   = 24,
-    GAMEOBJECT_TYPE_FISHINGHOLE                 = 25,
-    GAMEOBJECT_TYPE_FLAGDROP                    = 26,
-    GAMEOBJECT_TYPE_MINI_GAME                   = 27,
-    GAMEOBJECT_TYPE_DO_NOT_USE_2                = 28,
-    GAMEOBJECT_TYPE_CONTROL_ZONE                = 29,
-    GAMEOBJECT_TYPE_AURA_GENERATOR              = 30,
-    GAMEOBJECT_TYPE_DUNGEON_DIFFICULTY          = 31,
-    GAMEOBJECT_TYPE_BARBER_CHAIR                = 32,
-    GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING       = 33,
-    GAMEOBJECT_TYPE_GUILD_BANK                  = 34,
-    GAMEOBJECT_TYPE_TRAPDOOR                    = 35,
-    GAMEOBJECT_TYPE_NEW_FLAG                    = 36,
-    GAMEOBJECT_TYPE_NEW_FLAG_DROP               = 37,
-    GAMEOBJECT_TYPE_GARRISON_BUILDING           = 38,
-    GAMEOBJECT_TYPE_GARRISON_PLOT               = 39,
-    GAMEOBJECT_TYPE_CLIENT_CREATURE             = 40,
-    GAMEOBJECT_TYPE_CLIENT_ITEM                 = 41,
-    GAMEOBJECT_TYPE_CAPTURE_POINT               = 42,
-    GAMEOBJECT_TYPE_PHASEABLE_MO                = 43,
-    GAMEOBJECT_TYPE_GARRISON_MONUMENT           = 44,
-    GAMEOBJECT_TYPE_GARRISON_SHIPMENT           = 45,
-    GAMEOBJECT_TYPE_GARRISON_MONUMENT_PLAQUE    = 46,
-    GAMEOBJECT_TYPE_ARTIFACT_FORGE              = 47,
-    GAMEOBJECT_TYPE_UI_LINK                     = 48,
-    GAMEOBJECT_TYPE_KEYSTONE_RECEPTACLE         = 49,
-    GAMEOBJECT_TYPE_GATHERING_NODE              = 50,
-    GAMEOBJECT_TYPE_CHALLENGE_MODE_REWARD       = 51,
-
+    GAMEOBJECT_TYPE_DOOR = 0,
+    GAMEOBJECT_TYPE_BUTTON = 1,
+    GAMEOBJECT_TYPE_QUESTGIVER = 2,
+    GAMEOBJECT_TYPE_CHEST = 3,
+    GAMEOBJECT_TYPE_BINDER = 4,
+    GAMEOBJECT_TYPE_GENERIC = 5,
+    GAMEOBJECT_TYPE_TRAP = 6,
+    GAMEOBJECT_TYPE_CHAIR = 7,
+    GAMEOBJECT_TYPE_SPELL_FOCUS = 8,
+    GAMEOBJECT_TYPE_TEXT = 9,
+    GAMEOBJECT_TYPE_GOOBER = 10,
+    GAMEOBJECT_TYPE_TRANSPORT = 11,
+    GAMEOBJECT_TYPE_AREADAMAGE = 12,
+    GAMEOBJECT_TYPE_CAMERA = 13,
+    GAMEOBJECT_TYPE_MAP_OBJECT = 14,
+    GAMEOBJECT_TYPE_MAP_OBJ_TRANSPORT = 15,
+    GAMEOBJECT_TYPE_DUEL_ARBITER = 16,
+    GAMEOBJECT_TYPE_FISHINGNODE = 17,
+    GAMEOBJECT_TYPE_RITUAL = 18,
+    GAMEOBJECT_TYPE_MAILBOX = 19,
+    GAMEOBJECT_TYPE_DO_NOT_USE = 20,
+    GAMEOBJECT_TYPE_GUARDPOST = 21,
+    GAMEOBJECT_TYPE_SPELLCASTER = 22,
+    GAMEOBJECT_TYPE_MEETINGSTONE = 23,
+    GAMEOBJECT_TYPE_FLAGSTAND = 24,
+    GAMEOBJECT_TYPE_FISHINGHOLE = 25,
+    GAMEOBJECT_TYPE_FLAGDROP = 26,
+    GAMEOBJECT_TYPE_MINI_GAME = 27,
+    GAMEOBJECT_TYPE_DO_NOT_USE_2 = 28,
+    GAMEOBJECT_TYPE_CONTROL_ZONE = 29,
+    GAMEOBJECT_TYPE_AURA_GENERATOR = 30,
+    GAMEOBJECT_TYPE_DUNGEON_DIFFICULTY = 31,
+    GAMEOBJECT_TYPE_BARBER_CHAIR = 32,
+    GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING = 33,
+    GAMEOBJECT_TYPE_GUILD_BANK = 34,
+    GAMEOBJECT_TYPE_TRAPDOOR = 35,
+    GAMEOBJECT_TYPE_NEW_FLAG = 36,
+    GAMEOBJECT_TYPE_NEW_FLAG_DROP = 37,
+    GAMEOBJECT_TYPE_GARRISON_BUILDING = 38,
+    GAMEOBJECT_TYPE_GARRISON_PLOT = 39,
+    GAMEOBJECT_TYPE_CLIENT_CREATURE = 40,
+    GAMEOBJECT_TYPE_CLIENT_ITEM = 41,
+    GAMEOBJECT_TYPE_CAPTURE_POINT = 42,
+    GAMEOBJECT_TYPE_PHASEABLE_MO = 43,
+    GAMEOBJECT_TYPE_GARRISON_MONUMENT = 44,
+    GAMEOBJECT_TYPE_GARRISON_SHIPMENT = 45,
+    GAMEOBJECT_TYPE_GARRISON_MONUMENT_PLAQUE = 46,
+    GAMEOBJECT_TYPE_ARTIFACT_FORGE = 47,
+    GAMEOBJECT_TYPE_UI_LINK = 48,
+    GAMEOBJECT_TYPE_KEYSTONE_RECEPTACLE = 49,
+    GAMEOBJECT_TYPE_GATHERING_NODE = 50,
+    GAMEOBJECT_TYPE_CHALLENGE_MODE_REWARD = 51,
     MAX_GAMEOBJECT_TYPE
 };
 
@@ -4532,15 +4554,14 @@ enum TotemCategory
 enum UnitDynFlags
 {
     UNIT_DYNFLAG_NONE                       = 0x0000,
-    UNIT_DYNFLAG_HIDE_MODEL                 = 0x0002, // Object model is not shown with this flag
+    UNIT_DYNFLAG_HIDE_MODEL                 = 0x0001, // Object model is not shown with this flag
+    UNIT_DYNFLAG_NOT_SELECTABLE_MODEL       = 0x0002,
     UNIT_DYNFLAG_LOOTABLE                   = 0x0004,
     UNIT_DYNFLAG_TRACK_UNIT                 = 0x0008,
     UNIT_DYNFLAG_TAPPED                     = 0x0010, // Lua_UnitIsTapped
     UNIT_DYNFLAG_SPECIALINFO                = 0x0020,
-    UNIT_DYNFLAG_DEAD                       = 0x0040,
-    UNIT_DYNFLAG_REFER_A_FRIEND             = 0x0080,
-
-    UNIT_DYNFLAG_DISABLE_SAME_INTARACT      = 0x0100  // Example: seat on friend mount ?????
+    UNIT_DYNFLAG_REFER_A_FRIEND             = 0x0040,
+    UNIT_DYNFLAG_DISABLE_SAME_INTARACT      = 0x0080  // Example: seat on friend mount
 };
 
 enum CorpseDynFlags
@@ -4768,12 +4789,7 @@ enum SummonType
 enum EventId
 {
     EVENT_CHARGE            = 1003,
-    EVENT_JUMP              = 1004,
-
-    /// Special charge event which is used for charge spells that have explicit targets
-    /// and had a path already generated - using it in PointMovementGenerator will not
-    /// create a new spline and launch it
-    EVENT_CHARGE_PREPATH    = 1005
+    EVENT_JUMP              = 1004
 };
 
 enum ResponseCodes
@@ -4958,6 +4974,26 @@ enum SpellFamilyNames
     SPELLFAMILY_UNK100      = 100,
     SPELLFAMILY_DEMON_HUNTER = 107,
 };
+
+// stored in character_pet.slot
+enum PetSlot
+{
+    //Some not-in-db slots
+    PET_SLOT_FULL_LIST              =  -4,        //Used when there is no slot free for tameing
+    PET_SLOT_UNK_SLOT               =  -3,        //Used in some scripts.
+
+    //Hunter pet slots, sended to client at stable.
+    PET_SLOT_HUNTER_FIRST           =   0,        //PetType == HUNTER_PET
+    PET_SLOT_HUNTER_LAST            =   4,        //PetType == HUNTER_PET
+    PET_SLOT_STABLE_FIRST           =   5,
+    PET_SLOT_STABLE_LAST            =  55,
+
+    //Non-hunter pet slot
+    PET_SLOT_OTHER_PET              = 56,        // PetType != HUNTER_PET
+    PET_SLOT_LAST                                // For iteration
+};
+
+const uint8 MAX_PET_STABLES = PET_SLOT_STABLE_LAST;
 
 enum TradeStatus
 {
@@ -6149,9 +6185,8 @@ enum class UIErrors : uint32
     ERR_TEST_CVAR_SET_SSS                                   = 981,
     ERR_QUEST_TURN_IN_FAIL_REASON                           = 982,
     ERR_CLAIMED_CHALLENGE_MODE_REWARD_OLD                   = 983,
+	ERR_GLYPH_TARGET_NOT_AVAILABLE                          = 984,
 };
-
-#define MAX_ACCOUNT_TUTORIAL_VALUES 8
 
 enum class RaidGroupReason : uint8
 {
@@ -6340,22 +6375,6 @@ constexpr auto AFFIXES_ALL =
 
 static const int32 Reputation_Cap    =  42000;
 static const int32 Reputation_Bottom = -42000;
-
-enum Maps : uint32
-{
-    MAP_EASTERN_KINGDOMS        = 0,
-    MAP_KALIMDOR                = 1,
-    MAP_OUTLAND                 = 530,
-    MAP_NORTHREND               = 571,
-    MAP_EBON_HOLD_DK_START_ZONE = 609,
-    MAP_PANDARIA                = 870,
-    MAP_DRAENOR                 = 1116,
-    MAP_WOD_BLASTED_LANDS_PHASE = 1190,
-    MAP_BROKEN_ISLANDS          = 1220,
-    MAP_TANAAN_JUNGLE_INTRO     = 1265,
-    MAP_TANAAN_JUNGLE           = 1464,
-    MAP_DALARAN_UNDERBELLY      = 1502,
-};
 
 enum SpecialSpells : uint32
 {

@@ -19,8 +19,22 @@
 #ifndef PET_H
 #define PET_H
 
-#include "PetDefines.h"
+#include "Unit.h"
 #include "TemporarySummon.h"
+
+enum ActionFeedback
+{
+    FEEDBACK_NONE            = 0,
+    FEEDBACK_PET_DEAD        = 1,
+    FEEDBACK_NOTHING_TO_ATT  = 2,
+    FEEDBACK_CANT_ATT_TARGET = 3
+};
+
+enum PetTalk
+{
+    PET_TALK_SPECIAL_SPELL  = 0,
+    PET_TALK_ATTACK         = 1
+};
 
 enum PetNameInvalidReason
 {
@@ -44,25 +58,12 @@ enum PetNameInvalidReason
 
 #define ACTIVE_SPELLS_MAX           4
 
-struct PetSpell
-{
-    ActiveStates active;
-    PetSpellState state;
-    PetSpellType type;
-};
-
-enum PetStableinfo
-{
-    PET_STABLE_ACTIVE = 1,
-    PET_STABLE_INACTIVE = 2
-};
-
-typedef std::unordered_map<uint32, PetSpell> PetSpellMap;
-typedef std::vector<uint32> AutoSpellList;
+#define PET_FOLLOW_DIST  1.0f
+#define PET_FOLLOW_ANGLE (M_PI/2)
 
 class Player;
 
-class TC_GAME_API Pet : public Guardian
+class Pet : public Guardian
 {
     public:
         explicit Pet(Player* owner, PetType type = MAX_PET_TYPE);
@@ -76,30 +77,23 @@ class TC_GAME_API Pet : public Guardian
 
         bool IsPermanentPetFor(Player* owner);              // pet have tab in character windows and set UNIT_FIELD_PET_NUMBER
 
-        bool Create(ObjectGuid::LowType const& guidlow, Map* map, uint32 phaseMask, uint32 Entry, uint32 pet_number);
+        bool Create (ObjectGuid::LowType const& guidlow, Map* map, uint32 phaseMask, uint32 Entry, uint32 pet_number);
         bool CreateBaseAtCreature(Creature* creature);
         bool CreateBaseAtCreatureInfo(CreatureTemplate const* cinfo, Unit* owner);
         bool CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phaseMask);
-        static std::pair<PetStable::PetInfo const*, PetSaveMode> GetLoadPetInfo(PetStable const& stable, uint32 petEntry, uint32 petNumber, Optional<PetSaveMode> slot);
-        bool LoadPetFromDB(Player* owner, uint32 petEntry, uint32 petnumber, bool current, Optional<PetSaveMode> forcedSlot = {});
+        bool LoadPetFromDB(Player* owner, uint32 petentry = 0, uint32 petnumber = 0);
         bool isBeingLoaded() const override { return m_loading;}
-        void SavePetToDB(PetSaveMode mode);
-        void FillPetInfo(PetStable::PetInfo* petInfo) const;
-        void Remove(PetSaveMode mode, bool returnreagent = false);
-        static void DeleteFromDB(uint32 petNumber);
+        void SavePetToDB(bool isDelete = false);
+        void Remove();
+        static void DeleteFromDB(uint32 guidlow);
 
         void setDeathState(DeathState s) override;                   // overwrite virtual Creature::setDeathState and Unit::setDeathState
         void Update(uint32 diff) override;                           // overwrite virtual Creature::Update and Unit::Update
 
-        uint8 GetPetAutoSpellSize() const override { return uint8(m_autospells.size()); }
-        uint32 GetPetAutoSpellOnPos(uint8 pos) const override
-        {
-            if (pos >= m_autospells.size())
-                return 0;
-            else
-                return m_autospells[pos];
-        }
+        void SetSlot(PetSlot slot) { m_slot = slot; }
+        PetSlot GetSlot() { return m_slot; }
 
+        void GivePetXP(uint32 xp);
         void GivePetLevel(uint8 level);
         void SynchronizeLevelWithOwner();
         bool HaveInDiet(ItemTemplate const* item) const;
@@ -107,58 +101,48 @@ class TC_GAME_API Pet : public Guardian
         void SetDuration(int32 dur) { m_duration = dur; }
         int32 GetDuration() { return m_duration; }
 
-        void ToggleAutocast(SpellInfo const* spellInfo, bool apply);
-
         bool HasSpell(uint32 spell) override;
 
-        void LearnPetPassives();
-        void CastPetAuras(bool current, uint32 spellId = 0);
         bool IsPetAura(Aura const* aura);
 
-        void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs) override;
-
         void _LoadSpellCooldowns();
-        void _SaveSpellCooldowns(CharacterDatabaseTransaction& trans);
-        void _LoadAuras(PreparedQueryResult auraResult, PreparedQueryResult effectResult, uint32 timediff);
-        void _SaveAuras(CharacterDatabaseTransaction& trans);
-        void _LoadSpells(PreparedQueryResult result);
-        void _SaveSpells(CharacterDatabaseTransaction& trans);
+        void _SaveSpellCooldowns(SQLTransaction& trans);
+        void _LoadAuras(uint32 timediff);
+        void _SaveAuras(SQLTransaction& trans);
+        void _LoadSpells();
+        void _SaveSpells(SQLTransaction& trans);
 
-        bool addSpell(uint32 spellId, ActiveStates active = ACT_DECIDE, PetSpellState state = PETSPELL_NEW, PetSpellType type = PETSPELL_NORMAL);
-        bool learnSpell(uint32 spell_id);
-        void InitLevelupSpellsForLevel();
-        bool unlearnSpell(uint32 spell_id);
-        bool removeSpell(uint32 spell_id);
         void CleanupActionBar();
-        std::string GenerateActionBarData() const;
 
         void InitPetCreateSpells();
 
-        DeclinedName const* GetDeclinedNames() const { return m_declinedname.get(); }
+        DeclinedName const* GetDeclinedNames() const { return m_declinedname; }
 
-        AutoSpellList   m_autospells;
-        AutoSpellList   m_castspells;
-        PetSpellMap     m_spells;
         bool    m_removed;                                  // prevent overwrite pet state in DB at next Pet::Update if pet already removed(saved)
 
         Unit* GetOwner() { return m_owner; }
 
-        uint16 GetSpecialization() const { return m_petSpecialization; }
-        void SetSpecialization(uint16 spec);
+        uint32 GetSpecializationId() const { return m_specialization; }
+        void SetSpecialization(uint32 id) { m_specialization = id; }
         void LearnSpecializationSpell();
         void UnlearnSpecializationSpell();
         void CheckSpecialization();
-
+        void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs) override;
+		
         uint32 GetGroupUpdateFlag() const { return m_groupUpdateMask; }
         void SetGroupUpdateFlag(uint32 flag);
         void ResetGroupUpdateFlag();
+        
+        
 
     protected:
         int32   m_duration;                                 // time until unsummon (used mostly for summoned guardians and not used for controlled pets)
-        uint16 m_petSpecialization;
-        uint32 m_groupUpdateMask;
+        uint32  m_specialization;
+        PetSlot m_slot;
+        uint32  m_groupUpdateMask;
+        
 
-        std::unique_ptr<DeclinedName> m_declinedname;
+        DeclinedName *m_declinedname;
 
     private:
         void SaveToDB(uint32, uint64, uint32) override

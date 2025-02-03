@@ -22,8 +22,7 @@
 
 #include "Define.h"
 #include <set>
-#include <mutex>
-
+;
 namespace G3D
 {
     class Ray;
@@ -41,7 +40,7 @@ struct DynamicTreeCallback
 
 typedef std::lock_guard<std::recursive_mutex> RecursiveGuard;
 
-class TC_COMMON_API DynamicMapTree
+class DynamicMapTree
 {
     DynTreeImpl *impl;
 

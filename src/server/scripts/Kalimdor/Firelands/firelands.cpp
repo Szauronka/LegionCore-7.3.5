@@ -1006,7 +1006,7 @@ class TrashRespawnWorker
                 case NPC_EGG_PILE:
                 case NPC_HARBINGER_OF_FLAME:
                 case NPC_MOLTEN_EGG_TRASH:
-                    if (!creature->IsAlive())
+                    if (!creature->isAlive())
                         creature->Respawn(true);
                     break;
                 case NPC_SMOULDERING_HATCHLING:
@@ -1569,12 +1569,12 @@ class spell_alysrazor_turn_monstrosity : public SpellScriptLoader
                     case SPELL_RIGHT_SIDE_SMACK_R:
                     case SPELL_RIGHT_SIDE_SMACK_L:
                         spellId = SPELL_KNOCKBACK_RIGHT;
-                        angle -= float(M_PI * 0.5f);
+                        angle -= M_PI * 0.5f;
                         break;
                     case SPELL_LEFT_SIDE_SMACK_R:
                     case SPELL_LEFT_SIDE_SMACK_L:
                         spellId = SPELL_KNOCKBACK_LEFT;
-                        angle += float(M_PI * 0.5f);
+                        angle += M_PI * 0.5f;
                         break;
                     case SPELL_HEAD_BONK_R:
                     case SPELL_HEAD_BONK_L:
@@ -1583,7 +1583,7 @@ class spell_alysrazor_turn_monstrosity : public SpellScriptLoader
                     case SPELL_TICKLE_R:
                     case SPELL_TICKLE_L:
                         spellId = SPELL_KNOCKBACK_BACK;
-                        angle -= float(M_PI);
+                        angle -= M_PI;
                         break;
                 }
 

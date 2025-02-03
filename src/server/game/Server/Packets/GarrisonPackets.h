@@ -70,7 +70,7 @@ namespace WorldPackets
             uint32 TravelDuration = 0;
             uint32 Duration = 0;
             uint32 State = 0; // MS::Garrison::Mission::State
-            uint32 SuccesChance = 0;
+            uint32 SuccessChance = 0;
             uint32 UnkInt2 = 0;
         };
 
@@ -81,7 +81,7 @@ namespace WorldPackets
             uint64 ShipmentID = 0;
             uint32 ShipmentRecID = 0;
             uint32 BuildingTypeID = 0;
-            time_t CreationTime = GameTime::GetGameTime();
+            time_t CreationTime = time(nullptr);
             int32 ShipmentDuration = 0;
 
             bool finished = false;
@@ -1086,6 +1086,38 @@ namespace WorldPackets
 
             uint32 ID = 0;
             bool Active = true;
+        };
+
+        class GarrisonGetMissionReward final : public ClientPacket
+        {
+        public:
+            GarrisonGetMissionReward(WorldPacket&& packet) : ClientPacket(CMSG_GARRISON_GET_MISSION_REWARD, std::move(packet)) { }
+
+            void Read() override;
+
+            int64 unkint64 = 0;
+            int32 unkint32 = 0;
+        };
+
+        class GarrisonSetBuildingActive final : public ClientPacket
+        {
+        public:
+            GarrisonSetBuildingActive(WorldPacket&& packet) : ClientPacket(CMSG_GARRISON_SET_BUILDING_ACTIVE, std::move(packet)) { }
+
+            void Read() override;
+
+            int32 unkint32 = 0;
+        };
+
+        class GarrisonSetFollowerFavorite final : public ClientPacket
+        {
+        public:
+            GarrisonSetFollowerFavorite(WorldPacket&& packet) : ClientPacket(CMSG_GARRISON_SET_FOLLOWER_FAVORITE, std::move(packet)) { }
+
+            void Read() override;
+
+            int32 unkint64 = 0;
+            bool unkbool = false;
         };
     }
 }

@@ -21,7 +21,7 @@
 #include "Define.h"
 #include <vector>
 
-class TC_COMMON_API MessageBuffer
+class MessageBuffer
 {
     typedef std::vector<uint8>::size_type size_type;
 
@@ -55,7 +55,7 @@ public:
 
     std::vector<uint8>&& Move();
 
-    MessageBuffer& operator=(MessageBuffer const& right);
+    MessageBuffer& operator=(MessageBuffer& right);
     MessageBuffer& operator=(MessageBuffer&& right) noexcept;
 
 private:

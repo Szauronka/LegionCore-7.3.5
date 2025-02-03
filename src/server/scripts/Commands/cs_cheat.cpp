@@ -15,13 +15,6 @@
 * with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* ScriptData
-Name: cheat_commandscript
-%Complete: 100
-Comment: All cheat related commands
-Category: commandscripts
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "Chat.h"
 
@@ -271,7 +264,7 @@ class cheat_commandscript : public CommandScript
                     ChatHandler(chr).PSendSysMessage(LANG_YOURS_EXPLORE_SET_NOTHING, handler->GetNameLink().c_str());
             }
 
-            for (uint16 i = 0; i < PLAYER_EXPLORED_ZONES_SIZE; ++i)
+            for (uint8 i = 0; i < PLAYER_EXPLORED_ZONES_SIZE; ++i)
             {
                 if (flag != 0)
                     handler->GetSession()->GetPlayer()->SetFlag(PLAYER_FIELD_EXPLORED_ZONES+i, 0xFFFFFFFF);

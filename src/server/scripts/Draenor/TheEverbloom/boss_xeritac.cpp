@@ -1,9 +1,12 @@
 /*
+    http://epicwow.com/
     Dungeon : The Everbloom 100
     Encounter: Xeri'tac
 */
 
 #include "the_everbloom.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
 
 /* enum Says
 {

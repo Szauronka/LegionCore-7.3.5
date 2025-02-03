@@ -1,7 +1,11 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "Scenario.h"
 #include "OutdoorPvP.h"
 #include "AccountMgr.h"
-#include "ScriptPCH.h"
+#include "PrecompiledHeaders/ScriptPCH.h"
 
 Position const DemonHunterBonich[5] =
 {
@@ -2845,7 +2849,7 @@ struct npc_decimax : ScriptedAI
             return;
 
         use = true;
-        //me->SetReactState(REACT_PASSIVE); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ 250242.
+        //me->SetReactState(REACT_PASSIVE); // вызывает проблемы с уроном АТ от 250242.
         DoCast(250242);
         me->AddDelayedEvent(3000, [=]() -> void
         {
@@ -4218,7 +4222,7 @@ public:
         if (player->IsMounted())
             player->Dismount();
 
-        if (!player->IsAlive())
+        if (!player->isAlive())
         {
             player->ResurrectPlayer(!AccountMgr::IsPlayerAccount(player->GetSession()->GetSecurity()) ? 1.0f : 0.5f);
             player->SpawnCorpseBones();
@@ -4788,7 +4792,7 @@ public:
                     {
                         if (!player->isGameMaster())
                         {
-                            if (!player->IsAlive())
+                            if (!player->isAlive())
                             {
                                 player->ResurrectPlayer(!AccountMgr::IsPlayerAccount(player->GetSession()->GetSecurity()) ? 1.0f : 0.5f);
                                 player->SpawnCorpseBones();
@@ -4950,6 +4954,7 @@ void AddSC_invasion_point_argus()
     RegisterCreatureAI(npc_future_image);
     RegisterCreatureAI(npc_invasion_point_bunny);
     RegisterCreatureAI(npc_decimax);
+
     RegisterSpellScript(spell_creeping_doom_argus_dummy);
     RegisterSpellScript(spell_summon_explosive_orbs);
     RegisterSpellScript(spell_destroying_ip_argus);
@@ -4962,6 +4967,8 @@ void AddSC_invasion_point_argus()
     RegisterAuraScript(spell_narcolepsy);
     RegisterAuraScript(spell_surging_blood);
     RegisterAuraScript(spell_flash_freeze);
+
+    RegisterEventObjectScript(eventobject_braziers_warmth);
+
     new OutdoorPvP_ArgusInvasion();
-    new eventobject_braziers_warmth();
 }

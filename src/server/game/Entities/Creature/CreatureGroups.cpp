@@ -47,14 +47,14 @@ void FormationMgr::AddCreatureToGroup(ObjectGuid::LowType const& groupId, Creatu
     //Add member to an existing group
     if (itr != map->CreatureGroupHolder.end())
     {
-        TC_LOG_DEBUG("entities.unit", "Group found: %lu, inserting creature GUID: %u, Group InstanceID %u", groupId, member->GetGUID().GetGUIDLow(), member->GetInstanceId());
+        TC_LOG_DEBUG(LOG_FILTER_UNITS, "Group found: %u, inserting creature GUID: %u, Group InstanceID %u", groupId, member->GetGUID().GetGUIDLow(), member->GetInstanceId());
         itr->second->AddMember(member);
     }
     //Create new group
     else
     {
         map->_creatureGroupLock.lock();
-        TC_LOG_DEBUG("entities.unit", "Group not found: %lu. Creating new group.", groupId);
+        TC_LOG_DEBUG(LOG_FILTER_UNITS, "Group not found: %u. Creating new group.", groupId);
         auto group = new CreatureGroup(groupId);
         map->CreatureGroupHolder[groupId] = group;
         group->AddMember(member);
@@ -64,7 +64,7 @@ void FormationMgr::AddCreatureToGroup(ObjectGuid::LowType const& groupId, Creatu
 
 void FormationMgr::RemoveCreatureFromGroup(CreatureGroup* group, Creature* member)
 {
-    TC_LOG_DEBUG("entities.unit", "Deleting member pointer to GUID: %lu from group %lu", group->GetId(), member->GetDBTableGUIDLow());
+    TC_LOG_DEBUG(LOG_FILTER_UNITS, "Deleting member pointer to GUID: %u from group %u", group->GetId(), member->GetDBTableGUIDLow());
     group->RemoveMember(member);
 
     if (group->isEmpty())
@@ -74,7 +74,7 @@ void FormationMgr::RemoveCreatureFromGroup(CreatureGroup* group, Creature* membe
             return;
 
         map->_creatureGroupLock.lock();
-        TC_LOG_DEBUG("entities.unit", "Deleting group with InstanceID %u", member->GetInstanceId());
+        TC_LOG_DEBUG(LOG_FILTER_UNITS, "Deleting group with InstanceID %u", member->GetInstanceId());
         map->CreatureGroupHolder.erase(group->GetId());
         map->_creatureGroupLock.unlock();
         delete group;
@@ -94,7 +94,7 @@ void FormationMgr::LoadCreatureFormations()
 
     if (!result)
     {
-        TC_LOG_ERROR("server.loading", ">>  Loaded 0 creatures in formations. DB table `creature_formations` is empty!");
+        TC_LOG_ERROR(LOG_FILTER_SERVER_LOADING, ">>  Loaded 0 creatures in formations. DB table `creature_formations` is empty!");
         return;
     }
 
@@ -125,14 +125,14 @@ void FormationMgr::LoadCreatureFormations()
         {
             if (!sObjectMgr->GetCreatureData(group_member->leaderGUID))
             {
-                TC_LOG_ERROR("sql.sql", "creature_formations table leader guid %lu incorrect (not exist)", group_member->leaderGUID);
+                TC_LOG_ERROR(LOG_FILTER_SQL, "creature_formations table leader guid %u incorrect (not exist)", group_member->leaderGUID);
                 delete group_member;
                 continue;
             }
 
             if (!sObjectMgr->GetCreatureData(memberGUID))
             {
-                TC_LOG_ERROR("sql.sql", "creature_formations table member guid %lu incorrect (not exist)", memberGUID);
+                TC_LOG_ERROR(LOG_FILTER_SQL, "creature_formations table member guid %u incorrect (not exist)", memberGUID);
                 delete group_member;
                 continue;
             }
@@ -143,7 +143,7 @@ void FormationMgr::LoadCreatureFormations()
     }
     while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u creatures in formations in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creatures in formations in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 FormationInfo* FormationMgr::CreateCustomFormation(Creature* c)
@@ -152,7 +152,7 @@ FormationInfo* FormationMgr::CreateCustomFormation(Creature* c)
     group_member->leaderGUID            = c->GetGUIDLow();
     group_member->groupAI               = 2;
     group_member->follow_dist           = 1.0f;
-    group_member->follow_angle          = float(45 * M_PI / 180);
+    group_member->follow_angle          = 45 * M_PI / 180;
     sFormationMgr->AddCreatureToGroup(c->GetGUIDLow(), c);
     if (CreatureGroup* f = c->GetFormation())
         f->AddMember(c, group_member);
@@ -165,12 +165,12 @@ CreatureGroup::CreatureGroup(ObjectGuid::LowType const& id): m_leader(nullptr), 
 
 void CreatureGroup::AddMember(Creature* member, FormationInfo* f)
 {
-    TC_LOG_DEBUG("entities.unit", "CreatureGroup::AddMember: Adding unit GetDBTableGUIDLow %lu GUID: %u", member->GetDBTableGUIDLow(), member->GetGUID().GetGUIDLow());
+    TC_LOG_DEBUG(LOG_FILTER_UNITS, "CreatureGroup::AddMember: Adding unit GetDBTableGUIDLow %u GUID: %u", member->GetDBTableGUIDLow(), member->GetGUID().GetGUIDLow());
 
     //Check if it is a leader
     if (member->GetDBTableGUIDLow() == m_groupID || member->GetGUIDLow() == m_groupID)
     {
-        TC_LOG_DEBUG("entities.unit", "Unit GUID: %u is formation leader. Adding group.", member->GetGUID().GetGUIDLow());
+        TC_LOG_DEBUG(LOG_FILTER_UNITS, "Unit GUID: %u is formation leader. Adding group.", member->GetGUID().GetGUIDLow());
         m_leader = member;
     }
 
@@ -185,7 +185,7 @@ void CreatureGroup::AddMember(Creature* member, FormationInfo* f)
 
 void CreatureGroup::RemoveMember(Creature* member)
 {
-    TC_LOG_DEBUG("entities.unit", "CreatureGroup::RemoveMember: Removing unit GetDBTableGUIDLow %lu GUID: %u entry %u", member->GetDBTableGUIDLow(), member->GetGUID().GetGUIDLow(), member->GetEntry());
+    TC_LOG_DEBUG(LOG_FILTER_UNITS, "CreatureGroup::RemoveMember: Removing unit GetDBTableGUIDLow %u GUID: %u entry %u", member->GetDBTableGUIDLow(), member->GetGUID().GetGUIDLow(), member->GetEntry());
 
     if (m_leader == member)
         m_leader = nullptr;
@@ -199,8 +199,10 @@ void CreatureGroup::MemberAttackStart(Creature* member, Unit* target)
     if(!member || !target)
         return;
 
+    #ifdef WIN32
     if(m_leader)
-        TC_LOG_DEBUG("entities.unit", "CreatureGroup::MemberAttackStart: GetDBTableGUIDLow %lu GetGUIDLow %u entry %u m_leader %u %u", member->GetDBTableGUIDLow(), member->GetGUIDLow(), member->GetEntry(), m_leader->GetEntry(), m_leader->GetGUIDLow());
+        TC_LOG_DEBUG(LOG_FILTER_UNITS, "CreatureGroup::MemberAttackStart: GetDBTableGUIDLow %u GetGUIDLow %u entry %u m_leader %u %u", member->GetDBTableGUIDLow(), member->GetGUIDLow(), member->GetEntry(), m_leader->GetEntry(), m_leader->GetGUIDLow());
+    #endif
 
     uint8 groupAI = 0;
 
@@ -227,13 +229,13 @@ void CreatureGroup::MemberAttackStart(Creature* member, Unit* target)
     for (auto& itr : m_members)
     {
         if (m_leader) // avoid crash if leader was killed and reset.
-            TC_LOG_DEBUG("entities.unit", "GROUP ATTACK: group instance id %u calls member instid %u", m_leader->GetInstanceId(), member->GetInstanceId());
+            TC_LOG_DEBUG(LOG_FILTER_UNITS, "GROUP ATTACK: group instance id %u calls member instid %u", m_leader->GetInstanceId(), member->GetInstanceId());
 
         //Skip one check
         if (itr.first == member)
             continue;
 
-        if (!itr.first->IsAlive() || !itr.first->IsInWorld())
+        if (!itr.first->isAlive() || !itr.first->IsInWorld())
             continue;
 
         if (itr.first->getVictim())
@@ -251,14 +253,14 @@ void CreatureGroup::FormationReset(bool dismiss)
 {
     for (auto& itr : m_members)
     {
-        if (itr.first != m_leader && itr.first->IsAlive() && itr.first->IsInWorld())
+        if (itr.first != m_leader && itr.first->isAlive() && itr.first->IsInWorld())
         {
             if (dismiss)
                 itr.first->GetMotionMaster()->Initialize();
             else
                 itr.first->GetMotionMaster()->MoveIdle();
 
-            TC_LOG_DEBUG("entities.unit", "Set %s movement for member GUID: %u", dismiss ? "default" : "idle",itr.first->GetGUIDLow());
+            TC_LOG_DEBUG(LOG_FILTER_UNITS, "Set %s movement for member GUID: %u", dismiss ? "default" : "idle",itr.first->GetGUIDLow());
         }
     }
     m_Formed = !dismiss;
@@ -276,7 +278,7 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
     for (auto& itr : m_members)
     {
         Creature* member = itr.first;
-        if (member == m_leader || !member->IsAlive() || member->getVictim() || !member->IsInWorld())
+        if (member == m_leader || !member->isAlive() || member->getVictim() || !member->IsInWorld())
             continue;
 
         if (member->IsInEvadeMode())

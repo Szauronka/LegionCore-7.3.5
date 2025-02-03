@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : The Arcway 100-110
     Encounter: Naltira
     Mythic: 100%
@@ -184,6 +185,7 @@ public:
             {
                 me->SetDisableGravity(false);
                 me->RemoveAurasDueToSpell(SPELL_WEB_BEAM_BOSS);
+                me->SetAnimTier(0);
                 me->SetReactState(REACT_AGGRESSIVE);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_ATTACKABLE_1);
             }
@@ -238,7 +240,7 @@ public:
                         break;
                     case EVENT_SUM_MANAFANG:
                         Position pos;
-                        pos = me->GetRandomNearPosition(30.0f);
+                        me->GetRandomNearPosition(pos, 30.0f);
                         me->SummonCreature(NPC_VICIOUS_MANAFANG, pos);
                         events.RescheduleEvent(EVENT_SUM_MANAFANG, 22000);
                         break;
@@ -314,7 +316,7 @@ public:
         {
             if (Player* player = ObjectAccessor::GetPlayer(*me, playerGUID))
             {
-                if (player->IsAlive() && player->HasAura(SPELL_DEVOUR, me->GetGUID()))
+                if (player->isAlive() && player->HasAura(SPELL_DEVOUR, me->GetGUID()))
                 {
                     playerGUID = ObjectGuid::Empty;
                     player->RemoveAurasDueToSpell(SPELL_DEVOUR, me->GetGUID());
@@ -448,7 +450,7 @@ public:
             std::list<WorldObject*> tempTargets;
 
             for (auto const& target : targets)
-                if (target && target->ToPlayer() && target->ToPlayer()->IsAlive())
+                if (target && target->ToPlayer() && target->ToPlayer()->isAlive())
                     tempTargets.push_back(target);
 
             targets = tempTargets;

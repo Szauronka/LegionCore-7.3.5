@@ -17,11 +17,10 @@
  */
 
 #include "CreatureAI.h"
-#include "FlightPathMovementGenerator.h"
-#include "ObjectMgr.h"
-#include "PlayerDefines.h"
 #include "TaxiPackets.h"
+#include "ObjectMgr.h"
 #include "TaxiPathGraph.h"
+#include "PlayerDefines.h"
 #include "WaypointMovementGenerator.h"
 
 void WorldSession::HandleEnableTaxiNode(WorldPackets::Taxi::EnableTaxiNode& enableTaxiNode)
@@ -82,7 +81,7 @@ void WorldSession::SendTaxiMenu(Creature* unit)
         GetPlayer()->SetTaxiCheater(true); // Grimwing in Ebon Hold, special case. NOTE: Not perfect, Zul'Aman should not be included according to WoWhead, and I think taxicheat includes it.
 
     WorldPackets::Taxi::ShowTaxiNodes data;
-    data.WindowInfo.emplace();
+    data.WindowInfo = boost::in_place();
     data.WindowInfo->UnitGUID = unit->GetGUID();
     data.WindowInfo->CurrentNode = curloc;
 

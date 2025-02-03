@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+ * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -16,14 +16,31 @@
  */
 
 #include "Logger.h"
-#include "Appender.h"
-#include "LogMessage.h"
 
-Logger::Logger(std::string const& _name, LogLevel _level): name(_name), level(_level) { }
+Logger::Logger() : name(""), type(LOG_FILTER_GENERAL), level(LOG_LEVEL_DISABLED)
+{
+}
+
+void Logger::Create(std::string const& _name, LogFilterType _type, LogLevel _level)
+{
+    name = _name;
+    type = _type;
+    level = _level;
+}
+
+Logger::~Logger()
+{
+    appenders.clear();
+}
 
 std::string const& Logger::getName() const
 {
     return name;
+}
+
+LogFilterType Logger::getType() const
+{
+    return type;
 }
 
 LogLevel Logger::getLogLevel() const
@@ -46,15 +63,15 @@ void Logger::setLogLevel(LogLevel _level)
     level = _level;
 }
 
-void Logger::write(LogMessage* message) const
+void Logger::write(LogMessage* message)
 {
     if (!level || level > message->level || message->text.empty())
     {
-        //fprintf(stderr, "Logger::write: Logger %s, Level %u. Msg %s Level %u WRONG LEVEL MASK OR EMPTY MSG\n", getName().c_str(), getLogLevel(), message.text.c_str(), message.level);
+        //fprintf(stderr, "Logger::write: Logger %s, Level %u. Msg %s Level %u WRONG LEVEL MASK OR EMPTY MSG\n", getName().c_str(), messge.level, message.text.c_str(), .message.level); // DEBUG - RemoveMe
         return;
     }
 
-    for (auto it = appenders.begin(); it != appenders.end(); ++it)
-        if (it->second)
-            it->second->write(message);
+    for (auto& appender : appenders)
+        if (appender.second)
+            appender.second->write(message);
 }

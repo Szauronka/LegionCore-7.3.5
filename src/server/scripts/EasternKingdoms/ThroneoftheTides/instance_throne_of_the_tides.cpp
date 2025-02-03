@@ -22,9 +22,8 @@ public:
 
     struct instance_throne_of_the_tides_InstanceMapScript : public InstanceScript
     {
-        instance_throne_of_the_tides_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_throne_of_the_tides_InstanceMapScript(Map* map) : InstanceScript(map)
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
             LoadDoorData(doordata);
             uiLadyNazjarGUID.Clear();
@@ -270,23 +269,58 @@ public:
             return true;
         }
 
-        void WriteSaveDataMore(std::ostringstream& data) override
+        std::string GetSaveData()
         {
-            data << m_uiEvents[0] << " " << m_uiEvents[1] << " " << m_uiEvents[2] << " " << archaeologyQuestAura;
+            OUT_SAVE_INST_DATA;
+
+            std::string str_data;
+
+            std::ostringstream saveStream;
+            saveStream << "T o t T " << GetBossSaveData() << m_uiEvents[0] << " " << m_uiEvents[1] << " " << m_uiEvents[2] << " " << archaeologyQuestAura;
+
+            str_data = saveStream.str();
+
+            OUT_SAVE_INST_DATA_COMPLETE;
+            return str_data;
         }
 
-        void ReadSaveDataMore(std::istringstream& data) override
+        void Load(const char* in)
         {
-            for (uint8 i = 0; i < 3; ++i)
+            if (!in)
             {
-                uint32 tmpEvent;
-                data >> tmpEvent;
-                if (tmpEvent == IN_PROGRESS || tmpEvent > SPECIAL)
-                    tmpEvent = NOT_STARTED;
-                m_uiEvents[i] = tmpEvent;
+                OUT_LOAD_INST_DATA_FAIL;
+                return;
             }
 
-            data >> archaeologyQuestAura;
+            OUT_LOAD_INST_DATA(in);
+
+            char dataHead1, dataHead2, dataHead3, dataHead4;
+
+            std::istringstream loadStream(in);
+            loadStream >> dataHead1 >> dataHead2 >> dataHead3 >> dataHead4;
+
+            if (dataHead1 == 'T' && dataHead2 == 'o' && dataHead3 == 't' && dataHead4 == 'T')
+            {
+                for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
+                {
+                    uint32 tmpState;
+                    loadStream >> tmpState;
+                    if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                    tmpState = NOT_STARTED;
+                    SetBossState(i, EncounterState(tmpState));
+                }
+                for (uint8 i = 0; i < 3; ++i)
+                {
+                    uint32 tmpEvent;
+                    loadStream >> tmpEvent;
+                    if (tmpEvent == IN_PROGRESS || tmpEvent > SPECIAL)
+                    tmpEvent = NOT_STARTED;
+                    m_uiEvents[i] = tmpEvent;
+                }
+                loadStream >> archaeologyQuestAura;
+            } else OUT_LOAD_INST_DATA_FAIL;
+
+            OUT_LOAD_INST_DATA_COMPLETE;
         }
 
         private:

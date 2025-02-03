@@ -67,7 +67,7 @@ struct LFBTicket
     uint32 ProposalTime;
 };
 
-class TC_GAME_API PetBattleSystem
+class PetBattleSystem
 {
     PetBattleSystem();
     ~PetBattleSystem();

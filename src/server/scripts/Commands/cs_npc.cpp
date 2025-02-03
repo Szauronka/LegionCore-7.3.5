@@ -15,13 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-Name: npc_commandscript
-%Complete: 100
-Comment: All npc related commands
-Category: commandscripts
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "ObjectMgr.h"
 #include "Chat.h"
@@ -29,6 +22,7 @@ EndScriptData */
 #include "CreatureGroups.h"
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
 #include "CreatureAI.h"
+#include "DatabaseEnv.h"
 
 template<typename E, typename T = char const*>
 struct EnumName
@@ -40,7 +34,7 @@ struct EnumName
 #define CREATE_NAMED_ENUM(VALUE) { VALUE, STRINGIZE(VALUE) }
 
 #define NPCFLAG_COUNT       24
-#define FLAGS_EXTRA_COUNT   31
+#define FLAGS_EXTRA_COUNT   16
 #define MAX_UNIT_FLAGS      33
 #define MAX_UNIT_FLAGS2     29
 #define MAX_UNIT_DYNFLAGS   10
@@ -148,7 +142,6 @@ EnumName<UnitFlags2> const unitFlags2[MAX_UNIT_FLAGS2] =
     CREATE_NAMED_ENUM(UNOT_FLAG2_IGNORE_SPELL_MIN_RANGE_RESTRICTIONS),
     CREATE_NAMED_ENUM(UNIT_FLAG2_UNK7),
 };
-
 EnumName<CreatureFlagsExtra> const flagsExtra[FLAGS_EXTRA_COUNT] =
 {
     CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_INSTANCE_BIND),
@@ -156,33 +149,17 @@ EnumName<CreatureFlagsExtra> const flagsExtra[FLAGS_EXTRA_COUNT] =
     CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_PARRY),
     CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_PARRY_HASTEN),
     CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_BLOCK),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_CRUSHING_BLOWS),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_CRUSH),
     CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_XP_AT_KILL),
     CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_TRIGGER),
     CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_TAUNT),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_GHOST_VISIBILITY),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_USE_OFFHAND_ATTACK),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_SELL_VENDOR),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_CANNOT_ENTER_COMBAT),
     CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_WORLDEVENT),
     CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_GUARD),
     CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_CRIT),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_SKILL_GAINS),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_OBEYS_TAUNT_DIMINISHING_RETURNS),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_SKILLGAIN),
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_TAUNT_DIMINISH),
     CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_ALL_DIMINISH),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_NO_PLAYER_DAMAGE_REQ),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_UNUSED_27),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_DUNGEON_BOSS),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_IGNORE_PATHFINDING),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_IMMUNITY_KNOCKBACK),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_UNUSED_31),
-
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_PERSONAL_LOOT),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_EVENT_LOOT),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_EVENT_NPC),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_VEHICLE_ATTACKABLE_PASSENGERS),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_VEH_INSTANT_DESPAWN_PASSENGERS),
-    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_HP_85_PERC)
+    CREATE_NAMED_ENUM(CREATURE_FLAG_EXTRA_DUNGEON_BOSS)
 };
 
 EnumName<UnitDynFlags> const dynFlags[MAX_UNIT_DYNFLAGS] =
@@ -442,7 +419,7 @@ public:
             wait = 0;
 
         // Update movement type
-        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_MOVEMENT_TYPE);
+        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_MOVEMENT_TYPE);
 
         stmt->setUInt8(0, uint8(WAYPOINT_MOTION_TYPE));
         stmt->setUInt64(1, lowGuid);
@@ -453,7 +430,7 @@ public:
         {
             creature->SetDefaultMovementType(WAYPOINT_MOTION_TYPE);
             creature->GetMotionMaster()->Initialize();
-            if (creature->IsAlive())                            // dead creature will reset movement generator at respawn
+            if (creature->isAlive())                            // dead creature will reset movement generator at respawn
             {
                 creature->setDeathState(JUST_DIED);
                 creature->Respawn(true);
@@ -531,8 +508,8 @@ public:
         {
             if (((Pet*)creature)->getPetType() == HUNTER_PET)
             {
-                creature->SetUInt32Value(UNIT_FIELD_PET_NEXT_LEVEL_EXPERIENCE, sObjectMgr->GetXPForLevel(lvl)/4);
-                creature->SetUInt32Value(UNIT_FIELD_PET_EXPERIENCE, 0);
+                creature->SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, sObjectMgr->GetXPForLevel(lvl)/4);
+                creature->SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, 0);
             }
             ((Pet*)creature)->GivePetLevel(lvl);
         }
@@ -658,7 +635,7 @@ public:
         }
 
         // ..and DB
-        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_FACTION);
+        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_FACTION);
 
         stmt->setUInt16(0, uint16(factionId));
         stmt->setUInt32(1, creature->GetEntry());
@@ -687,7 +664,7 @@ public:
 
         creature->SetUInt32Value(UNIT_FIELD_NPC_FLAGS, npcFlags);
 
-        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_NPCFLAG);
+        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_NPCFLAG);
 
         stmt->setUInt32(0, npcFlags);
         stmt->setUInt32(1, creature->GetEntry());
@@ -768,16 +745,23 @@ public:
         uint32 npcflags2 = target->GetUInt32Value(UNIT_FIELD_NPC_FLAGS2);
         uint32 displayid = target->GetDisplayId();
         uint32 nativeid = target->GetNativeDisplayId();
+        uint32 objscale = target->GetObjectScale();
+        uint32 objsize = target->GetObjectSize();
+        uint32 modelsize = target->GetModelSize();
         uint32 Entry = target->GetEntry();
         CreatureTemplate const* cInfo = target->GetCreatureTemplate();
 
-        int64 curRespawnDelay = target->GetRespawnTimeEx()-GameTime::GetGameTime();
+        int64 curRespawnDelay = target->GetRespawnTimeEx()-time(NULL);
         if (curRespawnDelay < 0)
             curRespawnDelay = 0;
         std::string curRespawnDelayStr = secsToTimeString(uint64(curRespawnDelay), true);
         std::string defRespawnDelayStr = secsToTimeString(target->GetRespawnDelay(), true);
 
         handler->PSendSysMessage(LANG_NPCINFO_CHAR,  uint32(target->GetDBTableGUIDLow()), target->GetGUID().ToString().c_str(), faction, Entry, displayid, nativeid);
+
+        handler->PSendSysMessage("Object Scale: %s", std::to_string(objscale));
+        handler->PSendSysMessage("Object Size: %s", std::to_string(objsize));
+        handler->PSendSysMessage("Model Size: %s", std::to_string(modelsize));
 
         {
             std::ostringstream ss_flags;
@@ -974,12 +958,129 @@ public:
         {
             std::ostringstream ss_flags;
 
+            if (uint32 unitFlag2 = target->GetUInt32Value(UNIT_FIELD_FLAGS_2))
+            {
+                ss_flags << unitFlag2 << " : ";
+                // fix this
+                if (unitFlag2 & UNIT_FLAG2_FEIGN_DEATH)
+                    ss_flags << "FeignDeath ";
+                if (unitFlag2 & UNIT_FLAG2_UNK1)
+                    ss_flags << "UNK1 ";
+                if (unitFlag2 & UNIT_FLAG2_IGNORE_REPUTATION)
+                    ss_flags << "IgnoreReputation ";
+                if (unitFlag2 & UNIT_FLAG2_COMPREHEND_LANG)
+                    ss_flags << "ComprehendLang ";
+                if (unitFlag2 & UNIT_FLAG2_MIRROR_IMAGE)
+                    ss_flags << "MirrorImage ";
+                if (unitFlag2 & UNIT_FLAG2_INSTANTLY_APPEAR_MODEL)
+                    ss_flags << "InstantlyAppearModel ";
+                if (unitFlag2 & UNIT_FLAG2_FORCE_MOVEMENT)
+                    ss_flags << "ForceMovement ";
+                if (unitFlag2 & UNIT_FLAG2_DISARM_OFFHAND)
+                    ss_flags << "DisarmOffhand ";
+                if (unitFlag2 & UNIT_FLAG2_DISABLE_PRED_STATS)
+                    ss_flags << "DisablePredStats ";
+                if (unitFlag2 & UNIT_FLAG2_ALLOW_CHANGING_TALENTS)
+                    ss_flags << "AllowChangingTalents ";
+                if (unitFlag2 & UNIT_FLAG2_DISARM_RANGED)
+                    ss_flags << "DisarmRanged ";
+                if (unitFlag2 & UNIT_FLAG2_REGENERATE_POWER)
+                    ss_flags << "RegeneratePower ";
+                if (unitFlag2 & UNIT_FLAG2_RESTRICT_PARTY_INTERACTION)
+                    ss_flags << "RestrictPartyInteraction ";
+                if (unitFlag2 & UNIT_FLAG2_PREVENT_SPELL_CLICK)
+                    ss_flags << "PreventSpellClick ";
+                if (unitFlag2 & UNIT_FLAG2_ALLOW_ENEMY_INTERACT)
+                    ss_flags << "AllowEnemyInteract ";
+                if (unitFlag2 & UNIT_FLAG2_DISABLE_TURN)
+                    ss_flags << "DisableTurn ";
+                if (unitFlag2 & UNIT_FLAG2_UNK2)
+                    ss_flags << "UNK2 ";
+                if (unitFlag2 & UNIT_FLAG2_PLAY_DEATH_ANIM)
+                    ss_flags << "OkayDeathAnim ";
+                if (unitFlag2 & UNIT_FLAG2_ALLOW_CHEAT_SPELLS)
+                    ss_flags << "AllowCheatSpells ";
+                if (unitFlag2 & UNIT_FLAG2_UNK3)
+                    ss_flags << "UNK3 ";
+                if (unitFlag2 & UNIT_FLAG2_UNK4)
+                    ss_flags << "UNK4 ";
+                if (unitFlag2 & UNIT_FLAG2_UNK5)
+                    ss_flags << "UNK5 ";
+                if (unitFlag2 & UNIT_FLAG2_UNK6)
+                    ss_flags << "UNK6 ";
+                if (unitFlag2 & UNIT_FLAG2_NO_ACTIONS)
+                    ss_flags << "NoActions ";
+                if (unitFlag2 & UNIT_FLAG2_SWIM_PREVENT)
+                    ss_flags << "SwimPrevent ";
+                if (unitFlag2 & UNIT_FLAG2_HIDE_IN_COMBAT_LOG)
+                    ss_flags << "HideInCombatLog ";
+                if (unitFlag2 & UNIT_FLAG2_PREVENT_SELECT_NPC)
+                    ss_flags << "PreventSelectNpc ";
+                if (unitFlag2 & UNOT_FLAG2_IGNORE_SPELL_MIN_RANGE_RESTRICTIONS)
+                    ss_flags << "IgnoreSpellMinRangeRestrictions ";
+                if (unitFlag2 & UNIT_FLAG2_UNK7)
+                    ss_flags << "UNK7 ";
+            }
+            else
+                ss_flags << "0";
+
+            handler->PSendSysMessage("UnitFlags2: %s", ss_flags.str().c_str());
+        }
+
+        {
+            std::ostringstream ss_flags;
+
+            if (uint32 unitFlag3 = target->GetUInt32Value(UNIT_FIELD_FLAGS_3))
+            {
+                ss_flags << unitFlag3 << " : ";
+                // fix this
+                if (unitFlag3 & UNIT_FLAG3_UNK0)
+                    ss_flags << "UNK0 ";
+                if (unitFlag3 & UNIT_FLAG3_UNK1)
+                    ss_flags << "UNK1 ";
+                if (unitFlag3 & UNIT_FLAG3_NOT_CHECK_MOUNT)
+                    ss_flags << "NotCheckMount ";
+                if (unitFlag3 & UNIT_FLAG3_UNK3)
+                    ss_flags << "UNK3 ";
+                if (unitFlag3 & UNIT_FLAG3_UNK4)
+                    ss_flags << "UNK4 ";
+                if (unitFlag3 & UNIT_FLAG3_UNK5)
+                    ss_flags << "UNK5 ";
+                if (unitFlag3 & UNIT_FLAG3_UNK6)
+                    ss_flags << "UNK6 ";
+                if (unitFlag3 & UNIT_FLAG3_UNK7)
+                    ss_flags << "UNK7 ";
+                if (unitFlag3 & UNIT_FLAG3_UNK8)
+                    ss_flags << "UNK8 ";
+                if (unitFlag3 & UNIT_FLAG3_UNK9)
+                    ss_flags << "UNK9 ";
+                if (unitFlag3 & UNIT_FLAG3_UNK10)
+                    ss_flags << "UNK10 ";
+                if (unitFlag3 & UNIT_FLAG3_UNK11)
+                    ss_flags << "UNK11 ";
+                if (unitFlag3 & UNIT_FLAG3_UNK12)
+                    ss_flags << "UNK12 ";
+                if (unitFlag3 & UNIT_FLAG3_FEIGN_DEATH)
+                    ss_flags << "FeignDeath ";
+                
+            }
+            else
+                ss_flags << "0";
+
+            handler->PSendSysMessage("UnitFlags3: %s", ss_flags.str().c_str());
+        }
+
+        {
+            std::ostringstream ss_flags;
+
             if (uint32 dynamicFlags = target->GetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS))
             {
                 ss_flags << dynamicFlags << " : ";
 
                 if (dynamicFlags & UNIT_DYNFLAG_HIDE_MODEL)
                     ss_flags << "HideModel ";
+                if (dynamicFlags & UNIT_DYNFLAG_NOT_SELECTABLE_MODEL)
+                    ss_flags << "NotSlectableModel ";
                 if (dynamicFlags & UNIT_DYNFLAG_LOOTABLE)
                     ss_flags << "Lootable ";
                 if (dynamicFlags & UNIT_DYNFLAG_TRACK_UNIT)
@@ -988,8 +1089,6 @@ public:
                     ss_flags << "Tapped ";
                 if (dynamicFlags & UNIT_DYNFLAG_SPECIALINFO)
                     ss_flags << "SpecialInfo ";
-                if (dynamicFlags & UNIT_DYNFLAG_DEAD)
-                    ss_flags << "Dead ";
                 if (dynamicFlags & UNIT_DYNFLAG_REFER_A_FRIEND)
                     ss_flags << "ReferFriend ";
                 if (dynamicFlags & UNIT_DYNFLAG_DISABLE_SAME_INTARACT)
@@ -1003,7 +1102,6 @@ public:
 
         handler->PSendSysMessage(LANG_NPCINFO_LEVEL, target->getLevel());
         handler->PSendSysMessage(LANG_NPCINFO_HEALTH, target->GetCreateHealth(), target->GetMaxHealth(), target->GetHealth());
-        handler->PSendSysMessage(LANG_NPCINFO_MOVEMENT_DATA, target->GetMovementTemplate().ToString().c_str());
         handler->PSendSysMessage(LANG_NPCINFO_FLAGS, target->getFaction());
         handler->PSendSysMessage(LANG_COMMAND_RAWPAWNTIMES, defRespawnDelayStr.c_str(), curRespawnDelayStr.c_str());
         handler->PSendSysMessage(LANG_NPCINFO_LOOT,  cInfo->lootid, cInfo->pickpocketLootId, cInfo->SkinLootId);
@@ -1129,14 +1227,14 @@ public:
             creature->NearTeleportTo(x, y, z, o);
             creature->SetPosition(x, y, z, o);
             creature->GetMotionMaster()->Initialize();
-            if (creature->IsAlive())                            // dead creature will reset movement generator at respawn
+            if (creature->isAlive())                            // dead creature will reset movement generator at respawn
             {
                 creature->setDeathState(JUST_DIED);
                 creature->Respawn();
             }
         }
 
-        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_POSITION);
+        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_POSITION);
 
         stmt->setFloat(0, x);
         stmt->setFloat(1, y);
@@ -1233,7 +1331,7 @@ public:
 
         if (dontdel_str)
         {
-            //TC_LOG_ERROR("misc", "DEBUG: All 3 params are set");
+            //TC_LOG_ERROR(LOG_FILTER_GENERAL, "DEBUG: All 3 params are set");
 
             // All 3 params are set
             // GUID
@@ -1241,7 +1339,7 @@ public:
             // doNotDEL
             if (stricmp(dontdel_str, "NODEL") == 0)
             {
-                //TC_LOG_ERROR("misc", "DEBUG: doNotDelete = true;");
+                //TC_LOG_ERROR(LOG_FILTER_GENERAL, "DEBUG: doNotDelete = true;");
                 doNotDelete = true;
             }
         }
@@ -1250,10 +1348,10 @@ public:
             // Only 2 params - but maybe NODEL is set
             if (type_str)
             {
-                TC_LOG_ERROR("misc", "DEBUG: Only 2 params ");
+                TC_LOG_ERROR(LOG_FILTER_GENERAL, "DEBUG: Only 2 params ");
                 if (stricmp(type_str, "NODEL") == 0)
                 {
-                    //TC_LOG_ERROR("misc", "DEBUG: type_str, NODEL ");
+                    //TC_LOG_ERROR(LOG_FILTER_GENERAL, "DEBUG: type_str, NODEL ");
                     doNotDelete = true;
                     type_str = NULL;
                 }
@@ -1322,7 +1420,7 @@ public:
 
             creature->SetDefaultMovementType(move_type);
             creature->GetMotionMaster()->Initialize();
-            if (creature->IsAlive())                            // dead creature will reset movement generator at respawn
+            if (creature->isAlive())                            // dead creature will reset movement generator at respawn
             {
                 creature->setDeathState(JUST_DIED);
                 creature->Respawn();
@@ -1400,13 +1498,13 @@ public:
         creature->SetRespawnRadius((float)option);
         creature->SetDefaultMovementType(mtype);
         creature->GetMotionMaster()->Initialize();
-        if (creature->IsAlive())                                // dead creature will reset movement generator at respawn
+        if (creature->isAlive())                                // dead creature will reset movement generator at respawn
         {
             creature->setDeathState(JUST_DIED);
             creature->Respawn();
         }
 
-        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_SPAWN_DISTANCE);
+        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_SPAWN_DISTANCE);
 
         stmt->setFloat(0, option);
         stmt->setUInt8(1, uint8(mtype));
@@ -1446,7 +1544,7 @@ public:
         else
             return false;
 
-        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_SPAWN_TIME_SECS);
+        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_SPAWN_TIME_SECS);
 
         stmt->setUInt32(0, uint32(spawnTime));
         stmt->setUInt64(1, guidLow);
@@ -1674,7 +1772,7 @@ public:
         // caster have pet now
         player->SetMinion(pet, true);
 
-        pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+        pet->SavePetToDB();
         player->PetSpellInitialize();
 
         return true;
@@ -1717,7 +1815,7 @@ public:
         sFormationMgr->CreatureGroupMap[lowguid] = group_member;
         creature->SearchFormation();
 
-        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_CREATURE_FORMATION);
+        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_INS_CREATURE_FORMATION);
 
         stmt->setUInt64(0, leaderGUID);
         stmt->setUInt64(1, lowguid);
@@ -1974,7 +2072,7 @@ public:
 
         Player* player = handler->GetSession()->GetPlayer();
 
-        WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_NEAREST);
+        PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_NEAREST);
         stmt->setFloat(0, player->GetPositionX());
         stmt->setFloat(1, player->GetPositionY());
         stmt->setFloat(2, player->GetPositionZ());

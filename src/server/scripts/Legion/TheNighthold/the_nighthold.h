@@ -1,7 +1,9 @@
+/*
+    https://uwow.biz/
+*/
+
 #ifndef ThiNightholdH_
 #define ThiNightholdH_
-
-#define DataHeader "NH"
 
 enum eData
 {

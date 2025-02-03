@@ -164,13 +164,14 @@ public:
             if (lSparkList.empty())
                 return;
 
-            Position pos = me->GetPosition();
+            Position pos;
+            me->GetPosition(&pos);
 
             for (GuidList::const_iterator itr = lSparkList.begin(); itr != lSparkList.end(); ++itr)
             {
                 if (Creature* pSpark = Unit::GetCreature(*me, *itr))
                 {
-                    if (pSpark->IsAlive())
+                    if (pSpark->isAlive())
                     {
                         pSpark->SetSpeed(MOVE_RUN, 2.0f);
                         pSpark->GetMotionMaster()->Clear();
@@ -349,11 +350,12 @@ public:
                 if (instance)
                 {
                     Creature* pIonar = instance->instance->GetCreature(instance->GetGuidData(DATA_IONAR));
-                    if (pIonar && pIonar->IsAlive())
+                    if (pIonar && pIonar->isAlive())
                     {
                         if (me->GetDistance(pIonar) > DATA_MAX_SPARK_DISTANCE)
                         {
-                            Position pos = pIonar->GetPosition();
+                            Position pos;
+                            pIonar->GetPosition(&pos);
 
                             me->SetSpeed(MOVE_RUN, 2.0f);
                             me->GetMotionMaster()->Clear();

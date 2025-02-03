@@ -408,7 +408,7 @@ public:
                     Position pos;
 
 
-                    pos = me->GetRandomNearPosition(frand(8.0f, 25.0f));
+                    me->GetRandomNearPosition(pos, frand(8.0f, 25.0f));
                     Creature* protectors = me->SummonCreature(PROTECTOR, pos, TEMPSUMMON_MANUAL_DESPAWN);
                 }
                 break;

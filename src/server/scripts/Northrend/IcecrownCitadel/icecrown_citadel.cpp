@@ -294,7 +294,7 @@ class FrostwingVrykulSearcher
 
         bool operator()(Unit* unit)
         {
-            if (!unit->IsAlive())
+            if (!unit->isAlive())
                 return false;
 
             switch (unit->GetEntry())
@@ -764,7 +764,7 @@ class boss_sister_svalna : public CreatureScript
                 {
                     if (Creature* crusader = ObjectAccessor::GetCreature(*me, instance->GetGuidData(DATA_CAPTAIN_ARNATH + i)))
                     {
-                        if (crusader->IsAlive() && crusader->GetEntry() == crusader->GetCreatureData()->id)
+                        if (crusader->isAlive() && crusader->GetEntry() == crusader->GetCreatureData()->id)
                         {
                             crusader->m_Events.AddEvent(new CaptainSurviveTalk(*crusader), crusader->m_Events.CalculateTime(delay));
                             delay += 6000;
@@ -969,7 +969,7 @@ class npc_crok_scourgebane : public CreatureScript
             {
                 if (action == ACTION_START_GAUNTLET)
                 {
-                    if (_isEventDone || !me->IsAlive())
+                    if (_isEventDone || !me->isAlive())
                         return;
 
                     _isEventActive = true;
@@ -1225,7 +1225,7 @@ struct npc_argent_captainAI : public ScriptedAI
     public:
         npc_argent_captainAI(Creature* creature) : ScriptedAI(creature), instance(creature->GetInstanceScript()), _firstDeath(true)
         {
-            FollowAngle = float(PET_FOLLOW_ANGLE);
+            FollowAngle = PET_FOLLOW_ANGLE;
             FollowDist = PET_FOLLOW_DIST;
             IsUndead = false;
         }
@@ -1816,7 +1816,7 @@ class spell_icc_sprit_alarm : public SpellScriptLoader
                 wards.sort(Trinity::ObjectDistanceOrderPred(GetCaster()));
                 for (std::list<Creature*>::iterator itr = wards.begin(); itr != wards.end(); ++itr)
                 {
-                    if ((*itr)->IsAlive() && (*itr)->HasAura(SPELL_STONEFORM))
+                    if ((*itr)->isAlive() && (*itr)->HasAura(SPELL_STONEFORM))
                     {
                         (*itr)->AI()->Talk(SAY_TRAP_ACTIVATE);
                         (*itr)->RemoveAurasDueToSpell(SPELL_STONEFORM);
@@ -1967,7 +1967,7 @@ class AliveCheck
         bool operator()(WorldObject* target)
         {
             if (Unit* unit = target->ToUnit())
-                return unit->IsAlive();
+                return unit->isAlive();
             return false;
         }
 };
@@ -1993,8 +1993,9 @@ class spell_svalna_revive_champion : public SpellScriptLoader
                 if (!caster)
                     return;
 
-                Position pos = caster->GetPosition();
-                pos = caster->GetNearPosition(5.0f, 0.0f);
+                Position pos;
+                caster->GetPosition(&pos);
+                caster->GetNearPosition(pos, 5.0f, 0.0f);
                 //pos.m_positionZ = caster->GetBaseMap()->GetHeight(caster->GetPhases(), pos.GetPositionX(), pos.GetPositionY(), caster->GetPositionZ(), true, 50.0f);
                 //pos.m_positionZ += 0.05f;
                 caster->SetHomePosition(pos);
@@ -2157,7 +2158,7 @@ class npc_gunship_starter : public CreatureScript
         {
             if ((!player->GetGroup() || !player->GetGroup()->IsLeader(player->GetGUID())) && !player->isGameMaster())
             {
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "I'm not the raid leader...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "I'm not the raid leader...", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
                 player->SEND_GOSSIP_MENU(DEFAULT_GOSSIP_MESSAGE, pCreature->GetGUID());
                 return true;
             }
@@ -2168,7 +2169,7 @@ class npc_gunship_starter : public CreatureScript
                     return true;
                 }
 
-            player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, "Are you ready to begin the battle on the ships?", 631, 1001);
+            player->ADD_GOSSIP_ITEM(0, "Are you ready to begin the battle on the ships?", 631, 1001);
             player->SEND_GOSSIP_MENU(player->GetGossipTextId(pCreature), pCreature->GetGUID());
             return true;
         }
@@ -2214,5 +2215,5 @@ void AddSC_icecrown_citadel()
     new at_icc_shutdown_traps();
     new at_icc_start_blood_quickening();
     new at_icc_start_frostwing_gauntlet();
-    //new npc_gunship_starter();
+    new npc_gunship_starter();
 }

@@ -39,14 +39,14 @@ void WorldSession::SendAuthWaitQue(uint32 position)
         SendPacket(WorldPackets::Auth::WaitQueueFinish().Write());
 }
 
-void WorldSession::SendAuthResponse(uint8 code, bool queued /*= false*/, uint32 queuePos /*= 0*/)
+void WorldSession::SendAuthResponse(uint8 code, bool CharacterTemplate, bool queued /*= false*/, uint32 queuePos /*= 0*/)
 {
     WorldPackets::Auth::AuthResponse response;
     response.Result = code;
 
     if (code == ERROR_OK)
     {
-        response.SuccessInfo.emplace();
+        response.SuccessInfo = boost::in_place();
 
         response.SuccessInfo->AccountExpansionLevel = Expansion();
         response.SuccessInfo->ActiveExpansionLevel = Expansion();
@@ -54,9 +54,29 @@ void WorldSession::SendAuthResponse(uint8 code, bool queued /*= false*/, uint32 
         response.SuccessInfo->CurrencyID = GetBattlePayMgr()->GetShopCurrency();
         response.SuccessInfo->VirtualRealms.emplace_back(GetVirtualRealmAddress(), true, false, sObjectMgr->GetRealmName(realm.Id.Realm), sObjectMgr->GetNormalizedRealmName(realm.Id.Realm));
         response.SuccessInfo->AvailableClasses = &sObjectMgr->GetClassExpansionRequirements();
-        response.SuccessInfo->Time = int32(GameTime::GetGameTime());
+        response.SuccessInfo->Time = int32(time(nullptr));
 
-
+		
+        if (CharacterTemplate && sWorld->getBoolConfig(CONFIG_CHARACTER_TEMPLATE))
+        {
+            if (realm.Build < 26972)
+            {
+				for (auto const& templ : sCharacterDataStore->GetCharacterTemplates())
+				{
+                WorldPackets::Auth::AuthResponse::CharacterTemplateData templateData;
+                templateData.TemplateSetID = templ.second.TemplateSetID;
+                for (auto x : templ.second.Classes)
+                    templateData.Classes.emplace_back(x.FactionGroup, x.ClassID);
+                for (auto z : templ.second.Items)
+                    templateData.Items.emplace_back(z.ItemID, z.Count, z.ClassID, z.FactionGroup);
+                templateData.Name = templ.second.Name;
+                templateData.Description = templ.second.Description;
+                response.SuccessInfo->Templates.emplace_back(templateData);
+				}
+            }
+        }
+        else
+        {
             for (auto& templ : charTemplateData)
             {
                 if (!templ.second.active)
@@ -76,12 +96,12 @@ void WorldSession::SendAuthResponse(uint8 code, bool queued /*= false*/, uint32 
                 templateData.Description = { "Create character with " + std::to_string(templ.second.level) + " level and " + std::to_string(templ.second.iLevel) + "ilvl items" };
                 response.SuccessInfo->Templates.emplace_back(templateData);
             }
-        
+        }
     }
 
     if (queued)
     {
-        response.WaitInfo.emplace();
+        response.WaitInfo = boost::in_place();
         response.WaitInfo->WaitCount = queuePos;
     }
 

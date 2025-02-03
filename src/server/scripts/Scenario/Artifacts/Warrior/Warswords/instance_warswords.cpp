@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Warrior: Warswords
 */
 
@@ -18,7 +19,7 @@ public:
 
     struct instance_warswords_InstanceMapScript : public InstanceScript
     {
-        instance_warswords_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_warswords_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint32 outrotimer;
         bool jump;

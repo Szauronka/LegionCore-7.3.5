@@ -1,7 +1,9 @@
+/*
+    https://uwow.biz/
+*/
+
 #ifndef TombOsSargeasH_
 #define TombOsSargeasH_
-
-#define DataHeader "TOS"
 
 enum eData
 {

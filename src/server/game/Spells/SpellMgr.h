@@ -1140,7 +1140,7 @@ inline bool IsProfessionOrRidingSkill(uint32 skill)
     return  IsProfessionSkill(skill) || skill == SKILL_RIDING;
 }
 
-TC_GAME_API bool IsPartOfSkillLine(uint32 skillId, uint32 spellId);
+bool IsPartOfSkillLine(uint32 skillId, uint32 spellId);
 
 // spell diminishing returns
 DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto, bool triggered);
@@ -1173,7 +1173,7 @@ struct SpellInfoLoadHelper
     SpellTotemsEntry const* Totems = nullptr;
 };
 
-class TC_GAME_API SpellMgr
+class SpellMgr
 {
     // Constructors
         SpellMgr();
@@ -1181,7 +1181,11 @@ class TC_GAME_API SpellMgr
 
     // Accessors (const or static functions)
     public:
-        static SpellMgr* instance();
+        static SpellMgr* instance()
+        {
+            static SpellMgr instance;
+            return &instance;
+        }
 
         // Spell correctness for client using
         static bool IsSpellValid(SpellInfo const* spellInfo, Player* player = nullptr, bool msg = true);

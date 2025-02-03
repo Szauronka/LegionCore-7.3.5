@@ -1,11 +1,10 @@
 /*
+    http://uwow.biz
     Dungeon : Maw of Souls 100-110
 */
 
 #ifndef MAW_OF_SOULS_H_
 #define MAW_OF_SOULS_H_
-
-#define DataHeader "MOS"
 
 enum eData
 {

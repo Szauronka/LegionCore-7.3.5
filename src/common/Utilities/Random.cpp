@@ -17,7 +17,7 @@
 
 #include "Random.h"
 #include "Errors.h"
-#include "SFMTRand.h"
+#include "SFMT.h"
 #include <memory>
 #include <random>
 
@@ -34,29 +34,30 @@ static SFMTRand* GetRng()
 
 int32 irand(int32 min, int32 max)
 {
-    ASSERT(max >= min);
-    std::uniform_int_distribution<int32> uid(min, max);
-    return uid(engine);
+    if (min > max)
+        return int32(GetRng()->IRandom(max, min));
+    return int32(GetRng()->IRandom(min, max));
 }
 
 uint32 urand(uint32 min, uint32 max)
 {
-    ASSERT(max >= min);
-    std::uniform_int_distribution<uint32> uid(min, max);
-    return uid(engine);
+    if (min > max)
+        return GetRng()->URandom(max, min);
+    return GetRng()->URandom(min, max);
 }
 
 uint32 urandms(uint32 min, uint32 max)
 {
-    ASSERT(std::numeric_limits<uint32>::max() / Milliseconds::period::den >= max);
-    return urand(min * Milliseconds::period::den, max * Milliseconds::period::den);
+    if (min > max)
+        return GetRng()->URandom(max * IN_MILLISECONDS, min * IN_MILLISECONDS);
+    return GetRng()->URandom(min * IN_MILLISECONDS, max * IN_MILLISECONDS);
 }
 
 float frand(float min, float max)
 {
-    ASSERT(max >= min);
-    std::uniform_real_distribution<float> urd(min, max);
-    return urd(engine);
+    if (min > max)
+        return float(GetRng()->Random() * (min - max) + max);
+    return float(GetRng()->Random() * (max - min) + min);
 }
 
 Milliseconds randtime(Milliseconds min, Milliseconds max)
@@ -69,19 +70,17 @@ Milliseconds randtime(Milliseconds min, Milliseconds max)
 
 uint32 rand32()
 {
-    return GetRng()->RandomUInt32();
+    return GetRng()->BRandom();
 }
 
-float rand_norm()
+double rand_norm()
 {
-    std::uniform_real_distribution<float> urd;
-    return urd(engine);
+    return GetRng()->Random();
 }
 
-float rand_chance()
+double rand_chance()
 {
-    std::uniform_real_distribution<float> urd(0.0f, 100.0f);
-    return urd(engine);
+    return GetRng()->Random() * 100.0;
 }
 
 uint32 urandweighted(size_t count, double const* chances)

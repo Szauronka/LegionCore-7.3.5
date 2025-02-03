@@ -36,9 +36,8 @@ class instance_dragon_soul : public InstanceMapScript
 
         struct instance_dragon_soul_InstanceMapScript : public InstanceScript, public instance_dragon_soul_trash_accessor
         {
-            instance_dragon_soul_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+            instance_dragon_soul_InstanceMapScript(Map* map) : InstanceScript(map)
             {
-                SetHeaders(DataHeader);
                 SetBossNumber(MAX_ENCOUNTER);
 
                 uiMorchokGUID.Clear();
@@ -244,7 +243,7 @@ class instance_dragon_soul : public InstanceMapScript
                                 }
                             }
                         }
-                        TC_LOG_ERROR("scripts", "instance_dragon_soul: NPC_TWILIGHT_ASSAULTER_STALKER of unknown DB GUID was spawned: %u", pCreature->GetDBTableGUIDLow());
+                        TC_LOG_ERROR(LOG_FILTER_TSCR, "instance_dragon_soul: NPC_TWILIGHT_ASSAULTER_STALKER of unknown DB GUID was spawned: %u", pCreature->GetDBTableGUIDLow());
                         break;
                     }
                     case NPC_EIENDORMI:
@@ -762,40 +761,76 @@ class instance_dragon_soul : public InstanceMapScript
                                 ActivatePortal(Teleports);
             }
 
-            void WriteSaveDataMore(std::ostringstream& data) override
+            std::string GetSaveData()
             {
-                data << uiOpenPortalEvent  << " " << bHagaraEvent << " " << uiDragonSoulEvent << " " << uiUltraxionTrash;
+                OUT_SAVE_INST_DATA;
+
+                std::string str_data;
+
+                std::ostringstream saveStream;
+                saveStream << "D S " << GetBossSaveData() << uiOpenPortalEvent  << " " << bHagaraEvent << " " << uiDragonSoulEvent << " " << uiUltraxionTrash << " ";
+
+                str_data = saveStream.str();
+
+                OUT_SAVE_INST_DATA_COMPLETE;
+                return str_data;
             }
 
-            void ReadSaveDataMore(std::istringstream& data) override
+            void Load(const char* in)
             {
-                uint32 tmpEvent;
-                data >> tmpEvent;
-                if (tmpEvent != DONE)
-                    tmpEvent = NOT_STARTED;
-                uiOpenPortalEvent = tmpEvent;
+                if (!in)
+                {
+                    OUT_LOAD_INST_DATA_FAIL;
+                    return;
+                }
 
-                data >> tmpEvent;
-                if (tmpEvent != DONE)
-                    tmpEvent = NOT_STARTED;
-                bHagaraEvent = tmpEvent;
+                OUT_LOAD_INST_DATA(in);
 
-                data >> tmpEvent;
-                if (tmpEvent != DONE)
-                    tmpEvent = NOT_STARTED;
-                uiDragonSoulEvent = tmpEvent;
+                char dataHead1, dataHead2;
 
-                data >> tmpEvent;
-                if (tmpEvent != DONE)
-                    tmpEvent = NOT_STARTED;
-                uiUltraxionTrash = tmpEvent;
+                std::istringstream loadStream(in);
+                loadStream >> dataHead1 >> dataHead2;
+
+                if (dataHead1 == 'D' && dataHead2 == 'S')
+                {
+                    for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
+                    {
+                        uint32 tmpState;
+                        loadStream >> tmpState;
+                        if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                            tmpState = NOT_STARTED;
+                        SetBossState(i, EncounterState(tmpState));
+                    }
+                    
+                    uint32 tmpEvent;
+                    loadStream >> tmpEvent;
+                    if (tmpEvent != DONE) 
+                        tmpEvent = NOT_STARTED;
+                    uiOpenPortalEvent = tmpEvent;
+
+                    loadStream >> tmpEvent;
+                    if (tmpEvent != DONE) 
+                        tmpEvent = NOT_STARTED;
+                    bHagaraEvent = tmpEvent;
+
+                    loadStream >> tmpEvent;
+                    if (tmpEvent != DONE) 
+                        tmpEvent = NOT_STARTED;
+                    uiDragonSoulEvent = tmpEvent;
+
+                    loadStream >> tmpEvent;
+                    if (tmpEvent != DONE) 
+                        tmpEvent = NOT_STARTED;
+                    uiUltraxionTrash = tmpEvent;
+                } else OUT_LOAD_INST_DATA_FAIL;
+
+                OUT_LOAD_INST_DATA_COMPLETE;
             }
 
             bool IsLFR() const
             {
                 return isLfr;
             }
-
             bool IsFallOfDeathwing() const
             {
                 return isLfr && isFallOfDeathwing;
@@ -831,7 +866,7 @@ class instance_dragon_soul : public InstanceMapScript
                     case CRITERIA_DESTROYERS_END:
                         return !IsLFR();
                     default:
-                        TC_LOG_ERROR("misc", "Achievement system call InstanceScript::CheckAchievementCriteriaMeet but instance script for map %u not have implementation for achievement criteria %u", instance->GetId(), criteria_id);
+                        TC_LOG_ERROR(LOG_FILTER_GENERAL, "Achievement system call InstanceScript::CheckAchievementCriteriaMeet but instance script for map %u not have implementation for achievement criteria %u", instance->GetId(), criteria_id);
                         break;
                 }
 
@@ -881,7 +916,7 @@ class instance_dragon_soul : public InstanceMapScript
                 }
                 return NULL;
             }
-            Optional<Position> GetRandomTwilightAssaulterAssaultPosition(bool horizonal, bool fromEnd, uint8& lane, ObjectGuid& targetGUID) override
+            Position const* GetRandomTwilightAssaulterAssaultPosition(bool horizonal, bool fromEnd, uint8& lane, ObjectGuid& targetGUID) override
             {
                 if (horizonal)
                 {
@@ -910,22 +945,21 @@ class instance_dragon_soul : public InstanceMapScript
                     if (fromEnd)
                         while (twilightAssaultStalkerGuidsH[row][col + 1]) { ++col; } // Find the last one
 
-                    Optional<Position> assaultPos;
-                    assaultPos.emplace();
+                    Position* assaultPos = new Position();
                     if (Creature* stalker = instance->GetCreature(targetGUID = twilightAssaultStalkerGuidsH[row][col]))
-                        assaultPos = stalker->GetPosition();
+                        stalker->GetPosition(assaultPos);
 
                     if (fromEnd)
                     {
                         Position offset = { 0.0f, -10.0f, 10.0f };
                         assaultPos->RelocateOffset(offset);
-                        assaultPos->SetOrientation(float(M_PI /2 ));
+                        assaultPos->SetOrientation(M_PI/2);
                     }
                     else
                     {
                         Position offset = { 0.0f, 10.0f, 10.0f };
                         assaultPos->RelocateOffset(offset);
-                        assaultPos->SetOrientation(float(M_PI * 2 - M_PI / 2));
+                        assaultPos->SetOrientation(M_PI*2 - M_PI/2);
                     }
 
                     twilightAssaultLanesUsedH[row] = fromEnd ? 2 : 1;
@@ -958,10 +992,9 @@ class instance_dragon_soul : public InstanceMapScript
                     if (fromEnd)
                         while (twilightAssaultStalkerGuidsV[col][row + 1]) { ++row; } // Find the last one
 
-                    Optional<Position> assaultPos;
-                    assaultPos.emplace();
+                    Position* assaultPos = new Position();
                     if (Creature* stalker = instance->GetCreature(targetGUID = twilightAssaultStalkerGuidsV[col][row]))
-                        assaultPos = stalker->GetPosition();
+                        stalker->GetPosition(assaultPos);
 
                     if (fromEnd)
                     {
@@ -973,7 +1006,7 @@ class instance_dragon_soul : public InstanceMapScript
                     {
                         Position offset = { 10.0f, 0.0f, 10.0f };
                         assaultPos->RelocateOffset(offset);
-                        assaultPos->SetOrientation(float(M_PI));
+                        assaultPos->SetOrientation(M_PI);
                     }
 
                     twilightAssaultLanesUsedV[col] = fromEnd ? 2 : 1;
@@ -1090,7 +1123,7 @@ class instance_dragon_soul : public InstanceMapScript
                         bool operator()(ObjectGuid guid)
                         {
                             Creature* assaulter = m_instance->instance->GetCreature(guid);
-                            return assaulter && assaulter->IsAlive() && !assaulter->AI()->GetData(1);
+                            return assaulter && assaulter->isAlive() && !assaulter->AI()->GetData(1);
                         }
 
                     private:

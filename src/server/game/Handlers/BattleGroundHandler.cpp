@@ -41,12 +41,7 @@ void WorldSession::HandleBattlemasterHello(WorldPackets::NPC::Hello& packet)
     if (!unit->isBattleMaster())                             // it's not battlemaster
         return;
 
-    // Stop the npc if moving
-    if (uint32 pause = unit->GetMovementTemplate().GetInteractionPauseTimer())
-    {
-        unit->PauseMovement(pause);
-        unit->SetHomePosition(unit->GetPosition());
-    }
+    unit->StopMoving();
 
     uint16 bgTypeId = sBattlegroundMgr->GetBattleMasterBG(unit->GetEntry());
 
@@ -67,7 +62,7 @@ void WorldSession::HandleBattlemasterJoin(WorldPackets::Battleground::Join& pack
 
     if (!sBattlemasterListStore.LookupEntry(queueID))
     {
-        TC_LOG_ERROR("network", "Battleground: invalid bgtype (%u) received. possible cheater? player guid %u", queueID, _player->GetGUIDLow());
+        TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "Battleground: invalid bgtype (%u) received. possible cheater? player guid %u", queueID, _player->GetGUIDLow());
         return;
     }
 
@@ -90,6 +85,9 @@ void WorldSession::HandleBattlemasterJoin(WorldPackets::Battleground::Join& pack
 
     uint8 bgQueueTypeId = MS::Battlegrounds::GetBgQueueTypeIdByBgTypeID(queueID);
 
+    if (queueID == MS::Battlegrounds::BattlegroundTypeId::BattlegroundDeathMatch)
+        packet.JoinAsGroup = false;
+    
     if (!packet.JoinAsGroup )
     {
         if (player->isUsingLfg())
@@ -135,8 +133,9 @@ void WorldSession::HandleBattlemasterJoin(WorldPackets::Battleground::Join& pack
             return;
         }
 
+        bool isRating = queueID == MS::Battlegrounds::BattlegroundTypeId::BattlegroundDeathMatch;
         BattlegroundQueue& bgQueue = sBattlegroundMgr->GetBattlegroundQueue(bgQueueTypeId);
-        GroupQueueInfo* ginfo = bgQueue.AddGroup(player, nullptr, queueID, bracketEntry, 0, false, false, packet.BlacklistMap);
+        GroupQueueInfo* ginfo = bgQueue.AddGroup(player, nullptr, queueID, bracketEntry, 0, isRating, false, packet.BlacklistMap);
 
         player->SetQueueRoleMask(bracketEntry->RangeIndex, packet.RolesMask);
 
@@ -231,21 +230,19 @@ const uint32 DisableSpecs[]
 
 static auto Arena1v1CheckTalents = [](Player* player) -> bool // Return false, if player have tank/heal spec
 {
+
     if (!player)
         return false;
 
-/*
     if (player->getLevel() < 110)
         return false;
 
     for (auto curSpec : DisableSpecs)
-    {
         if (player->GetUInt32Value(PLAYER_FIELD_CURRENT_SPEC_ID) == curSpec)
         {
             ChatHandler(player).PSendSysMessage("You can't use tank/heal spec");
             return false;
         }
-    }*/
 
     return true;
 };
@@ -325,7 +322,7 @@ void WorldSession::HandleBattleFieldPort(WorldPackets::Battleground::Port& packe
         if (!player->IsInvitedForBattlegroundQueueType(bgQueueTypeId))
             return;
 
-        if ((bgQueueTypeId == MS::Battlegrounds::BattlegroundQueueTypeId::Arena1v1) && !Arena1v1CheckTalents(player))
+        if ((bgQueueTypeId == MS::Battlegrounds::BattlegroundQueueTypeId::Arena1v1 || bgQueueTypeId == MS::Battlegrounds::BattlegroundQueueTypeId::BattlegroundDeathMatch) && !Arena1v1CheckTalents(player))
         {
             ChatHandler(player).PSendSysMessage("You can't join on this specialization!");
             return;
@@ -353,7 +350,7 @@ void WorldSession::HandleBattleFieldPort(WorldPackets::Battleground::Port& packe
         if (!player->InBattleground())
             player->SetBattlegroundEntryPoint();
 
-        if (!player->IsAlive())
+        if (!player->isAlive())
         {
             player->ResurrectPlayer(1.0f);
             player->SpawnCorpseBones();
@@ -526,7 +523,7 @@ void WorldSession::JoinBracket(uint8 bracketType, uint8 rolesMask /*= ROLES_DEFA
     auto bg = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
     if (!bg)
     {
-        TC_LOG_ERROR("network", "Battleground: template bg not found BgTypeID %u", bgTypeId);
+        TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "Battleground: template bg not found BgTypeID %u", bgTypeId);
         return;
     }
 
@@ -799,7 +796,7 @@ void WorldSession::HandleJoinSkirmish(WorldPackets::Battleground::JoinSkirmish& 
             return;
         }
 
-        if (!player->IsAlive())
+        if (!player->isAlive())
         {
             WorldPackets::Battleground::BattlefieldStatusFailed battlefieldStatus;
             sBattlegroundMgr->BuildBattlegroundStatusFailed(&battlefieldStatus, bg, player, 0, MS::Battlegrounds::GroupJoinBattlegroundResult::ERR_GROUP_JOIN_BATTLEGROUND_DEAD);
@@ -862,7 +859,7 @@ void WorldSession::HandleJoinSkirmish(WorldPackets::Battleground::JoinSkirmish& 
                 return;
             }
 
-            if (!member->IsAlive())
+            if (!member->isAlive())
             {
                 WorldPackets::Battleground::BattlefieldStatusFailed battlefieldStatus;
                 sBattlegroundMgr->BuildBattlegroundStatusFailed(&battlefieldStatus, bg, member, 0, MS::Battlegrounds::GroupJoinBattlegroundResult::ERR_GROUP_JOIN_BATTLEGROUND_DEAD);
@@ -1002,7 +999,7 @@ void WorldSession::HandleStartWarGame(WorldPackets::Battleground::StartWargame& 
     auto request = new WargameRequest();
     request->OpposingPartyMemberGUID = packet.OpposingPartyMember;
     request->TournamentRules = packet.TournamentRules;
-    request->CreationDate = GameTime::GetGameTime();
+    request->CreationDate = time(nullptr);
     request->QueueID = packet.QueueID;
 
     _player->SetWargameRequest(request);

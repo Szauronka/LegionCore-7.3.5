@@ -494,7 +494,7 @@ public:
             summons.DespawnAll();
             for (uint8 n = 0; n < 4; n++)
                 me->RemoveAurasDueToSpell(removeaurasentry[n]);
-            me->SetAnimTier(AnimTier::Ground);
+            me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -592,7 +592,7 @@ public:
             case ACTION_KLAXXI_IN_PROGRESS:
                 instance->SendEncounterUnit(ENCOUNTER_FRAME_ENGAGE, me);
                 me->GetMotionMaster()->MoveJump(1582.4f, -5684.9f, -313.635f, 15.0f, 15.0f, 1);
-                me->SetAnimTier(AnimTier::Fly);
+                me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                 break;
             case ACTION_RE_ATTACK:
                 me->SetFullHealth();
@@ -601,7 +601,7 @@ public:
                 DoZoneInCombat(me, 150.0f);
                 break;
             case ACTION_RE_ATTACK_KILRUK:
-                me->SetAnimTier(AnimTier::Ground);
+                me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                 me->SetReactState(REACT_AGGRESSIVE);
                 events.RescheduleEvent(EVENT_DEATH_FROM_ABOVE, 34000);
                 break;
@@ -628,7 +628,7 @@ public:
                 case 1:
                     if (Player* pl = me->FindNearestPlayer(250.0f, true))
                     {
-                        me->SetAnimTier(AnimTier::Ground);
+                        me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                         me->RemoveAurasDueToSpell(SPELL_READY_TO_FIGHT);
                         me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         if (me->GetEntry() != NPC_HISEK)
@@ -650,7 +650,7 @@ public:
                     DoCast(me, SPELL_HURL_AMBER);
                     break;
                 case 3:
-                    me->SetAnimTier(AnimTier::Ground);
+                    me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                     me->SetReactState(REACT_AGGRESSIVE);
                     events.RescheduleEvent(EVENT_FLASH, 10000);
                     break;
@@ -953,7 +953,7 @@ public:
                         dfatargetGuid = pl->GetGUID();
                         events.DelayEvents(6000);
                         me->StopAttack();
-                        me->SetAnimTier(AnimTier::Fly);
+                        me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                         me->GetMotionMaster()->MoveJump(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() + 10.0f, 15.0f, 15.0f, 4);
                     }
                     else
@@ -1036,7 +1036,7 @@ public:
                     //Karoz
                 case EVENT_HURL_AMBER:
                     me->StopAttack();
-                    me->SetAnimTier(AnimTier::Fly);
+                    me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                     if (Creature* ab = me->FindNearestCreature(NPC_AMBER_BOMB, 110.0f, true))
                         me->GetMotionMaster()->MoveJump(ab->GetPositionX(), ab->GetPositionY(), ab->GetPositionZ() + 5.0f, 15.0f, 15.0f, 2);
                     break;
@@ -1219,7 +1219,7 @@ public:
                     me->GetMotionMaster()->Clear(false);
                     if (Creature* klaxxi = me->GetCreature(*me, klaxxiGuid))
                     {
-                        if (klaxxi->IsAlive())
+                        if (klaxxi->isAlive())
                         {
                             klaxxi->SetHealth(klaxxi->GetHealth() + me->GetHealth());
                             me->DespawnOrUnsummon();
@@ -1233,7 +1233,7 @@ public:
         {
             if (Creature* klaxxi = me->GetCreature(*me, klaxxiGuid))
             {
-                if (klaxxi->IsAlive())
+                if (klaxxi->isAlive())
                 {
                     me->GetMotionMaster()->Clear(false);
                     me->GetMotionMaster()->MoveCharge(klaxxi->GetPositionX(), klaxxi->GetPositionY(), me->GetPositionZ(), 4.0f, 0);
@@ -1337,7 +1337,7 @@ public:
         void JustDied(Unit* killer)
         {
             if (Player* pl = me->GetPlayer(*me, targetGuid))
-                if (pl->IsAlive())
+                if (pl->isAlive())
                     pl->RemoveAurasDueToSpell(SPELL_HUNGER);
         }
 
@@ -1371,7 +1371,7 @@ public:
                 if (checktarget <= diff)
                 {
                     Player* pl = me->GetPlayer(*me, targetGuid);
-                    if (!pl || !pl->IsAlive())
+                    if (!pl || !pl->isAlive())
                     {
                         checktarget = 0;
                         me->SetReactState(REACT_PASSIVE);
@@ -1518,7 +1518,7 @@ public:
             targetGuid.Clear();
             donepct = 1;
             me->SetReactState(REACT_PASSIVE);
-            me->SetPowerType(POWER_ENERGY);
+            me->setPowerType(POWER_ENERGY);
             me->SetMaxPower(POWER_ENERGY, 100);
             me->SetPower(POWER_ENERGY, 0);
             me->SetSpeed(MOVE_RUN, 0.5f);
@@ -1549,7 +1549,7 @@ public:
                 if (me->GetPower(POWER_ENERGY) < 100)
                     DoCast(me, SPELL_THICK_SHELL, true);
                 if (Player* pl = me->GetPlayer(*me, targetGuid))
-                    if (pl->IsAlive())
+                    if (pl->isAlive())
                         pl->RemoveAurasDueToSpell(SPELL_DEVOUR);
                 me->RemoveAurasDueToSpell(SPELL_DEVOUR);
                 targetGuid.Clear();
@@ -2600,7 +2600,8 @@ public:
                 {
                     GetCaster()->SetFacingToObject(pl);
                     pl->CastSpell(pl, SPELL_FLASH_DUMMY, true);
-                    Position pos = GetCaster()->GetPosition();
+                    Position pos;
+                    GetCaster()->GetPosition(&pos);
                     GetCaster()->SummonCreature(NPC_FLASH_STALKER, pos, TEMPSUMMON_TIMED_DESPAWN, 2000);
                 }
             }
@@ -3108,7 +3109,7 @@ void AddSC_boss_paragons_of_the_klaxxi()
     new npc_amber();
     new npc_amber_player();
     new npc_kunchong();
-    //new npc_flash_stalker();
+    new npc_flash_stalker();
     new npc_eerie_fog();
     new spell_klaxxi_gouge();
     new spell_gene_splice();

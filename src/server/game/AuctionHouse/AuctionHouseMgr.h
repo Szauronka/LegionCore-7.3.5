@@ -25,7 +25,6 @@
 class Item;
 class Player;
 class WorldPacket;
-struct AuctionHouseEntry;
 
 namespace WorldPackets
 {
@@ -72,36 +71,32 @@ enum MailAuctionAnswers
     AUCTION_SALE_PENDING        = 6
 };
 
-enum AuctionHouses
-{
-    AUCTIONHOUSE_ALLIANCE = 2,
-    AUCTIONHOUSE_HORDE = 6,
-    AUCTIONHOUSE_NEUTRAL = 7
-};
-
 struct AuctionEntry
 {
     uint32 Id;
-    uint8 houseId;
+    uint32 auctioneer;                         // creature low guid
     ObjectGuid::LowType itemGUIDLow;
     uint32 itemEntry;
     uint32 itemCount;
-    ObjectGuid Owner;
-    ObjectGuid Bidder;
+    ObjectGuid::LowType owner;
     uint64 startbid;                                        //maybe useless
     uint64 bid;
     uint64 buyout;
     time_t expire_time;
+    ObjectGuid::LowType bidder;
     uint32 deposit;                                         //deposit can be calculated only when creating auction
     AuctionHouseEntry const* auctionHouseEntry;             // in AuctionHouse.dbc
+    uint32 factionTemplateId;
+    uint32 houseId;
 
     // helpers
-    uint32 GetHouseId() const { return houseId; }
+    uint32 GetHouseId() const;
+    uint32 GetHouseFaction() const;
     uint64 GetAuctionCut() const;
     uint64 GetAuctionOutBid() const;
     void BuildAuctionInfo(std::vector<WorldPackets::AuctionHouse::AuctionItem>& items, bool listAuctionItems, Item* sourceItem = nullptr) const;
-    void DeleteFromDB(CharacterDatabaseTransaction& trans) const;
-    void SaveToDB(CharacterDatabaseTransaction& trans) const;
+    void DeleteFromDB(SQLTransaction& trans) const;
+    void SaveToDB(SQLTransaction& trans) const;
     bool LoadFromDB(Field* fields);
     bool LoadFromFieldList(Field* fields);
     std::string BuildAuctionMailSubject(MailAuctionAnswers response) const;
@@ -173,7 +168,7 @@ class AuctionHouseObject
     AuctionEntryMap::const_iterator next;
 };
 
-class TC_GAME_API AuctionHouseMgr
+class AuctionHouseMgr
 {
         AuctionHouseMgr();
         ~AuctionHouseMgr();
@@ -184,28 +179,26 @@ class TC_GAME_API AuctionHouseMgr
         typedef std::unordered_map<ObjectGuid::LowType, Item*> ItemMap;
 
         AuctionHouseObject* GetAuctionsMap(uint32 factionTemplateId);
-        AuctionHouseObject* GetAuctionsMapByHouseId(uint8 auctionHouseId);
 
         Item* GetAItem(ObjectGuid::LowType const& id);
 
         //auction messages
-        void SendAuctionWonMail(AuctionEntry* auction, CharacterDatabaseTransaction& trans);
-        void SendAuctionSalePendingMail(AuctionEntry* auction, CharacterDatabaseTransaction& trans);
-        void SendAuctionSuccessfulMail(AuctionEntry* auction, CharacterDatabaseTransaction& trans);
-        void SendAuctionExpiredMail(AuctionEntry* auction, CharacterDatabaseTransaction& trans);
-        void SendAuctionOutbiddedMail(AuctionEntry* auction, uint64 const& newPrice, Player* newBidder, CharacterDatabaseTransaction& trans);
-        void SendAuctionCancelledToBidderMail(AuctionEntry* auction, CharacterDatabaseTransaction& trans, Item* item);
+        void SendAuctionWonMail(AuctionEntry* auction, SQLTransaction& trans);
+        void SendAuctionSalePendingMail(AuctionEntry* auction, SQLTransaction& trans);
+        void SendAuctionSuccessfulMail(AuctionEntry* auction, SQLTransaction& trans);
+        void SendAuctionExpiredMail(AuctionEntry* auction, SQLTransaction& trans);
+        void SendAuctionOutbiddedMail(AuctionEntry* auction, uint64 const& newPrice, Player* newBidder, SQLTransaction& trans);
+        void SendAuctionCancelledToBidderMail(AuctionEntry* auction, SQLTransaction& trans, Item* item);
 
         static uint32 GetAuctionDeposit(AuctionHouseEntry const* entry, uint32 time, Item* pItem, uint32 count);
-        static AuctionHouseEntry const* GetAuctionHouseEntry(uint32 factionTemplateId);
-        static AuctionHouseEntry const* GetAuctionHouseEntryFromHouse(uint8 houseId);
+        static AuctionHouseEntry const* GetAuctionHouseEntry(uint32 factionTemplateId, uint32* houseId);
 
         //load first auction items, because of check if item exists, when loading
         void LoadAuctionItems();
         void LoadAuctions();
 
         void AddAItem(Item* it);
-        bool RemoveAItem(ObjectGuid::LowType const& id, bool deleteItem = false);
+        bool RemoveAItem(ObjectGuid::LowType const& id);
 
         void Update();
 

@@ -1,19 +1,19 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #ifndef __BATTLEGROUND_H
@@ -164,11 +164,6 @@ enum BattlegroundSpells
     SPELL_BG_DESERTER                   = 26013,  // Battleground Deserter Spell
     SPELL_BG_CRAVEN                     = 158263, // Arena Deserter Spell
     SPELL_BG_LEVEL_OF_CRAVEN            = 158950, // Hidden spell for apply diminishing to arena deserter duration
-
-    SPELL_MERCENARY_HORDE_1             = 193864,
-    SPELL_MERCENARY_HORDE_2             = 195838,
-    SPELL_MERCENARY_ALLIANCE_1          = 193863,
-    SPELL_MERCENARY_ALLIANCE_2          = 195843,
 };
 
 static Milliseconds const PositionBroadcastUpdate = Seconds(5);
@@ -284,7 +279,7 @@ enum BattlegroundPlayerPositionConstants
 
 struct CreateBattlegroundData;
 
-class TC_GAME_API Battleground
+class Battleground
 {
 public:
     Battleground();
@@ -346,6 +341,7 @@ public:
     void SetJoinType(uint8 type) { m_JoinType = type; }
     void SetBrawlJoinType(uint8 type) { m_BrawlJoinType = type; }
     void SetWinner(uint8 winner) { m_Winner = winner; }
+    uint8 GetWinner() { return m_Winner; }
     void SetArena(bool _arena) { m_IsArena = _arena; }
 
     void ModifyStartDelayTime(Milliseconds diff) { m_StartDelayTime -= diff; }
@@ -489,19 +485,18 @@ public:
 
     void SpawnBGObject(uint32 type, uint32 respawntime);
 
-    bool AddObject(uint32 type, uint32 entry, Position const& pos, Position const& rotation, uint32 respawnTime = 0, GOState goState = GO_STATE_READY);
-    bool AddObject(uint32 type, uint32 entry, Position const& pos, G3D::Quat const& rotation, uint32 respawnTime = 0, GOState goState = GO_STATE_READY);
+    bool AddObject(uint32 type, uint32 entry, Position pos, Position rotation = { }, uint32 respawnTime = 0, GOState goState = GO_STATE_READY);
     bool AddObject(uint32 type, uint32 entry, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime = 0, GOState goState = GO_STATE_READY);
 
-    Creature* AddCreature(uint32 entry, uint32 type, uint32 teamval, Position const& pos, uint32 respawntime = 0, Transport* transport = nullptr);
+    Creature* AddCreature(uint32 entry, uint32 type, uint32 teamval, Position pos, uint32 respawntime = 0, Transport* transport = nullptr);
     Creature* AddCreature(uint32 entry, uint32 type, uint32 teamval, float x, float y, float z, float o, uint32 respawntime = 0, Transport* transport = nullptr);
 
     bool DelCreature(uint32 type);
     bool DelObject(uint32 type);
 
     bool AddSpiritGuide(uint32 type, DBCPosition4D loc, TeamId team);
-    bool AddSpiritGuide(uint32 type, Position const& pos, uint32 team);
-    bool AddSpiritGuide(uint32 type, float x, float y, float z, float o, TeamId team);
+    bool AddSpiritGuide(uint32 type, Position pos, TeamId team);
+    bool AddSpiritGuide(uint32 type, float x, float y, float z, float o, uint32 team);
     int32 GetObjectType(ObjectGuid guid);
 
     void DoorsOpen(uint32 type1, uint32 type2);

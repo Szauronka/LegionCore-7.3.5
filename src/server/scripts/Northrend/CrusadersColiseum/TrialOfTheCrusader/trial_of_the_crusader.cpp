@@ -144,7 +144,7 @@ class npc_announcer_toc10 : public CreatureScript
                 if ((!_GossipMessage[i].state && instance->GetBossState(_GossipMessage[i].encounter) != DONE)
                     || (_GossipMessage[i].state && instance->GetBossState(_GossipMessage[i].encounter) == DONE))
                 {
-                    player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, _message, GOSSIP_SENDER_MAIN, _GossipMessage[i].id);
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, _message, GOSSIP_SENDER_MAIN, _GossipMessage[i].id);
                     break;
                 }
             }
@@ -209,7 +209,7 @@ class npc_announcer_toc10 : public CreatureScript
                 creature->CastSpell(creature, SPELL_DESTROY_FLOOR_KNOCKUP, false);
 
                 Creature* anubArak = Unit::GetCreature(*creature, instance->GetGuidData(NPC_ANUBARAK));
-                if (!anubArak || !anubArak->IsAlive())
+                if (!anubArak || !anubArak->isAlive())
                     anubArak = creature->SummonCreature(NPC_ANUBARAK, AnubarakLoc[0].GetPositionX(), AnubarakLoc[0].GetPositionY(), AnubarakLoc[0].GetPositionZ(), 3, TEMPSUMMON_CORPSE_TIMED_DESPAWN, DESPAWN_TIME);
 
                 instance->SetBossState(BOSS_ANUBARAK, NOT_STARTED);
@@ -331,7 +331,7 @@ class boss_lich_king_toc : public CreatureScript
 
                             _instance->SetBossState(BOSS_LICH_KING, DONE);
                             Creature* temp = ObjectAccessor::GetCreature(*me, _instance->GetGuidData(NPC_ANUBARAK));
-                            if (!temp || !temp->IsAlive())
+                            if (!temp || !temp->isAlive())
                                 temp = me->SummonCreature(NPC_ANUBARAK, AnubarakLoc[0].GetPositionX(), AnubarakLoc[0].GetPositionY(), AnubarakLoc[0].GetPositionZ(), 3, TEMPSUMMON_CORPSE_TIMED_DESPAWN, DESPAWN_TIME);
 
                             _instance->SetData(TYPE_EVENT, 0);

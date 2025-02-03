@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Paladin Specialization: Retribution
 */
 
@@ -18,7 +19,7 @@ public:
 
     struct instance_broken_shore_InstanceMapScript : public InstanceScript
     {
-        instance_broken_shore_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_broken_shore_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         std::list<Creature*> trashGUIDconteiner;
         std::list<GameObject*> DoorGUIDconteiner;
@@ -99,7 +100,7 @@ public:
                     if (!trashGUIDconteiner.empty())
                         for (auto trash : trashGUIDconteiner)
                         {
-                            if (trash && trash->IsInWorld() && trash->IsAlive())
+                            if (trash && trash->IsInWorld() && trash->isAlive())
                             {
                                 if (!trash->isInCombat())
                                     trash->AI()->DoZoneInCombat(trash, 100.0f);
@@ -107,7 +108,7 @@ public:
                                 if (trash->getFaction() == 1665)
                                 {
                                     Position pos;
-                                    pos = trash->GetNearPosition(20.0f, 0.0f);
+                                    trash->GetNearPosition(pos, 20.0f, 0.0f);
                                     trash->SetHomePosition(pos);
                                 }
                             }
@@ -118,7 +119,7 @@ public:
                     if (!trashGUIDconteiner.empty())
                         for (std::list<Creature*>::iterator itr = trashGUIDconteiner.begin(); itr != trashGUIDconteiner.end(); ++itr)
                         {
-                            if (!(*itr) || !(*itr)->IsInWorld() || !(*itr)->IsAlive())
+                            if (!(*itr) || !(*itr)->IsInWorld() || !(*itr)->isAlive())
                                 continue;
 
                             (*itr)->Kill(*itr);

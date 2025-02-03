@@ -32,13 +32,14 @@ class spell_boss_queen_azshara_drain_sssence : public SpellScriptLoader
                 if (Unit* victim = target->getVictim())
                 {
                     float dist;
+                    Position _pos;
                     if(!x)
                     {
                         victim->GetPosition(x, y, z);
                         _angle = target->GetAngle(x, y);
                     }
                     dist = (target->GetDistance(x, y, z) / 12.0f) * numberTick;
-                    Position _pos = target->GetNearPosition(dist, _angle);
+                    target->GetNearPosition(_pos, dist, _angle);
                     numberTick++;
                     target->CastSpell(_pos.GetPositionX(), _pos.GetPositionY(), _pos.GetPositionZ(), SPELL_COLDFLAME_VISUAL_EFFECT, true);
                 }

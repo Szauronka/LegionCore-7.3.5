@@ -1,0 +1,5 @@
+DELETE FROM `creature_template_wdb` WHERE `Entry`=40161;
+INSERT INTO `creature_template_wdb` (`Entry`, `Name1`, `Name2`, `Name3`, `Name4`, `NameAlt1`, `NameAlt2`, `NameAlt3`, `NameAlt4`, `Title`, `TitleAlt`, `CursorName`, `TypeFlags`, `TypeFlags2`, `Type`, `Family`, `Classification`, `KillCredit1`, `KillCredit2`, `VignetteID`, `Displayid1`, `Displayid2`, `Displayid3`, `Displayid4`, `HpMulti`, `PowerMulti`, `Leader`, `QuestItem1`, `QuestItem2`, `QuestItem3`, `QuestItem4`, `QuestItem5`, `QuestItem6`, `QuestItem7`, `QuestItem8`, `QuestItem9`, `QuestItem10`, `MovementInfoID`, `RequiredExpansion`, `FlagQuest`, `VerifiedBuild`) VALUES (40161, 'Fathom-Lord Zin\'jatar', '', '', '', '', '', '', '', '', '', '', 0, 0, 7, 0, 1, 0, 0, 0, 31818, 0, 0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 22566);
+DELETE FROM `quest_objectives` WHERE `ID`=263069;
+INSERT INTO `quest_objectives` (`ID`, `QuestID`, `Type`, `StorageIndex`, `ObjectID`, `Amount`, `Flags`, `Flags2`, `TaskStep`, `Description`, `VerifiedBuild`) VALUES (263069, 25164, 0, 1, 40161, 1, 0, 0, 0, 'Fathom-Lord Zin\'Jatar Defeated', 19865);
+DELETE FROM `quest_objectives` WHERE `ID`=263068;

@@ -19,7 +19,6 @@
 #ifndef DEF_THE_EYE_H
 #define DEF_THE_EYE_H
 
-#define DataHeader "EYE"
 #define TheEyeScriptName "instance_the_eye"
 
 uint32 const EncounterCount = 4;

@@ -240,7 +240,7 @@ public:
                 {
                     if (Creature *pCreature = Creature::GetCreature((*me), instance->GetGuidData(data)))
                     {
-                        if (pCreature->IsAlive())
+                        if (pCreature->isAlive())
                             pCreature->AI()->EnterEvadeMode();
                     }
                 }
@@ -329,7 +329,7 @@ public:
             {
                 // Freya hard mode can be triggered simply by letting the elders alive
                 if (Creature* Brightleaf = me->GetCreature(*me, instance->GetGuidData(DATA_BRIGHTLEAF)))
-                    if (Brightleaf && Brightleaf->IsAlive())
+                    if (Brightleaf && Brightleaf->isAlive())
                     {
                         EldersCount++;
                         Brightleaf->SetInCombatWithZone();
@@ -339,7 +339,7 @@ public:
                     }
             
                 if (Creature* Ironbranch = me->GetCreature(*me, instance->GetGuidData(DATA_IRONBRANCH)))
-                    if (Ironbranch && Ironbranch->IsAlive())
+                    if (Ironbranch && Ironbranch->isAlive())
                     {
                         EldersCount++;
                         Ironbranch->SetInCombatWithZone();
@@ -349,7 +349,7 @@ public:
                     }
             
                 if (Creature* Stonebark = me->GetCreature(*me, instance->GetGuidData(DATA_STONEBARK)))
-                    if (Stonebark && Stonebark->IsAlive())
+                    if (Stonebark && Stonebark->isAlive())
                     {
                         EldersCount++;
                         Stonebark->SetInCombatWithZone();
@@ -409,7 +409,7 @@ public:
                 {
                     for (uint32 i = 0; i < 3; i++)
                     {
-                        if (Elemental[i]->IsAlive())
+                        if (Elemental[i]->isAlive())
                             Elemental[i]->SetHealth(Elemental[i]->GetMaxHealth());
                         else
                             Elemental[i]->Respawn();
@@ -443,7 +443,7 @@ public:
                 {
                     case EVENT_SUNBEAM:
                         if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                            if (pTarget->IsAlive())
+                            if (pTarget->isAlive())
                                 DoCast(pTarget, SPELL_SUNBEAM);
                         events.ScheduleEvent(EVENT_SUNBEAM, urand(10000, 15000));
                         break;
@@ -466,7 +466,8 @@ public:
                     case EVENT_BRIGHTLEAF:
                         for (int8 n = 0; n < 3; n++)
                         {
-                            Position pos = me->GetRandomNearPosition(30);
+                            Position pos;
+                            me->GetRandomNearPosition(pos, 30);
                             me->SummonCreature(NPC_SUN_BEAM, pos, TEMPSUMMON_TIMED_DESPAWN, 10000);
                         }
                         events.ScheduleEvent(EVENT_BRIGHTLEAF, urand(35000, 45000));
@@ -669,8 +670,8 @@ public:
                 instance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_LUMBERJACKED);
                 if (Creature* IR = me->GetCreature(*me, instance->GetGuidData(DATA_IRONBRANCH)))
                     if (Creature* ST = me->GetCreature(*me, instance->GetGuidData(DATA_STONEBARK)))
-                        if (!IR->IsAlive())
-                            if (!ST->IsAlive())
+                        if (!IR->isAlive()) 
+                            if (!ST->isAlive())
                                 instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_LUMBERJACKED_ACHIEVEMENT_CHECK);
              }
         }
@@ -686,7 +687,7 @@ public:
             if (uiUnstableSunbeamTimer <= diff)
             {
                 if (Unit *pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                    if (pTarget->IsAlive())
+                    if (pTarget->isAlive())
                         me->SummonCreature(NPC_UNSTABLE_SUN_BEAM, pTarget->GetPositionX(), pTarget->GetPositionY(), pTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000);
                 uiUnstableSunbeamTimer = 8000;
             }
@@ -820,8 +821,8 @@ public:
                 instance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_LUMBERJACKED);
                 if (Creature* BR = me->GetCreature(*me, instance->GetGuidData(DATA_BRIGHTLEAF)))
                     if (Creature* ST = me->GetCreature(*me, instance->GetGuidData(DATA_STONEBARK)))
-                        if (!BR->IsAlive())
-                            if (!ST->IsAlive())
+                        if (!BR->isAlive())
+                            if (!ST->isAlive())
                                 instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_LUMBERJACKED_ACHIEVEMENT_CHECK);
              }
         }
@@ -945,8 +946,8 @@ public:
                 instance->DoStartTimedAchievement(CRITERIA_TIMED_TYPE_EVENT2, ACHIEV_LUMBERJACKED);
                 if (Creature* BR = me->GetCreature(*me, instance->GetGuidData(DATA_BRIGHTLEAF)))
                     if (Creature* IR = me->GetCreature(*me, instance->GetGuidData(DATA_IRONBRANCH)))
-                        if (!BR->IsAlive())
-                            if (!IR->IsAlive())
+                        if (!BR->isAlive())
+                            if (!IR->isAlive())
                                 instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET, SPELL_LUMBERJACKED_ACHIEVEMENT_CHECK);
              }
         }
@@ -1206,7 +1207,8 @@ public:
             {
                 for (uint32 i = 0; i < 2; ++i)
                 {
-                    Position pos = me->GetRandomNearPosition(25);
+                    Position pos;
+                    me->GetRandomNearPosition(pos, 25);
                     me->SummonCreature(NPC_HEALTHY_SPORE, pos, TEMPSUMMON_TIMED_DESPAWN, 20000);
                 }
                 healthySporesSpawned += 2;
@@ -1515,6 +1517,6 @@ void AddSC_boss_freya()
     new npc_ancient_water_spirit();
     new achievement_knock_on_wood();
     new achievement_knock_knock_on_wood();
-    //new achievement_knock_knock_knock_on_wood();
+    new achievement_knock_knock_knock_on_wood();
     new achievement_getting_back_to_nature();
 }

@@ -15,17 +15,15 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "CharmInfo.h"
-#include "CombatAI.h"
-#include "GameObjectAI.h"
-#include "MoveSplineInit.h"
-#include "ObjectMgr.h"
-#include "PassiveAI.h"
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
-#include "ScriptedEscortAI.h"
 #include "ScriptedGossip.h"
 #include "Vehicle.h"
+#include "ObjectMgr.h"
+#include "ScriptedEscortAI.h"
+#include "CombatAI.h"
+#include "PassiveAI.h"
+#include "GameObjectAI.h"
 
 /*######
 ##Quest 12848
@@ -179,7 +177,7 @@ public:
                         anchorGUID = anchor->GetGUID();
                     }
                     else
-                        TC_LOG_ERROR("scripts", "npc_unworthy_initiateAI: unable to find anchor!");
+                        TC_LOG_ERROR(LOG_FILTER_TSCR, "npc_unworthy_initiateAI: unable to find anchor!");
 
                     float dist = 99.0f;
                     GameObject* prison = NULL;
@@ -199,7 +197,7 @@ public:
                     if (prison)
                         prison->ResetDoorOrButton();
                     else
-                        TC_LOG_ERROR("scripts", "npc_unworthy_initiateAI: unable to find prison!");
+                        TC_LOG_ERROR(LOG_FILTER_TSCR, "npc_unworthy_initiateAI: unable to find prison!");
                 }
                 break;
             case PHASE_TO_EQUIP:
@@ -209,23 +207,10 @@ public:
                         wait_timer -= diff;
                     else
                     {
-// there is bug in this part of the script, unworthy initiate drops through
-// the floor instead of going to the acherus soul prison..
-/*                      me->GetMotionMaster()->MovePoint(1, anchorX, anchorY, me->GetPositionZ());
-                        //TC_LOG_DEBUG("scripts", "npc_unworthy_initiateAI: move to %f %f %f", anchorX, anchorY, me->GetPositionZ());
+                        me->GetMotionMaster()->MovePoint(1, anchorX, anchorY, me->GetPositionZ());
+                        //TC_LOG_DEBUG(LOG_FILTER_TSCR, "npc_unworthy_initiateAI: move to %f %f %f", anchorX, anchorY, me->GetPositionZ());
                         phase = PHASE_EQUIPING;
                         wait_timer = 0;
-*/
-
-/*BUG WORKAROUND*/
-                        wait_timer = 5000;
-                        me->CastSpell(me, SPELL_DK_INITIATE_VISUAL, true);
-
-                        if (Player* starter = Unit::GetPlayer(*me, playerGUID))
-                        Talk(1, playerGUID);
-
-                        phase = PHASE_TO_ATTACK;
-/*BUG WORKAROUND END*/
                     }
                 }
                 break;
@@ -322,14 +307,24 @@ class go_acherus_soul_prison : public GameObjectScript
 public:
     go_acherus_soul_prison() : GameObjectScript("go_acherus_soul_prison") { }
 
+    bool OnGossipHello(Player* player, GameObject* go) override
+    {
+        if (Creature* anchor = go->FindNearestCreature(29521, 15))
+            if (ObjectGuid prisonerGUID = anchor->AI()->GetGUID())
+                if (Creature* prisoner = Creature::GetCreature(*player, prisonerGUID))
+                    CAST_AI(npc_unworthy_initiate::npc_unworthy_initiateAI, prisoner->AI())->EventStart(anchor, player);
+
+        return false;
+    }
+
     struct go_acherus_soul_prisonAI : public GameObjectAI
     {
         go_acherus_soul_prisonAI(GameObject* go) : GameObjectAI(go) { }
 
-        bool GossipHello(Player* player, bool isUse) override
+        bool GossipHello(Player* player) override
         {
-            if (!isUse)
-                return true;
+            if (player->GetQuestStatus(12848) != QUEST_STATUS_INCOMPLETE || !player->HasItemCount(40732, 1))
+                return false;
 
             if (Creature* anchor = go->FindNearestCreature(29521, 15))
                 if (ObjectGuid prisonerGUID = anchor->AI()->GetGUID())
@@ -421,7 +416,7 @@ public:
             if (player->isInCombat() || creature->isInCombat())
                 return true;
 
-            player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_ACCEPT_DUEL, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ACCEPT_DUEL, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
             player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
         }
         return true;
@@ -1098,133 +1093,89 @@ public:
 ## npc_eye_of_acherus
 ######*/
 
-enum EyeOfAcherus
+class npc_eye_of_acherus : public CreatureScript
 {
-    SPELL_THE_EYE_OF_ACHERUS                = 51852,
-    SPELL_EYE_OF_ACHERUS_VISUAL             = 51892,
-    SPELL_EYE_OF_ACHERUS_FLIGHT_BOOST       = 51923,
-    SPELL_EYE_OF_ACHERUS_FLIGHT             = 51890,
-    SPELL_ROOT_SELF                         = 51860,
+public:
+    npc_eye_of_acherus() : CreatureScript("npc_eye_of_acherus") { }
 
-    EVENT_ANNOUNCE_LAUNCH_TO_DESTINATION    = 1,
-    EVENT_UNROOT                            = 2,
-    EVENT_LAUNCH_TOWARDS_DESTINATION        = 3,
-    EVENT_GRANT_CONTROL                     = 4,
-
-    SAY_LAUNCH_TOWARDS_DESTINATION          = 0,
-    SAY_EYE_UNDER_CONTROL                   = 1,
-
-    POINT_NEW_AVALON                        = 1
-};
-
-static constexpr uint8 const EyeOfAcherusPathSize = 4;
-G3D::Vector3 const EyeOfAcherusPath[EyeOfAcherusPathSize] =
-{
-    { 2361.21f,  -5660.45f,  496.744f  },
-    { 2341.571f, -5672.797f, 538.3942f },
-    { 1957.4f,   -5844.1f,   273.867f  },
-    { 1758.01f,  -5876.79f,  166.867f  }
-};
-
-struct npc_eye_of_acherus : public ScriptedAI
-{
-    npc_eye_of_acherus(Creature* creature) : ScriptedAI(creature)
+    CreatureAI* GetAI(Creature* _Creature) const
     {
-        creature->SetDisplayId(creature->GetCreatureTemplate()->Modelid[0]);
-        creature->SetReactState(REACT_PASSIVE);
-        if (creature->GetCharmInfo())
-            creature->GetCharmInfo()->InitPossessCreateSpells();
+        return new npc_eye_of_acherusAI(_Creature);
     }
 
-    void InitializeAI() override
+    struct npc_eye_of_acherusAI : public ScriptedAI
     {
-        DoCastSelf(SPELL_ROOT_SELF);
-        DoCastSelf(SPELL_EYE_OF_ACHERUS_VISUAL);
-        _events.ScheduleEvent(EVENT_ANNOUNCE_LAUNCH_TO_DESTINATION, 7s);
-    }
-
-    void OnCharmed(bool apply) override
-    {
-        if (!apply)
+        npc_eye_of_acherusAI(Creature* c) : ScriptedAI(c)
         {
-            me->GetCharmerOrOwner()->RemoveAurasDueToSpell(SPELL_THE_EYE_OF_ACHERUS);
-            me->GetCharmerOrOwner()->RemoveAurasDueToSpell(SPELL_EYE_OF_ACHERUS_FLIGHT_BOOST);
+            me->setActive(true);
+            me->SetLevel(55); //else one hack
+            StartTimer = 1000;
+            Active = false;
         }
-    }
 
-    void UpdateAI(uint32 diff) override
-    {
-        _events.Update(diff);
+        uint32 StartTimer;
+        bool Active;
 
-        while (uint32 eventId = _events.ExecuteEvent())
+        void Reset(){}
+        void AttackStart(Unit *) {}
+        void MoveInLineOfSight(Unit*) {}
+        void OnCharmed(bool /*apply*/)
         {
-            switch (eventId)
+            //NOT DISABLE AI!
+        }
+
+        void JustDied(Unit*u)
+        {
+            if(!me || me->GetTypeId() != TYPEID_UNIT)
+                return;
+
+            Unit *target = me->GetCharmer();
+
+            if(!target || target->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            target->RemoveAurasDueToSpell(51852);
+            me->RemoveCharmedBy(NULL);
+
+            //me->DespawnOrUnsummon();
+        }
+
+        void MovementInform(uint32 uiType, uint32 uiPointId)
+        {
+            if (uiType != POINT_MOTION_TYPE && uiPointId == 0)
+                return;
+
+                char * text = "The Eye of Acherus is in your control";
+                me->MonsterTextEmote(text, me->GetGUID(), true);
+                me->CastSpell(me, 51890, true);
+                //me->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
+                //me->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
+        }
+
+        void UpdateAI(uint32 uiDiff)
+        {
+            if(me->isCharmed())
             {
-                case EVENT_ANNOUNCE_LAUNCH_TO_DESTINATION:
-                    if (Unit* owner = me->GetCharmerOrOwner())
-                        Talk(SAY_LAUNCH_TOWARDS_DESTINATION, owner->GetGUID());
-                    _events.ScheduleEvent(EVENT_UNROOT, 1s + 200ms);
-                    break;
-                case EVENT_UNROOT:
-                    me->RemoveAurasDueToSpell(SPELL_ROOT_SELF);
-
-                    // TODO: hack
-                    me->ClearUnitState(UNIT_STATE_ROOT);
-
-                    DoCastSelf(SPELL_EYE_OF_ACHERUS_FLIGHT_BOOST);
-                    _events.ScheduleEvent(EVENT_LAUNCH_TOWARDS_DESTINATION, 1s + 200ms);
-                    break;
-                case EVENT_LAUNCH_TOWARDS_DESTINATION:
+                if (StartTimer < uiDiff && !Active)
                 {
-                    Movement::MoveSplineInit init(*me);
-                    Movement::PointsArray path(EyeOfAcherusPath, EyeOfAcherusPath + EyeOfAcherusPathSize);
-                    init.MovebyPath(path);
-                    init.SetFly();
-                    if (Unit* owner = me->GetCharmerOrOwner())
-                        init.SetVelocity(owner->GetSpeed(MOVE_RUN));
-                    me->GetMotionMaster()->LaunchMoveSpline(std::move(init), POINT_NEW_AVALON, MOTION_SLOT_ACTIVE, POINT_MOTION_TYPE);
-                    break;
+                    //me->CastSpell(me, 70889, true);
+                    //me->CastSpell(me, 51892, true);
+                    //me->SetPhaseMask(3, false);
+                    char * text = "The Eye of Acherus launches towards its destination";
+                    me->MonsterTextEmote(text, me->GetGUID(), true);
+                    me->SetSpeed(MOVE_FLIGHT, 6.4f,true);
+                    me->AddUnitMovementFlag(MOVEMENTFLAG_FLYING);
+                    me->GetMotionMaster()->MovePoint(0, 1750.8276f, -5873.788f, 147.2266f);
+                    Active = true;
                 }
-                case EVENT_GRANT_CONTROL:
-                    me->RemoveAurasDueToSpell(SPELL_ROOT_SELF);
-
-                    // TODO: hack
-                    me->SetSheath(SHEATH_STATE_MELEE);
-                    me->ClearUnitState(UNIT_STATE_ROOT);
-
-                    DoCastSelf(SPELL_EYE_OF_ACHERUS_FLIGHT);
-                    me->RemoveAurasDueToSpell(SPELL_EYE_OF_ACHERUS_FLIGHT_BOOST);
-                    if (Unit* owner = me->GetCharmerOrOwner())
-                        Talk(SAY_EYE_UNDER_CONTROL, owner->GetGUID());
-                    break;
-                default:
-                    break;
+                else StartTimer -= uiDiff;
             }
+            /*else
+            {
+                me->DespawnOrUnsummon();
+            }*/
         }
-    }
-
-    void MovementInform(uint32 movementType, uint32 pointId) override
-    {
-        if (movementType != POINT_MOTION_TYPE)
-            return;
-
-        switch (pointId)
-        {
-            case POINT_NEW_AVALON:
-                DoCastSelf(SPELL_ROOT_SELF);
-
-                // TODO: hack
-                me->AddUnitState(UNIT_STATE_ROOT);
-
-                _events.ScheduleEvent(EVENT_GRANT_CONTROL, 2s + 500ms);
-                break;
-            default:
-                break;
-        }
-    }
-
-private:
-    EventMap _events;
+    };
 };
 
 void AddSC_the_scarlet_enclave_c1()
@@ -1232,13 +1183,13 @@ void AddSC_the_scarlet_enclave_c1()
     new npc_unworthy_initiate();
     new npc_unworthy_initiate_anchor();
     new go_acherus_soul_prison();
-    //new npc_death_knight_initiate();
+    new npc_death_knight_initiate();
     new npc_salanar_the_horseman();
     new npc_dark_rider_of_acherus();
     new npc_ros_dark_rider();
     new npc_dkc1_gothik();
-    //new npc_scarlet_ghoul();
+    new npc_scarlet_ghoul();
     new npc_scarlet_miner();
     new npc_scarlet_miner_cart();
-    RegisterCreatureAI(npc_eye_of_acherus);
+    new npc_eye_of_acherus();
 }

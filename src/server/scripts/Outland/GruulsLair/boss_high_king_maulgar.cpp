@@ -91,7 +91,7 @@ bool CheckAllBossDied(InstanceScript* instance, Creature* me)
     if (!Maulgar || !Kiggler || !Blindeye || !Olm || !Krosh)
         return false;
 
-    if (!Maulgar->IsAlive() && !Kiggler->IsAlive() && !Blindeye->IsAlive() && !Olm->IsAlive() && !Krosh->IsAlive())
+    if (!Maulgar->isAlive() && !Kiggler->isAlive() && !Blindeye->isAlive() && !Olm->isAlive() && !Krosh->isAlive())
         return true;
 
     return false;
@@ -148,7 +148,7 @@ public:
                 if (Council[i])
                 {
                     creature = (Unit::GetCreature((*me), Council[i]));
-                    if (creature && !creature->IsAlive())
+                    if (creature && !creature->isAlive())
                     {
                         creature->Respawn();
                         creature->AI()->EnterEvadeMode();

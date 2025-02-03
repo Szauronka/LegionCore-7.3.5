@@ -36,7 +36,7 @@ enum RealmFlags
 
 namespace Battlenet
 {
-    struct TC_SHARED_API RealmHandle
+    struct RealmHandle
     {
         RealmHandle();
         RealmHandle(uint8 region, uint8 battlegroup, uint32 index);
@@ -70,21 +70,20 @@ enum RealmType
 };
 
 // Storage object for a realm
-struct TC_SHARED_API Realm
+struct Realm
 {
     Battlenet::RealmHandle Id;
     uint32 Build;
-    std::vector<boost::asio::ip::address> Addresses;
+    std::unique_ptr<boost::asio::ip::address> ExternalAddress;
+    std::unique_ptr<boost::asio::ip::address> LocalAddress;
+    std::unique_ptr<boost::asio::ip::address> LocalSubnetMask;
     uint16 Port;
     std::string Name;
-    std::string NormalizedName;
     uint8 Type;
     RealmFlags Flags;
     uint8 Timezone;
     AccountTypes AllowedSecurityLevel;
     float PopulationLevel;
-
-    void SetName(std::string name);
 
     boost::asio::ip::address GetAddressForClient(boost::asio::ip::address const& clientAddr) const;
     uint32 GetConfigId() const;

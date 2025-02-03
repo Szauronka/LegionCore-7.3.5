@@ -21,9 +21,19 @@
 #include "Unit.h"
 #include "SpellInfo.h"
 
+HostileRefManager::HostileRefManager(Unit* owner)
+{
+    iOwner = owner;
+}
+
 HostileRefManager::~HostileRefManager()
 {
     deleteReferences();
+}
+
+Unit* HostileRefManager::getOwner()
+{
+    return iOwner;
 }
 
 void HostileRefManager::threatAssist(Unit* victim, float baseThreat, SpellInfo const* threatSpell)
@@ -44,7 +54,7 @@ void HostileRefManager::threatAssist(Unit* victim, float baseThreat, SpellInfo c
             if (Unit* owner = ref->getSource()->getOwner())
             {
                 volatile uint32 entryorguid = owner->IsPlayer() ? owner->GetGUIDLow() : owner->GetEntry();
-                if (owner->IsAlive() && !owner->IsDelete() && owner->IsInWorld())
+                if (owner->isAlive() && !owner->IsDelete() && owner->IsInWorld())
                     if (ThreatCalcHelper::isValidProcess(victim, owner, threatSpell))
                         ref->getSource()->doAddThreat(victim, threat, schoolMask, threatSpell);
             }
@@ -180,7 +190,7 @@ void HostileRefManager::UpdateVisibility()
     while (ref)
     {
         HostileReference* nextRef = ref->next();
-        if (!ref->getSource()->getOwner()->canSeeOrDetect(GetOwner()))
+        if (!ref->getSource()->getOwner()->canSeeOrDetect(getOwner()))
         {
             ref->setOnlineOfflineState(false);
             nextRef = ref->next();

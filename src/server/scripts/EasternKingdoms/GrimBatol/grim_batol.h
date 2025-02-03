@@ -1,8 +1,6 @@
 #ifndef DEF_GRIMBATOL_H_
 #define DEF_GRIMBATOL_H_
 
-#define DataHeader "GB"
-
 enum Npcs
 {
     NPC_GENERAL_UMBRISS              = 39625,

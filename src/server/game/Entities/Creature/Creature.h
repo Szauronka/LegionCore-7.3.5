@@ -20,8 +20,6 @@
 #define CREATURE_H
 
 #include "Common.h"
-#include "CreatureData.h"
-#include "GameTime.h"
 #include "GridObject.h"
 #include "LootMgr.h"
 #include "MapObject.h"
@@ -44,51 +42,35 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_NO_PARRY                        = 0x00000004,       // creature can't parry
     CREATURE_FLAG_EXTRA_NO_PARRY_HASTEN                 = 0x00000008,       // creature can't counter-attack at parry
     CREATURE_FLAG_EXTRA_NO_BLOCK                        = 0x00000010,       // creature can't block
-    CREATURE_FLAG_EXTRA_NO_CRUSHING_BLOWS               = 0x00000020,       // creature can't do crush attacks
+    CREATURE_FLAG_EXTRA_NO_CRUSH                        = 0x00000020,       // creature can't do crush attacks
     CREATURE_FLAG_EXTRA_NO_XP_AT_KILL                   = 0x00000040,       // creature kill not provide XP
     CREATURE_FLAG_EXTRA_TRIGGER                         = 0x00000080,       // trigger creature
     CREATURE_FLAG_EXTRA_NO_TAUNT                        = 0x00000100,       // creature is immune to taunt auras and effect attack me
-    CREATURE_FLAG_EXTRA_GHOST_VISIBILITY                = 0x00000400,       // NYI: creature will only be visible to dead players
-    CREATURE_FLAG_EXTRA_USE_OFFHAND_ATTACK              = 0x00000800,       // NTI: creature will use offhand attacks
-    CREATURE_FLAG_EXTRA_NO_SELL_VENDOR                  = 0x00001000,       // NYI: players can't sell items to this vendor
-    CREATURE_FLAG_EXTRA_CANNOT_ENTER_COMBAT             = 0x00002000,       // NYI: creature is not allowed to enter combat
+    CREATURE_FLAG_EXTRA_PERSONAL_LOOT                   = 0x00000200,       // Personal loot mobs and increment healths by player
+    CREATURE_FLAG_EXTRA_AUTO_LOOT                       = 0x00000400,       // now not use
+    CREATURE_FLAG_EXTRA_EVENT_LOOT                      = 0x00000800,       // Generate special item level on kill creature
+    CREATURE_FLAG_EXTRA_EVENT_NPC                       = 0x00001000,       // Creature is increase HP by the number of attackers
+    CREATURE_FLAG_EXTRA_IMMUNITY_KNOCKBACK              = 0x00002000,       // Creature will immune all knockback effects
     CREATURE_FLAG_EXTRA_WORLDEVENT                      = 0x00004000,       // custom flag for world event creatures (left room for merging)
     CREATURE_FLAG_EXTRA_GUARD                           = 0x00008000,       // Creature is guard
     CREATURE_FLAG_EXTRA_NO_CRIT                         = 0x00020000,       // creature can't do critical strikes
-    CREATURE_FLAG_EXTRA_NO_SKILL_GAINS                  = 0x00040000,       // NYI: creature won't increase weapon skills
-    CREATURE_FLAG_EXTRA_OBEYS_TAUNT_DIMINISHING_RETURNS = 0x00080000,       // Taunt is a subject to diminishing returns on this creautre
+    CREATURE_FLAG_EXTRA_NO_SKILLGAIN                    = 0x00040000,       // creature won't increase weapon skills
+    CREATURE_FLAG_EXTRA_TAUNT_DIMINISH                  = 0x00080000,       // Taunt is a subject to diminishing returns on this creautre
     CREATURE_FLAG_EXTRA_ALL_DIMINISH                    = 0x00100000,       // Creature is subject to all diminishing returns as player are
-    CREATURE_FLAG_EXTRA_NO_PLAYER_DAMAGE_REQ            = 0x00200000,       // NYI: creature does not need to take player damage for kill credit
-    CREATURE_FLAG_EXTRA_UNUSED_27                       = 0x08000000,
     CREATURE_FLAG_EXTRA_DUNGEON_BOSS                    = 0x10000000,       // creature is a dungeon boss (SET DYNAMICALLY, DO NOT ADD IN DB)
-    CREATURE_FLAG_EXTRA_IGNORE_PATHFINDING              = 0x20000000,       // NYI: creature ignore pathfinding
-    CREATURE_FLAG_EXTRA_IMMUNITY_KNOCKBACK              = 0x40000000,       // creature is immune to knockback effects
-    CREATURE_FLAG_EXTRA_UNUSED_31                       = 0x80000000,
-
-
-    // deprecated? custom to legion core
-    // remapped to UNUSED flags in TC master
-
-    // TC CREATURE_FLAG_EXTRA_UNUSED_9
-    // TC CREATURE_FLAG_EXTRA_UNUSED_22
-    // TC CREATURE_FLAG_EXTRA_UNUSED_23
-    // TC CREATURE_FLAG_EXTRA_UNUSED_24
-    // TC CREATURE_FLAG_EXTRA_UNUSED_25
-    // TC CREATURE_FLAG_EXTRA_UNUSED_26
-
-    CREATURE_FLAG_EXTRA_PERSONAL_LOOT                   = 0x00000200,       // Personal loot mobs and increment healths by player
-    CREATURE_FLAG_EXTRA_EVENT_LOOT                      = 0x00400000,       // Generate special item level on kill creature
-    CREATURE_FLAG_EXTRA_EVENT_NPC                       = 0x00800000,       // Creature is increase HP by the number of attackers
-    CREATURE_FLAG_EXTRA_VEHICLE_ATTACKABLE_PASSENGERS   = 0x01000000,       // creature is vehicle, UNIT_STATE_ONVEHICLE will not add to passengers
-    CREATURE_FLAG_EXTRA_VEH_INSTANT_DESPAWN_PASSENGERS  = 0x02000000,       // Instant remove creature passengers
-    CREATURE_FLAG_EXTRA_HP_85_PERC                      = 0x04000000,       // No damage if HP < 85% for target mob
-
-
-    // Masks
-    CREATURE_FLAG_EXTRA_UNUSED                          = (CREATURE_FLAG_EXTRA_UNUSED_27 | CREATURE_FLAG_EXTRA_UNUSED_31), // SKIP
-
-    CREATURE_FLAG_EXTRA_DB_ALLOWED                      = (0xFFFFFFFF & ~(CREATURE_FLAG_EXTRA_UNUSED | CREATURE_FLAG_EXTRA_DUNGEON_BOSS)) // SKIP
+    CREATURE_FLAG_EXTRA_VEHICLE_ATTACKABLE_PASSENGERS   = 0x20000000,       // creature is vehicle, UNIT_STATE_ONVEHICLE will not add to passengers
+    CREATURE_FLAG_EXTRA_VEH_INSTANT_DESPAWN_PASSENGERS  = 0x40000000,       // Instant remove creature passengers
+    CREATURE_FLAG_EXTRA_HP_85_PERC                      = 0x80000000,       // No damage if HP < 85% for target mob
 };
+
+constexpr auto CREATURE_FLAG_EXTRA_DB_ALLOWED (CREATURE_FLAG_EXTRA_INSTANCE_BIND | CREATURE_FLAG_EXTRA_CIVILIAN | \
+    CREATURE_FLAG_EXTRA_NO_PARRY | CREATURE_FLAG_EXTRA_NO_PARRY_HASTEN | CREATURE_FLAG_EXTRA_NO_BLOCK | \
+    CREATURE_FLAG_EXTRA_NO_CRUSH | CREATURE_FLAG_EXTRA_NO_XP_AT_KILL | CREATURE_FLAG_EXTRA_TRIGGER | \
+    CREATURE_FLAG_EXTRA_NO_TAUNT | CREATURE_FLAG_EXTRA_WORLDEVENT | CREATURE_FLAG_EXTRA_NO_CRIT | \
+    CREATURE_FLAG_EXTRA_NO_SKILLGAIN | CREATURE_FLAG_EXTRA_TAUNT_DIMINISH | CREATURE_FLAG_EXTRA_ALL_DIMINISH | \
+    CREATURE_FLAG_EXTRA_GUARD | CREATURE_FLAG_EXTRA_HP_85_PERC | CREATURE_FLAG_EXTRA_VEHICLE_ATTACKABLE_PASSENGERS | \
+    CREATURE_FLAG_EXTRA_VEH_INSTANT_DESPAWN_PASSENGERS | CREATURE_FLAG_EXTRA_PERSONAL_LOOT | CREATURE_FLAG_EXTRA_AUTO_LOOT | \
+    CREATURE_FLAG_EXTRA_EVENT_LOOT | CREATURE_FLAG_EXTRA_EVENT_NPC | CREATURE_FLAG_EXTRA_IMMUNITY_KNOCKBACK);
 
 #pragma pack(push, 1)
 
@@ -108,31 +90,20 @@ enum CreatureFlagsExtra
 #define CREATURE_REGEN_INTERVAL 5 * IN_MILLISECONDS
 #define PET_FOCUS_REGEN_INTERVAL 2 * IN_MILLISECONDS
 #define BOSS_REGEN_INTERVAL 1 * IN_MILLISECONDS
-const uint32 CREATURE_NOPATH_EVADE_TIME = 5 * IN_MILLISECONDS;
 
 #define MAX_EQUIPMENT_ITEMS 3
 
 struct CreatureSpell
 {
     uint32 SpellID;
-    std::vector<Difficulty> Difficulties;
+    uint32 DifficultyMask;
+    uint32 TimerCast;
     CreatureTextEntry const* Text;
-
-    bool CanUseInDifficulty(Difficulty difficulty) const;
 };
 typedef std::unordered_map<uint32, CreatureSpell> CreatureSpellList;
 
-struct CreatureLevelScaling
-{
-    uint16 MinLevel;
-    uint16 MaxLevel;
-    int16 DeltaLevelMin;
-    int16 DeltaLevelMax;
-    uint16 Duration;
-};
-
 // from `creature_template` table
-struct TC_GAME_API CreatureTemplate
+struct CreatureTemplate
 {
     CreatureTemplate();
 
@@ -151,7 +122,6 @@ struct TC_GAME_API CreatureTemplate
     uint32 Classification;
     uint32 MovementInfoID;
     uint32 Family;                                         // enum CreatureFamily
-    int32 HealthScalingExpansion;
     int8   RequiredExpansion;
     uint32 TypeFlags[2];                                   // enum CreatureTypeFlags[0] mask values [1] unk for now
     uint32 Type;                                           // enum CreatureType values
@@ -167,7 +137,7 @@ struct TC_GAME_API CreatureTemplate
     uint32 faction = 35;
     uint32 flags_extra = 0;
     uint32 GossipMenuId = 0;
-    CreatureMovementData Movement;
+    uint32 InhabitType = 7/*INHABIT_ANYWHERE*/;
     uint32 lootid = 0;
     uint32 maxgold = 0;
     uint32 MechanicImmuneMask = 0;
@@ -191,10 +161,13 @@ struct TC_GAME_API CreatureTemplate
     uint32 unit_flags2 = 2048;                             // enum UnitFlags2 mask values
     uint32 unit_flags3 = 0;                                // enum UnitFlags3 mask values
     uint32 VehicleId = 0;
+    uint16 ScaleLevelDuration = 0;
     uint16 SandboxScalingID = 0;
     uint8 maxlevel = 1;
     uint8 minlevel = 1;
-    Optional<CreatureLevelScaling> levelScaling;
+    uint8 ScaleLevelMin = 0;
+    uint8 ScaleLevelMax = 0;
+    uint8 ScaleLevelDelta = 0;
     int8 ControllerID = 0;
     float dmg_multiplier = 1.0f;
     float HoverHeight = 1.0f;
@@ -280,21 +253,21 @@ typedef std::unordered_map<uint16, CreatureBaseStats> CreatureBaseStatsContainer
 
 struct CreatureLocale
 {
-    std::vector<std::string> Name[MAX_CREATURE_NAMES];
-    std::vector<std::string> NameAlt[MAX_CREATURE_NAMES];
-    std::vector<std::string> Title;
-    std::vector<std::string> TitleAlt;
+    StringVector Name[MAX_CREATURE_NAMES];
+    StringVector NameAlt[MAX_CREATURE_NAMES];
+    StringVector Title;
+    StringVector TitleAlt;
 };
 
 struct GossipMenuItemsLocale
 {
-    std::vector<std::string> OptionText;
-    std::vector<std::string> BoxText;
+    StringVector OptionText;
+    StringVector BoxText;
 };
 
 struct PointOfInterestLocale
 {
-    std::vector<std::string> IconName;
+    StringVector IconName;
 };
 
 struct EquipmentInfo
@@ -334,6 +307,7 @@ struct CreatureData
     uint32 unit_flags = 0;                                      // enum UnitFlags mask values
     uint32 unit_flags3 = 0;                                     // enum UnitFlags_3 mask values
     uint32 dynamicflags = 0;
+    uint32 ScriptId;
     bool isActive = false;
     float personalSize = 0;
     bool isTeemingSpawn = false;
@@ -389,6 +363,23 @@ struct CreatureAIInstance
 
 typedef std::unordered_map<uint32, CreatureAIInstance> CreatureAIInstanceContainer;
 
+// `creature_ai_instance_door` table
+
+enum DoorType
+{
+    DOOR_TYPE_ROOM          = 0,    // Door can open if encounter is not in progress
+    DOOR_TYPE_PASSAGE       = 1,    // Door can open if encounter is done
+    DOOR_TYPE_SPAWN_HOLE    = 2,    // Door can open if encounter is in progress, typically used for spawning places
+    MAX_DOOR_TYPES
+};
+
+struct DoorData
+{
+    uint32 entry, bossId;
+    DoorType type;
+    uint32 boundary;
+};
+
 enum BoundaryType
 {
     BOUNDARY_NONE = 0,
@@ -443,7 +434,7 @@ enum CreatureActionType
 struct VendorItem
 {
     VendorItem(int32 _item, int32 _maxcount, uint32 _incrtime, uint32 _ExtendedCost, uint8 _Type, uint64 _Money, uint32 _randomPropertiesSeed, ItemRandomEnchantmentId _randomPropertiesID,
-               std::vector<uint32> _bonusListIDs, std::vector<int32> _itemModifiers, bool _DoNotFilterOnVendor, uint8 _context, uint32 _PlayerConditionID);
+               std::vector<uint32> _bonusListIDs, std::vector<int32> _itemModifiers, bool _DoNotFilterOnVendor, uint8 _context, uint32 _PlayerConditionID, int32 _DonateStoreId, uint32 _DonateCost);
 
     int32 item;
     uint32 maxcount;                                        // 0 for infinity item amount
@@ -458,6 +449,8 @@ struct VendorItem
     std::vector<int32> ItemModifiers;
     bool  DoNotFilterOnVendor;
     uint8 Context;
+    int32 DonateStoreId;
+    uint32 DonateCost;
 
     //helpers
     bool IsGoldRequired(ItemTemplate const* pProto) const;
@@ -472,9 +465,9 @@ struct VendorItemData
 
     bool Empty() const { return m_items.empty(); }
     uint32 GetItemCount() const { return m_items.size(); }
-    void AddItem(int32 item, int32 maxcount, uint32 ptime, uint32 ExtendedCost, uint8 type, uint64 money, uint32 randomPropertiesSeed = 0, uint32 randomPropertiesID = 0, std::vector<uint32> const& bonusListIDs = std::vector<uint32>(), std::vector<int32> const& itemModifiers = std::vector<int32>(), bool doNotFilterOnVendor = false, uint8 context = 0, uint32 playerConditionID = 0)
+    void AddItem(int32 item, int32 maxcount, uint32 ptime, uint32 ExtendedCost, uint8 type, uint64 money, uint32 randomPropertiesSeed = 0, uint32 randomPropertiesID = 0, std::vector<uint32> const& bonusListIDs = std::vector<uint32>(), std::vector<int32> const& itemModifiers = std::vector<int32>(), bool doNotFilterOnVendor = false, uint8 context = 0, uint32 playerConditionID = 0, int32 DonateStoreId = 0, uint32 DonateCost = 0)
     {
-        m_items.push_back(new VendorItem(item, maxcount, ptime, ExtendedCost, type, money, randomPropertiesSeed, ItemRandomEnchantmentId(ItemRandomEnchantmentType::Property, randomPropertiesID), bonusListIDs, itemModifiers, doNotFilterOnVendor, context, playerConditionID));
+        m_items.push_back(new VendorItem(item, maxcount, ptime, ExtendedCost, type, money, randomPropertiesSeed, ItemRandomEnchantmentId(ItemRandomEnchantmentType::Property, randomPropertiesID), bonusListIDs, itemModifiers, doNotFilterOnVendor, context, playerConditionID, DonateStoreId, DonateCost));
     }
     bool RemoveItem(uint32 itemId, uint8 type);
     VendorItem const* FindItemCostPair(uint32 itemId, uint32 extendedCost, uint8 type) const;
@@ -489,7 +482,7 @@ struct VendorItemData
 struct VendorItemCount
 {
     explicit VendorItemCount(uint32 _item, uint32 _count)
-        : itemId(_item), count(_count), lastIncrementTime(GameTime::GetGameTime()) {}
+        : itemId(_item), count(_count), lastIncrementTime(time(nullptr)) {}
 
     uint32 itemId;
     uint32 count;
@@ -530,12 +523,44 @@ struct TrainerSpellData
 
 typedef std::map<uint32, time_t> CreatureSpellCooldowns;
 
+enum PetSpellState
+{
+    PETSPELL_UNCHANGED = 0,
+    PETSPELL_CHANGED   = 1,
+    PETSPELL_NEW       = 2,
+    PETSPELL_REMOVED   = 3
+};
+
+enum PetSpellType
+{
+    PETSPELL_NORMAL = 0,
+    PETSPELL_FAMILY = 1,
+    PETSPELL_TALENT = 2,
+};
+
+enum PetType
+{
+    SUMMON_PET              = 0,
+    HUNTER_PET              = 1,
+    MAX_PET_TYPE            = 4,
+};
+
+struct PetSpell
+{
+    ActiveStates active;
+    PetSpellState state;
+    PetSpellType type;
+};
+
+typedef std::unordered_map<uint32, PetSpell> PetSpellMap;
+typedef std::vector<uint32> AutoSpellList;
+
 // max different by z coordinate for creature aggro reaction
 #define CREATURE_Z_ATTACK_RANGE 3
 
 #define MAX_VENDOR_ITEMS 150                                // Limitation in 4.x.x item count in SMSG_VENDOR_INVENTORY
 
-class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public MapObject
+class Creature : public Unit, public GridObject<Creature>, public MapObject
 {
     public:
 
@@ -557,7 +582,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool LoadCreaturesAddon(bool reload = false);
         void SelectLevel(const CreatureTemplate* cInfo);
         void LoadEquipment(int8 id = 1, bool force=false);
-        void SetSpawnHealth();
 
         uint64 GetDBTableGUIDLow() const { return m_DBTableGuid; }
 
@@ -570,13 +594,9 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool isCivilian() const { return (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN) != 0; }
         bool isTrigger() const { return (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER) != 0; }
         bool isGuard() const { return (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_GUARD) != 0; }
-
-        CreatureMovementData const& GetMovementTemplate() const;
-        bool CanWalk() const { return GetMovementTemplate().IsGroundAllowed(); }
-        bool CanSwim() const override { return GetMovementTemplate().IsSwimAllowed() || isPet(); }
-        bool CanFly()  const override { return GetMovementTemplate().IsFlightAllowed(); }
-        bool CanHover() const { return GetMovementTemplate().IsHoverEnabled() || IsHovering(); }
-
+        bool CanWalk() const { return (GetCreatureTemplate()->InhabitType & INHABIT_GROUND) != 0; }
+        bool CanSwim() const override  { return (GetCreatureTemplate()->InhabitType & INHABIT_WATER) != 0; }
+        bool CanFly()  const override { return (GetCreatureTemplate()->InhabitType & INHABIT_AIR) != 0; }
         bool CanShared()  const { return GetCreatureTemplate()->QuestPersonalLoot; }
         bool IsIgnoreLos() const { return GetCreatureTemplate()->IgnoreLos; }
 
@@ -601,21 +621,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool IsPersonalForQuest(Player const* player) const;
         void CalculateMoney(uint32& mingold, uint32& maxgold);
 
-        bool HasScalableLevels() const;
-        uint8 GetLevelForTarget(WorldObject const* target) const override;
-
-        uint64 GetMaxHealthByLevel(uint8 level) const;
-        float GetHealthMultiplierForTarget(WorldObject const* target) const override;
-
-        float GetBaseDamageForLevel(uint8 level) const;
-        float GetDamageMultiplierForTarget(WorldObject const* target) const override;
-
-        float GetBaseArmorForLevel(uint8 level) const;
-        float GetArmorMultiplierForTarget(WorldObject const* target) const override;
-
         bool IsInEvadeMode() const { return HasUnitState(UNIT_STATE_EVADE); }
 
-        bool AIM_Destroy();
         bool AIM_Initialize(CreatureAI* ai = nullptr);
         void Motion_Initialize();
 
@@ -639,9 +646,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool HasSpell(uint32 spellID) override;
 
         bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data= nullptr);
-
-        void UpdateMovementFlags();
-
         void UpdateStat();
         bool UpdateStats(Stats stat) override;
         float GetTotalStatValue(Stats stat) override;
@@ -650,7 +654,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void UpdateArmor() override;
         void UpdateMaxHealth() override;
         void UpdateMaxPower(Powers power) override;
-        uint32 GetPowerIndex(Powers power) const override;
         void UpdateAttackPowerAndDamage(bool ranged = false) override;
         void UpdateDamagePhysical(WeaponAttackType attType) override;
         int8 GetOriginalEquipmentId() const { return m_originalEquipmentId; }
@@ -753,11 +756,10 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void RemoveCorpse(bool setSpawnTime = true);
 
         void DespawnOrUnsummon(uint32 msTimeToDespawn = 0, Seconds const& forceRespawnTimer = Seconds::zero());
-        void DespawnOrUnsummon(Milliseconds time, Seconds forceRespawnTime = 0s) { DespawnOrUnsummon(uint32(time.count()), forceRespawnTime); }
 
         time_t const& GetRespawnTime() const { return m_respawnTime; }
         time_t GetRespawnTimeEx() const;
-        void SetRespawnTime(uint32 respawn) { m_respawnTime = respawn ? GameTime::GetGameTime() + respawn : 0; }
+        void SetRespawnTime(uint32 respawn) { m_respawnTime = respawn ? time(nullptr) + respawn : 0; }
         void Respawn(bool force = false, uint32 timer = 3);
         void SaveRespawnTime() override;
 
@@ -785,11 +787,11 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         bool isRegeneratingHealth() { return m_regenHealth; }
         void setRegeneratingHealth(bool regenHealth) { m_regenHealth = regenHealth; }
-        virtual uint8 GetPetAutoSpellSize() const { return MAX_SPELL_CHARM; }
-        virtual uint32 GetPetAutoSpellOnPos(uint8 pos) const;
-
-        void SetCannotReachTarget(bool cannotReach) { if (cannotReach == m_cannotReachTarget) return; m_cannotReachTarget = cannotReach; m_cannotReachTimer = 0; }
-        bool CanNotReachTarget() const { return m_cannotReachTarget; }
+        uint8 GetPetAutoSpellSize() const;
+        uint32 GetPetAutoSpellOnPos(uint8 pos) const;
+        uint8 GetPetCastSpellSize() const;
+        void AddPetCastSpell(uint32 spellid);
+        uint32 GetPetCastSpellOnPos(uint8 pos) const;
 
         void SetPosition(float x, float y, float z, float o);
         void SetPosition(const Position& pos);
@@ -845,12 +847,13 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         float GetFollowDistance() const override { return m_followDistance; }
         void SetFollowDistance(float dist) { m_followDistance = dist; }
 
-        bool CanGiveExperience() const;
-
         void ForcedDespawn(uint32 timeMSToDespawn = 0, Seconds const& forceRespawnTimer = Seconds(0));
 
         void SetLockAI(bool lock) { m_AI_locked = lock; }
 
+        AutoSpellList   m_autospells;
+        AutoSpellList   m_castspells;
+        PetSpellMap     m_spells;
         bool m_despawn;
         bool m_isHati;
         uint32 m_IfUpdateTimer;
@@ -880,6 +883,9 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         uint32 disableAffix;
         bool IsAffixDisabled(uint8 affixe) const { return (disableAffix & (1 << affixe)) != 0; }
 
+        uint8 ScaleLevelMin = 0;
+        uint8 ScaleLevelMax = 0;
+        uint32 GetScalingID();
         bool m_CanCallAssistance;
         uint8 m_callAssistanceText;
 
@@ -924,8 +930,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         bool m_AlreadyCallAssistance;
         bool m_AlreadySearchedAssistance;
-        bool m_cannotReachTarget;
-        uint32 m_cannotReachTimer;
         bool m_regenHealth;
         bool m_AI_locked;
         std::string AIName;

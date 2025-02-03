@@ -202,7 +202,7 @@ void WorldSession::HandleWhoisOpcode(WorldPackets::Who::WhoIsRequest& packet)
         return;
     }
 
-    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_WHOIS);
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_WHOIS);
     stmt->setUInt32(0, player->GetSession()->GetAccountId());
     PreparedQueryResult result = LoginDatabase.Query(stmt);
 

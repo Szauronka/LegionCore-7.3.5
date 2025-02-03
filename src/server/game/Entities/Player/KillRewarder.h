@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2012-2016 Uwow <https://uwow.biz/>
  * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it

@@ -298,7 +298,7 @@ public:
                     me->StopAttack();
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
                     DoCast(SPELL_FEIGN_DEATH);
-                    if (me->IsAlive())
+                    if (me->isAlive())
                         me->RemoveAurasAllDots();
 
                     if (!sayDeath)
@@ -464,5 +464,5 @@ void AddSC_boss_high_inquisitor_whitemane()
     new npc_commander_durand();
     new npc_scarlet_judicator();
     new at_enter_durand_room();
-    //new achievement_and_stay_dead();
+    new achievement_and_stay_dead();
 }

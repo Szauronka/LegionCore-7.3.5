@@ -6,7 +6,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+#include "ScriptMgr.h"
 #include "highmaul.hpp"
+#include "SpellAuraEffects.h"
 
 G3D::Vector3 creepingMossPo[MaxCreepingMoss] =
 {
@@ -432,7 +434,7 @@ struct boss_brackenspore : public BossAI
             {
                 if (Creature* add = Creature::GetCreature(*me, guid))
                 {
-                    if (add->IsAlive())
+                    if (add->isAlive())
                     {
                         canSchedule = false;
                         break;
@@ -454,7 +456,8 @@ struct boss_brackenspore : public BossAI
         /// Update moves here, avoid some movements problems during Infesting Spores
         if (me->getVictim() && !me->IsWithinMeleeRange(me->getVictim()) && me->HasAura(SpellInfestingSpores))
         {
-            Position pos = me->getVictim()->GetPosition();
+            Position pos;
+            me->getVictim()->GetPosition(&pos);
 
             me->GetMotionMaster()->Clear();
             me->GetMotionMaster()->MovePoint(0, pos);
@@ -557,12 +560,12 @@ struct boss_brackenspore : public BossAI
         if (map == nullptr)
             return;
 
-        float o = frand(0.0f, float(2 * M_PI));
+        float o = frand(0.0f, 2 * M_PI);
 
         /// Use different spawn radius depending on orientation
         float radius = GetSpawnRangeByOrientation(o);
 
-        float oStep = float(2 * M_PI / 30.0f);
+        float oStep = 2 * M_PI / 30.0f;
         float x = beachCenter.x + (radius * cos(o));
         float y = beachCenter.y + (radius * sin(o));
         float z = map->GetHeight(x, y, MAX_HEIGHT);

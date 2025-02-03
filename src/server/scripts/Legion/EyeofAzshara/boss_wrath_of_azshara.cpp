@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Eye of Azshara 100-110
     Encounter: Wrath of Azshara
     Normal: 100%, Heroic: 100%, Mythic: 100%
@@ -218,7 +219,8 @@ public:
                 case SPELL_TIDAL_WAVE_SELECT_POINT_1:
                 case SPELL_TIDAL_WAVE_SELECT_POINT_2:
                 {
-                    Position pos = me->GetPosition();
+                    Position pos;
+                    me->GetPosition(&pos);
                     pos.m_positionZ += 7.0f;
                     uint8 maxCount = spell->Id == SPELL_TIDAL_WAVE_SELECT_POINT_1 ? 1 : 2;
                     uint32 delay = 0;

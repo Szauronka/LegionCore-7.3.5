@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Eye of Azshara 100-110
     Encounter: Lady Hatecoil
     Normal: 100%, Heroic: 100%, Mythic: 100%
@@ -343,7 +344,7 @@ public:
         {
             if (searchPlrTimer <= diff)
             {
-                if (!playerTarget || !playerTarget->IsAlive())
+                if (!playerTarget || !playerTarget->isAlive())
                 {
                     if (!spawn)
                     {

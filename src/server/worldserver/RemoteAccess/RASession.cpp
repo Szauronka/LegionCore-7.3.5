@@ -55,7 +55,7 @@ void RASession::Start()
     if (username.empty())
         return;
 
-    TC_LOG_INFO("commands.ra", "Accepting RA connection from user %s (IP: %s)", username.c_str(), GetRemoteIpAddress().c_str());
+    TC_LOG_INFO(LOG_FILTER_REMOTECOMMAND, "Accepting RA connection from user %s (IP: %s)", username.c_str(), GetRemoteIpAddress().c_str());
 
     Send("Password: ");
 
@@ -70,7 +70,7 @@ void RASession::Start()
         return;
     }
 
-    TC_LOG_INFO("commands.ra", "User %s (IP: %s) authenticated correctly to RA", username.c_str(), GetRemoteIpAddress().c_str());
+    TC_LOG_INFO(LOG_FILTER_REMOTECOMMAND, "User %s (IP: %s) authenticated correctly to RA", username.c_str(), GetRemoteIpAddress().c_str());
 
     // Authentication successful, send the motd
     for (std::string const& line : sWorld->GetMotd())
@@ -124,13 +124,13 @@ bool RASession::CheckAccessLevel(const std::string& user)
 
     Utf8ToUpperOnlyLatin(safeUser);
 
-    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_ACCESS);
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_ACCESS);
     stmt->setString(0, safeUser);
     PreparedQueryResult result = LoginDatabase.Query(stmt);
 
     if (!result)
     {
-        TC_LOG_INFO("commands.ra", "User %s does not exist in database", user.c_str());
+        TC_LOG_INFO(LOG_FILTER_REMOTECOMMAND, "User %s does not exist in database", user.c_str());
         return false;
     }
 
@@ -138,12 +138,12 @@ bool RASession::CheckAccessLevel(const std::string& user)
 
     if (fields[1].GetUInt8() < sConfigMgr->GetIntDefault("RA.MinLevel", 3))
     {
-        TC_LOG_INFO("commands.ra", "User %s has no privilege to login", user.c_str());
+        TC_LOG_INFO(LOG_FILTER_REMOTECOMMAND, "User %s has no privilege to login", user.c_str());
         return false;
     }
     else if (fields[2].GetInt32() != -1)
     {
-        TC_LOG_INFO("commands.ra", "User %s has to be assigned on all realms (with RealmID = '-1')", user.c_str());
+        TC_LOG_INFO(LOG_FILTER_REMOTECOMMAND, "User %s has to be assigned on all realms (with RealmID = '-1')", user.c_str());
         return false;
     }
 
@@ -162,7 +162,7 @@ bool RASession::CheckPassword(const std::string& user, const std::string& pass)
 
     std::string hash = AccountMgr::CalculateShaPassHash(safe_user, safe_pass);
 
-    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_CHECK_PASSWORD_BY_NAME);
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_CHECK_PASSWORD_BY_NAME);
 
     stmt->setString(0, safe_user);
     stmt->setString(1, hash);
@@ -171,7 +171,7 @@ bool RASession::CheckPassword(const std::string& user, const std::string& pass)
 
     if (!result)
     {
-        TC_LOG_INFO("commands.ra", "Wrong password for user: %s", user.c_str());
+        TC_LOG_INFO(LOG_FILTER_REMOTECOMMAND, "Wrong password for user: %s", user.c_str());
         return false;
     }
 
@@ -183,7 +183,7 @@ bool RASession::ProcessCommand(std::string& command)
     if (command.length() == 0)
         return true;
 
-    TC_LOG_INFO("commands.ra", "Received command: %s", command.c_str());
+    TC_LOG_INFO(LOG_FILTER_REMOTECOMMAND, "Received command: %s", command.c_str());
 
     // handle quit, exit and logout commands to terminate connection
     if (command == "quit" || command == "exit" || command == "logout")

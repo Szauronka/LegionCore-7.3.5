@@ -6,8 +6,6 @@
 #ifndef MOGUSHAN_VAULT_H_
 #define MOGUSHAN_VAULT_H_
 
-#define DataHeader "MSV"
-
 enum eData
 {
     DATA_STONE_GUARD                = 0,

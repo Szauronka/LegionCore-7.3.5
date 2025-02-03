@@ -54,20 +54,8 @@ endif()
 
 set_target_properties(proto
   PROPERTIES
-    DEFINE_SYMBOL TRINITY_API_EXPORT_PROTO
-    FOLDER "server")
-
-if( BUILD_SHARED_LIBS )
-  if( UNIX )
-    install(TARGETS proto
-      LIBRARY
-        DESTINATION lib)
-  elseif( WIN32 )
-    install(TARGETS proto
-      RUNTIME
-        DESTINATION "${CMAKE_INSTALL_PREFIX}")
-  endif()
-endif()
+    FOLDER
+      "server")
 
 # Generate precompiled header
 if (USE_COREPCH)

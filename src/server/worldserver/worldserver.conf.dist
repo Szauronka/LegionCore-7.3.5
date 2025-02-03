@@ -1,7 +1,33 @@
-##############################################
-# LegionCore World Server configuration file #
-##############################################
+################################################
+# Trinity Core World Server configuration file #
+################################################
 [worldserver]
+
+###################################################################################################
+# SECTION INDEX
+#
+#    EXAMPLE CONFIG
+#    CONNECTIONS AND DIRECTORIES
+#    PERFORMANCE SETTINGS
+#    SERVER LOGGING
+#    SERVER SETTINGS
+#    WARDEN SETTINGS
+#    PLAYER INTERACTION
+#    CREATURE SETTINGS
+#    CHAT SETTINGS
+#    GAME MASTER SETTINGS
+#    VISIBILITY AND DISTANCES
+#    SERVER RATES
+#    AUTO BROADCAST
+#    BATTLEGROUND CONFIG
+#    BATTLEFIELD CONFIG
+#    ARENA CONFIG
+#    NETWORK CONFIG
+#    CONSOLE AND REMOTE ACCESS
+#    CHARACTER DELETE OPTIONS
+#    CUSTOM SERVER OPTIONS
+#
+###################################################################################################
 
 ###################################################################################################
 # GAME VERSION SETTINGS #
@@ -27,6 +53,23 @@ Game.Build.Version = 26972
 Game.Patch = 3
 
 #
+
+###################################################################################################
+
+###################################################################################################
+# EXAMPLE CONFIG
+#
+#    Variable
+#        Description: Brief description what the variable is doing.
+#        Important:   Annotation for important things about this variable.
+#        Example:     "Example, i.e. if the value is a string"
+#        Default:     10 - (Enabled|Comment|Variable name in case of grouped config options)
+#                     0  - (Disabled|Comment|Variable name in case of grouped config options)
+#
+# Note to developers:
+# - Copy this example to keep the formatting.
+# - Line breaks should be at column 100.
+
 ###################################################################################################
 
 ###################################################################################################
@@ -34,7 +77,7 @@ Game.Patch = 3
 #
 #    RealmID
 #        Description: ID of the Realm using this config.
-#        Important:   RealmID must match the realmlist inside the auth database.
+#        Important:   RealmID must match the realmlist inside the realmd database.
 #        Default:     1
 
 RealmID = 1
@@ -43,25 +86,24 @@ RealmID = 1
 #    DataDir
 #        Description: Data directory setting.
 #        Important:   DataDir needs to be quoted, as the string might contain space characters.
-#        Example:     "C:/LegionCore/ClientData"
-#        Default:     "./ClientData"
+#        Example:     "@prefix@/share/trinitycore"
+#        Default:     "."
 
-DataDir = "./ClientData"
+DataDir = "./Data"
 
 #
 #    LogsDir
 #        Description: Logs directory setting.
 #        Important:   LogsDir needs to be quoted, as the string might contain space characters.
 #                     Logs directory must exists, or log file creation will be disabled.
-#        Default:     "./Data/Logs"
+#        Default:     "" - (Log files will be stored in the current path)
 
-LogsDir = "./Data/Logs"
+LogsDir = "./Logs"
 
 #
 #    LoginDatabaseInfo
-#    CharacterDatabaseInfo
-#    HotfixDatabaseInfo
 #    WorldDatabaseInfo
+#    CharacterDatabaseInfo
 #        Description: Database connection settings for the world server.
 #        Example:     "hostname;port;username;password;database"
 #                     ".;somenumber;username;password;database" - (Use named pipes on Windows
@@ -69,50 +111,55 @@ LogsDir = "./Data/Logs"
 #                                                                 section my.ini)
 #                     ".;/path/to/unix_socket;username;password;database" - (use Unix sockets on
 #                                                                           Unix/Linux)
+#        Default:     "127.0.0.1;3306;trinity;trinity;auth"       - (LoginDatabaseInfo)
+#                     "127.0.0.1;3306;trinity;trinity;world"      - (WorldDatabaseInfo)
+#                     "127.0.0.1;3306;trinity;trinity;characters" - (CharacterDatabaseInfo)
+#                     "127.0.0.1;3306;trinity;trinity;hotfixes"   - (HotfixDatabaseInfo)
 #
-#        Default:     "127.0.0.1;3306;root;admin;auth"       - (LoginDatabaseInfo)
-#                     "127.0.0.1;3306;root;admin;characters" - (CharacterDatabaseInfo)
-#                     "127.0.0.1;3306;root;admin;hotfixes"   - (HotfixDatabaseInfo)
-#                     "127.0.0.1;3306;root;admin;world"      - (WorldDatabaseInfo)
+#    Don't change hostname unless you are hosting mysql on a different machine, if you need help
+#    with configuration allowing to connect from diferent machine than the one running server
+#    search for TCE00016 on forum.
+#    Don't open port on firewall to external connections (it belongs to mysql, not to wow server).
+#    The username you choose must have permisions to create/alter/rename tables.
 
-LoginDatabaseInfo     = "127.0.0.1;3306;root;admin;auth"
-CharacterDatabaseInfo = "127.0.0.1;3306;root;admin;characters"
-HotfixDatabaseInfo    = "127.0.0.1;3306;root;admin;hotfixes"
-WorldDatabaseInfo     = "127.0.0.1;3306;root;admin;world"
+LoginDatabaseInfo     = "127.0.0.1;3308;trinity;trinity;wow_legion_auth"
+WorldDatabaseInfo     = "127.0.0.1;3308;trinity;trinity;wow_legion_world"
+CharacterDatabaseInfo = "127.0.0.1;3308;trinity;trinity;wow_legion_characters"
+HotfixDatabaseInfo    = "127.0.0.1;3308;trinity;trinity;wow_legion_hotfixes"
 
 #
 #    LoginDatabase.WorkerThreads
+#    WorldDatabase.WorkerThreads
 #    CharacterDatabase.WorkerThreads
 #    HotfixDatabase.WorkerThreads
-#    WorldDatabase.WorkerThreads
 #        Description: The amount of worker threads spawned to handle asynchronous (delayed) MySQL
 #                     statements. Each worker thread is mirrored with its own connection to the
 #                     MySQL server and their own thread on the MySQL server.
 #        Default:     1 - (LoginDatabase.WorkerThreads)
+#                     1 - (WorldDatabase.WorkerThreads)
 #                     1 - (CharacterDatabase.WorkerThreads)
 #                     1 - (HotfixDatabase.WorkerThreads)
-#                     1 - (WorldDatabase.WorkerThreads)
 
 LoginDatabase.WorkerThreads     = 1
+WorldDatabase.WorkerThreads     = 1
 CharacterDatabase.WorkerThreads = 1
 HotfixDatabase.WorkerThreads    = 1
-WorldDatabase.WorkerThreads     = 1
 
 #
 #    LoginDatabase.SynchThreads
+#    WorldDatabase.SynchThreads
 #    CharacterDatabase.SynchThreads
 #    HotfixDatabase.SynchThreads
-#    WorldDatabase.SynchThreads
 #        Description: The amount of MySQL connections spawned to handle.
-#        Default:     1 - (LoginDatabase.WorkerThreads)
-#                     1 - (CharacterDatabase.WorkerThreads)
-#                     1 - (HotfixDatabase.WorkerThreads)
-#                     1 - (WorldDatabase.WorkerThreads)
+#        Default:     1 - (LoginDatabase.SynchThreads)
+#                     1 - (WorldDatabase.SynchThreads)
+#                     2 - (CharacterDatabase.SynchThreads)
+#                     1 - (HotfixDatabase.SynchThreads)
 
 LoginDatabase.SynchThreads     = 1
-CharacterDatabase.SynchThreads = 1
-HotfixDatabase.SynchThreads    = 1
 WorldDatabase.SynchThreads     = 1
+CharacterDatabase.SynchThreads = 2
+HotfixDatabase.SynchThreads    = 1
 
 #
 #    MaxPingTime
@@ -126,34 +173,18 @@ MaxPingTime = 30
 #        Description: TCP port to reach the world server.
 #        Default:     8085
 
-WorldServerPort = 8085
+WorldServerPort = 8089
 
 #
 #    InstanceServerPort
 #        Description: TCP port to for second world connection.
 #        Default:     8086
 
-InstanceServerPort = 8086
-
-#
-#    BnetServer.Address
-#        Description: Determines IP address of battle.net server to connect to.
-#        Default:     127.0.0.1
-#
-
-BnetServer.Address = 127.0.0.1
-
-#
-#    BnetServer.Port
-#        Description: Determines port to use when connecting to battle.net server.
-#        Default:     1118
-#
-
-BnetServer.Port = 1118
+InstanceServerPort = 8090
 
 #
 #    BindIP
-#        Description: Bind world server to IP/hostname
+#        Description: Bind world server to IP/hostname.
 #        Default:     "0.0.0.0" - (Bind to all IPs on the system)
 
 BindIP = "0.0.0.0"
@@ -170,6 +201,25 @@ BindIP = "0.0.0.0"
 #        Default:     2
 
 ThreadPool = 2
+
+#
+#    CMakeCommand
+#        Description: The path to your CMake binary.
+#                     If the path is left empty, the built-in CMAKE_COMMAND is used.
+#        Example:     "C:/Program Files (x86)/CMake/bin/cmake.exe"
+#                     "/usr/bin/cmake"
+#        Default:     ""
+
+CMakeCommand  = ""
+
+#
+#    BuildDirectory
+#        Description: The path to your build directory.
+#                     If the path is left empty, the built-in CMAKE_BINARY_DIR is used.
+#        Example:     "../TrinityCore"
+#        Default:     ""
+
+BuildDirectory  = ""
 
 #
 #    SourceDirectory
@@ -189,107 +239,7 @@ SourceDirectory  = ""
 #                     "/usr/bin/mysql"
 #        Default:     ""
 
-MySQLExecutable = ""
-
-#
-###################################################################################################
-
-###################################################################################################
-# NETWORK CONFIG
-#
-#    Network.Threads
-#        Description: Number of threads for network.
-#         Default:    1 - (Recommended 1 thread per 1000 connections)
-
-Network.Threads = 1
-
-#
-#    Network.OutKBuff
-#        Description: Amount of memory (in bytes) used for the output kernel buffer (see SO_SNDBUF
-#                     socket option, TCP manual).
-#        Default:     -1 - (Use system default setting)
-
-Network.OutKBuff = -1
-
-#
-#    Network.OutUBuff
-#        Description: Amount of memory (in bytes) reserved in the user space per connection for
-#                     output buffering.
-#         Default:    65536
-
-Network.OutUBuff = 65536
-
-#
-#    Network.TcpNoDelay:
-#        Description: TCP Nagle algorithm setting.
-#         Default:    0 - (Enabled, Less traffic, More latency)
-#                     1 - (Disabled, More traffic, Less latency, TCP_NO_DELAY)
-
-Network.TcpNodelay = 1
-
-#
-###################################################################################################
-
-###################################################################################################
-# CONSOLE AND REMOTE ACCESS
-#
-#    Console.Enable
-#        Description: Enable console.
-#        Default:     1 - (Enabled)
-#                     0 - (Disabled)
-
-Console.Enable = 1
-
-#
-#    Ra.Enable
-#        Description: Enable remote console (telnet).
-#        Default:     0 - (Disabled)
-#                     1 - (Enabled)
-
-Ra.Enable = 0
-
-#
-#    Ra.IP
-#        Description: Bind remote access to IP/hostname.
-#        Default:     "0.0.0.0" - (Bind to all IPs on the system)
-
-Ra.IP = "0.0.0.0"
-
-#
-#    Ra.Port
-#        Description: TCP port to reach the remote console.
-#        Default:     3443
-
-Ra.Port = 3443
-
-#
-#    Ra.MinLevel
-#        Description: Required security level to use the remote console.
-#        Default:     3
-
-Ra.MinLevel = 3
-
-#
-#    SOAP.Enable
-#        Description: Enable soap service
-#        Default:     0 - (Disabled)
-#                     1 - (Enabled)
-
-SOAP.Enabled = 0
-
-#
-#    SOAP.IP
-#        Description: Bind SOAP service to IP/hostname
-#        Default:     "127.0.0.1" - (Bind to localhost)
-
-SOAP.IP = "127.0.0.1"
-
-#
-#    SOAP.Port
-#        Description: TCP port to reach the SOAP service.
-#        Default:     7878
-
-SOAP.Port = 7878
+MySQLExecutable = "C:\Program Files\MySQL\MySQL Server 5.7\bin"
 
 #
 ###################################################################################################
@@ -298,7 +248,7 @@ SOAP.Port = 7878
 # PERFORMANCE SETTINGS
 #
 #    UseProcessors
-#        Description: Processors mask for Windows based multi-processor systems.
+#        Description: Processors mask for Windows and Linux based multi-processor systems.
 #        Default:     0  - (Selected by OS)
 #                     1+ - (Bit mask value of selected processors)
 
@@ -312,7 +262,7 @@ UseProcessors = 0
 #        Default:     0 - (Normal)
 #                     1 - (High)
 
-ProcessPriority = 0
+ProcessPriority = 1
 
 #
 #    Compression
@@ -322,6 +272,16 @@ ProcessPriority = 0
 #                     9   - (Best compression)
 
 Compression = 1
+
+#
+#    PlayerLimit
+#        Description: Maximum number of players in the world. Excluding Mods, GMs and Admins.
+#          Important: If you want to block players and only allow Mods, GMs or Admins to join the
+#                     server, use the DB field "auth.realmlist.allowedSecurityLevel".
+#            Default: 0   - (Disabled, No limit)
+#                     1+  - (Enabled)
+
+PlayerLimit = 0
 
 #
 #    SaveRespawnTimeImmediately
@@ -334,28 +294,47 @@ SaveRespawnTimeImmediately = 1
 #
 #    MaxOverspeedPings
 #        Description: Maximum overspeed ping count before character is disconnected.
-#        Default:     0  - (Disabled)
-#                     2  - (Enabled, Minimum value)
+#        Default:     2  - (Enabled, Minimum value)
 #                     3+ - (Enabled, More checks before kick)
+#                     0  - (Disabled)
 
-MaxOverspeedPings = 0
+MaxOverspeedPings = 2
 
 #
 #    GridUnload
 #        Description: Unload grids to save memory. Can be disabled if enough memory is available
 #                     to speed up moving players to new grids.
-#        Default:     1 - (Enable, Unload grids)
-#                     0 - (Disable, Do not unload grids)
+#        Default:     1 - (enable, Unload grids)
+#                     0 - (disable, Do not unload grids)
 
 GridUnload = 1
+
+#
+#    BaseMapLoadAllGrids
+#        Description: Load all grids for base maps upon load. Requires GridUnload to be 0.
+#                     This will take around 5GB of ram upon server load, and will take some time
+#                     to initially load the server.
+#        Default:     0 - (Don't pre-load all base maps, dynamically load as used)
+#                     1 - (Preload all grids in all base maps upon load)
+
+BaseMapLoadAllGrids = 0
+
+#
+#    InstanceMapLoadAllGrids
+#        Description: Load all grids for instance maps upon load. Requires GridUnload to be 0.
+#                     Upon loading an instance map, all creatures/objects in the map will be pre-loaded
+#        Default:     0 - (Don't pre-load all base maps, dynamically load as used)
+#                     1 - (Preload all grids in the instance upon load)
+
+InstanceMapLoadAllGrids = 0
 
 #
 #    SocketTimeOutTime
 #        Description: Time (in milliseconds) after which a connection being idle on the character
 #                     selection screen is disconnected.
-#        Default:     900000 - (15 minutes)
+#        Default:     10800000 - (3 heures)
 
-SocketTimeOutTime = 900000
+SocketTimeOutTime = 10800000
 
 #
 #    SessionAddDelay
@@ -389,9 +368,32 @@ ChangeWeatherInterval = 600000
 #
 #    PlayerSaveInterval
 #        Description: Time (in milliseconds) for player save interval.
-#        Default:     90000 - (90 seconds)
+#        Default:     900000 - (15 min)
 
-PlayerSaveInterval = 90000
+PlayerSaveInterval = 30000
+
+#
+#    PlayerSave.Stats.MinLevel
+#        Description: Minimum level for saving character stats in the database for external usage.
+#        Default:     0  - (Disabled, Do not save character stats)
+#                     1+ - (Enabled, Level beyond which character stats are saved)
+
+PlayerSave.Stats.MinLevel = 1
+
+#
+#    PlayerSave.Stats.SaveOnlyOnLogout
+#        Description: Save player stats only on logout.
+#        Default:     1 - (Enabled, Only save on logout)
+#                     0 - (Disabled, Save on every player save)
+
+PlayerSave.Stats.SaveOnlyOnLogout = 1
+
+#
+#    DisconnectToleranceInterval
+#        Description: Tolerance (in seconds) for disconnected players before reentering the queue.
+#        Default: 0 (disabled)
+
+DisconnectToleranceInterval = 0
 
 #
 #    mmap.enablePathFinding
@@ -404,13 +406,23 @@ mmap.enablePathFinding = 1
 #
 #    vmap.enableLOS
 #    vmap.enableHeight
-#        Description: VMmap support for line of sight and height calculation.
+#        Description: Vmap support for line of sight and height calculation.
 #        Default:     1 - (Enabled, vmap.enableLOS)
 #                     1 - (Enabled, vmap.enableHeight)
 #                     0 - (Disabled)
 
 vmap.enableLOS    = 1
 vmap.enableHeight = 1
+
+
+#
+#    vmap.ignoreSpellIds
+#        Description: These spells are ignored for LoS calculation.
+#                     List of ids with delimiter ','.
+#        Example:     "7720,1337"
+#        Default:     "7720"
+
+vmap.ignoreSpellIds = "7720"
 
 #
 #    vmap.petLOS
@@ -446,7 +458,7 @@ DetectPosCollision = 1
 #                     0.5 - (Minimum, Contact Range, More sensitive reaction to target movement)
 #                     5.0 - (Maximum, Melee attack range, Less CPU usage)
 
-TargetPosRecalculateRange = 1.5
+TargetPosRecalculateRange = 5.0
 
 #
 #    UpdateUptimeInterval
@@ -503,7 +515,7 @@ AddonChannel = 1
 #        Description: Number of threads to update maps.
 #        Default:     1
 
-MapUpdate.Threads = 1
+MapUpdate.Threads = 16
 
 #
 #    CleanCharacterDB
@@ -525,26 +537,107 @@ CleanCharacterDB = 0
 PersistentCharacterCleanFlags = 0
 
 #
+#	Skip update in specific zone
+#		Actualy Orgrimmar & Stormwind
+#
+
+ZoneSkipUpdate.count = 15
+
+#
 ###################################################################################################
 
 ###################################################################################################
 # SERVER LOGGING
 #
 #    PidFile
-#        Description: World daemon PID file.
-#        Example:     "./world.pid" - (Enabled)
-#        Default:     ""            - (Disabled)
+#        Description: World daemon PID file
+#        Example:     "./worldd.pid" - (Enabled)
+#        Default:     ""             - (Disabled)
 
 PidFile = ""
 
 #
 #    PacketLogFile
 #        Description: Binary packet logging file for the world server.
-#                     Filename extension must be .pkt to be parsable with WowPacketParser.
-#        Example:     "World.pkt" - (Enabled)
+#                     Filename extension must be .bin to be parsable with WowPacketParser.
+#        Example:     "World.bin" - (Enabled)
 #        Default:     ""          - (Disabled)
 
 PacketLogFile = ""
+
+#
+#    ChatLogs.Channel
+#        Description: Log custom channel chat.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+ChatLogs.Channel = 0
+
+#
+#    ChatLogs.Whisper
+#        Description: Log whispers between players.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+ChatLogs.Whisper = 0
+
+#
+#    ChatLogs.SysChan
+#        Description: Log system channel messages.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+ChatLogs.SysChan = 0
+
+#
+#    ChatLogs.Party
+#        Description: Log party chat.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+
+ChatLogs.Party = 0
+
+#
+#    ChatLogs.Raid
+#        Description: Log raid chat.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+
+ChatLogs.Raid = 0
+
+#
+#    ChatLogs.Guild
+#        Description: Log guild chat.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+ChatLogs.Guild = 0
+
+#
+#    ChatLogs.Public
+#        Description: Log public chat (say/yell/emote).
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+ChatLogs.Public = 0
+
+#
+#    ChatLogs.Addon
+#        Description: Log addon messages.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+ChatLogs.Addon = 0
+
+#
+#    ChatLogs.BattleGround
+#        Description: Log battleground chat.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+ChatLogs.BattleGround = 0
 
 # Extended Logging system configuration moved to end of file (on purpose)
 #
@@ -612,7 +705,7 @@ RealmZone = 1
 #                         placed in clientdir/Fonts.
 #                     3 - (Enabled, Basic Latin characters + server timezone specific)
 
-StrictPlayerNames = 1
+StrictPlayerNames = 0
 
 #
 #    StrictCharterNames
@@ -626,7 +719,7 @@ StrictPlayerNames = 1
 #                         placed in clientdir/Fonts.
 #                     3 - (Enabled, Basic Latin characters + server timezone specific)
 
-StrictCharterNames = 1
+StrictCharterNames = 0
 
 #
 #    StrictPetNames
@@ -640,7 +733,7 @@ StrictCharterNames = 1
 #                         placed in clientdir/Fonts.
 #                     3 - (Enabled, Basic Latin characters + server timezone specific)
 
-StrictPetNames = 1
+StrictPetNames = 0
 
 #
 #    DBC.Locale
@@ -672,7 +765,7 @@ DeclinedNames = 0
 #           Default:  6 - (Expansion 6 Legion)
 #                     5 - (Expansion 5 Warlords of Draenor)
 #                     4 - (Expansion 4 Mists of Pandaria)
-#				      3 - (Expansion 3 Cataclysm)
+#		      3 - (Expansion 3 Cataclysm)
 #                     2 - (Expansion 2 Warth of the Lich King)
 #                     1 - (Expansion 1 Burning Crusade)
 #                     0 - (Disabled, Ignore and disable expansion content (maps, races, classes)
@@ -704,11 +797,80 @@ MinCharterName = 2
 MinPetName = 2
 
 #
+#    Guild.CharterCost
+#    ArenaTeam.CharterCost.2v2
+#    ArenaTeam.CharterCost.3v3
+#    ArenaTeam.CharterCost.5v5
+#        Description: Amount of money (in Copper) the petitions costs.
+#        Default:     1000 - (10 Silver)
+#                     800000 - (80 Gold)
+#                     1200000 - (120 Gold)
+#                     2000000 - (200 Gold)
+
+Guild.CharterCost = 1000
+ArenaTeam.CharterCost.2v2 = 800000
+ArenaTeam.CharterCost.3v3 = 1200000
+ArenaTeam.CharterCost.5v5 = 2000000
+
+#
 #    MaxWhoListReturns
 #        Description: Set the max number of players returned in the /who list and interface.
-#        Default:     49 - (stable)
+#        Default:     50 - (stable)
 
-MaxWhoListReturns = 49
+MaxWhoListReturns = 50
+
+#
+#    CharacterCreating.Disabled
+#        Description: Disable character creation for players based on faction.
+#        Example:     3 - (1 + 2, Alliance and Horde are disabled)
+#        Default:     0 - (Enabled, All factions are allowed)
+#                     1 - (Disabled, Alliance)
+#                     2 - (Disabled, Horde)
+#                     3 - (Disabled, Both factions)
+
+CharacterCreating.Disabled = 0
+
+#
+#    CharacterCreating.Disabled.RaceMask
+#        Description: Mask of races which cannot be created by players.
+#        Example:     1536 - (1024 + 512, Blood Elf and Draenei races are disabled)
+#        Default:     0    - (Enabled, All races are allowed)
+#                     1    - (Disabled, Human)
+#                     2    - (Disabled, Orc)
+#                     4    - (Disabled, Dwarf)
+#                     8    - (Disabled, Night Elf)
+#                     16   - (Disabled, Undead)
+#                     32   - (Disabled, Tauren)
+#                     64   - (Disabled, Gnome)
+#                     128  - (Disabled, Troll)
+#                     256  - (Disabled, Goblin)
+#                     512  - (Disabled, Blood Elf)
+#                     1024 - (Disabled, Draenei)
+#                     2097152 - (Disabled, Worgen)
+#                     8388608 - (Disabled, Pandaren Neutral)
+#                     16777216 - (Disabled, Pandaren Alliance)
+#                     33554432 - (Disabled, Pandaren Horde)
+
+CharacterCreating.Disabled.RaceMask = 0
+
+#
+#    CharacterCreating.Disabled.ClassMask
+#        Description: Mask of classes which cannot be created by players.
+#        Example:     288 - (32 + 256, Death Knight and Warlock classes are disabled)
+#        Default:     0    - (Enabled, All classes are allowed)
+#                     1    - (Disabled, Warrior)
+#                     2    - (Disabled, Paladin)
+#                     4    - (Disabled, Hunter)
+#                     8    - (Disabled, Rogue)
+#                     16   - (Disabled, Priest)
+#                     32   - (Disabled, Death Knight)
+#                     64   - (Disabled, Shaman)
+#                     128  - (Disabled, Mage)
+#                     256  - (Disabled, Warlock)
+#                     512  - (Disabled, Monk)
+#                     1024 - (Disabled, Druid)
+
+CharacterCreating.Disabled.ClassMask = 0
 
 #
 #    CharactersPerAccount
@@ -717,14 +879,31 @@ MaxWhoListReturns = 49
 #        Default:     50
 
 CharactersPerAccount = 50
-
 #
 #    CharactersPerRealm
 #        Description: Limit number of characters per account on this realm.
-#        Range:       1-12
+#        Range:       1-50
 #        Default:     12 - (Client limitation)
 
 CharactersPerRealm = 12
+
+#
+#    HeroicCharactersPerRealm
+#        Description: Limit number of heroic class characters per account on this realm.
+#        Range:       1-10
+#        Default:     1
+
+HeroicCharactersPerRealm = 1
+
+#
+#    CharacterCreating.MinLevelForHeroicCharacter
+#        Description: Limit creating heroic characters only for account with another
+#                     character of specific level (ignored for GM accounts)
+#        Default:     55 - (Enabled, Requires at least another level 55 character)
+#                     0  - (Disabled)
+#                     1  - (Enabled, Requires at least another level 1 character)
+
+CharacterCreating.MinLevelForHeroicCharacter = 55
 
 #
 #    DemonHuntersPerRealm
@@ -732,7 +911,7 @@ CharactersPerRealm = 12
 #        Range:       1-12
 #        Default:     1
 
-DemonHuntersPerRealm = 12
+DemonHuntersPerRealm = 1
 
 #
 #    CharacterCreating.MinLevelForDemonHunter
@@ -742,7 +921,7 @@ DemonHuntersPerRealm = 12
 #                     0  - (Disabled)
 #                     1  - (Enabled, Requires at least another level 1 character)
 
-CharacterCreating.MinLevelForDemonHunter = 0
+CharacterCreating.MinLevelForDemonHunter = 70
 
 #
 #    SkipCinematics
@@ -757,7 +936,7 @@ SkipCinematics = 0
 #
 #    MaxPlayerLevel
 #        Description: Maximum level that can be reached by players.
-#        Important:   Levels beyond 100 are not recommended at all.
+#        Important:   Levels beyond 110 are not recommended at all.
 #        Range:       1-255
 #        Default:     110
 
@@ -779,12 +958,20 @@ MinDualSpecLevel = 30
 StartPlayerLevel = 1
 
 #
-#    StartHeroicPlayerLevel
-#        Description: Staring level for heroic class characters after creation.
+#    StartDeathKnightPlayerLevel
+#        Description: Staring level for death knights after creation.
 #        Range:       1-MaxPlayerLevel
 #        Default:     55
 
-StartHeroicPlayerLevel = 55
+StartDeathKnightPlayerLevel = 55
+
+#
+#    StartDemonHunterPlayerLevel
+#        Description: Staring level for demon hunters after creation.
+#        Range:       98-MaxPlayerLevel
+#        Default:     98
+
+StartDemonHunterPlayerLevel = 98
 
 #
 #    StartPlayerMoney
@@ -793,6 +980,65 @@ StartHeroicPlayerLevel = 55
 #                     100 - (1 Silver)
 
 StartPlayerMoney = 0
+
+#
+#    MaxHonorPoints
+#        Description: Maximum honor points a character can have.
+#        Default:     4000 (currency x100)
+
+MaxHonorPoints = 400000
+
+#
+#    StartHonorPoints
+#        Description: Amount of honor points that characters have after creation.
+#        Default:     0
+
+StartHonorPoints = 0
+
+#
+# MaxJusticePoints
+# Description: Maximum justice points a character can have.
+# Default: 4000 (Currency x100)
+
+MaxJusticePoints = 400000
+
+#
+# StartJusticePoints
+# Description: Amount of justice points that characters have after creation.
+# Default: 0
+
+StartJusticePoints = 0
+
+
+#
+#    MaxArenaPoints
+#        Description: Maximum arena points a character can have.
+#        Default:     10000
+
+MaxArenaPoints = 10000
+
+#
+#    StartArenaPoints
+#        Description: Amount of arena points that characters has after creation.
+#        Default:     0
+
+StartArenaPoints = 0
+
+#
+#    RecruitAFriend.MaxLevel
+#        Description: Highest level up to which a character can benefit from the Recruit-A-Friend
+#                     experience multiplier.
+#        Default:     95
+
+RecruitAFriend.MaxLevel = 95
+
+#
+#    RecruitAFriend.MaxDifference
+#        Description: Highest level difference between linked Recruiter and Friend benefit from
+#                     the Recruit-A-Friend experience multiplier.
+#        Default:     4
+
+RecruitAFriend.MaxDifference = 4
 
 #
 #    InstantLogout
@@ -804,29 +1050,7 @@ StartPlayerMoney = 0
 #                     3  - (Enabled, Admins)
 #                     4  - (Disabled)
 
-InstantLogout = 0
-
-#
-#    NoResetTalentsCost
-#        Description: Resetting talents doesn't cost anything.
-#        Default:     0 - (Disabled)
-#                     1 - (Enabled)
-
-NoResetTalentsCost = 1
-
-#
-#     PlayerDump.DisallowPaths
-#        Description: Disallow using paths in PlayerDump output files
-#        Default:     1
-
-PlayerDump.DisallowPaths = 1
-
-#
-#     PlayerDump.DisallowOverwrite
-#        Description: Disallow overwriting existing files with PlayerDump
-#        Default:     1
-
-PlayerDump.DisallowOverwrite = 1
+InstantLogout = 1
 
 #
 #    DisableWaterBreath
@@ -837,86 +1061,7 @@ PlayerDump.DisallowOverwrite = 1
 #                     2  - (Enabled, GMs/Admins)
 #                     3  - (Enabled, Admins)
 
-DisableWaterBreath = 1
-
-#
-#    FastFishing
-#        Description: Makes fishing faster, or removes the wait entirely.
-#        Default:     0  - (Disabled)
-#                     1  - (Faster)
-#                     2  - (Instant)
-
-FastFishing = 0
-
-#
-#    PlayerStart.AllReputation
-#        Description: Players will start with most of the high level reputations that are needed
-#                     for items, mounts etc.
-#        Default:     0 - (Disabled)
-#                     1 - (Enabled)
-
-PlayerStart.AllReputation = 0
-
-#
-#     DungeonFinder.DebugJoin
-#        Description: Allow DungeonFinder usage with 1 player.
-#        Default:     1 - (Enabled)
-#                     0 - (Disabled)
-
-DungeonFinder.DebugJoin = 1
-
-#
-#     Bpay.Enabled
-#        Description: Enable BattlePay ingame shop button (need to fill the database)
-#        Default:     0 (disabled)
-#                     1 (enabled)
-
-Bpay.Enabled = 1
-
-#
-#     Custom.GainHonorOnGuardKill
-#        Description: Set it to 1 to gain honor when you kill a guard.
-#                     Note that not all city guards will give you honor. It seems only capital and big city guards are flagged
-#                     as so in the database.
-#        Default:     0  (No honor when you kill a guard)
-#                     1+ (gain honor for kill guards)
-
-Custom.GainHonorOnGuardKill = 1
-
-#
-#     Custom.GainHonorOnEliteKill
-#        Description: Set it to 1 to gain honor when you kill an elite mob (this does not apply on rare mob, unless he is also elite).
-#        Default:     0  (No honor when you kill an elite mob)
-#                     1+ (gain honor for kill elite mobs)
-
-Custom.GainHonorOnEliteKill = 1
-
-#   Player.ControlGuardianPets
-#       Whether uncontrolled temporary pets will be controlled or not
-#       Example: Dire beast attacking the players current target when switching. Enabled by default
-
-Player.ControlGuardianPets = 1
-
-#   Player.UnlimitedLegionLegendaries
-#       If this option is enabled it will override the player legion legendary equip count and make
-#       the player be able to equip an unlimited number of legendaries 
-
-Player.UnlimitedLegionLegendaries = 1
-
-#   DisableRestart
-#        Description: Disable server auto restart.
-#        Default:     1 - Disable server auto restart
-#                     0 - Enable server auto restart every day
-
-DisableRestart = 1
-
-#
-#    WorldQuest
-#        Description: Enable/Disable WorldQuests
-#        Default:     1 - Enable World Quests
-#                     0 - Disable World Quests
-
-WorldQuest = 1
+DisableWaterBreath = 4
 
 #
 #    AllFlightPaths
@@ -924,7 +1069,7 @@ WorldQuest = 1
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllFlightPaths = 0
+AllFlightPaths = 1
 
 #
 #    InstantFlightPaths
@@ -933,7 +1078,33 @@ AllFlightPaths = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-InstantFlightPaths = 0
+InstantFlightPaths = 1
+
+#
+#    ActivateWeather
+#        Description: Activate the weather system.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+
+ActivateWeather = 1
+
+#
+#    CastUnstuck
+#        Description: Allow casting the Unstuck spell using .start or unstuck button in client
+#                     help options.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+
+CastUnstuck = 1
+
+#    MaxSpellCastsInChain
+#        Max amount triggered spell casts in chain by one caster, prevent stack overflow crash
+#        Too Low value will make some correct triggered casts fail
+#                 0 (no limit)
+#        Default: 10
+#
+
+MaxSpellCastsInChain = 10
 
 #
 #    Instance.IgnoreLevel
@@ -941,7 +1112,7 @@ InstantFlightPaths = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-Instance.IgnoreLevel = 1
+Instance.IgnoreLevel = 0
 
 #
 #    Instance.IgnoreRaid
@@ -949,7 +1120,25 @@ Instance.IgnoreLevel = 1
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-Instance.IgnoreRaid = 1
+Instance.IgnoreRaid = 0
+
+#
+#    Instance.ResetTimeHour
+#        Description: Hour of the day when the global instance reset occurs.
+#        Range:       0-23
+#        Default:     4 - (04:00 AM)
+
+Instance.ResetTimeHour = 4
+
+#
+#    Instance.UnloadDelay
+#        Description: Time (in milliseconds) before instance maps are unloaded from memory if no
+#                     characters are inside.
+#        Default:     1800000 - (Enabled, 30 minutes)
+#                     0       - (Disabled, Instance maps are kept in memory until the instance
+#                               resets)
+
+Instance.UnloadDelay = 1800000
 
 #
 #    Quests.LowLevelHideDiff
@@ -959,7 +1148,7 @@ Instance.IgnoreRaid = 1
 #        Default:     4  - (Enabled, Hide quests that have 4 levels less than the character)
 #                     -1 - (Disabled, Show all available quest marks)
 
-Quests.LowLevelHideDiff = -1
+Quests.LowLevelHideDiff = 4
 
 #
 #    Quests.HighLevelHideDiff
@@ -969,7 +1158,7 @@ Quests.LowLevelHideDiff = -1
 #        Default:     7  - (Enabled, Hide quests that have 7 levels more than the character)
 #                     -1 - (Disabled, Show all available quest marks)
 
-Quests.HighLevelHideDiff = -1
+Quests.HighLevelHideDiff = 7
 
 #
 #    Quests.IgnoreRaid
@@ -977,7 +1166,7 @@ Quests.HighLevelHideDiff = -1
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-Quests.IgnoreRaid = 0
+Quests.IgnoreRaid = 1
 
 #
 #    Quests.IgnoreAutoAccept
@@ -996,6 +1185,25 @@ Quests.IgnoreAutoAccept = 0
 Quests.IgnoreAutoComplete = 0
 
 #
+#    Guild.EventLogRecordsCount
+#        Description: Number of log entries for guild events that are stored per guild. Old entries
+#                     will be overwritten if the number of log entries exceed the configured value.
+#                     High numbers prevent this behavior but may have performance impacts.
+#        Default:     100
+
+Guild.EventLogRecordsCount = 100
+
+#
+#    Guild.BankEventLogRecordsCount
+#        Description: Number of log entries for guild bank events that are stored per guild. Old
+#                     entries will be overwritten if the number of log entries exceed the
+#                     configured value. High numbers prevent this behavior but may have performance
+#                     impacts.
+#        Default:     25 - (Minimum)
+
+Guild.BankEventLogRecordsCount = 25
+
+#
 #    MaxPrimaryTradeSkill
 #        Description: Maximum number of primary professions a character can learn.
 #        Range:       0-10
@@ -1009,7 +1217,23 @@ MaxPrimaryTradeSkill = 2
 #        Range:       0-4
 #        Default:     4
 
-MinPetitionSigns = 0
+MinPetitionSigns = 4
+
+#
+#    MaxGroupXPDistance
+#        Description: Max distance to creature for group member to get experience at creature
+#                     death.
+#        Default:     74
+
+MaxGroupXPDistance = 74
+
+#
+#    MaxRecruitAFriendBonusDistance
+#        Description: Max distance between character and and group to gain the Recruit-A-Friend
+#                     XP multiplier.
+#        Default:     100
+
+MaxRecruitAFriendBonusDistance = 100
 
 #
 #    MailDeliveryDelay
@@ -1019,20 +1243,37 @@ MinPetitionSigns = 0
 MailDeliveryDelay = 3600
 
 #
+#    SkillChance.Prospecting
+#        Description: Allow skill increase from prospecting.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+SkillChance.Prospecting = 0
+
+#
+#    SkillChance.Milling
+#        Description: Allow skill increase from milling.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+SkillChance.Milling = 0
+
+#
+#    OffhandCheckAtSpellUnlearn
+#        Description: Unlearning certain spells can change offhand weapon restrictions
+#                     for equip slots.
+#        Default:     1 - (Recheck offhand slot weapon at unlearning a spell)
+#                     0 - (Recheck offhand slot weapon only at zone update)
+
+OffhandCheckAtSpellUnlearn = 1
+
+#
 #    ClientCacheVersion
 #        Description: Client cache version for client cache data reset. Use any value different
 #                     from DB and not recently been used to trigger client side cache reset.
 #        Default:     0 - (Use DB value from world DB db_version.cache_id field)
 
 ClientCacheVersion = 0
-
-#
-#    HotfixCacheVersion
-#        Description: Hotfix cache version for hotfix cache data reset. Use any value different
-#                     from DB and not recently been used to trigger client side cache reset.
-#        Default:     0 - (Use DB value from world DB version.hotfix_id field)
-
-HotfixCacheVersion = 0
 
 #
 #    Event.Announce
@@ -1051,20 +1292,13 @@ Event.Announce = 0
 BeepAtStart = 1
 
 #
-#     PlayerStart.String
-#        Description: String to be displayed at first login of newly created characters.
-#         Default:    "" - (Disabled)
-
-PlayerStart.String = ""
-
-#
 #    Motd
 #        Description: Message of the Day, displayed at login.
 #                     Use '@' for a newline and be sure to escape special characters.
 #        Example:     "Welcome to John\'s Server@This server runs on Trinity Core."
 #        Default:     "Welcome to a Trinity Core server."
 
-Motd = "Welcome to a LegionCore Server."
+Motd = "Welcome to the Sargeras Live Realm."
 
 #
 #    Server.LoginInfo
@@ -1079,7 +1313,7 @@ Server.LoginInfo = 0
 #        Description: Number of results being displayed using a .lookup command.
 #        Default:     0 - (Unlimited)
 
-Command.LookupMaxResults = 1000
+Command.LookupMaxResults = 0
 
 #
 #    AllowTickets
@@ -1088,6 +1322,14 @@ Command.LookupMaxResults = 1000
 #                     0 - (Disabled)
 
 AllowTickets = 1
+
+#
+#     DungeonFinder.Enable
+#        Description: Dungeon and raid finder system.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+
+DungeonFinder.Enable = 1
 
 #
 #   DBC.EnforceItemAttributes
@@ -1103,92 +1345,144 @@ DBC.EnforceItemAttributes = 1
 #        Description: Controls the max amount of different instances player can enter within hour
 #        Default:     5
 
-AccountInstancesPerHour = 255
+AccountInstancesPerHour = 10
 
 #
-#   MaxAccountsOnline
-#        Description: Maximum number of account that can be online concurrently, additional logins
-#                     will be placed in a queue till a spot becomes available.
-#        Default:     1000
+###################################################################################################
+# UPDATE SETTINGS
+#
+#    Updates.EnableDatabases
+#        Description: A mask that describes which databases shall be updated.
+#
+#        Following flags are available
+#           DATABASE_LOGIN     = 1, // Auth database
+#           DATABASE_CHARACTER = 2, // Character database
+#           DATABASE_WORLD     = 4, // World database
+#           DATABASE_HOTFIX    = 8, // Hotfixes database
+#
+#        Default:     15 - (All enabled)
+#                     4  - (Enable world only)
+#                     0  - (All Disabled)
 
-MaxAccountsOnline = 1000
+Updates.EnableDatabases = 0
+
+#
+#    Updates.AutoSetup
+#        Description: Auto populate empty databases.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+
+Updates.AutoSetup   = 1
+
+#
+#    Updates.Redundancy
+#        Description: Perform data redundancy checks through hashing
+#                     to detect changes on sql updates and reapply it.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+
+Updates.Redundancy  = 1
+
+#
+#    Updates.ArchivedRedundancy
+#        Description: Check hashes of archived updates (slows down startup).
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+Updates.ArchivedRedundancy = 0
+
+#
+#    Updates.AllowRehash
+#        Description: Inserts the current file hash in the database if it is left empty.
+#                     Useful if you want to mark a file as applied but you don't know its hash.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+
+Updates.AllowRehash = 1
+
+#
+#    Updates.CleanDeadRefMaxCount
+#        Description: Cleans dead/ orphaned references that occur if an update was removed or renamed and edited in one step.
+#                     It only starts the clean up if the count of the missing updates is below or equal the Updates.CleanDeadRefMaxCount value.
+#                     This way prevents erasing of the update history due to wrong source directory state (maybe wrong branch or bad revision).
+#                     Disable this if you want to know if the database is in a possible "dirty state".
+#        Default:     3 - (Enabled)
+#                     0 - (Disabled)
+#                    -1 - (Enabled - unlimited)
+
+Updates.CleanDeadRefMaxCount = 3
 
 #
 ###################################################################################################
 
 ###################################################################################################
+# HOTSWAP SETTINGS
 #
-#  GUILD LEVELING SETTINGS
-#
-#    Guild.LevelingEnabled
-#        Description: Controls whether guild can gain levels
-#        Default:     1
-#
+#    HotSwap.Enabled (Requires compilation with DYNAMIC_LINKING=1)
+#        Description: Enables dynamic script hotswapping.
+#                     Reloads scripts on changes.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
 
-Guild.LevelingEnabled = 1
-
-#
-#    Guild.SaveInterval
-#        Description: Time (in minutes) between guild experience saves
-#        Default:     15
-#
-
-Guild.SaveInterval = 15
-
+HotSwap.Enabled = 0
 
 #
-#    Guild.UndeletableLevel
-#        Description: Guild reaching this level (and higher) cannot be disbanded anymore
-#        Default:     4
-#
+#    HotSwap.ScriptDir
+#        Description: Directory containing the script shared libraries (.dll/.so).
+#        Example:     "/usr/local/scripts"
+#        Default:     "scripts"
 
-Guild.UndeletableLevel = 4
+HotSwap.ScriptDir = "scripts"
 
-#
-#    Guild.XPModifier
-#        Description: Multiplier for guild experience gained from quests
-#        Default:     0.25
-#
+#    HotSwap.EnableReCompiler
+#        Description: Enables the dynamic script recompiler.
+#                     Watches your script source directories and recompiles the
+#                     script modules on changes.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
 
-Guild.XPModifier = 0.25
+HotSwap.EnableReCompiler = 1
 
-#
-#    Guild.DailyXPCap
-#        Description: Maximum experience points a guild can earn each day
-#        Default:     7807500
-#
+#    HotSwap.EnableEarlyTermination
+#        Description: Terminate the build of a module when an associated
+#                     source file was changed meanwhile.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
 
-Guild.DailyXPCap = 7807500
+HotSwap.EnableEarlyTermination = 1
 
-#
-#    Guild.WeeklyReputationCap
-#        Description: Maximum guild reputation a player can earn every week
-#        Default:     4375
-#
+#    HotSwap.EnableBuildFileRecreation
+#        Description: Recreate build files when sources to a module
+#                     were added or removed.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
 
-Guild.WeeklyReputationCap = 4375
-
-#
-###################################################################################################
-
-###################################################################################################
-#
-# CURRENCIES SETTINGS
-#
-#    Currency.ResetInterval
-#        How often should currency week count reset (days)
-#        Default: 7 (weekly)
-#
-
-Currency.ResetInterval = 7
+HotSwap.EnableBuildFileRecreation = 1
 
 #
-#    Currency.ResetHour
-#        Hour of a day when currency week count is reset (0..23)
-#        Default: 6
-#
+#    HotSwap.EnableInstall
+#        Description: Enables cmake install after automatic builds have finished
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
 
-Currency.ResetHour = 6
+HotSwap.EnableInstall = 1
+
+#
+#    HotSwap.EnablePrefixCorrection
+#        Description: Allows the core to automatic set the CMAKE_INSTALL_PREFIX
+#                     to it's current location in the filesystem.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+
+HotSwap.EnablePrefixCorrection = 1
+
+#    HotSwap.ReCompilerBuildType
+#        Description: Defines the build type of the builds invoked by the recompiler.
+#        Default:     "" - Built-in build type of the module is used.
+#                     "Release" - Release builds only
+#                     "Debug" - Debug builds only
+
+HotSwap.ReCompilerBuildType = ""
 
 #
 ###################################################################################################
@@ -1221,7 +1515,7 @@ Anticheat.ReportsForIngameWarnings = 70
 #
 #        Default:     31
 
-Anticheat.DetectionsEnabled = 1
+Anticheat.DetectionsEnabled = 31
 
 #     Anticheat.MaxReportsForDailyReport
 #        Description: How many reports must the player have to make a report that it is in DB for a day (not only during the player's session).
@@ -1229,27 +1523,17 @@ Anticheat.DetectionsEnabled = 1
 
 Anticheat.MaxReportsForDailyReport = 70
 
-#
-###################################################################################################
+#     AntiCheat.MaxReportsBeforeBan
+#     Description: How many reports the player are allowed to have in the check time range before get banned / kick for 10 mins
+#     Default: 200
 
-###################################################################################################
-# MOVEMENT ANTICHEAT
-#
+Anticheat.MaxReportsBeforeBan = 200
 
-Anticheat.AntiMultiJump.Enable = 0
-Anticheat.AntiSpeedHack.Enable = 0
-Anticheat.AntiSpeedHack.UseInterpolation = 0
-Anticheat.AntiWallClimb.Enable = 0
-Anticheat.AntiWaterWalk.Enable = 0
-Anticheat.GMAnnounceMask = 0
-Anticheat.MaxAllowedDesync = 0
-Anticheat.NotifyCheaters = 0
-Anticheat.Detail.Log = 0
+#     AntiCheat.BanCheckTimeRange
+#     Description: Range of time (in secondes) to check max reports before get banned.
+#     Default: 120 (2 minutes)
 
-# DB debug log for testing purposes
-Anticheat.LogData        = 0
-AnticheatLogFile = ""
-
+Anticheat.BanCheckTimeRange = 120
 #
 ###################################################################################################
 
@@ -1318,7 +1602,7 @@ AllowTwoSide.Accounts = 1
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.Interaction.Calendar = 0
+AllowTwoSide.Interaction.Calendar = 1
 
 #
 #    AllowTwoSide.Interaction.Chat
@@ -1326,7 +1610,7 @@ AllowTwoSide.Interaction.Calendar = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.Interaction.Chat = 0
+AllowTwoSide.Interaction.Chat = 1
 
 #
 #    AllowTwoSide.Interaction.Channel
@@ -1334,7 +1618,7 @@ AllowTwoSide.Interaction.Chat = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.Interaction.Channel = 0
+AllowTwoSide.Interaction.Channel = 1
 
 #
 #    AllowTwoSide.Interaction.Group
@@ -1342,7 +1626,7 @@ AllowTwoSide.Interaction.Channel = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.Interaction.Group = 0
+AllowTwoSide.Interaction.Group = 1
 
 #
 #    AllowTwoSide.Interaction.Guild
@@ -1350,7 +1634,7 @@ AllowTwoSide.Interaction.Group = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.Interaction.Guild = 0
+AllowTwoSide.Interaction.Guild = 1
 
 #
 #    AllowTwoSide.Interaction.Auction
@@ -1358,7 +1642,7 @@ AllowTwoSide.Interaction.Guild = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.Interaction.Auction = 0
+AllowTwoSide.Interaction.Auction = 1
 
 #
 #    AllowTwoSide.Interaction.Mail
@@ -1366,7 +1650,7 @@ AllowTwoSide.Interaction.Auction = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.Interaction.Mail = 0
+AllowTwoSide.Interaction.Mail = 1
 
 #
 #    AllowTwoSide.WhoList
@@ -1374,7 +1658,7 @@ AllowTwoSide.Interaction.Mail = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.WhoList = 0
+AllowTwoSide.WhoList = 1
 
 #
 #    AllowTwoSide.AddFriend
@@ -1382,7 +1666,7 @@ AllowTwoSide.WhoList = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.AddFriend = 0
+AllowTwoSide.AddFriend = 1
 
 #
 #    AllowTwoSide.Trade
@@ -1390,7 +1674,7 @@ AllowTwoSide.AddFriend = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.Trade = 0
+AllowTwoSide.Trade = 1
 
 #
 #    TalentsInspecting
@@ -1572,12 +1856,259 @@ ListenRange.TextEmote = 40
 ListenRange.Yell = 300
 
 #
-#    Creature.MovingStopTimeForPlayer
-#        Description: Time (in milliseconds) during which creature will not move after
-#                     interaction with player.
-#        Default: 180000
+###################################################################################################
 
-Creature.MovingStopTimeForPlayer = 180000
+###################################################################################################
+# CHAT SETTINGS
+#
+#    ChatFakeMessagePreventing
+#        Description: Chat protection from creating fake messages using a lot spaces or other
+#                     invisible symbols. Not applied to the addon language, but may break old
+#                     addons that use normal languages for sending data to other clients.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+ChatFakeMessagePreventing = 1
+
+#
+#    ChatStrictLinkChecking.Severity
+#        Description: Check chat messages for ingame links to spells, items, quests, etc.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled, Check if only valid pipe commands are used, Prevents posting
+#                         pictures.)
+#                     2 - (Enabled, Verify that pipe commands are used in a correct order)
+#                     3 - (Check if color, entry and name don't contradict each other. For this to
+#                         work correctly, please assure that you have extracted locale DBCs of
+#                         every language specific client playing on this server)
+
+ChatStrictLinkChecking.Severity = 1
+
+#
+#    ChatStrictLinkChecking.Kick
+#        Description: Defines what should be done if a message is considered to contain invalid
+#                     pipe commands.
+#        Default:     0 - (Silently ignore message)
+#                     1 - (Disconnect players who sent malformed messages)
+
+ChatStrictLinkChecking.Kick = 0
+
+#
+#    ChatFlood.MessageCount
+#        Description: Chat flood protection, number of messages before player gets muted.
+#        Default:     10 - (Enabled)
+#                     0  - (Disabled)
+
+ChatFlood.MessageCount = 10
+
+#
+#    ChatFlood.MessageDelay
+#        Description: Time (in seconds) between messages to be counted into ChatFlood.MessageCount.
+#        Default:     1
+
+ChatFlood.MessageDelay = 1
+
+#
+#    ChatFlood.MuteTime
+#        Description: Time (in seconds) characters get muted for violating ChatFlood.MessageCount.
+#        Default:     10
+
+ChatFlood.MuteTime = 10
+
+#
+#    Channel.RestrictedLfg
+#        Description: Restrict LookupForGroup channel to characters registered in the LFG tool.
+#        Default:     1 - (Enabled, Allow join to channel only if registered in LFG)
+#                     0 - (Disabled, Allow join to channel in any time)
+
+Channel.RestrictedLfg = 1
+
+#
+#    Channel.SilentlyGMJoin
+#        Description: Silently join GM characters to channels. If set to 1, channel kick and ban
+#                     commands issued by a GM will not be broadcasted.
+#        Default:     0 - (Disabled, Join with announcement)
+#                     1 - (Enabled, Join without announcement)
+
+Channel.SilentlyGMJoin = 0
+
+#
+#    ChatLevelReq.Channel
+#        Description: Level requirement for characters to be able to write in chat channels.
+#        Default:     1
+
+ChatLevelReq.Channel = 2
+
+#
+#    ChatLevelReq.Whisper
+#        Description: Level requirement for characters to be able to whisper other characters.
+#        Default:     1
+
+ChatLevelReq.Whisper = 2
+
+#
+#    ChatLevelReq.Say
+#        Description: Level requirement for characters to be able to use say/yell/emote.
+#        Default:     1
+
+ChatLevelReq.Say = 1
+
+#
+#    AllowPlayerCommands
+#        Description: Allow players to use commands.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+
+AllowPlayerCommands = 1
+
+#
+#    PreserveCustomChannels
+#        Description: Store custom chat channel settings like password, automatic ownership handout
+#                     or ban list in the database. Needs to be enabled to save custom
+#                     world/trade/etc. channels that have automatic ownership handout disabled.
+#                     (.channel set ownership $channel off)
+#        Default:     0 - (Disabled, Blizzlike, Channel settings are lost if last person left)
+#                     1 - (Enabled)
+
+PreserveCustomChannels = 1
+
+#
+#    PreserveCustomChannelDuration
+#        Description: Time (in days) that needs to pass before the customs chat channels get
+#                     cleaned up from the database. Only channels with ownership handout enabled
+#                     (default behavior) will be cleaned.
+#        Default:     14 - (Enabled, Clean channels that haven't been used for 14 days)
+#                     0  - (Disabled, Infinite channel storage)
+
+PreserveCustomChannelDuration = 7
+
+#
+###################################################################################################
+
+###################################################################################################
+# WORD FILTER SETTINGS
+#
+#    WordFilter.Enable
+#        Description: Filtering players chat for bad words.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+
+WordFilter.Enable = 1
+
+#    WordFilter.MuteDuration
+#        Description: Mute chat for player.
+#        Default:     10000 - (10 sec)
+#                     0     - (Disabled)
+
+WordFilter.MuteDuration = 10000
+
+#
+###################################################################################################
+
+###################################################################################################
+# GAME MASTER SETTINGS
+#
+#    GM.LoginState
+#        Description: GM mode at login.
+#        Default:     2 - (Last save state)
+#                     0 - (Disable)
+#                     1 - (Enable)
+
+GM.LoginState = 2
+
+#
+#    GM.Visible
+#        Description: GM visibility at login.
+#        Default:     2 - (Last save state)
+#                     0 - (Invisible)
+#                     1 - (Visible)
+
+GM.Visible = 2
+
+#
+#    GM.Chat
+#        Description: GM chat mode at login.
+#        Default:     2 - (Last save state)
+#                     0 - (Disable)
+#                     1 - (Enable)
+
+GM.Chat = 2
+
+#
+#    GM.WhisperingTo
+#        Description: Is GM accepting whispers from player by default or not.
+#        Default:     2 - (Last save state)
+#                     0 - (Disable)
+#                     1 - (Enable)
+
+GM.WhisperingTo = 2
+
+#
+#    GM.InGMList.Level
+#        Description: Maximum GM level shown in GM list (if enabled) in non-GM state (.gm off).
+#        Default:     3 - (Anyone)
+#                     0 - (Only players)
+#                     1 - (Only moderators)
+#                     2 - (Only gamemasters)
+
+GM.InGMList.Level = 3
+
+#
+#    GM.InWhoList.Level
+#        Description: Max GM level showed in who list (if visible).
+#        Default:     3 - (Anyone)
+#                     0 - (Only players)
+#                     1 - (Only moderators)
+#                     2 - (Only gamemasters)
+
+GM.InWhoList.Level = 3
+
+#
+#    GM.LogTrade
+#        Description: Include GM trade and trade slot enchanting operations in GM log.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+
+GM.LogTrade = 1
+
+#
+#    GM.StartLevel
+#        Description: GM character starting level.
+#        Default:     1
+
+GM.StartLevel = 1
+
+#
+#    GM.AllowInvite
+#        Description: Allow players to invite GM characters.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+GM.AllowInvite = 0
+
+#
+#    GM.AllowFriend
+#        Description: Allow players to add GM characters to their friends list.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+GM.AllowFriend = 0
+
+#
+#    GM.LowerSecurity
+#        Description: Allow lower security levels to use commands on higher security level
+#                     characters.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+GM.LowerSecurity = 0
+
+#
+#    GM.TicketSystem.ChanceOfGMSurvey
+#        Description: Chance of sending a GM survey after ticket completion.
+#        Default:     50 - (Enabled)
+#                     0  - (Disabled)
+
+GM.TicketSystem.ChanceOfGMSurvey = 50
 
 #
 ###################################################################################################
@@ -1607,9 +2138,9 @@ Visibility.GroupMode = 1
 #                     170 - (Visibility.Distance.Instances)
 #                     533 - (Visibility.Distance.BGArenas)
 
-Visibility.Distance.Continents = 90
-Visibility.Distance.Instances = 170
-Visibility.Distance.BGArenas = 533
+Visibility.Distance.Continents = 70
+Visibility.Distance.Instances = 120
+Visibility.Distance.BGArenas = 120
 
 #
 #    Visibility.Notify.Period.OnContinents
@@ -1689,22 +2220,22 @@ Rate.Skill.Discovery = 1
 #                     1 - (Rate.Drop.Item.Referenced)
 #                     1 - (Rate.Drop.Money)
 
-Rate.Drop.Item.Poor             = 1
-Rate.Drop.Item.Normal           = 1
-Rate.Drop.Item.Uncommon         = 1
-Rate.Drop.Item.Rare             = 1
-Rate.Drop.Item.Epic             = 1
+Rate.Drop.Item.Poor             = 5
+Rate.Drop.Item.Normal           = 10
+Rate.Drop.Item.Uncommon         = 5
+Rate.Drop.Item.Rare             = 10
+Rate.Drop.Item.Epic             = 10
 Rate.Drop.Item.Legendary        = 1
 Rate.Drop.Item.Artifact         = 1
 Rate.Drop.Item.Referenced       = 1
-Rate.Drop.Money                 = 1
+Rate.Drop.Money                 = 5
 
 #
 #    Rate.Drop.Item.ReferencedAmount
 #        Description: Multiplier for referenced loot amount.
 #        Default:     1
 
-Rate.Drop.Item.ReferencedAmount = 1
+Rate.Drop.Item.ReferencedAmount = 2
 
 #
 #    Rate.XP.Kill
@@ -1716,10 +2247,10 @@ Rate.Drop.Item.ReferencedAmount = 1
 #                     1 - (Rate.XP.Quest)
 #                     1 - (Rate.XP.Explore)
 
-Rate.XP.Kill      = 3
+Rate.XP.Kill      = 1
 Rate.XP.Quest     = 3
-Rate.XP.Explore   = 3
-Rate.XP.Gathering = 3
+Rate.XP.Explore   = 1
+Rate.XP.Gathering = 1
 
 #
 #    Rate.RepairCost
@@ -1795,21 +2326,21 @@ Rate.Talent = 1
 #        Description: Reputation gain rate.
 #        Default:     1
 
-Rate.Reputation.Gain = 1
+Rate.Reputation.Gain = 3
 
 #
 #    Rate.Reputation.LowLevel.Kill
 #        Description: Reputation gain from killing low level (grey) creatures.
 #        Default:     1
 
-Rate.Reputation.LowLevel.Kill = 1
+Rate.Reputation.LowLevel.Kill = 2
 
 #
 #    Rate.Reputation.LowLevel.Quest
 #        Description: Reputation gain rate.
 #        Default:     1
 
-Rate.Reputation.LowLevel.Quest = 1
+Rate.Reputation.LowLevel.Quest = 3
 
 #
 #    Rate.Reputation.RecruitAFriendBonus
@@ -1842,8 +2373,8 @@ Rate.InstanceResetTime = 1
 #        Default:     1 - (SkillGain.Crafting)
 #                     1 - (SkillGain.Gathering)
 
-SkillGain.Crafting  = 1
-SkillGain.Gathering = 1
+SkillGain.Crafting  = 10
+SkillGain.Gathering = 10
 
 #
 #    SkillChance.Orange
@@ -1868,8 +2399,8 @@ SkillChance.Grey   = 0
 #        Default:     0  - (Disabled)
 #                     75 - (In 2 times each 75 skill points)
 
-SkillChance.MiningSteps   = 0
-SkillChance.SkinningSteps = 0
+SkillChance.MiningSteps   = 75
+SkillChance.SkinningSteps = 75
 
 #
 #    DurabilityLoss.InPvP
@@ -1884,14 +2415,14 @@ DurabilityLoss.InPvP = 0
 #        Description: Durability loss percentage on death.
 #        Default:     10
 
-DurabilityLoss.OnDeath = 0
+DurabilityLoss.OnDeath = 10
 
 #
 #    DurabilityLossChance.Damage
 #        Description: Chance to lose durability on one equipped item from damage.
 #        Default:     0.5 - (100/0.5 = 200, Each 200 damage one equipped item will use durability)
 
-DurabilityLossChance.Damage = 0.0000001
+DurabilityLossChance.Damage = 0.5
 
 #
 #    DurabilityLossChance.Absorb
@@ -1899,7 +2430,7 @@ DurabilityLossChance.Damage = 0.0000001
 #        Default:     0.5 - (100/0.5 = 200, Each 200 absorbed damage one equipped item will lose
 #                           durability)
 
-DurabilityLossChance.Absorb = 0.0000001
+DurabilityLossChance.Absorb = 0.5
 
 #
 #    DurabilityLossChance.Parry
@@ -1907,7 +2438,7 @@ DurabilityLossChance.Absorb = 0.0000001
 #        Default:     0.05 - (100/0.05 = 2000, Each 2000 parried damage the main weapon will lose
 #                            durability)
 
-DurabilityLossChance.Parry = 0.0000001
+DurabilityLossChance.Parry = 0.05
 
 #
 #    DurabilityLossChance.Block
@@ -1915,7 +2446,7 @@ DurabilityLossChance.Parry = 0.0000001
 #        Default:     0.05 - (100/0.05 = 2000, Each 2000 blocked damage the shield will lose
 #                            durability)
 
-DurabilityLossChance.Block = 0.0000001
+DurabilityLossChance.Block = 0.05
 
 #
 #    Death.SicknessLevel
@@ -1936,7 +2467,7 @@ Death.SicknessLevel = 11
 #        Default:     1 - (Enabled)
 #                     0 - (Disabled)
 
-Death.CorpseReclaimDelay.PvP = 0
+Death.CorpseReclaimDelay.PvP = 1
 Death.CorpseReclaimDelay.PvE = 0
 
 #
@@ -1948,8 +2479,16 @@ Death.CorpseReclaimDelay.PvE = 0
 #                     1 - (Enabled, Death.Bones.BattlegroundOrArena)
 #                     0 - (Disabled)
 
-Death.Bones.World               = 1
+Death.Bones.World               = 0
 Death.Bones.BattlegroundOrArena = 1
+
+#
+#    Die.Command.Mode
+#        Description: Do not trigger things like loot from .die command.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+
+Die.Command.Mode = 0
 
 #
 ###################################################################################################
@@ -1978,7 +2517,7 @@ AutoBroadcast.Center = 0
 #        Description: Timer (in milliseconds) for auto broadcasts.
 #        Default:     60000 - (60 seconds)
 
-AutoBroadcast.Timer = 60000
+AutoBroadcast.Timer = 900000
 
 #
 ###################################################################################################
@@ -2109,48 +2648,6 @@ Wintergrasp.NoBattleTimer = 150
 
 Wintergrasp.CrashRestartTimer = 10
 
-#     TolBarad.Enable
-#         Description: Enable the Tol Barad battlefield.
-#         Default:     0 - (Disabled)
-#                      1 - (Enabled, Experimental as in incomplete, bugged and with crashes)
-
-TolBarad.Enable = 0
-
-#
-#     TolBarad.PlayerMax
-#         Description: Maximum number of players allowed in Tol Barad.
-#         Default:     100
-
-TolBarad.PlayerMax = 100
-
-#
-#     TolBarad.PlayerMin
-#         Description: Minimum number of players required for Tol Barad.
-#         Default:     0
-
-TolBarad.PlayerMin = 0
-
-#
-#     TolBarad.PlayerMinLvl
-#         Description: Required character level for the Tol Barad battle.
-#         Default:     85
-
-TolBarad.PlayerMinLvl = 85
-
-#
-#     TolBarad.BattleTimer
-#         Description: Time (in minutes) for the Tol Barad battle to last.
-#         Default:     15
-
-TolBarad.BattleTimer = 15
-
-#
-#     TolBarad.NoBattleTimer
-#         Description: Time (in minutes) between TolBarad battles.
-#         Default:     150
-
-TolBarad.NoBattleTimer = 150
-
 #
 ###################################################################################################
 
@@ -2186,7 +2683,7 @@ Arena.RatedUpdateTimer = 5000
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-Arena.AutoDistributePoints = 0
+Arena.AutoDistributePoints = 1
 
 #
 #    Arena.AutoDistributeInterval
@@ -2253,9 +2750,110 @@ ArenaLog.ExtendedInfo = 0
 #
 #    PVP.ItemLevelCap
 #        Description: Limit for bg and arena for item level
-#        Default:     1000 is the max itemlevel of legion.
+#        Default:     524 for patch 5.4.2
+#                  or 530 for patch 5.4.7
 
-PVP.ItemLevelCap = 1000
+PVP.ItemLevelCap = 524
+
+#
+###################################################################################################
+
+###################################################################################################
+# NETWORK CONFIG
+#
+#    Network.Threads
+#        Description: Number of threads for network.
+#         Default:    1 - (Recommended 1 thread per 1000 connections)
+
+Network.Threads = 4
+
+#
+#    Network.OutKBuff
+#        Description: Amount of memory (in bytes) used for the output kernel buffer (see SO_SNDBUF
+#                     socket option, TCP manual).
+#        Default:     -1 - (Use system default setting)
+
+Network.OutKBuff = -1
+
+#
+#    Network.OutUBuff
+#        Description: Amount of memory (in bytes) reserved in the user space per connection for
+#                     output buffering.
+#         Default:    65536
+
+Network.OutUBuff = 65536
+
+#
+#    Network.TcpNoDelay:
+#        Description: TCP Nagle algorithm setting.
+#         Default:    0 - (Enabled, Less traffic, More latency)
+#                     1 - (Disabled, More traffic, Less latency, TCP_NO_DELAY)
+
+Network.TcpNodelay = 1
+
+#
+###################################################################################################
+
+###################################################################################################
+# CONSOLE AND REMOTE ACCESS
+#
+#    Console.Enable
+#        Description: Enable console.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+
+Console.Enable = 1
+
+#
+#    Ra.Enable
+#        Description: Enable remote console (telnet).
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+Ra.Enable = 0
+
+#
+#    Ra.IP
+#        Description: Bind remote access to IP/hostname.
+#        Default:     "0.0.0.0" - (Bind to all IPs on the system)
+
+Ra.IP = "0.0.0.0"
+
+#
+#    Ra.Port
+#        Description: TCP port to reach the remote console.
+#        Default:     3443
+
+Ra.Port = 3443
+
+#
+#    Ra.MinLevel
+#        Description: Required security level to use the remote console.
+#        Default:     3
+
+Ra.MinLevel = 3
+
+#
+#    SOAP.Enable
+#        Description: Enable soap service
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+SOAP.Enabled = 0
+
+#
+#    SOAP.IP
+#        Description: Bind SOAP service to IP/hostname
+#        Default:     "127.0.0.1" - (Bind to localhost)
+
+SOAP.IP = "127.0.0.1"
+
+#
+#    SOAP.Port
+#        Description: TCP port to reach the SOAP service.
+#        Default:     7878
+
+SOAP.Port = 7878
 
 #
 ###################################################################################################
@@ -2269,7 +2867,7 @@ PVP.ItemLevelCap = 1000
 #                     1 - (Unlink the character from account and free up the name, Appears as
 #                         deleted ingame)
 
-CharDelete.Method = 0
+CharDelete.Method = 1
 
 #
 #    CharDelete.MinLevel
@@ -2277,7 +2875,7 @@ CharDelete.Method = 0
 #        Default:     0  - (Same method for every level)
 #                     1+ - (Only characters with the specified level will use the unlinking method)
 
-CharDelete.MinLevel = 0
+CharDelete.MinLevel = 10
 
 #
 #    CharDelete.KeepDays
@@ -2285,7 +2883,651 @@ CharDelete.MinLevel = 0
 #        Default:     30 - (Enabled)
 #                     0  - (Disabled, Don't delete any characters)
 
-CharDelete.KeepDays = 30
+CharDelete.KeepDays = 0
+
+#
+###################################################################################################
+
+###################################################################################################
+# CUSTOM SERVER OPTIONS
+#
+#    PlayerStart.AllReputation
+#        Description: Players will start with most of the high level reputations that are needed
+#                     for items, mounts etc.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+PlayerStart.AllReputation = 0
+
+#
+#    PlayerStart.AllSpells
+#        Description: If enabled, players will start with all their class spells (not talents).
+#                     You must populate playercreateinfo_spell_custom table with the spells you
+#                     want, or this will not work! The table has data for all classes / races up
+#                     to TBC expansion.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+PlayerStart.AllSpells = 0
+
+#
+#    PlayerStart.MapsExplored
+#        Description: Characters start with all maps explored.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+PlayerStart.MapsExplored = 1
+
+#
+#    HonorPointsAfterDuel
+#        Description: Amount of honor points the duel winner will get after a duel.
+#        Default:     0  - (Disabled)
+#                     1+ - (Enabled)
+
+HonorPointsAfterDuel = 0
+
+#
+#    ResetDuelCooldowns
+#        Description: Reset all cooldowns before duel starts and restore them when duel ends.
+#        Default:     0  - (Disabled)
+#                     1  - (Enabled)
+
+ResetDuelCooldowns = 0
+
+#    ResetDuelHealthMana
+#        Description: Reset health and mana before duel starts and restore them when duel ends.
+#        Default:     0  - (Disabled)
+#                     1  - (Enabled)
+
+ResetDuelHealthMana = 0
+
+#
+#    AlwaysMaxWeaponSkill
+#        Description: Players will automatically gain max weapon/defense skill when logging in,
+#                     or leveling.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+AlwaysMaxWeaponSkill = 0
+
+#
+#    PvPToken.Enable
+#        Description: Character will receive a token after defeating another character that yields
+#                     honor.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+PvPToken.Enable = 1
+
+#
+#    PvPToken.MapAllowType
+#        Description: Define where characters can receive tokens.
+#        Default:     4 - (All maps)
+#                     3 - (Battlegrounds)
+#                     2 - (FFA areas only like Gurubashi arena)
+#                     1 - (Battlegrounds and FFA areas)
+
+PvPToken.MapAllowType = 4
+
+#
+#    PvPToken.ItemID
+#        Description: Item characters will receive after defeating another character if PvP Token
+#                     system is enabled.
+#        Default:     29434 - (Badge of justice)
+
+PvPToken.ItemID = 29434
+
+#
+#    PvPToken.ItemCount
+#        Description: Number of tokens a character will receive.
+#        Default:     1
+
+PvPToken.ItemCount = 1
+
+#
+#    NoResetTalentsCost
+#        Description: Resetting talents doesn't cost anything.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+NoResetTalentsCost = 0
+
+#
+#     Guild.AllowMultipleGuildMaster
+#        Description: Allow more than one guild master. Additional Guild Masters must be set using
+#                     the ".guild rank" command.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+Guild.AllowMultipleGuildMaster = 0
+
+#
+#     ShowKickInWorld
+#        Description: Determines whether a message is broadcasted to the entire server when a
+#                     player gets kicked
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+ShowKickInWorld = 1
+
+#
+#     RecordUpdateTimeDiffInterval
+#        Description: Time (in milliseconds) update time diff is written to the log file.
+#                     Update diff can be used as a performance indicator. Diff < 300: good
+#                     performance. Diff > 600 bad performance, may be caused by high CPU usage.
+#        Default:     60000 - (Enabled, 1 minute)
+#                     0     - (Disabled)
+
+RecordUpdateTimeDiffInterval = 60000
+#
+#     MinRecordUpdateTimeDiff
+#        Description: Only record update time diff which is greater than this value.
+#        Default:     100
+
+MinRecordUpdateTimeDiff = 100
+
+#
+#     PlayerStart.String
+#        Description: String to be displayed at first login of newly created characters.
+#         Default:    "" - (Disabled)
+
+PlayerStart.String = ""
+
+#
+#     LevelReq.Trade
+#        Description: Level requirement for characters to be able to trade.
+#        Default:     1
+
+LevelReq.Trade = 1
+
+#
+#     LevelReq.Ticket
+#        Description: Level requirement for characters to be able to write tickets.
+#        Default:     1
+
+LevelReq.Ticket = 1
+
+#
+#     LevelReq.Auction
+#        Description: Level requirement for characters to be able to use the auction house.
+#        Default:     1
+
+LevelReq.Auction = 1
+
+#
+#     LevelReq.Mail
+#        Description: Level requirement for characters to be able to send and receive mails.
+#        Default:     1
+
+LevelReq.Mail = 1
+
+#
+#     PlayerDump.DisallowPaths
+#        Description: Disallow using paths in PlayerDump output files
+#        Default:     1
+
+PlayerDump.DisallowPaths = 1
+
+#
+#     PlayerDump.DisallowOverwrite
+#        Description: Disallow overwriting existing files with PlayerDump
+#        Default:     1
+
+PlayerDump.DisallowOverwrite = 1
+
+#
+#     ArtifactResearchTimer
+#        Description: Change Artifact Research Notes learning time.
+#        Default:     432000 sec.
+
+ArtifactResearchTimer = 432000
+
+#
+###################################################################################################
+
+###################################################################################################
+#
+#  Logging system options.
+#
+#  Appender config values: Given a appender "name"
+#    Appender.name
+#        Description: Defines 'where to log'
+#        Format:      Type,LogLevel,Flags,optional1,optional2
+#
+#                     Type
+#                         0 - (None)
+#                         1 - (Console)
+#                         2 - (File)
+#                         3 - (DB)
+#
+#                     LogLevel
+#                         0 - (Disabled)
+#                         1 - (Trace)
+#                         2 - (Debug)
+#                         3 - (Info)
+#                         4 - (Warn)
+#                         5 - (Error)
+#                         6 - (Fatal)
+#
+#                     Flags:
+#                         0 - None
+#                         1 - Prefix Timestamp to the text
+#                         2 - Prefix Log Level to the text
+#                         4 - Prefix Log Filter type to the text
+#                         8 - Append timestamp to the log file name. Format: YYYY-MM-DD_HH-MM-SS 
+#                             (Only used with Type = 2)
+#                        16 - Make a backup of existing file before overwrite 
+#                             (Only used with Mode = w)
+#
+#                     Colors (read as optional1 if Type = Console)
+#                         Format: "fatal error warn info debug trace"
+#                         0 - BLACK
+#                         1 - RED
+#                         2 - GREEN
+#                         3 - BROWN
+#                         4 - BLUE
+#                         5 - MAGENTA
+#                         6 - CYAN
+#                         7 - GREY
+#                         8 - YELLOW
+#                         9 - LRED
+#                        10 - LGREEN
+#                        11 - LBLUE
+#                        12 - LMAGENTA
+#                        13 - LCYAN
+#                        14 - WHITE
+#                         Example: "13 11 9 5 3 1"
+#
+#                     File: Name of the file (read as optional1 if Type = File)
+#                         Allows to use one "%s" to create dynamic files
+#
+#                     Mode: Mode to open the file (read as optional2 if Type = File)
+#                          a - (Append)
+#                          w - (Overwrite)
+#
+
+Appender.Console=1,3,0,13 7 11 10 3 1
+Appender.Server=2,2,0,Server.log,a
+#Appender.updatesql=2,2,0,Server.log,a
+Appender.GM=2,2,15,GM.log,w
+Appender.DBErrors=2,2,0,DBErrors.log,w
+Appender.Char=2,2,15,Char.log,w
+Appender.RA=2,2,0,RA.log
+Appender.Warden=2,4,0,Warden.log
+Appender.Chat=2,2,15, Chat.log,w
+Appender.Arenas=2,2,0,Arena.log
+Appender.SQLDev=2,2,0,SQLDev.log
+Appender.SQLDriver=2,2,0,SQLDriver.log
+Appender.UWOW=2,1,1,UWOW.log
+
+#    Appenders
+#        Description: List of Appenders to read from config
+#                     (Using spaces as separator).
+#        Default:     "Console Server GM DBErrors Char RA Warden Chat"
+
+Appenders=Console Server GM DBErrors Char RA Warden Chat UWOW
+
+#  Logger config values: Given a logger "name"
+#    Logger.name
+#        Description: Defines 'What to log'
+#        Format:      Type,LogLevel,AppenderList
+#                     Type
+#                         0 - Default. Each type that has no config will
+#                             rely on this one. Core will create this logger
+#                             (disabled) if it's not configured
+#                         1 - Units that doesn't fit in other categories
+#                         2 - Pets
+#                         3 - Vehicles
+#                         4 - C++ AI, instance scripts, etc.
+#                         5 - DB AI, such as SAI, EAI, CreatureAI
+#                         6 - DB map scripts
+#                         7 - Network input/output,
+#                             such as packet handlers and netcode logs
+#                         8 - Spellsystem and aurasystem
+#                         9 - Achievement system
+#                        10 - Condition system
+#                        11 - Pool system
+#                        12 - Auction house
+#                        13 - Arena's and battlegrounds
+#                        14 - Outdoor PVP
+#                        15 - Chat system
+#                        16 - LFG system
+#                        17 - Maps, instances (not scripts),
+#                             grids, cells, visibility, etc.
+#                        18 - Player that doesn't fit in other categories.
+#                        19 - Player loading from DB
+#                             (Player::_LoadXXX functions)
+#                        20 - Items
+#                        21 - Player skills (do not confuse with spells)
+#                        22 - Player chat logs
+#                        23 - loot
+#                        24 - guilds
+#                        25 - transports
+#                        26 - SQL. DB errors
+#                        27 - GM Commands
+#                        28 - Remote Access Commands
+#                        29 - Warden
+#                        30 - Authserver
+#                        31 - Worldserver
+#                        32 - Game Events
+#                        33 - Calendar
+#                        34 - Character (Exclusive to log login, logout, create, rename)
+#                        35 - Arenas
+#                        36 - SQL Driver
+#                        37 - SQL Dev
+#                        38 - Player Dump
+#                        39 - Battlefield
+#                        40 - Server Loading
+#                        41 - Opcodes (just id and name sent / received)
+#                        42 - UWOW_CORE     
+#                        43 - POWER         
+#                        44 - REALMLIST     
+#                        45 - BATTLENET     
+#                        46 - IPC           
+#                        47 - BNET_SESSION  
+#                        48 - PROC          
+#                        49 - DUPE          
+#                        50 - DONATE        
+#                        51 - BATTLEPET     
+#                        52 - PROTOBUF      
+#                        53 - AREATRIGGER   
+#                        54 - GOLD          
+#                        55 - WORLD_QUEST   
+#                        56 - CHALLENGE     
+#                        57 - DYNLOS        
+#                        58 - PATH_GENERATOR
+#                        59 - MMAPS         
+#                        60 - VMAPS  
+#                        61 - UPDATESQL       
+#                     LogLevel
+#                         0 - (Disabled)
+#                         1 - (Trace)
+#                         2 - (Debug)
+#                         3 - (Info)
+#                         4 - (Warn)
+#                         5 - (Error)
+#                         6 - (Fatal)
+#
+#                     AppenderList: List of appenders linked to logger
+#                     (Using spaces as separator).
+#
+
+Logger.Root=0,3,Console Server
+Logger.Chat=22,3,Chat
+Logger.updatesql=61,3,Console Server
+Logger.DBErrors=26,3,DBErrors
+Logger.GM=27,3,Console Server GM
+Logger.RA=28,3,RA
+Logger.Warden=29,4,Warden
+Logger.WorldServer=31,3,Console Server
+Logger.Character=34,3,Char
+Logger.Arenas=35,3,Arenas
+Logger.SQLDriver=36,3,SQLDriver
+Logger.SQLDev=37,3,SQLDev
+Logger.Load=40,3,Console Server
+Logger.Opcodes=41,6,Console Server
+Logger.Network=7,6,Console Server
+Logger.SI=42,3,UWOW Console Server
+Logger.Bg=13,3,Console Server
+Logger.Items=20,3,Console Server
+Logger.Maps=17,3,Console Server
+Logger.mscript=6,3,Console Server
+Logger.veh=3,3,Console Server
+Logger.spell=8,5,Console Server
+Logger.plr=18,3,Console Server
+Logger.skills=21,3,Console Server
+Logger.Smart=5,3,Console Server
+Logger.Script=4,3,Console Server
+Logger.guild=24,3,Console Server
+Logger.comditions=10,3,Console Server
+Logger.units=1,0,Console Server
+Logger.lfg=16,3,Console Server
+
+#Logger.GameEvents=32,3,Console Server
+#Logger.Calendar=33,3,Console Server
+#
+#    Loggers
+#        Description: List of Loggers to read from config
+#                     (Using spaces as separator).
+#        Default:     "Root Chat DBErrors GM RA Warden Character Load"
+
+Loggers=Root Chat updatesql DBErrors GM RA Warden Character Load WorldServer Opcodes Network SI Bg mscript veh spell Items plr Smart skills guild Script comditions units lfg
+
+
+#
+###################################################################################################
+
+###################################################################################################
+#
+#  GUILD LEVELING SETTINGS
+#
+#    Guild.LevelingEnabled
+#        Description: Controls whether guild can gain levels
+#        Default:     1
+#
+
+Guild.LevelingEnabled = 1
+
+#
+#    Guild.SaveInterval
+#        Description: Time (in minutes) between guild experience saves
+#        Default:     15
+#
+
+Guild.SaveInterval = 15
+
+#
+#    Guild.MaxLevel
+#        Description: Defines max level a guild can reach
+#        Default:     25
+#
+
+Guild.MaxLevel = 25
+
+#
+#    Guild.UndeletableLevel
+#        Description: Guild reaching this level (and higher) cannot be disbanded anymore
+#        Default:     4
+#
+
+Guild.UndeletableLevel = 26
+
+#
+#    Guild.XPModifier
+#        Description: Multiplier for guild experience gained from quests
+#        Default:     0.25
+#
+
+Guild.XPModifier = 0.25
+
+#
+#    Guild.DailyXPCap
+#        Description: Maximum experience points a guild can earn each day
+#        Default:     7807500
+#
+
+Guild.DailyXPCap = 7807500
+
+#
+#    Guild.WeeklyReputationCap
+#        Description: Maximum guild reputation a player can earn every week
+#        Default:     4375
+#
+
+Guild.WeeklyReputationCap = 4375
+
+#
+###################################################################################################
+
+###################################################################################################
+#
+# CURRENCIES SETTINGS
+#
+#    Currency.ResetInterval
+#        How often should currency week count reset (days)
+#        Default: 7 (weekly)
+#
+
+Currency.ResetInterval = 7
+
+#
+#    Currency.ResetWeekDay
+#        Week day when currency week count is reset (0..6) 0 == Sunday
+#        Default: 3 (Wednesday)
+#
+
+Currency.ResetWeekDay = 3
+
+#
+#    Currency.ResetHour
+#        Hour of a day when currency week count is reset (0..23)
+#        Default: 6
+#
+
+Currency.ResetHour = 6
+
+#
+#    Currency.StartHonorPoints
+#        Amount of honor points that new players will start with
+#        Default: 0 (with precision)
+#
+
+Currency.StartHonorPoints = 0
+
+#
+#    Currency.MaxHonorPoints
+#        Amount honor points a player can have
+#        Default: 4000
+#
+
+Currency.MaxHonorPoints = 4000
+
+#
+#    Currency.StartApexisCrystals
+#        Amount of Apexis Crystals that new players will start with
+#        Default: 0 (with precision)
+#
+
+Currency.StartApexisCrystals = 0
+
+#
+#    Currency.MaxApexisCrystals
+#        Amount Apexis Crystals a player can have
+#        Default: 20000
+#
+
+Currency.MaxApexisCrystals = 20000
+
+#
+#    Currency.StartJusticePoints
+#        Amount of justice points that new players will start with
+#        Default: 0 (with precision)
+#
+
+Currency.StartJusticePoints = 0
+
+#
+#    Currency.MaxJusticePoints
+#        Amount justice points a player can have
+#        Default: 4000
+#
+
+Currency.MaxJusticePoints = 4000
+
+#
+#    Currency.StartConquestPoints
+#        Amount of conquest points that new players will start with
+#        Default: 0 (with precision)
+#
+
+Currency.StartConquestPoints = 0
+
+#
+#    Currency.ConquestPointsDefaultWeekCap
+#        Amount of conquest points that player can earn per week
+#        Default: 1800
+#
+
+Currency.ConquestPointsDefaultWeekCap = 1800
+
+#
+#    Currency.ConquestPointsArenaReward
+#        Amount of conquest points rewarded by winning arenas
+#        Default: 180
+#
+
+Currency.ConquestPointsArenaReward = 180
+
+#
+###################################################################################################
+
+###################################################################################################
+#
+# CUSTOM SETTINGS
+#
+#     AnnounceBan
+#		 Description: Announce in chat server all ban by GameMaster
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+AnnounceBan = 0
+
+#
+#     AnnounceMute
+#		 Description: Announce in chat server all mutes by GameMaster
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+AnnounceMute = 0
+
+#
+#     Spell Forbidden
+#		 Description: Auto ban when a player learn a spell forbidden in DB world.spell_forbiden
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+SpellForbidden = 0
+
+#   DisableRestart
+#        Description: Disable server restart.
+#        Default:     0 - (Disabled, server restarted every day)
+#                     1 - (Enabled)
+
+DisableRestart = 0
+
+#   DisableUpdateOnlineTable
+#        Description: Disable update online table on auth base
+#        Default:     0 - (Disabled, server restarted every day)
+#                     1 - (Enabled)
+
+DisableUpdateOnlineTable = 1
+
+#
+#     Debug.LFG
+#        Description: Enables or disables debug LFG system.
+#        Default:     1 (Enabled)
+#                     0 (Disabled)
+
+Debug.LFG = 1
+###################################################################################################
+
+###################################################################################################
+# IPC SETTINGS
+#
+#    BnetServer.Address
+#        Description: Determines IP address of battle.net server to connect to.
+#        Default:     127.0.0.1
+#
+
+BnetServer.Address = 127.0.0.1
+
+#
+#    BnetServer.Port
+#        Description: Determines port to use when connecting to battle.net server.
+#        Default:     1118
+#
+
+BnetServer.Port = 1118
 
 #
 ###################################################################################################
@@ -2299,7 +3541,7 @@ CharDelete.KeepDays = 30
 #                    0 - (Disabled)
 #
 
-BlackMarket.Enabled = 0
+BlackMarket.Enabled = 1
 
 #
 #    BlackMarket.MaxAuctions
@@ -2318,6 +3560,154 @@ BlackMarket.MaxAuctions = 12
 BlackMarket.UpdatePeriod = 24
 
 #
+#
+###################################################################################################
+
+###################################################################################################
+# MOVEMENT ANTICHEAT
+#
+
+Anticheat.AntiMultiJump.Enable = 0
+Anticheat.AntiSpeedHack.Enable = 0
+Anticheat.AntiSpeedHack.UseInterpolation = 0
+Anticheat.AntiWallClimb.Enable = 0
+Anticheat.AntiWaterWalk.Enable = 0
+Anticheat.GMAnnounceMask = 0
+Anticheat.MaxAllowedDesync = 0
+Anticheat.NotifyCheaters = 0
+Anticheat.Detail.Log = 0
+
+# DB debug log for testing purposes
+Anticheat.LogData        = 0
+AnticheatLogFile = "cheats.log"
+
+#
+###################################################################################################
+
+###################################################################################################
+# CHARACTER TEMPLATE
+#
+
+Character.Template = 0
+
+#
+###################################################################################################
+
+###################################################################################################
+# ALLOWS TWO LEGENDARIES REGARDLESS OF CLASSHALL PERK
+#
+
+FunOption = 0
+
+#
+###################################################################################################
+
+###################################################################################################
+# MYTHIC CHALLENGE MODE
+#
+
+Challenge.Enabled = 1
+
+#
+###################################################################################################
+
+###################################################################################################
+# WEIGHTED MYTHIC KEYSTONE
+#
+# A feature where if enabled will not take into account weighted 
+# duengons when deciding the duengon to be chosen for the key and 
+# the duengon choosen will be completely random
+
+Dungeon.WeightedMythicKeystone.Enabled = 1
+
+#
+###################################################################################################
+
+###################################################################################################
+# MANUAL MYTHIC AFFIXES
+#
+# To disable this feature all affixes need to be set to 0 or less
+#
+#   Overflowing     = 1,
+#   Skittish        = 2,
+#   Volcanic        = 3,
+#   Necrotic        = 4,
+#   Teeming         = 5,
+#   Raging          = 6,
+#   Bolstering      = 7,
+#   Sanguine        = 8,
+#   Tyrannical      = 9,
+#   Fortified       = 10,
+#   Bursting        = 11,
+#   Grievous        = 12,
+#   FelExplosives   = 13,
+#   Quaking         = 14,
+
+Challenge.Manual.Affix1 = 9
+Challenge.Manual.Affix2 = 10
+Challenge.Manual.Affix3 = 6
+
+#
+###################################################################################################
+
+###################################################################################################
+# PLAYER AFK TIMEOUT
+#
+# Timeout until players are disconnected when AFK 
+# Note that the security level of the accountneed to 
+# be less than 3 for this option to work
+# Default value = 0 (disabled)
+# To set anything above 0 you need to specify the time in milliseconds
+# Example: 60000 for 1 minute
+
+Player.AFKTimeout = 0
+
+#
+###################################################################################################
+
+###################################################################################################
+# PLAYER CONTROL GUARDIAN PETS
+#
+# Whether uncontrolled temporary pets will be controlled or not
+# Example: Dire beast attacking the players current target when switching. Enabled by default
+
+Player.ControlGuardianPets = 1
+
+#
+###################################################################################################
+
+###################################################################################################
+# PLAYER UNLIMITED LEGENDARIES
+#
+# If this option is enabled it will override the player legion legendary equip count and make
+# the player be able to equip an unlimited number of legendaries 
+
+Player.UnlimitedLegionLegendaries = 0
+
+#
+###################################################################################################
+
+###################################################################################################
+# PLAYER LEGENDARY EQUIP COUNT
+#
+# The legion legendary equip count that a player will have
+# Example: putting the value to 1 will increase the legendary count by 1 if fun options
+# is enabled or you have the garrison progress. If not it will make you be able to equip one
+# legendary item.
+
+Player.LegionLegendaryEquipCount = 0
+
+#
+###################################################################################################
+
+###################################################################################################
+# PLAYER PVP TALENTS
+#
+# Option to toggle pvp talents on all the time
+# Example: 1 for true or 0 for false
+
+Player.AllowPVPTalentsAllTheTime = 1
+
 #
 ###################################################################################################
 
@@ -2346,7 +3736,7 @@ AuctionHouseBot.Update.Interval = 20
 #       Default:     0 - (Disabled)
 #                    1 - (Enabled)
 
-AuctionHouseBot.Seller.Enabled = 0
+AuctionHouseBot.Seller.Enabled = 1
 
 #
 #    AuctionHouseBot.Alliance.Items.Amount.Ratio
@@ -2574,12 +3964,12 @@ AuctionHouseBot.Items.ReqSkill.Max = 0
 #       Default:     0, 2000, 2500, 1500, 1000, 0, 0 (Gray, white, green, blue, purple, orange, yellow)
 
 AuctionHouseBot.Items.Amount.Gray = 0
-AuctionHouseBot.Items.Amount.White = 1000
-AuctionHouseBot.Items.Amount.Green = 1500
-AuctionHouseBot.Items.Amount.Blue = 2500
-AuctionHouseBot.Items.Amount.Purple = 2000
-AuctionHouseBot.Items.Amount.Orange = 0
-AuctionHouseBot.Items.Amount.Yellow = 0
+AuctionHouseBot.Items.Amount.White = 2000
+AuctionHouseBot.Items.Amount.Green = 2500
+AuctionHouseBot.Items.Amount.Blue = 15000
+AuctionHouseBot.Items.Amount.Purple = 10000
+AuctionHouseBot.Items.Amount.Orange = 10000
+AuctionHouseBot.Items.Amount.Yellow = 10000
 
 #
 #    AuctionHouseBot.Class.*
@@ -2742,7 +4132,7 @@ AuctionHouseBot.Class.RandomStackRatio.Glyph = 0
 #       Default:     0 - (Disabled)
 #                    1 - (Enabled)
 
-AuctionHouseBot.Buyer.Enabled = 0
+AuctionHouseBot.Buyer.Enabled = 1
 
 #
 #    AuctionHouseBot.Buyer.FACTION.Enabled
@@ -2750,9 +4140,9 @@ AuctionHouseBot.Buyer.Enabled = 0
 #       Default:     0 - (Disabled)
 #                    1 - (Enabled)
 
-AuctionHouseBot.Buyer.Alliance.Enabled = 0
-AuctionHouseBot.Buyer.Horde.Enabled = 0
-AuctionHouseBot.Buyer.Neutral.Enabled = 0
+AuctionHouseBot.Buyer.Alliance.Enabled = 1
+AuctionHouseBot.Buyer.Horde.Enabled = 1
+AuctionHouseBot.Buyer.Neutral.Enabled = 1
 
 #    AuctionHouseBot.Buyer.ChanceFactor
 #       Description: k value in the formula used for the chance to buy an item "100^(1 + (1 - (AuctionBid / ItemPrice)) / k)"
@@ -2811,702 +4201,338 @@ AuctionHouseBot.Buyer.Recheck.Interval = 20
 
 #
 ###################################################################################################
+###################################################################################################
+# Custom settings #
+###################
+#
+#     KilledByCreature.Announcer
+#        Description: Announce everyone on the server, if a player killed by a creature.
+#                     This can be usefull with the Hardcode Mode.
+#        Default:     0 (disabled)
+#                     1 (enabled)
 
-##################################################################################################
-# UPDATE SETTINGS
-#
-#    Updates.EnableDatabases
-#        Description: A mask that describes which databases shall be updated.
-#
-#        Following flags are available
-#           DATABASE_LOGIN     = 1, // Auth database
-#           DATABASE_CHARACTER = 2, // Character database
-#           DATABASE_WORLD     = 4, // World database
-#           DATABASE_HOTFIX    = 8, // Hotfixes database
-#
-#        Default:     15 - (All enabled)
-#                     4  - (Enable world only)
-#                     0  - (All Disabled)
-
-Updates.EnableDatabases = 15
+KilledByCreature.Announcer = 0
 
 #
-#    Updates.AutoSetup
-#        Description: Auto populate empty databases.
-#        Default:     1 - (Enabled)
-#                     0 - (Disabled)
+#     PvPKill.Announcer
+#        Description: Announce everyone on the server, if a player killed by another player.
+#                     This can be usefull with the Hardcode Mode.
+#        Default:     0 (disabled)
+#                     1 (enabled)
 
-Updates.AutoSetup   = 1
-
-#
-#    Updates.Redundancy
-#        Description: Perform data redundancy checks through hashing
-#                     to detect changes on sql updates and reapply it.
-#        Default:     1 - (Enabled)
-#                     0 - (Disabled)
-
-Updates.Redundancy  = 1
+PvPKill.Announcer = 0
 
 #
-#    Updates.ArchivedRedundancy
-#        Description: Check hashes of archived updates (slows down startup).
-#        Default:     0 - (Disabled)
-#                     1 - (Enabled)
+#    Who-logged.console
+#        Description: Shows in the console who logged into the game.
+#        Default:     0 (disabled)
+#                     1 (enabled)
 
-Updates.ArchivedRedundancy = 0
 
-#
-#    Updates.AllowRehash
-#        Description: Inserts the current file hash in the database if it is left empty.
-#                     Useful if you want to mark a file as applied but you don't know its hash.
-#        Default:     1 - (Enabled)
-#                     0 - (Disabled)
-
-Updates.AllowRehash = 1
+Auto.Say.Hello = 1
 
 #
-#    Updates.CleanDeadRefMaxCount
-#        Description: Cleans dead/ orphaned references that occur if an update was removed or renamed and edited in one step.
-#                     It only starts the clean up if the count of the missing updates is below or equal the Updates.CleanDeadRefMaxCount value.
-#                     This way prevents erasing of the update history due to wrong source directory state (maybe wrong branch or bad revision).
-#                     Disable this if you want to know if the database is in a possible "dirty state".
-#        Default:     3 - (Enabled)
-#                     0 - (Disabled)
-#                    -1 - (Enabled - unlimited)
+#     Bpay.Enabled
+#        Description: Enable BattlePay ingame shop button (need to fill the database)
+#        Default:     0 (disabled)
+#                     1 (enabled)
 
-Updates.CleanDeadRefMaxCount = 3
+Bpay.Enabled = 1
 
 #
 ###################################################################################################
 
 ###################################################################################################
-# HOTSWAP SETTINGS
+# Dynamic XP Rate #
+###################
 #
-#    HotSwap.Enabled (Requires compilation with DYNAMIC_LINKING=1)
-#        Description: Enables dynamic script hotswapping.
-#                     Reloads scripts on changes.
-#        Default:     1 - (Enabled)
-#                     0 - (Disabled)
-
-HotSwap.Enabled = 1
-
+#    Dynamic.XP.Rate
+#        Description: You can setup the personal XP rate for different level ranges.
 #
-#    HotSwap.ScriptDir
-#        Description: Directory containing the script shared libraries (.dll/.so).
-#        Example:     "/usr/local/scripts"
-#        Default:     "scripts"
-
-HotSwap.ScriptDir = "scripts"
-
-#    HotSwap.EnableReCompiler
-#        Description: Enables the dynamic script recompiler.
-#                     Watches your script source directories and recompiles the
-#                     script modules on changes.
-#        Default:     0 - (Disabled)
-#                     1 - (Enabled)
-
-HotSwap.EnableReCompiler = 1
-
-#    HotSwap.EnableEarlyTermination
-#        Description: Terminate the build of a module when an associated
-#                     source file was changed meanwhile.
-#        Default:     1 - (Enabled)
-#                     0 - (Disabled)
-
-HotSwap.EnableEarlyTermination = 1
-
-#    HotSwap.EnableBuildFileRecreation
-#        Description: Recreate build files when sources to a module
-#                     were added or removed.
-#        Default:     1 - (Enabled)
-#                     0 - (Disabled)
-
-HotSwap.EnableBuildFileRecreation = 1
-
+#        Dynamic.XP.Rate: 1 (Enable)
+#                         0 (Disable)
 #
-#    HotSwap.EnableInstall
-#        Description: Enables cmake install after automatic builds have finished
-#        Default:     1 - (Enabled)
-#                     0 - (Disabled)
-
-HotSwap.EnableInstall = 1
-
+#        Dynamic.XP.Rate.X-X: 1+ (Set a custom XP rate on that level range)
+#                             0  (Reset custom XP rate to default on that level range)
 #
-#    HotSwap.EnablePrefixCorrection
-#        Description: Allows the core to automatic set the CMAKE_INSTALL_PREFIX
-#                     to it's current location in the filesystem.
-#        Default:     1 - (Enabled)
-#                     0 - (Disabled)
 
-HotSwap.EnablePrefixCorrection = 1
+Dynamic.XP.Rate = 1
 
-#    HotSwap.ReCompilerBuildType
-#        Description: Defines the build type of the builds invoked by the recompiler.
-#        Default:     "" - Built-in build type of the module is used.
-#                     "Release" - Release builds only
-#                     "Debug" - Debug builds only
-
-HotSwap.ReCompilerBuildType = ""
+Dynamic.XP.Rate.1-9 = 1
+Dynamic.XP.Rate.10-19 = 1
+Dynamic.XP.Rate.20-29 = 1
+Dynamic.XP.Rate.30-39 = 1
+Dynamic.XP.Rate.40-49 = 1
+Dynamic.XP.Rate.50-59 = 1
+Dynamic.XP.Rate.60-69 = 1
+Dynamic.XP.Rate.70-79 = 1
+Dynamic.XP.Rate.80-89 = 1
+Dynamic.XP.Rate.90-99 = 1
+Dynamic.XP.Rate.100-109 = 1
+Dynamic.XP.Rate.110 = 1
 
 #
 ###################################################################################################
 
 ###################################################################################################
-# LOGGING SYSTEM SETTINGS
-#
-#  Appender config values: Given a appender "name"
-#    Appender.name
-#        Description: Defines 'where to log'.
-#        Format:      Type,LogLevel,Flags,optional1,optional2,optional3
-#
-#                     Type
-#                         0 - (None)
-#                         1 - (Console)
-#                         2 - (File)
-#                         3 - (DB)
-#
-#                     LogLevel
-#                         0 - (Disabled)
-#                         1 - (Trace)
-#                         2 - (Debug)
-#                         3 - (Info)
-#                         4 - (Warn)
-#                         5 - (Error)
-#                         6 - (Fatal)
-#
-#                     Flags:
-#                         0 - None
-#                         1 - Prefix Timestamp to the text
-#                         2 - Prefix Log Level to the text
-#                         4 - Prefix Log Filter type to the text
-#                         8 - Append timestamp to the log file name. Format: YYYY-MM-DD_HH-MM-SS
-#                             (Only used with Type = 2)
-#                        16 - Make a backup of existing file before overwrite
-#                             (Only used with Mode = w)
-#
-#                     Colors (read as optional1 if Type = Console)
-#                         Format: "fatal error warn info debug trace"
-#                         0 - BLACK
-#                         1 - RED
-#                         2 - GREEN
-#                         3 - BROWN
-#                         4 - BLUE
-#                         5 - MAGENTA
-#                         6 - CYAN
-#                         7 - GREY
-#                         8 - YELLOW
-#                         9 - LRED
-#                        10 - LGREEN
-#                        11 - LBLUE
-#                        12 - LMAGENTA
-#                        13 - LCYAN
-#                        14 - WHITE
-#                         Example: "13 11 9 5 3 1"
-#
-#                     File: Name of the file (read as optional1 if Type = File)
-#                         Allows to use one "%s" to create dynamic files
-#
-#                     Mode: Mode to open the file (read as optional2 if Type = File)
-#                          a - (Append)
-#                          w - (Overwrite)
-#
-#                     MaxFileSize: Maximum file size of the log file before creating a new log file
-#                     (read as optional3 if Type = File)
-#                         Size is measured in bytes expressed in a 64-bit unsigned integer.
-#                         Maximum value is 4294967295 (4 gb). Leave blank for no limit.
-#                         NOTE: Does not work with dynamic filenames.
-#                         Example:  536870912 (512 mb)
+# UNKNOWN SETTINGS #
+####################
 #
 
-Appender.Console=1,3,0
-Appender.Server=2,2,0,Server.log,w
-Appender.GM=2,2,15,gm/gm_%s.log
-Appender.DBErrors=2,2,0,DBErrors.log
+MaxPrestigeLevel = 50
 
-#  Logger config values: Given a logger "name"
-#    Logger.name
-#        Description: Defines 'What to log'
-#        Format:      LogLevel,AppenderList
+SizeCellForPull = 8
+
+Max.ItemLevel = 1000
+
+Obliterum.LevelEnable = 1
+Obliterum.LevelStart = 0
+Obliterum.LevelMin = 850
+Obliterum.LevelMax = 900
+
+Item.LegendaryLimit = 160000
+Item.LegendaryLevel = 970
+
+PvP.LevelEnable = 1
+PvP.ActiveSeason = 1
+PvP.ActiveStep = 1
+
+ParagonEnable = 1
+
+ArtifactTierEnable = 1
+
+ArgusWowEnable = 1
+Dungeon.ActiveStep = 1
+
+#  PvP Template Stads 
+
+PvP.TemplateMainStad = 13445
+PvP.TemplateStaminaStad = 58000
+PvP.TemplateSecondaryStad = 6600
+
+# Custom stad for each specialization
+
+Pvp.EnableCustomStad = 0
+
+###################################################################################################
+
+# WORLD-CHAT
 #
-#                     LogLevel
-#                         0 - (Disabled)
-#                         1 - (Trace)
-#                         2 - (Debug)
-#                         3 - (Info)
-#                         4 - (Warn)
-#                         5 - (Error)
-#                         6 - (Fatal)
+#  WorldChat Settings
+#        WorldChat.enabled
+#	     Description: Defines is the world chat enabled or disabled, default : Enabled
+#		 Usage: 0 = Disabled, 1 = Enabled
+
+WorldChat.enabled = 1
+
+###################################################################################################
 #
-#                     AppenderList: List of appenders linked to logger
-#                     (Using spaces as separator).
+#   ..::SOLOCRAFT modified by Fluxurion (2022)::..
+#
+#	Multiply by (stat/rating multipliers * difficulty rate) / groupsize
 #
 
-Logger.root=5,Console Server
-Logger.server=3,Console Server
-Logger.commands.gm=3,Console GM
-Logger.scripts.hotswap=3,Console Server
-Logger.sql.sql=5,Console DBErrors
-Logger.sql.updates=3,Console Server
-Logger.mmaps=3,Server
+SoloCraft.Enable = 1
+SoloCraft.InstantRess = 1
+SoloCraft.CooldownCheat = 1
+SoloCraft.CastTimeCheat = 1
+SoloCraft.ExtraBuffs.OnMythic = 1
 
-#Logger.addon=3,Console Server
-#Logger.ahbot=3,Console Server
-#Logger.auctionHouse=3,Console Server
-#Logger.bg.arena=3,Console Server
-#Logger.bg.battlefield=3,Console Server
-#Logger.bg.battleground=3,Console Server
-#Logger.bg.reportpvpafk=3,Console Server
-#Logger.chat.log=3,Console Server
-#Logger.calendar=3,Console Server
-#Logger.chat.system=3,Console Server
-#Logger.cheat=3,Console Server
-#Logger.commands.ra=3,Console Server
-#Logger.condition=3,Console Server
-#Logger.criteria=3,Console Server
-#Logger.criteria.achievement=3,Console Server
-#Logger.entities.areatrigger=3,Console Server
-#Logger.entities.pet=3,Console Server
-#Logger.entities.player.character=3,Console Server
-#Logger.entities.player.dump=3,Console Server
-#Logger.entities.player=3,Console Server
-#Logger.entities.player.items=3,Console Server
-#Logger.entities.player.loading=3,Console Server
-#Logger.entities.player.skills=3,Console Server
-#Logger.entities.transport=3,Console Server
-#Logger.entities.unit=3,Console Server
-#Logger.entities.vehicle=3,Console Server
-#Logger.gameevent=3,Console Server
-#Logger.guild=3,Console Server
-#Logger.lfg=3,Console Server
-#Logger.loot=3,Console Server
-#Logger.maps.script=3,Console Server
-#Logger.maps=3,Console Server
-#Logger.misc=3,Console Server
-#Logger.network=3,Console Server
-#Logger.network.opcode=3,Console Server
-#Logger.network.soap=3,Console Server
-#Logger.outdoorpvp=3,Console Server
-#Logger.phase=3,Console Server
-#Logger.pool=3,Console Server
-#Logger.rbac=3,Console Server
-#Logger.scenes=3,Console Server
-#Logger.scripts=3,Console Server
-#Logger.scripts.ai=3,Console Server
-#Logger.server.bnetserver=3,Console Server
-#Logger.spells=3,Console Server
-#Logger.spells.periodic=3,Console Server
-#Logger.sql.dev=3,Console Server
-#Logger.sql.driver=3,Console Server
-#Logger.warden=3,Console Server
+SoloCraft.StatMultiplier = 8
+SoloCraft.RatingMultiplier = 15
 
-#
-#    Log.Async.Enable
-#        Description: Enables asyncronous message logging.
-#        Default:     0 - (Disabled)
-#                     1 - (Enabled)
-
-Log.Async.Enable = 0
-
-#
-#    Allow.IP.Based.Action.Logging
-#        Description: Logs actions, e.g. account login and logout to name a few, based on IP of
-#                     current session.
-#        Default:     0 - (Disabled)
-#                     1 - (Enabled)
-
-Allow.IP.Based.Action.Logging = 0
-
-#
-#    QuestPOI.DisableErrors
-#        Description: There is false positives in QuestPOI loading errors, so you can disable
-#                     QuestPOI error messages with this option.
-#        Default:     0 - Enable QuestPOI error logging
-#                     1 - Disable QuestPOI error logging
-
-QuestPOI.DisableErrors = 1
+SoloCraft.Normal.Dungeon.Rate = 2
+SoloCraft.Heroic.TimeWalking.Rate = 3
+SoloCraft.Scenario.Rate = 3
+SoloCraft.Invasion.Point.Rate = 4
+SoloCraft.Normal.Raid.Rate = 5
+SoloCraft.Mythic.Dungeon.Rate = 6
+SoloCraft.25Man.Raid.Rate = 7
+SoloCraft.Heroic.Raid.Rate = 8
+SoloCraft.Mythic.Raid.Rate = 9
 
 #
 ###################################################################################################
 
 ###################################################################################################
-#  SOLOCRAFT
-###################################################################################################
+#
+#     LFG.SoloMode
+#        Description: This module allow to use LFG with 1-4 players.
+#                     Possible useful in offline play or on low populated servers.
+#        Default:     0 (disabled)
+#                     1 (enabled)
 
-# Enable the module? (1: true | 0: false)
-Solocraft.Enable = 0
-
-# Announce the module when the player logs in?
-Solocraft.Announce = 0
-
-###################################################################################################
-#  Balancing - Groups (Overloading), Global Spellpower and Stats modifier, Global Class Balancing, 
-#  and XP Gain Balancing
-###################################################################################################
-
-# Enable Debuff of new party members who enter the dungeon to avoid overloading the dungeon? 
-# Overloading is when a group member already in the dungeon has the full offset/buff of the 
-# dungeon applied then they invite new group members who enter the dungeon and also receive an
-# offset which creates a huge imbalance. 
-# The debuff will make the new members weak until all members leave the instance/dungeon
-# instance/dungeon and re-enter which will then split the offset among all the group members.
-
-# Default: 	1 (on)
-#			0 (off)
-SoloCraft.Debuff.Enable = 1
-
-###################################################################################################
-# Spellpower Bonus Multiplier
-# Spellcasters spellpower bonus multiplier to offset no spellpower received from stats
-# Formula: (player->level * multiplier) * ((classBalance / 100) * difficulty)
-# Example Level 24 Mage with default modifier and  a dungeon difficulty of 5 will receive a base 
-# Spellpower increase of 300.
-###################################################################################################
-# Default:	2.5
-#			0.0 (Disable)
-SoloCraft.Spellpower.Mult = 2.5
-
-
-# Stats Percentage Bonus Multiplier
-# Forumla: player->Stats * (((classBalance / 100) * difficulty) * multiplier)
-
-# Default: 	100.0
-#			0.0	(Disable)
-SoloCraft.Stats.Mult = 50.0
-
-###################################################################################################
-# Class Balancing Modifier
-# This settings will only allow the percentage specified of the difficulty for the specified class
-# Example Level 24 Mage with default modifier (2.5), a dungeon difficulty of 5, and a 80 percent class
-# balance modifier will receive a base Spellpower increase of 240.
-# Note: 0 will completely disable the class from receiving difficulty modifiers from any dungeon
-###################################################################################################
-
-#Default: 100 (Full Dungeon Difficulty Modifer will be Applied)
-#    	  0 (Disable) - 100
-
-SoloCraft.Death.Knight = 100
-SoloCraft.Druid = 100
-SoloCraft.Hunter = 100
-SoloCraft.Mage = 100
-SoloCraft.Paladin = 100
-SoloCraft.Priest = 100
-SoloCraft.Rogue = 100
-SoloCraft.Shaman = 100
-SoloCraft.Warlock = 100
-SoloCraft.Warrior = 100
-SoloCraft.Monk = 100
-SoloCraft.Demon.Hunter = 100
-
-#Max player level difference over the Dungeon's Level for Solocraft to apply the 
-# difficulty offset buff.
-# Default: 	10
-# Disable: 110
-Solocraft.Max.Level.Diff = 10
-
-#Catch All - Default 110
-Solocraft.Dungeon.Level = 110
-
-# XP Gain 
-# This settings will Enable/Disable XP gained while in the current dungeon
-
-#Default: 1 (Enabled)
-#    	  0 (Disable)
-
-Solocraft.XP.Enabled = 1
-
-###################################################################################################
-# XP Balancing (XP Gain must be Enabled)
-# This settings will decrease the XP gained based on the Difficulty setting of the dungeon
-# and how many players are in the group.
-
-#Default: 1 (Enabled)
-#    	  0 (Disable)
-###################################################################################################
-
-Solocraft.XP.Balancing.Enabled = 1
-
-
-################################################################################################
-#Catch all Bucket - Difficulty Offset Defaults
-################################################################################################
-
-# Difficulty Multipliers
-# Defaults: 5, 10, 25, 40
-Solocraft.Dungeon = 5.0 
-Solocraft.Heroic = 10.0
-Solocraft.Raid25 = 25.0
-Solocraft.Raid40 = 40.0
-
-
-################################################################################################
-#Classic Instances Normal - Difficulty
-################################################################################################
-
-Solocraft.Stockades = 5.0
-Solocraft.WailingCaverns = 5.0
-Solocraft.RazorfenKraul = 5.0
-Solocraft.BlackfathomDeeps = 5.0
-Solocraft.Uldaman = 5.0
-Solocraft.Gnomeregan = 5.0
-Solocraft.SunkenTemple = 5.0
-Solocraft.RazorfenDowns = 5.0
-Solocraft.ZulFarrak = 5.0
-Solocraft.BlackRockSpire = 10.0
-Solocraft.BlackrockDepths = 5.0
-Solocraft.OnyxiaLair = 40.0
-Solocraft.Stratholme = 5.0
-Solocraft.Mauradon = 5.0
-Solocraft.RagefireChasm = 5.0
-Solocraft.MoltenCore = 40.0
-Solocraft.DireMaul = 5.0
-Solocraft.BlackwingLair = 40.0
-Solocraft.RuinsOfAhnQiraj = 20.0
-Solocraft.TempleOfAhnQiraj = 40.0
-
-
-################################################################################################
-# BC Instances Normal - Difficulty
-################################################################################################
-
-Solocraft.TheBlackMorass = 5.0
-Solocraft.Karazahn = 10.0
-Solocraft.TheBattleForMountHyjal = 25.0
-Solocraft.TheShatteredHalls = 5.0
-Solocraft.TheBloodFurnace = 5.0
-Solocraft.HellfireRampart = 5.0
-Solocraft.MagtheridonsLair = 25.0
-Solocraft.TheSteamVault = 5.0
-Solocraft.TheUnderbog = 5.0
-Solocraft.TheSlavePens = 5.0
-Solocraft.SerpentshrineCavern = 25.0
-Solocraft.TheEye = 25.0
-Solocraft.TheArcatraz = 5.0
-Solocraft.TheBotanica = 5.0
-Solocraft.TheMechanar = 5.0
-Solocraft.ShadowLabyrinth = 5.0
-Solocraft.SethekkHalls = 5.0
-Solocraft.ManaTombs = 5.0
-Solocraft.AuchenaiCrypts = 5.0
-Solocraft.OldHillsbradFoothills = 5.0
-Solocraft.BlackTemple = 25.0
-Solocraft.GruulsLair = 25.0
-Solocraft.SunwellPlateau = 25.0
-Solocraft.MagistersTerrace = 5.0
-
-################################################################################################
-# WOTLK Instances Normal - Difficulty
-################################################################################################
-
-Solocraft.Naxxramas = 10.0
-Solocraft.UtgardeKeep = 5.0
-Solocraft.UtgardePinnacle = 5.0
-Solocraft.Oculus = 5.0
-Solocraft.TheCullingOfStratholme = 5.0
-Solocraft.HallsOfStone = 5.0
-Solocraft.DrakTharonKeep = 5.0
-Solocraft.AzjolNerub = 5.0
-Solocraft.HallsOfLighting = 5.0
-Solocraft.Ulduar = 10.0
-Solocraft.GunDrak = 5.0
-Solocraft.VioletHold = 5.0
-Solocraft.TheObsidianSanctum = 10.0
-Solocraft.TheEyeOfEternity = 10.0
-Solocraft.AhnkahetTheOldKingdom = 5.0
-Solocraft.IcecrownCitadel = 10.0
-Solocraft.TheForgeOfSouls = 5.0
-Solocraft.TrialOfTheCrusader = 10.0
-Solocraft.TrialOfTheChampion = 5.0
-Solocraft.PitOfSaron = 5.0
-Solocraft.HallsOfReflection = 5.0
-Solocraft.TheRubySanctum = 10.0
-
-################################################################################################
-# Cataclysm Instances Normal - Difficulty
-################################################################################################
-
-Solocraft.ShadowfangKeep = 5.0
-Solocraft.DeadMines = 5.0
-Solocraft.BlackrockCaverns = 5.0
-Solocraft.ThroneOfTheTides = 5.0
-Solocraft.TheVortexPinnacle = 5.0
-Solocraft.TheStonecore = 5.0
-Solocraft.LostCityOfTheTol'vir = 5.0
-Solocraft.HallsOfOrigination = 5.0
-Solocraft.GrimBatol = 5.0
-Solocraft.BlackwingDescent = 10.0
-Solocraft.TheBastionOfTwilight = 10.0
-Solocraft.ThroneOfTheFourWinds = 10.0
-Solocraft.BaradinHold = 10.0
-Solocraft.Firelands = 10.0
-Solocraft.DragonSoul = 10.0
-Solocraft.Zul'gurub = 5.0
-Solocraft.ZulAman = 5.0
-Solocraft.Nexus = 5.0
-
-################################################################################################
-# Pandaria Instances Normal - Difficulty
-################################################################################################
-
-Solocraft.ShadoPanMonastery = 5.0
-Solocraft.Scholomance = 5.0
-Solocraft.ScarletMonastery = 5.0
-Solocraft.Mogu'shanPalace = 5.0
-Solocraft.Mogu'shanVaults = 10.0
-Solocraft.SiegeOfOrgrimmar = 10.0
-Solocraft.ThroneOfThunder = 10.0
-Solocraft.HeartOfFear = 10.0
-Solocraft.TerraceOfEndlessSpring = 10.0
-Solocraft.ScarletHalls = 5.0
-Solocraft.GateOfTheSettingSun = 5.0
-Solocraft.SiegeOfNiuzaoTemple = 5.0
-Solocraft.TempleOfTheJadeSerpent = 5.0
-Solocraft.StormstoutBrewery = 5.0
-
-################################################################################################
-# Warlord of Draenor Instances Normal - Difficulty
-################################################################################################
-
-Solocraft.IronDocks = 5.0
-Solocraft.Auchindoun = 5.0
-Solocraft.Skyreach = 5.0
-Solocraft.HellfireCitadel = 25.0
-Solocraft.UpperBlackrockSpire = 5.0
-Solocraft.TheEverbloom = 5.0
-Solocraft.Highmaul = 25.0
-Solocraft.GrimrailDepot = 5.0
-Solocraft.BlackrockFoundry = 25.0
-Solocraft.ShadowmoonBurialGrounds = 5.0
-
-################################################################################################
-# Legion of Draenor Instances Normal - Difficulty
-################################################################################################
-
-Solocraft.DarkheartThicket = 5.0
-Solocraft.Neltharion'sLair = 5.0
-Solocraft.EyeofAzshara = 5.0
-Solocraft.VioletHoldLegion = 5.0
-Solocraft.AntorustheBurningThrone = 25.0
-Solocraft.TombOfSargeras = 25.0
-Solocraft.TrialOfValor = 25.0
-Solocraft.TheNighthold = 25.0
-Solocraft.TheEmeraldNightmare = 25.0
-Solocraft.BlackRookHold = 5.0
-Solocraft.VaultOftheWardens = 5.0
-Solocraft.MawOfSouls = 5.0
-Solocraft.HallsOfValor = 5.0
-
-################################################################################################
-# Classic to Pandaria Instances Heroic - Difficulty
-################################################################################################
-
-Solocraft.TheBlackMorassH = 5.0
-Solocraft.TheShatteredHallsH = 5.0
-Solocraft.TheBloodFurnaceH = 5.0
-Solocraft.HellfireRampartH = 5.0
-Solocraft.TheSteamVaultH = 5.0
-Solocraft.TheUnderbogH = 5.0
-Solocraft.TheSlavePensH = 5.0
-Solocraft.TheArcatrazH = 5.0
-Solocraft.TheBotanicaH = 5.0
-Solocraft.TheMechanarH = 5.0
-Solocraft.ShadowLabyrinthH = 5.0
-Solocraft.SethekkHallsH = 5.0
-Solocraft.ManaTombsH = 5.0
-Solocraft.AuchenaiCryptsH = 5.0
-Solocraft.OldHillsbradFoothillsH = 5.0
-Solocraft.MagistersTerraceH = 5.0
-Solocraft.NaxxramasH = 25.0
-Solocraft.UtgardeKeepH = 5.0
-Solocraft.UtgardePinnacleH = 5.0
-Solocraft.OculusH = 5.0
-Solocraft.TheCullingOfStratholmeH = 5.0
-Solocraft.HallsOfStoneH = 5.0
-Solocraft.DrakTharonKeepH = 5.0
-Solocraft.AzjolNerubH = 5.0
-Solocraft.HallsOfLightingH = 5.0
-Solocraft.UlduarH = 25.0
-Solocraft.GunDrakH = 5.0
-Solocraft.VioletHoldH = 5.0
-Solocraft.TheObsidianSanctumH = 25.0
-Solocraft.TheEyeOfEternityH = 25.0
-Solocraft.AhnkahetTheOldKingdomH = 5.0
-Solocraft.IcecrownCitadelH = 25.0
-Solocraft.TheForgeOfSoulsH = 5.0
-Solocraft.TrialOfTheCrusaderH = 25.0
-Solocraft.TrialOfTheChampionH = 5.0
-Solocraft.PitOfSaronH = 5.0
-Solocraft.HallsOfReflectionH = 5.0
-Solocraft.TheRubySanctumH = 25.0
-Solocraft.ShadowfangKeepH = 5.0
-Solocraft.DeadMinesH = 5.0
-Solocraft.BlackrockCavernsH = 5.0
-Solocraft.ThroneOfTheTidesH = 5.0
-Solocraft.TheVortexPinnacleH = 5.0
-Solocraft.TheStonecoreH = 5.0
-Solocraft.LostCityOfTheTol'virH = 5.0
-Solocraft.HallsOfOriginationH = 5.0
-Solocraft.GrimBatolH = 5.0
-Solocraft.BlackwingDescentH = 25.0
-Solocraft.TheBastionOfTwilightH = 25.0
-Solocraft.ThroneOfTheFourWindsH = 25.0
-Solocraft.BaradinHoldH = 25.0
-Solocraft.FirelandsH = 25.0
-Solocraft.DragonSoulH = 25.0
-Solocraft.EndTimeH = 5.0
-Solocraft.WellOfEternityH = 5.0
-Solocraft.HourOfTwilightH = 5.0
-Solocraft.Zul'gurubH = 5.0
-Solocraft.ZulAmanH = 5.0
-Solocraft.NexusH = 5.0
-Solocraft.ShadoPanMonasteryH = 5.0
-Solocraft.ScholomanceH = 5.0
-Solocraft.ScarletMonasteryH = 5.0
-Solocraft.Mogu'shanPalaceH = 5.0
-Solocraft.Mogu'shanVaultsH = 25.0
-Solocraft.SiegeOfOrgrimmarH = 25.0
-Solocraft.ThroneOfThunderH = 25.0
-Solocraft.HeartOfFearH = 25.0
-Solocraft.TerraceOfEndlessSpringH = 25.0
-Solocraft.ScarletHallsH = 5.0
-Solocraft.GateOfTheSettingSunH = 5.0
-Solocraft.SiegeOfNiuzaoTempleH = 5.0
-Solocraft.TempleOfTheJadeSerpentH = 5.0
-Solocraft.StormstoutBreweryH = 5.0
-Solocraft.ArgentTournamentRaidH10 = 10.0
-Solocraft.ArgentTournamentRaidH25 = 25.0
-
-################################################################################################
-# Warlord of Draenor Instances Heroic - Difficulty
-################################################################################################
-
-Solocraft.IronDocksH = 5.0
-Solocraft.AuchindounH = 5.0
-Solocraft.SkyreachH = 5.0
-Solocraft.HellfireCitadelH = 25.0
-Solocraft.TheEverbloomH = 5.0
-Solocraft.HighmaulH = 25.0
-Solocraft.GrimrailDepotH = 5.0
-Solocraft.BlackrockFoundryH = 25.0
-Solocraft.ShadowmoonBurialGroundsH = 5.0
-
-################################################################################################
-# Legion Instances Heroic - Difficulty
-################################################################################################
-
-Solocraft.DarkheartThicketH = 5.0
-Solocraft.Neltharion'sLairH = 5.0
-Solocraft.EyeofAzsharaH = 5.0
-Solocraft.VioletHoldLegionH = 5.0
-Solocraft.UpperBlackrockSpireH = 5.0
-Solocraft.AntorustheBurningThroneH = 25.0
-Solocraft.TombOfSargerasH = 25.0
-Solocraft.TrialOfValorH = 25.0
-Solocraft.TheNightholdH = 25.0
-Solocraft.TheEmeraldNightmareH = 25.0
-Solocraft.BlackRookHoldH = 5.0
-Solocraft.VaultOftheWardensH = 5.0
-Solocraft.MawOfSoulsH = 5.0
-Solocraft.HallsOfValorH = 5.0
+LFG.SoloMode = 1
 
 #
-################################################################################################
+###################################################################################################
+
+
+
+
+ArtifactXp.FromItem.Percent = 2
+
+
+
+
+
+###################################################################################################
+#
+
+DoubleXP.Enable = 0
+
+#
+###################################################################################################
+
+###################################################################################################
+# Boss Kill Rewarding System
+#
+#	Rewards the player with InGameShop Credits for each boss kill in dungeons and raids.
+#	These amounts are for dungeons but the MultiplierForRaid will multiply these values for raids.
+#	Note: If you change a value you need to restart server. (".reload config" not work for this)
+#
+#       Default:     0  - (Disabled)
+#                    1  - (Enabled)
+#
+
+BossKillReward.Enable = 1
+BossKillReward.Amount.Classic = 5
+BossKillReward.Amount.BC = 10
+BossKillReward.Amount.Wotlk = 15
+BossKillReward.Amount.Cata = 20
+BossKillReward.Amount.Mop = 25
+BossKillReward.Amount.Wod = 30
+BossKillReward.Amount.Legion = 35
+BossKillReward.MultiplierForRaid = 2
+
+#
+###################################################################################################
+
+###################################################################################################
+#
+
+ARTIFACT.MASTER.ENABLE = 1
+
+#
+###################################################################################################
+
+###################################################################################################
+#
+
+Duel.Reset.Enable = 1
+
+#
+###################################################################################################
+
+###################################################################################################
+#
+
+AddQuestOnLevelUp.Enable = 1
+AddQuestOnLevelUp.QuestID.Level30 = 100001
+
+#
+###################################################################################################
+
+###################################################################################################
+#
+
+Class.Rewards.Enable = 1
+Class.Rewards.FirstLogin.ClassMount.Enable = 1
+Class.Rewards.OnLevel100.ArtifactWep.Enable = 0
+Class.Rewards.FirstLogin.ApprenticeRiding.Enable = 0
+Class.Rewards.FirstLogin.JourneymanRiding.Enable = 0
+Class.Rewards.FirstLogin.ExpertRiding.Enable = 0
+Class.Rewards.FirstLogin.ArtisanRiding.Enable = 0
+Class.Rewards.FirstLogin.MasterRiding.Enable = 0
+Class.Rewards.FirstLogin.AzerothFlying.Enable = 0
+Class.Rewards.FirstLogin.NorthrendFlying.Enable = 0
+Class.Rewards.FirstLogin.PandariaFlying.Enable = 0
+Class.Rewards.FirstLogin.DraenorFlying.Enable = 0
+Class.Rewards.FirstLogin.BrokenIsleFlying.Enable = 0
+
+#
+###################################################################################################
+
+####################################################################################################
+###PLAYTIMEREWARD###
+####################
+#
+# PlayedTimeReward.Money is copper so 10000 copper is 1 gold. Interval 3600000 = 1hour
+PlayedTimeReward.Interval = 3600000
+PlayedTimeReward.Money    = 1000000
+#
+####################################################################################################
+
+###################################################################################################
+#  ELUNA SETTINGS
+#
+#    Eluna.Enabled
+#       Enable Eluna LuaEngine
+#       Default: 1 (Enabled)
+#                0 (Disabled)
+#
+
+Eluna.Enabled = 1
+
+#   Eluna.TraceBack
+#       Description: Sets whether to use debug.traceback function on a lua error or not.
+#                    Notice that you can redefine the function.
+#       Default:     false - (use default error output)
+#                    true  - (use debug.traceback function)
+
+Eluna.TraceBack = 0
+
+#
+#   Eluna.ScriptPath
+#       Description: Sets the location of the script folder to load scripts from
+#                    The path can be relative or absolute.
+#       Default:     "lua_scripts"
+#
+
+Eluna.ScriptPath = lua_scripts
+
+#
+###################################################################################################
+
+###################################################################################################
+#
+
+Skip.DeathKnightQuests.Enable = 1
+
+#
+################################################################################################### 
+
+###################################################################################################
+#
+
+Skip.DemonHunterQuests.Enable = 1
+
+#
+################################################################################################### 
+
+###################################################################################################
+#
+
+Skip.GoblinQuests.Enable = 1
+Skip.GoblinQuests.FreeLevelSet = 14
+
+#
+###################################################################################################
+
+###################################################################################################
+#
+
+Skip.PandarenQuests.Enable = 1
+Skip.PandarenQuests.FreeLevelSet = 14
+
+#
+################################################################################################### 
+
+###################################################################################################
+#
+
+Skip.WorgenQuests.Enable = 1
+Skip.WorgenQuests.FreeLevelSet = 14
+
+#
+################################################################################################### 

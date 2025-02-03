@@ -26,6 +26,186 @@
 #include "Unit.h"
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
+#include "AreaTrigger.h"
+#include "AreaTriggerAI.h"
+#include "CellImpl.h"
+#include "CreatureAIImpl.h"
+#include "GridNotifiersImpl.h"
+#include "Player.h"
+#include "ScriptedCreature.h"
+#include "SpellMgr.h"
+#include "SpellAuras.h"
+
+
+enum ShamanSpells
+{
+    SPELL_PET_NETHERWINDS_FATIGUED = 160455,
+    SPELL_SHAMAN_ANCESTRAL_AWAKENING = 52759,
+    SPELL_SHAMAN_ANCESTRAL_AWAKENING_PROC = 52752,
+    SPELL_SHAMAN_ANCESTRAL_GUIDANCE = 108281,
+    SPELL_SHAMAN_ANCESTRAL_GUIDANCE_HEAL = 114911,
+    SPELL_SHAMAN_ASCENDANCE = 114049,
+    SPELL_SHAMAN_ASCENDANCE_ELEMENTAL = 114050,
+    SPELL_SHAMAN_ASCENDANCE_ENHANCED = 114051,
+    SPELL_SHAMAN_ASCENDANCE_RESTORATION = 114052,
+    SPELL_SHAMAN_AT_EARTHEN_SHIELD_TOTEM = 198839,
+    SPELL_SHAMAN_BIND_SIGHT = 6277,
+    SPELL_SHAMAN_CONDUCTIVITY_HEAL = 118800,
+    SPELL_SHAMAN_CONDUCTIVITY_TALENT = 108282,
+    SPELL_SHAMAN_CRASH_LIGHTNING_PROC = 195592,
+    SPELL_SHAMAN_CRASH_LIGTHNING = 187874,
+    SPELL_SHAMAN_CRASH_LIGTHNING_AURA = 187878,
+    SPELL_SHAMAN_CRASHING_STORM_DUMMY = 192246,
+    SPELL_SHAMAN_CRASHING_STORM_AT = 210797,
+    SPELL_SHAMAN_CRASHING_STORM_DAMAGE = 210801,
+    SPELL_SHAMAN_DOOM_WINDS = 204945,
+    SPELL_SHAMAN_EARTHBIND_FOR_EARTHGRAB_TOTEM = 116947,
+    SPELL_SHAMAN_EARTHEN_RAGE_DAMAGE = 170379,
+    SPELL_SHAMAN_EARTHEN_RAGE_PASSIVE = 170374,
+    SPELL_SHAMAN_EARTHEN_RAGE_PERIODIC = 170377,
+    SPELL_SHAMAN_EARTHGRAB_IMMUNITY = 116946,
+    SPELL_SHAMAN_EARTHQUAKE = 61882,
+    SPELL_SHAMAN_EARTHQUAKE_KNOCKING_DOWN = 77505,
+    SPELL_SHAMAN_EARTHQUAKE_TICK = 77478,
+    SPELL_SHAMAN_EARTH_ELEMENTAL_AGGRO = 235429,
+    SPELL_SHAMAN_EARTH_ELEMENTAL_DUMMY = 198103,
+    SPELL_SHAMAN_EARTH_ELEMENTAL_SUMMON = 188616,
+    SPELL_SHAMAN_EARTH_SHIELD_HEAL = 379,
+    SPELL_SHAMAN_EARTH_SHOCK = 8042,
+    SPELL_SHAMAN_ECHO_OF_THE_ELEMENTS = 108283,
+    SPELL_SHAMAN_ELEMENTAL_BLAST = 117014,
+    SPELL_SHAMAN_ELEMENTAL_BLAST_CRIT = 118522,
+    SPELL_SHAMAN_ELEMENTAL_BLAST_HASTE = 173183,
+    SPELL_SHAMAN_ELEMENTAL_BLAST_MASTERY = 173184,
+    SPELL_SHAMAN_ELEMENTAL_MASTERY = 16166,
+    SPELL_SHAMAN_EXHAUSTION = 57723,
+    SPELL_SHAMAN_FERAL_LUNGE = 196884,
+    SPELL_SHAMAN_FERAL_LUNGE_DAMAGE = 215802,
+    SPELL_SHAMAN_FERAL_SPIRIT = 51533,
+    SPELL_SHAMAN_FERAL_SPIRIT_SUMMON = 228562,
+    SPELL_SHAMAN_FERAL_SPIRIT_ENERGIZE = 190185,
+    SPELL_SHAMAN_FERAL_SPIRIT_ENERGIZE_DUMMY = 231723,
+    SPELL_SHAMAN_FIRE_ELEMENTAL_DUMMY = 198067,
+    SPELL_SHAMAN_FIRE_ELEMENTAL_SUMMON = 188592,
+    SPELL_SHAMAN_FIRE_NOVA = 1535,
+    SPELL_SHAMAN_FIRE_NOVA_TRIGGERED = 131786,
+    SPELL_SHAMAN_FLAMETONGUE_ATTACK = 10444,
+    SPELL_SHAMAN_FLAMETONGUE_WEAPON_PASSIVE = 10400,
+    SPELL_SHAMAN_FLAME_SHOCK = 8050,
+    SPELL_SHAMAN_FLAME_SHOCK_ELEM = 188389,
+    SPELL_SHAMAN_FLAME_SHOCK_MAELSTROM = 188389,
+    SPELL_SHAMAN_FROST_SHOCK_FREEZE = 63685,
+    SPELL_SHAMAN_FROZEN_POWER = 63374,
+    SPELL_SHAMAN_FULMINATION = 88766,
+    SPELL_SHAMAN_FULMINATION_INFO = 95774,
+    SPELL_SHAMAN_FULMINATION_TRIGGERED = 88767,
+    SPELL_SHAMAN_FURY_OF_AIR = 197211,
+    SPELL_SHAMAN_FURY_OF_AIR_EFFECT = 197385,
+    SPELL_SHAMAN_GHOST_WOLF = 2645,
+    SPELL_SHAMAN_GLYPH_OF_HEALING_STREAM = 119523,
+    SPELL_SHAMAN_GLYPH_OF_HEALING_STREAM_TOTEM = 55456,
+    SPELL_SHAMAN_GLYPH_OF_HEALING_STREAM_TOTEM_TRIGGERED = 119523,
+    SPELL_SHAMAN_GLYPH_OF_HEALING_WAVE = 55533,
+    SPELL_SHAMAN_GLYPH_OF_LAKESTRIDER = 55448,
+    SPELL_SHAMAN_GLYPH_OF_LAVA_LASH = 55444,
+    SPELL_SHAMAN_GLYPH_OF_SHAMANISTIC_RAGE = 63280,
+    SPELL_SHAMAN_GLYPH_OF_THUNDERSTORM = 62132,
+    SPELL_SHAMAN_HEALING_RAIN = 73920,
+    SPELL_SHAMAN_HEALING_RAIN_TICK = 73921,
+    SPELL_SHAMAN_HEALING_STREAM = 52042,
+    SPELL_SHAMAN_HEALING_STREAM_DUMMY = 98856,
+    SPELL_SHAMAN_HIGH_TIDE = 157154,
+    SPELL_SHAMAN_HOT_HAND = 215785,
+    SPELL_SHAMAN_IMPROVED_LIGHTNING_SHIELD = 157774,
+    SPELL_SHAMAN_ITEM_LIGHTNING_SHIELD = 23552,
+    SPELL_SHAMAN_ITEM_LIGHTNING_SHIELD_DAMAGE = 27635,
+    SPELL_SHAMAN_ITEM_MANA_SURGE = 23571,
+    SPELL_SHAMAN_ITEM_T14_4P = 123124,
+    SPELL_SHAMAN_ITEM_T18_ELEMENTAL_2P_BONUS = 185880,
+    SPELL_SHAMAN_ITEM_T18_ELEMENTAL_4P_BONUS = 185881,
+    SPELL_SHAMAN_ITEM_T18_GATHERING_VORTEX = 189078,
+    SPELL_SHAMAN_ITEM_T18_LIGHTNING_VORTEX = 189063,
+    SPELL_SHAMAN_LAVA_BURST = 51505,
+    SPELL_SHAMAN_LAVA_LASH = 60103,
+    SPELL_SHAMAN_LAVA_LASH_SPREAD_FLAME_SHOCK = 105792,
+    SPELL_SHAMAN_LAVA_SURGE = 77756,
+    SPELL_SHAMAN_LAVA_SURGE_CAST_TIME = 77762,
+    SPELL_SHAMAN_LIGHTNING_BOLT_ELEM = 188196,
+    SPELL_SHAMAN_LIGHTNING_BOLT_ELEM_POWER = 214815,
+    SPELL_SHAMAN_LIGHTNING_SHIELD = 324,
+    SPELL_SHAMAN_LIGHTNING_SHIELD_AURA = 324,
+    SPELL_SHAMAN_LIGHTNING_SHIELD_ORB_DAMAGE = 26364,
+    SPELL_SHAMAN_LIGHTNING_SHIELD_TRIGGER = 26364,
+    SPELL_SHAMAN_LIQUID_MAGMA_DAMAGE = 192231,
+    SPELL_SHAMAN_MAELSTROM_WEAPON = 187880,
+    SPELL_SHAMAN_MAELSTROM_WEAPON_POWER = 187890,
+    SPELL_SHAMAN_MAIL_SPECIALISATION_INT = 86100,
+    SPELL_SHAMAN_MAIL_SPECIALIZATION_AGI = 86099,
+    SPELL_SHAMAN_MANA_TIDE = 16191,
+    SPELL_SHAMAN_NATURE_GUARDIAN = 31616,
+    SPELL_SHAMAN_OVERCHARGE = 210727,
+    SPELL_SHAMAN_PATH_OF_FLAMES_SPREAD = 210621,
+    SPELL_SHAMAN_PATH_OF_FLAMES_TALENT = 201909,
+    SPELL_SHAMAN_RAINFALL = 215864,
+    SPELL_SHAMAN_RAINFALL_HEAL = 215871,
+    SPELL_SHAMAN_RESTORATIVE_MISTS = 114083,
+    SPELL_SHAMAN_RIPTIDE = 61295,
+    SPELL_SHAMAN_ROLLING_THUNDER_AURA = 88764,
+    SPELL_SHAMAN_ROLLING_THUNDER_ENERGIZE = 88765,
+    SPELL_SHAMAN_RUSHING_STREAMS = 147074,
+    SPELL_SHAMAN_SATED = 57724,
+    SPELL_SHAMAN_SEARING_FLAMES_DAMAGE_DONE = 77661,
+    SPELL_SHAMAN_SOLAR_BEAM = 113286,
+    SPELL_SHAMAN_SOLAR_BEAM_SILENCE = 113288,
+    SPELL_SHAMAN_STONE_BULWARK_ABSORB = 114893,
+    SPELL_SHAMAN_STORMBRINGER = 201845,
+    SPELL_SHAMAN_STORMBRINGER_PROC = 201846,
+    SPELL_SHAMAN_STORMLASH = 195255,
+    SPELL_SHAMAN_STORMLASH_BUFF = 195222,
+    SPELL_SHAMAN_STORMLASH_DAMAGE = 213307,
+    SPELL_SHAMAN_STORMSTRIKE = 17364,
+    SPELL_SHAMAN_STORMSTRIKE_MAIN = 32175,
+    SPELL_SHAMAN_TIDAL_WAVES = 53390,
+    SPELL_SHAMAN_TOTEM_HEALING_STREAM_HEAL = 52042,
+    SPELL_SHAMAN_UNDULATION_PROC = 216251,
+    SPELL_SHAMAN_UNLEASHED_FURY_EARTHLIVING = 118473,
+    SPELL_SHAMAN_UNLEASHED_FURY_FLAMETONGUE = 118470,
+    SPELL_SHAMAN_UNLEASHED_FURY_FROSTBRAND = 118474,
+    SPELL_SHAMAN_UNLEASHED_FURY_ROCKBITER = 118475,
+    SPELL_SHAMAN_UNLEASHED_FURY_TALENT = 117012,
+    SPELL_SHAMAN_UNLEASHED_FURY_WINDFURY = 118472,
+    SPELL_SHAMAN_UNLEASH_ELEMENTS = 73680,
+    SPELL_SHAMAN_WATER_WALKING = 546,
+    SPELL_SHAMAN_WELLSPRING_MISSILE = 198117,
+    SPELL_SHAMAN_WINDFURY_ATTACK = 25504,
+    SPELL_SHAMAN_WINDFURY_ATTACK_MAIN_HAND = 25504,
+    SPELL_SHAMAN_WINDFURY_ATTACK_OFF_HAND = 33750,
+    SPELL_SHAMAN_WINDFURY_WEAPON_PASSIVE = 33757,
+    SPELL_SHAMAN_WIND_RUSH_TOTEM = 192077,
+};
+
+enum ShamanSpellIcons
+{
+    SHAMAN_ICON_ID_SOOTHING_RAIN = 2011,
+    SHAMAN_ICON_ID_SHAMAN_LAVA_FLOW = 3087
+};
+
+enum MiscSpells
+{
+    SPELL_HUNTER_INSANITY = 95809,
+    SPELL_MAGE_TEMPORAL_DISPLACEMENT = 80354
+};
+
+enum AncestralAwakeningProc
+{
+    SPELL_ANCESTRAL_AWAKENING_PROC = 52752,
+};
+
+enum ShamanNpcs
+{
+    NPC_RAINFALL = 73400,
+    NPC_HEALING_RAIN = 73400, // Same as Rainfall at 7.3.5
+};
 
 // Spirit Link - 98020 : triggered by 98017
 // Spirit Link Totem
@@ -943,7 +1123,7 @@ class spell_sha_earthen_shield : public SpellScriptLoader
                     return;
 
                 Unit* owner = caster->GetAnyOwner();
-                if (caster->IsAlive() && owner)
+                if (caster->isAlive() && owner)
                 {
                     float bp = owner->GetSpellPowerDamage(SPELL_SCHOOL_MASK_NATURE);
                     absorbAmount = bp;
@@ -1055,25 +1235,26 @@ class spell_sha_sundering : public SpellScriptLoader
                 Unit* target = GetHitUnit();
                 if (caster && target)
                 {
+                    Position pos;
                     float angle = caster->GetOrientation() - target->GetOrientation(); // Back from caster
-                    Position pos = caster->GetFirstCollisionPosition(15.0f, 0.0f); // Dist need research
+                    caster->GetFirstCollisionPosition(pos, 15.0f, 0.0f); // Dist need research
                     if (target->IsInBetweenShift(caster, &pos, 2.5f, 2.5f, 1.5f)) // Is right
                     {
-                        pos = target->GetFirstCollisionPosition(10.0f, angle + 1.5f);
-                        TC_LOG_DEBUG("spells", "spell_sha_sundering IsInBetweenShift 2.5f");
+                        target->GetFirstCollisionPosition(pos, 10.0f, angle + 1.5f);
+                        TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "spell_sha_sundering IsInBetweenShift 2.5f");
                     }
                     else if (target->IsInBetweenShift(caster, &pos, 2.5f, -2.5f, -1.5f)) // Is left
                     {
-                        pos = target->GetFirstCollisionPosition(10.0f, angle - 1.5f);
-                        TC_LOG_DEBUG("spells", "spell_sha_sundering IsInBetweenShift -2.5f");
+                        target->GetFirstCollisionPosition(pos, 10.0f, angle - 1.5f);
+                        TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "spell_sha_sundering IsInBetweenShift -2.5f");
                     }
                     else
                     {
-                        pos = target->GetFirstCollisionPosition(10.0f, angle);
-                        TC_LOG_DEBUG("spells", "spell_sha_sundering not IsInBetweenShift");
+                        target->GetFirstCollisionPosition(pos, 10.0f, angle);
+                        TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "spell_sha_sundering not IsInBetweenShift");
                     }
 
-                    TC_LOG_DEBUG("spells", "spell_sha_sundering x %f y %f z %f", pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
+                    TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "spell_sha_sundering x %f y %f z %f", pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
 
                     target->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), 197619, true);
                 }
@@ -1159,6 +1340,7 @@ class spell_sha_spirit_link_pvp : public SpellScriptLoader
             void Register() override
             {
                 OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_spirit_link_pvp_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ALLY);
+				OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_sha_spirit_link_pvp_SpellScript::FilterTargets, EFFECT_2, TARGET_UNIT_DEST_AREA_ALLY);
             }
         };
 
@@ -1666,6 +1848,29 @@ class spell_sha_elem_blast : public SpellScript
     }
 };
 
+// 61882
+class aura_sha_earthquake : public AuraScript
+{
+    PrepareAuraScript(aura_sha_earthquake);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_SHAMAN_EARTHQUAKE });
+    }
+
+    void HandlePeriodic(AuraEffect const* /*aurEff*/)
+    {
+        if (AreaTrigger* at = GetTarget()->GetAreaTrigger(SPELL_SHAMAN_EARTHQUAKE))
+            GetTarget()->CastSpell(at->GetPosition(), SPELL_SHAMAN_EARTHQUAKE_TICK, true);
+    }
+
+    void Register() override
+    {
+        OnEffectPeriodic += AuraEffectPeriodicFn(aura_sha_earthquake::HandlePeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+    }
+};
+
+
 void AddSC_shaman_spell_scripts()
 {
     new spell_sha_spirit_link();
@@ -1698,6 +1903,7 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_sense_of_urgency();
     new spell_sha_forked_lightning_pvp();
     new spell_monk_gift_of_queen();
+    RegisterAuraScript(aura_sha_earthquake);
     RegisterAuraScript(spell_sha_ancestral_protection);
     RegisterAuraScript(spell_sha_earthen_rage);
     RegisterSpellScript(spell_sha_feral_lunge);

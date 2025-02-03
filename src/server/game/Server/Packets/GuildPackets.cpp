@@ -36,7 +36,7 @@ bool WorldPackets::Guild::QueryGuildInfoResponse::GuildInfo::GuildInfoRank::oper
 WorldPacket const* WorldPackets::Guild::QueryGuildInfoResponse::Write()
 {
     _worldPacket << GuildGuid;
-    _worldPacket.WriteBit(Info.has_value());
+    _worldPacket.WriteBit(Info.is_initialized());
     _worldPacket.FlushBits();
 
     if (Info)
@@ -83,7 +83,7 @@ WorldPacket const* WorldPackets::Guild::GuildCommandResult::Write()
 WorldPacket const* WorldPackets::Guild::GuildRoster::Write()
 {
     _worldPacket << NumAccounts;
-    _worldPacket.AppendPackedTime(CreateDate);
+    _worldPacket << MS::Utilities::WowTime::Encode(CreateDate);
     _worldPacket << GuildFlags;
     _worldPacket << uint32(MemberData.size());
     _worldPacket.WriteBits(WelcomeText.length(), 10);
@@ -543,7 +543,7 @@ WorldPacket const* WorldPackets::Guild::LFGuildRecruits::Write()
 
 WorldPacket const* WorldPackets::Guild::LFGuildPost::Write()
 {
-    _worldPacket.WriteBit(Post.has_value());
+    _worldPacket.WriteBit(Post.is_initialized());
     _worldPacket.FlushBits();
     if (Post)
     {
@@ -748,7 +748,7 @@ WorldPacket const* WorldPackets::Guild::GuildBankLogQueryResults::Write()
 {
     _worldPacket << TabId;
     _worldPacket << uint32(Entry.size());
-    _worldPacket.WriteBit(WeeklyBonusMoney.has_value());
+    _worldPacket.WriteBit(WeeklyBonusMoney.is_initialized());
     _worldPacket.FlushBits();
 
     for (GuildBankLogEntry const& logEntry : Entry)
@@ -757,10 +757,10 @@ WorldPacket const* WorldPackets::Guild::GuildBankLogQueryResults::Write()
         _worldPacket << logEntry.TimeOffset;
         _worldPacket << logEntry.EntryType;
 
-        _worldPacket.WriteBit(logEntry.Money.has_value());
-        _worldPacket.WriteBit(logEntry.ItemID.has_value());
-        _worldPacket.WriteBit(logEntry.Count.has_value());
-        _worldPacket.WriteBit(logEntry.OtherTab.has_value());
+        _worldPacket.WriteBit(logEntry.Money.is_initialized());
+        _worldPacket.WriteBit(logEntry.ItemID.is_initialized());
+        _worldPacket.WriteBit(logEntry.Count.is_initialized());
+        _worldPacket.WriteBit(logEntry.OtherTab.is_initialized());
         _worldPacket.FlushBits();
 
         if (logEntry.Money)
@@ -842,7 +842,7 @@ void WorldPackets::Guild::GuildQueryNews::Read()
 ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Guild::GuildNewsEvent const& newsEvent)
 {
     data << newsEvent.Id;
-    data.AppendPackedTime(newsEvent.CompletedDate);
+    data << MS::Utilities::WowTime::Encode(newsEvent.CompletedDate);
     data << newsEvent.Type;
     data << newsEvent.Flags;
 
@@ -855,7 +855,7 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Guild::GuildNewsEvent con
     for (ObjectGuid memberGuid : newsEvent.MemberList)
         data << memberGuid;
 
-    data.WriteBit(newsEvent.Item.has_value());
+    data.WriteBit(newsEvent.Item.is_initialized());
     data.FlushBits();
 
     if (newsEvent.Item)
@@ -1055,7 +1055,7 @@ void WorldPackets::Guild::LFGuildAddRecruit::Read()
     _worldPacket >> PlayStyle;
     _worldPacket >> Availability;
     _worldPacket >> ClassRoles;
-    Comment = _worldPacket.ReadString(_worldPacket.ReadBits(10));
+    _worldPacket.ReadString(10, Comment);
 }
 
 void WorldPackets::Guild::LFGuildBrowse::Read()

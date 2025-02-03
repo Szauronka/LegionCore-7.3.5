@@ -1,9 +1,13 @@
 /*
+    http://epicwow.com/
     Dungeon : Iron Docks / Железные доки 93-95
     Encounter: Grimrail Enforcers / Головорезы Мрачных Путей
 */
 
 #include "iron_docks.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
 
 enum Says
 {
@@ -160,7 +164,7 @@ public:
                     {
                         Talk(SAY_MAKOGG_F_SLASH);
                         Position pos;
-                        pos = me->GetNearPosition(20.0f, 0.0f);
+                        me->GetNearPosition(pos, 20.0f, 0.0f);
                         me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_FLAMING_SLASH, false);
                         events.RescheduleEvent(EVENT_FLAMING_SLASH, 28000);
                         break;

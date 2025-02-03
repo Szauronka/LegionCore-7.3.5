@@ -24,13 +24,11 @@
 #define __WORLDSESSION_H
 
 #include "AddonMgr.h"
-#include "AsyncCallbackProcessor.h"
 #include "Common.h"
 #include "Cryptography/BigNumber.h"
 #include "EventProcessor.h"
 #include "FunctionProcessor.h"
 #include "Opcodes.h"
-#include "Optional.h"
 #include "Packet.h"
 #include "SharedDefines.h"
 #include "World.h"
@@ -85,7 +83,7 @@ struct LfgUpdateData;
 enum AuthFlags
 {
     AT_AUTH_FLAG_NONE                       = 0x0,
-    AT_AUTH_FLAG_90_LVL_UP                  = 0x1,
+    AT_AUTH_FLAG_20_LVL_UP                  = 0x1,
     AT_AUTH_FLAG_RESTORE_DELETED_CHARACTER  = 0x2,
 };
 
@@ -377,6 +375,8 @@ namespace WorldPackets
         class TwitterConnect;
         class TwitterDisconnect;
         class ResetChallengeModeCheat;
+        class ConversationLineStarted;
+        class CheckRAFEmailEnabled;
     }
 
     namespace Movement
@@ -454,7 +454,6 @@ namespace WorldPackets
         class QueryTreasurePicker;
         class QuestGiverChooseReward;
         class QuestGiverCompleteQuest;
-        class QuestGiverCloseQuest;
         class QuestGiverRequestReward;
         class QuestGiverQueryQuest;
         class QuestPushResult;
@@ -845,6 +844,9 @@ namespace WorldPackets
         class GarrisonGenerateRecruits;
         class GarrisonRemoveFollower;
         class GarrisonRequestScoutingMap;
+        class GarrisonGetMissionReward;
+        class GarrisonSetBuildingActive;
+        class GarrisonSetFollowerFavorite;
     }
     
     namespace Taxi
@@ -1010,13 +1012,6 @@ enum DeclinedNameResult
     DECLINED_NAMES_RESULT_ERROR     = 1
 };
 
-enum TutorialsFlag : uint8
-{
-    TUTORIALS_FLAG_NONE = 0x00,
-    TUTORIALS_FLAG_CHANGED = 0x01,
-    TUTORIALS_FLAG_LOADED_FROM_DB = 0x02
-};
-
 struct CharEnumInfoData
 {
     ObjectGuid GuildGuid;
@@ -1034,12 +1029,15 @@ struct CharEnumInfoData
     int32 MapId = 0;
 }; 
 
+typedef std::map<ObjectGuid, CharEnumInfoData> CharEnumMap;
+
 struct CharacterTemplateData
 {
     CharacterTemplate const* charTemplate = nullptr;
     uint32 id = 0;
     uint32 iLevel = 0;
     uint32 money = 0;
+    uint32 transferId = 0;
     uint32 templateId = 0;
     uint8 level = 0;
     bool artifact = true;
@@ -1049,10 +1047,10 @@ struct CharacterTemplateData
 typedef std::map<uint32, CharacterTemplateData> CharacterTemplateDataMap;
 
 /// Player session in the World
-class TC_GAME_API WorldSession
+class WorldSession
 {
     public:
-        WorldSession(uint32 id, std::string&& name, const std::shared_ptr<WorldSocket>& sock, AccountTypes sec, uint8 expansion, time_t mute_time, std::string os, LocaleConstant locale, uint32 recruiter, bool isARecruiter, AuthFlags flag, std::unordered_map<uint8, int64>&& accountTokenMap);
+        WorldSession(uint32 id, std::string&& name, uint32 battlenetAccountId, const std::shared_ptr<WorldSocket>& sock, AccountTypes sec, uint8 expansion, time_t mute_time, std::string os, LocaleConstant locale, uint32 recruiter, bool isARecruiter, AuthFlags flag);
         ~WorldSession();
 
         bool PlayerLoading() const { return !m_playerLoading.IsEmpty(); }
@@ -1066,15 +1064,15 @@ class TC_GAME_API WorldSession
         void AddInstanceConnection(std::shared_ptr<WorldSocket> sock) { m_Socket[CONNECTION_TYPE_INSTANCE] = sock; }
         void SendNotification(const char *format, ...) ATTR_PRINTF(2, 3);
         void SendNotification(uint32 string_id, ...);
-        void SendPetNameInvalid(uint32 error, ObjectGuid const& guid, std::string const& name, Optional<DeclinedName> const& declinedName);
+        void SendPetNameInvalid(uint32 error, ObjectGuid const& guid, std::string const& name, DeclinedName *declinedName = nullptr);
         void SendPartyResult(PartyOperation operation, std::string const& member, PartyResult res, uint32 val = 0);
         void SendSetPhaseShift(std::vector<WorldPackets::Misc::PhaseShiftDataPhase> phases, std::vector<uint16> const& visibleMapIDs, std::vector<uint16> const& uiWorldMapAreaIDSwaps, std::vector<uint16> const& preloadMapIDs, uint32 phaseShiftFlags = 0x1F);
         void SendQueryTimeResponse();
 
-        void SendAuthResponse(uint8 code, bool queued = false, uint32 queuePos = 0);
+        void SendAuthResponse(uint8 code, bool CharacterTemplate, bool queued = false, uint32 queuePos = 0);
         void SendClientCacheVersion(uint32 version);
         void InitializeSession();
-        void InitializeSessionCallback(LoginDatabaseQueryHolder const& realmHolder, CharacterDatabaseQueryHolder const& holder);
+        void InitializeSessionCallback(SQLQueryHolder* realmHolder, SQLQueryHolder* holder);
 
         void HandleGetPurchaseListQuery(WorldPackets::BattlePay::GetPurchaseListQuery& packet);
         void HandleBattlePayQueryClassTrialResult(WorldPackets::BattlePay::BattlePayQueryClassTrialResult& packet);
@@ -1091,11 +1089,11 @@ class TC_GAME_API WorldSession
         uint32 GetAccountId() const { return _accountId; }
         ObjectGuid GetAccountGUID() const;
         std::string const& GetAccountName() const { return _accountName; }
+        uint32 GetBattlenetAccountId() const { return _battlenetAccountId; }
         uint8 GetAccountExpansion() const { return m_accountExpansion; }
         ObjectGuid GetBattlenetAccountGUID() const;
         Player* GetPlayer() const { return _player; }
         std::string GetPlayerName(bool simple = true) const;
-        std::string GetPlayerInfo() const;
 
         Map* GetMap() const { return m_map; }
         void SetMap(Map* m) { m_map = m; }
@@ -1145,7 +1143,7 @@ class TC_GAME_API WorldSession
 
         void SendTrainerList(ObjectGuid const& guid);
         void SendTrainerList(ObjectGuid const& guid, std::string const& strTitle);
-        void SendListInventory(ObjectGuid const& guid);
+        void SendListInventory(ObjectGuid const& guid, uint32 entry = 0);
         void SendShowBank(ObjectGuid const& guid);
         bool CanOpenMailBox(ObjectGuid guid);
         void SendShowMailBox(ObjectGuid guid);
@@ -1162,11 +1160,11 @@ class TC_GAME_API WorldSession
 
         void SendPetitionQueryOpcode(ObjectGuid petitionguid);
 
-        void SendStablePet(ObjectGuid const& guid = ObjectGuid::Empty);
+        void SendStablePet(ObjectGuid guid);
         void SendStableResult(StableResultCode res);
 
         // Account Data
-        AccountData const* GetAccountData(AccountDataType type) const { return &m_accountData[type]; }
+        AccountData* GetAccountData(AccountDataType type);
         void SetAccountData(AccountDataType type, time_t tm = time_t(0), std::string const& data = "");
         void SendSetTimeZoneInformation();
         void LoadAccountData(PreparedQueryResult const& result, uint32 mask);
@@ -1174,16 +1172,9 @@ class TC_GAME_API WorldSession
 
         void LoadTutorialsData(PreparedQueryResult const& result);
         void SendTutorialsData();
-        void SaveTutorialsData(CharacterDatabaseTransaction& trans);
-        uint32 GetTutorialInt(uint8 index) const { return _tutorials[index]; }
-        void SetTutorialInt(uint8 index, uint32 value)
-        {
-            if (_tutorials[index] != value)
-            {
-                _tutorials[index] = value;
-                _tutorialsChanged |= TUTORIALS_FLAG_CHANGED;
-            }
-        }
+        void SaveTutorialsData(SQLTransaction& trans);
+        uint32 GetTutorialInt(uint8 index) const;
+        void SetTutorialInt(uint8 index, uint32 value);
         //auction
         void SendAuctionHello(ObjectGuid guid, Creature* unit);
         void SendAuctionCommandResult(AuctionEntry* auction, uint32 Action, uint32 ErrorCode, uint32 bidError = 0);
@@ -1269,7 +1260,7 @@ class TC_GAME_API WorldSession
         void HandlePlayerLoginOpcode(WorldPackets::Character::PlayerLogin& playerLogin);
         void HandleLoadScreenOpcode(WorldPackets::Character::LoadingScreenNotify& loadingScreenNotify);
         void HandleCharEnum(PreparedQueryResult result, bool isDelete);
-        void HandlePlayerLogin(LoginQueryHolder const& holder);
+        void HandlePlayerLogin(LoginQueryHolder * holder);
         void HandleCharRaceOrFactionChange(WorldPackets::Character::CharRaceOrFactionChange& packet);
         void HandleGenerateRandomCharacterName(WorldPackets::Character::GenerateRandomCharacterName& packet);
         void HandleReorderCharacters(WorldPackets::Character::ReorderCharacters& packet);
@@ -1596,7 +1587,6 @@ class TC_GAME_API WorldSession
         void HandleQuestLogRemoveQuest(WorldPackets::Quest::QuestLogRemoveQuest& packet);
         void HandleQuestConfirmAccept(WorldPackets::Quest::QuestConfirmAccept& packet);
         void HandleQuestgiverCompleteQuest(WorldPackets::Quest::QuestGiverCompleteQuest& packet);
-        void HandleQuestgiverCloseQuest(WorldPackets::Quest::QuestGiverCloseQuest& questGiverCloseQuest);
         void HandlePushQuestToParty(WorldPackets::Quest::PushQuestToParty& packet);
         void HandleQuestPushResult(WorldPackets::Quest::QuestPushResult& packet);
         void HandleRequestWorldQuestUpdate(WorldPackets::Quest::RequestWorldQuestUpdate& packet);
@@ -1606,6 +1596,8 @@ class TC_GAME_API WorldSession
         void HandleQueryAdventureMapPOI(WorldPackets::Quest::QueryAdventureMapPOI& packet);
 
         void HandleTransmogrifyItems(WorldPackets::Transmogrification::TransmogrifyItems& transmogrifyItems);
+
+        void SendQuestgiverStatusMultipleQuery();
 
         bool processChatmessageFurtherAfterSecurityChecks(std::string&, uint32);
         void HandleChatMessageOpcode(WorldPackets::Chat::ChatMessage& packet);
@@ -1750,9 +1742,9 @@ class TC_GAME_API WorldSession
 
         void HandleSocketGems(WorldPackets::Item::SocketGems& packet);
 
-        void HandleSortBags(WorldPackets::Item::SortBags& packet);
-        void HandleSortBankBags(WorldPackets::Item::SortBankBags& packet);
-        void HandleSortReagentBankBags(WorldPackets::Item::SortReagentBankBags& packet);
+        void HandleSortBags(WorldPackets::Item::SortBags& sortBags);
+        void HandleSortBankBags(WorldPackets::Item::SortBankBags& sortBankBags);
+        void HandleSortReagentBankBags(WorldPackets::Item::SortReagentBankBags& sortReagentBankBags);
 
         void HandleCancelTempEnchantmentOpcode(WorldPackets::Item::CancelTempEnchantment& packet);
 
@@ -1945,6 +1937,9 @@ class TC_GAME_API WorldSession
         void HandleGarrisonRemoveFollower(WorldPackets::Garrison::GarrisonRemoveFollower& packet);
         void HandleGarrisonRenameFollower(WorldPackets::Garrison::GarrisonRenameFollower& packet);
         void HandleGarrisonSetRecruitmentPreferences(WorldPackets::Garrison::GarrisonSetRecruitmentPreferences& packet);
+        void HandleGarrisonGetMissionReward(WorldPackets::Garrison::GarrisonGetMissionReward& packet);
+        void HandleGarrisonSetBuildingActive(WorldPackets::Garrison::GarrisonSetBuildingActive& packet);
+        void HandleGarrisonSetFollowerFavorite(WorldPackets::Garrison::GarrisonSetFollowerFavorite& packet);
 
         void HandleAddToy(WorldPackets::Toy::AddToy& packet);
         void HandleUseToy(WorldPackets::Toy::UseToy& packet);
@@ -1981,6 +1976,8 @@ class TC_GAME_API WorldSession
         void HandleContributionCollectorContribute(WorldPackets::Misc::ContributionCollectorContribute& packet);
         void HandleContributionGetState(WorldPackets::Misc::ContributionGetState& packet);
         void HandleHotfixRequest(WorldPackets::Hotfix::HotfixRequest& packet);
+        void HandleConversationLineStarted(WorldPackets::Misc::ConversationLineStarted& packet);
+        void HandleCheckRAFEmailEnabled(WorldPackets::Misc::CheckRAFEmailEnabled& packet);
 
         // Battle Pay
         AuthFlags GetAF() const { return atAuthFlag;  }
@@ -1990,8 +1987,9 @@ class TC_GAME_API WorldSession
         void SaveAuthFlag();
         int64 GetTokenBalance(uint8 tokenType) { return tokens.count(tokenType) > 0 ? tokens[tokenType] : 0; }
         void ChangeTokenBalance(uint8 tokenType, int64 change) { tokens.count(tokenType) > 0 ? tokens[tokenType] += change : tokens[tokenType] = change; }
+        uint32 GetReferer() { return _referer; }
 
-        void SendCharacterEnum(bool deleted = false);
+        void SendCharacterEnum(bool deleted = false, uint32 flags = 0, uint64 playerGUID = 0);
 
         void SetBankerGuid(ObjectGuid const& g) { m_currentBankerGUID = g; }
         void SetWardenModuleFailed(bool s) { wardenModuleFailed = s; }
@@ -2043,7 +2041,11 @@ class TC_GAME_API WorldSession
         uint64 _hwid;
         int32 _countPenaltiesHwid;
 
-        CharacterTemplateData* GetCharacterTemplateData(uint32 id);
+        ObjectGuid GetPlayerLoading() { return m_playerLoading; }
+		
+		CharacterTemplateData* GetCharacterTemplateData(uint32 id);
+
+        QueryCallbackProcessor _queryProcessor;
 
         BattlepayManager* GetBattlePayMgr() const { return _battlePayMgr.get(); }
 
@@ -2054,17 +2056,12 @@ class TC_GAME_API WorldSession
 
         uint32 m_classMask = 0;
 
-    public:
-        QueryCallbackProcessor& GetQueryProcessor() { return _queryProcessor; }
-        TransactionCallback& AddTransactionCallback(TransactionCallback&& callback);
-        SQLQueryHolderCallback& AddQueryHolderCallback(SQLQueryHolderCallback&& callback);
-
     private:
         void ProcessQueryCallbacks();
 
-        QueryCallbackProcessor _queryProcessor;
-        AsyncCallbackProcessor<TransactionCallback> _transactionCallbacks;
-        AsyncCallbackProcessor<SQLQueryHolderCallback> _queryHolderProcessor;
+        QueryResultHolderFuture _realmAccountLoginCallback;
+        QueryResultHolderFuture _accountLoginCallback;
+        QueryResultHolderFuture _charLoginCallback;
 
         void moveItems(Item* myItems[], Item* hisItems[]);
 
@@ -2092,6 +2089,7 @@ class TC_GAME_API WorldSession
 
         AccountTypes _security;
         uint32 _accountId;
+        uint32 _battlenetAccountId;
         uint8 m_expansion;
         uint8 m_accountExpansion;
         std::string _accountName;
@@ -2120,18 +2118,19 @@ class TC_GAME_API WorldSession
         std::atomic<uint32> m_clientTimeDelay;
         AccountData m_accountData[NUM_ACCOUNT_DATA_TYPES];
         uint32 _tutorials[MAX_ACCOUNT_TUTORIAL_VALUES];
-        uint8 _tutorialsChanged;
+        bool   _tutorialsChanged;
         AddonsList m_addonsList;
-        std::vector<std::string> _registeredAddonPrefixes;
+        StringSet _registeredAddonPrefixes;
         bool _filterAddonMessages;
         uint32 recruiterId;
         bool isRecruiter;
         LockedQueue<WorldPacket*> _recvQueue;
+        time_t timeCharEnumOpcode;
         uint8 playerLoginCounter;
         uint32 expireTime;
         bool forceExit;
         std::atomic<bool> m_sUpdate;
-        std::unordered_map<uint8, int64> tokens;
+        std::unordered_map<uint8, int64> tokens;        uint32 _referer;
 
         bool wardenModuleFailed;
 
@@ -2140,6 +2139,12 @@ class TC_GAME_API WorldSession
         AuthFlags atAuthFlag = AT_AUTH_FLAG_NONE;
 
         ConnectToKey _instanceConnectKey;
+        uint8 m_DHCount = 0;
+        uint8 m_DKCount = 0;
+        bool m_canDK = false;
+        bool m_canDH = false;
+        uint32 m_raceMask = 0;
+        CharEnumMap charEnumInfo;
         CharacterTemplateDataMap charTemplateData;
 
         bool canLogout;

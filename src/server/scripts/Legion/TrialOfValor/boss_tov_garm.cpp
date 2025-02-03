@@ -1,6 +1,10 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "trial_of_valor.h"
 #include "AreaTriggerAI.h"
-#include "ScriptPCH.h"
+#include "PrecompiledHeaders/ScriptPCH.h"
 
 namespace
 {
@@ -567,7 +571,7 @@ class spell_multi_headed : public SpellScript
             if (!unit)
                 return true;
 
-            if (!unit->isInFront(caster, float(M_PI / 2)))
+            if (!unit->isInFront(caster, M_PI / 2))
                 return true;
 
             return false;

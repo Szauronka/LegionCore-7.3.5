@@ -1,3 +1,20 @@
+/*
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
+ */
 
 #ifndef __BattlegroundDefinesH
 #define __BattlegroundDefinesH
@@ -213,14 +230,15 @@ namespace MS
                 BrawlArenaBladesEdge = 875,
                 
                 ///< custom
+                BattlegroundDeathMatch           = 876,
 
                 BrawlAllSix                         = 879,
-                BrawlBattlegroundSilvershardSix     = 883,
+                BrawlBattlegroundSilvershardSix        = 883,
                 BrawlBattlegroundKotmoguTemplateSix = 884,
                 BrawlBattlegroundWarsongSix         = 886,
 
-                BrawlBattlegroundSeethingShore      = 890,
-                BattlegroundSeethingShore           = 894,
+                BrawlBattlegroundSeethingShore = 890,
+                BattlegroundSeethingShore = 894,
 
                 Max
             };
@@ -252,6 +270,7 @@ namespace MS
                 Brawl,
 
                 ///< custom
+                BattlegroundDeathMatch,
                 ArenaSoloQ3v3,
 
                 Max
@@ -444,6 +463,9 @@ namespace MS
                             return BattlegroundQueueTypeId::None;
                     }
 
+                ///< custom
+                case BattlegroundTypeId::BattlegroundDeathMatch:
+                    return BattlegroundQueueTypeId::BattlegroundDeathMatch;
                 default:
                     return BattlegroundQueueTypeId::None;
             }
@@ -486,7 +508,9 @@ namespace MS
                 case BattlegroundQueueTypeId::RatedBattleground:
                     return BattlegroundTypeId::RatedBattleground;
 
-                ///< custom
+                    ///< custom
+                case BattlegroundQueueTypeId::BattlegroundDeathMatch:
+                    return BattlegroundTypeId::BattlegroundDeathMatch;
                 case BattlegroundQueueTypeId::ArenaSoloQ3v3:
                 case BattlegroundQueueTypeId::Arena1v1:
                     return BattlegroundTypeId::ArenaAll;

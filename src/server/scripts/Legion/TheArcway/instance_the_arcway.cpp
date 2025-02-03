@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : The Arcway 100-110
 */
 
@@ -29,9 +30,8 @@ public:
 
     struct instance_the_arcway_InstanceMapScript : public InstanceScript
     {
-        instance_the_arcway_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_the_arcway_InstanceMapScript(Map* map) : InstanceScript(map) 
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 
@@ -166,7 +166,8 @@ public:
         WorldLocation* GetClosestGraveYard(float x, float y, float z) override
         {
             // Init data
-            loc_res_pla.WorldRelocate(1516, x, y, z);
+            loc_res_pla.Relocate(x, y, z);
+            loc_res_pla.SetMapId(1516);
 
             uint32 graveyardId = 5194;
 
@@ -185,7 +186,8 @@ public:
             {
                 if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
                 {
-                    loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                    loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                    loc_res_pla.SetMapId(gy->MapID);
                 }
             }
             return &loc_res_pla;

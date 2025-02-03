@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 # include "highmaul.hpp"
+#include "SpellAuraEffects.h"
 
 float const minAllowedZ = 560.0f;
 
@@ -350,6 +351,7 @@ struct boss_imperator_margok : public BossAI
                     me->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_DISABLE_TURN);
 
                     me->SetAnimKitId(0);
+                    me->SetAnimTier(0);
                     me->SetDisableGravity(false);
                     me->SetHover(false);
                     me->SetReactState(REACT_AGGRESSIVE);
@@ -491,6 +493,7 @@ struct boss_imperator_margok : public BossAI
     void EnterEvadeMode() override
     {
         me->SetAnimKitId(0);
+        me->SetAnimTier(0);
         me->SetDisableGravity(false);
         me->SetHover(false);
         me->SetReactState(REACT_AGGRESSIVE);
@@ -1103,6 +1106,7 @@ struct boss_imperator_margok : public BossAI
             me->CastSpell(me, TransitionVisualPhase2, true);
             me->SetAnimKitId(AnimKitFlyingRune);
 
+            me->SetAnimTier(3);
             me->SetDisableGravity(true);
             me->SetHover(true);
 
@@ -1120,19 +1124,19 @@ struct boss_imperator_margok : public BossAI
             pos.m_positionZ -= 16.0f;
             me->GetMotionMaster()->MovePoint(MoveDown, pos);
 
-            uint32 time = m_Events.GetNextEventTime(EventMarkOfChaos);
+            uint32 time = m_Events.GetEventTime(EventMarkOfChaos);
             m_Events.RescheduleEvent(EventMarkOfChaosDisplacement, time, 0, RuneOfDisplacement);
 
-            time = m_Events.GetNextEventTime(EventForceNova);
+            time = m_Events.GetEventTime(EventForceNova);
             m_Events.RescheduleEvent(EventForceNovaDisplacement, time, 0, RuneOfDisplacement);
 
-            time = m_Events.GetNextEventTime(EventArcaneWrath);
+            time = m_Events.GetEventTime(EventArcaneWrath);
             m_Events.RescheduleEvent(EventArcaneWrathDisplacement, time, 0, RuneOfDisplacement);
 
-            time = m_Events.GetNextEventTime(EventDestructiveResonance);
+            time = m_Events.GetEventTime(EventDestructiveResonance);
             m_Events.RescheduleEvent(EventDestructiveResonanceDisplacement, time, 0, RuneOfDisplacement);
 
-            time = m_Events.GetNextEventTime(EventArcaneAberration) + 13 * IN_MILLISECONDS;
+            time = m_Events.GetEventTime(EventArcaneAberration) + 13 * IN_MILLISECONDS;
             m_Events.RescheduleEvent(EventArcaneAberrationDisplacement, time, 0, RuneOfDisplacement);
         });
     }
@@ -1155,6 +1159,7 @@ struct boss_imperator_margok : public BossAI
 
             me->SetAnimKitId(AnimKitFlyingRune);
 
+            me->SetAnimTier(3);
             me->SetDisableGravity(true);
             me->SetHover(true);
 
@@ -1211,19 +1216,19 @@ struct boss_imperator_margok : public BossAI
 
             m_Events.SetPhase(m_Phase);
 
-            uint32 time = m_Events.GetNextEventTime(EventMarkOfChaosDisplacement);
+            uint32 time = m_Events.GetEventTime(EventMarkOfChaosDisplacement);
             m_Events.RescheduleEvent(EventMarkOfChaosFortification, time, 0, RuneOfFortification);
 
-            time = m_Events.GetNextEventTime(EventForceNovaDisplacement);
+            time = m_Events.GetEventTime(EventForceNovaDisplacement);
             m_Events.RescheduleEvent(EventForceNovaFortification, time, 0, RuneOfFortification);
 
-            time = m_Events.GetNextEventTime(EventArcaneWrathDisplacement);
+            time = m_Events.GetEventTime(EventArcaneWrathDisplacement);
             m_Events.RescheduleEvent(EventArcaneWrathFortification, time, 0, RuneOfFortification);
 
-            time = m_Events.GetNextEventTime(EventDestructiveResonanceDisplacement);
+            time = m_Events.GetEventTime(EventDestructiveResonanceDisplacement);
             m_Events.RescheduleEvent(EventDestructiveResonanceFortification, time, 0, RuneOfFortification);
 
-            time = m_Events.GetNextEventTime(EventArcaneAberrationDisplacement);
+            time = m_Events.GetEventTime(EventArcaneAberrationDisplacement);
             m_Events.RescheduleEvent(EventArcaneAberrationFortification, time, 0, RuneOfFortification);
         });
     }
@@ -1246,6 +1251,7 @@ struct boss_imperator_margok : public BossAI
 
             me->SetAnimKitId(AnimKitFlyingRune);
 
+            me->SetAnimTier(3);
             me->SetDisableGravity(true);
             me->SetHover(true);
 
@@ -1300,19 +1306,19 @@ struct boss_imperator_margok : public BossAI
 
             m_Events.SetPhase(m_Phase);
 
-            uint32 time = m_Events.GetNextEventTime(EventMarkOfChaosFortification);
+            uint32 time = m_Events.GetEventTime(EventMarkOfChaosFortification);
             m_Events.RescheduleEvent(EventMarkOfChaosReplication, time, 0, RuneOfReplication);
 
-            time = m_Events.GetNextEventTime(EventForceNovaFortification);
+            time = m_Events.GetEventTime(EventForceNovaFortification);
             m_Events.RescheduleEvent(EventForceNovaReplication, time, 0, RuneOfReplication);
 
-            time = m_Events.GetNextEventTime(EventArcaneWrathFortification);
+            time = m_Events.GetEventTime(EventArcaneWrathFortification);
             m_Events.RescheduleEvent(EventArcaneWrathReplication, time, 0, RuneOfReplication);
 
-            time = m_Events.GetNextEventTime(EventDestructiveResonanceFortification);
+            time = m_Events.GetEventTime(EventDestructiveResonanceFortification);
             m_Events.RescheduleEvent(EventDestructiveResonanceReplication, time, 0, RuneOfReplication);
 
-            time = m_Events.GetNextEventTime(EventArcaneAberrationFortification);
+            time = m_Events.GetEventTime(EventArcaneAberrationFortification);
             m_Events.RescheduleEvent(EventArcaneAberrationReplication, time, 0, RuneOfReplication);
         });
     }
@@ -1760,7 +1766,7 @@ struct npc_highmaul_destructive_resonance : public MS::AI::CosmeticAI
 
                     for (uint8 i = 0; i < ReplicationDupliCount; ++i)
                     {
-                        float o = frand(0, float(2 * M_PI));
+                        float o = frand(0, 2 * M_PI);
                         float x = pos.m_positionX + (radius * cos(o));
                         float y = pos.m_positionY + (radius * sin(o));
 
@@ -3003,7 +3009,7 @@ void AddSC_boss_imperator_margok()
     RegisterHighmaulCreatureAI(npc_highmaul_rune_of_displacement);
     RegisterHighmaulCreatureAI(npc_highmaul_arcane_aberration);
     RegisterHighmaulCreatureAI(npc_highmaul_destructive_resonance);
-    //RegisterHighmaulCreatureAI(npc_highmaul_destructive_resonance_replication);
+    RegisterHighmaulCreatureAI(npc_highmaul_destructive_resonance_replication);
     RegisterHighmaulCreatureAI(npc_highmaul_gorian_warmage);
     RegisterHighmaulCreatureAI(npc_highmaul_volatile_anomaly);
     RegisterHighmaulCreatureAI(npc_highmaul_gorian_reaver);

@@ -38,6 +38,13 @@ enum AuctionQuality
     AUCTION_QUALITY_YELLOW  = ITEM_QUALITY_ARTIFACT,
 };
 
+enum AuctionHouses
+{
+    AUCTIONHOUSE_ALLIANCE = 2,
+    AUCTIONHOUSE_HORDE = 6,
+    AUCTIONHOUSE_NEUTRAL = 7
+};
+
 #define MAX_AUCTION_QUALITY 7
 
 enum AuctionHouseType
@@ -205,7 +212,7 @@ enum AuctionBotConfigFloatValues
 class AuctionBotConfig
 {
 private:
-    AuctionBotConfig() : _itemsPerCycleBoost(1000), _itemsPerCycleNormal(20), _configUint32Values(), _configBoolValues(), _configFloatValues() {}
+    AuctionBotConfig(): _itemsPerCycleBoost(1000), _itemsPerCycleNormal(20) {}
     ~AuctionBotConfig() {}
     AuctionBotConfig(AuctionBotConfig const&) = delete;
     AuctionBotConfig& operator=(AuctionBotConfig const&) = delete;
@@ -231,9 +238,9 @@ public:
 
     uint32 GetItemPerCycleBoost() const { return _itemsPerCycleBoost; }
     uint32 GetItemPerCycleNormal() const { return _itemsPerCycleNormal; }
-    ObjectGuid GetRandChar() const;
-    ObjectGuid GetRandCharExclude(ObjectGuid exclude) const;
-    bool IsBotChar(ObjectGuid characterID) const;
+    uint32 GetRandChar() const;
+    uint32 GetRandCharExclude(uint32 exclude) const;
+    bool IsBotChar(uint32 characterID) const;
     void Reload() { GetConfigFromFile(); }
 
     static char const* GetHouseTypeName(AuctionHouseType houseType);
@@ -241,7 +248,7 @@ public:
 private:
     std::string _AHBotIncludes;
     std::string _AHBotExcludes;
-    std::vector<ObjectGuid> _AHBotCharacters;
+    std::vector<uint32> _AHBotCharacters;
     uint32 _itemsPerCycleBoost;
     uint32 _itemsPerCycleNormal;
 
@@ -309,8 +316,6 @@ private:
 
     AuctionBotBuyer* _buyer;
     AuctionBotSeller* _seller;
-
-    std::unordered_map<ObjectGuid::LowType, uint64> _marketData;
 
     uint32 _operationSelector; // 0..2*MAX_AUCTION_HOUSE_TYPE-1
 };

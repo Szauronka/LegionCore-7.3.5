@@ -36,7 +36,7 @@ struct GoVisual
     uint32  StateWorldEffectID = 0;
 };
 
-struct TC_GAME_API GameObjectTemplate
+struct GameObjectTemplate
 {
     GoVisual visualData[2];                                 // 0 - befor complete VisualQuest, 1 - after complete VisualQuest
     uint32 entry;
@@ -700,8 +700,6 @@ struct TC_GAME_API GameObjectTemplate
     uint32 GetLootId() const;
     uint32 GetGossipMenuId() const;
     uint32 GetEventScriptId() const;
-    uint32 GetTrivialSkillHigh() const;
-    uint32 GetTrivialSkillLow() const;
     uint32 GetCooldown() const;
     uint32 GetSpell() const;
     bool HasQuestItem() const;
@@ -711,9 +709,9 @@ struct TC_GAME_API GameObjectTemplate
 
 struct GameObjectLocale
 {
-    std::vector<std::string> Name;
-    std::vector<std::string> CastBarCaption;
-    std::vector<std::string> Unk1;
+    StringVector Name;
+    StringVector CastBarCaption;
+    StringVector Unk1;
 };
 
 struct GameObjectData
@@ -740,6 +738,7 @@ struct GameObjectData
     uint16 areaId = 0;
     int16 gameEvent = 0;
     uint8 artKit = 0;
+    uint32 ScriptId;
     bool isActive = false;
     float personalSize = 0;
     bool dbData = false;

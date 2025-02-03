@@ -1,10 +1,15 @@
 /*
+    http://epicwow.com/
     Dungeon : Shadowmoon Burial Grounds 100
     Encounter: Ner'zhul
 */
 
 #include "CreatureGroups.h"
 #include "shadowmoon_burial_grounds.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
+#include "GameEventMgr.h"
 
 #define MAX_DIST    60
 

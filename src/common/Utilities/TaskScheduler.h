@@ -19,8 +19,7 @@
 #define _TASK_SCHEDULER_H_
 
 #include "Random.h"
-#include "Optional.h"
-#include <functional>
+#include "Common.h"
 #include <chrono>
 #include <vector>
 #include <queue>
@@ -42,7 +41,7 @@ class TaskContext;
 /// with the same duration or a new one.
 /// It also provides access to the repeat counter which is useful for task that repeat itself often
 /// but behave different every time (spoken event dialogs for example).
-class TC_COMMON_API TaskScheduler
+class TaskScheduler
 {
     friend class TaskContext;
 
@@ -53,7 +52,7 @@ class TC_COMMON_API TaskScheduler
     typedef std::function<bool()> predicate_t;
     typedef std::function<void()> success_t;
 
-    class TC_COMMON_API Task
+    class Task
     {
         friend class TaskContext;
         friend class TaskScheduler;
@@ -85,7 +84,7 @@ class TC_COMMON_API TaskScheduler
 		bool operator()(TaskContainer const& left, TaskContainer const& right) const;
     };
 
-    class TC_COMMON_API TaskQueue
+    class TaskQueue
     {
         std::multiset<TaskContainer, Compare> container;
 
@@ -302,7 +301,7 @@ private:
     void Dispatch(success_t const& callback);
 };
 
-class TC_COMMON_API TaskContext
+class TaskContext
 {
     friend class TaskScheduler;
 

@@ -76,7 +76,7 @@ public:
                     {
                         me->CastSpell(me, 233226);
                         Position pos;
-                        me->GetNearPoint2D(pos, 15.0f, frand(float(- M_PI / 3), float(M_PI / 3)));
+                        me->GetNearPoint2D(pos, 15.0f, frand(-M_PI/3, M_PI/3));
                         me->NearTeleportTo(pos);
                         me->AddUnitState(UNIT_STATE_ROOT);
                         events.RescheduleEvent(EVENT_2, 500);
@@ -88,7 +88,7 @@ public:
                         //>>>Hack
                         me->AddDelayedEvent(2400, [this]() -> void
                         {
-                            if (me && me->IsAlive())
+                            if (me && me->isAlive())
                                 me->ClearUnitState(UNIT_STATE_ROOT);
                         });
                         //<<<Hack
@@ -203,7 +203,7 @@ public:
                     case EVENT_1:
                     {
                         Position pos;
-                        me->GetNearPoint2D(pos, 20.0f, frand(float(- M_PI / 3), float(M_PI / 3)));
+                        me->GetNearPoint2D(pos, 20.0f, frand(-M_PI/3, M_PI/3));
                         if (me->HasAura(SPELL_BAD_LUCKYDO))
                             me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(),  SPELL_THROW_TOY_BAD);
                         else
@@ -320,17 +320,17 @@ public:
                     case EVENT_3:
                     {
                         Position pos;
-                        me->GetNearPoint2D(pos, 20.0f, frand(float(- M_PI / 3), float(M_PI / 3)));
+                        me->GetNearPoint2D(pos, 20.0f, frand(-M_PI / 3, M_PI / 3));
                         me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_JUMP_GRIZZLY);
                         me->AddDelayedEvent(2200, [this]() -> void
                         {
                             Position pos;
-                            me->GetNearPoint2D(pos, 20.0f, frand(float(- M_PI / 3), float(M_PI / 3)));
+                            me->GetNearPoint2D(pos, 20.0f, frand(-M_PI / 3, M_PI / 3));
                             me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_JUMP_GRIZZLY);
                             me->AddDelayedEvent(2200, [this]() -> void
                             {
                                 Position pos;
-                                me->GetNearPoint2D(pos, 20.0f, frand(float(- M_PI / 3), float(M_PI / 3)));
+                                me->GetNearPoint2D(pos, 20.0f, frand(-M_PI / 3, M_PI / 3));
                                 me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_JUMP_GRIZZLY);
                             });
                         });
@@ -408,7 +408,7 @@ public:
 
             if (Unit* unit = me->GetAnyOwner())
                 if (Creature* owner = unit->ToCreature())
-                    if (owner->IsAlive())
+                    if (owner->isAlive())
                         owner->Kill(owner);
             
             _WinRound();
@@ -475,7 +475,7 @@ public:
     }
 };
 
-void AddSC_brawlers_guild_bosses_rank_one()
+void AddSC_the_brawlers_guild_bosses_rank_one()
 {
     new boss_brawguild_ooliss();    
     new boss_brawguild_grandpa();

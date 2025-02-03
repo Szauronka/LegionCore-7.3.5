@@ -21,24 +21,43 @@
 
 void WorldSession::HandleQueryScenarioPOI(WorldPackets::Scenario::QueryScenarioPOI& packet)
 {
-    TC_LOG_DEBUG("spells", "HandleQueryScenarioPOI MissingScenarioPOITreeIDs %zu", packet.MissingScenarioPOITreeIDs.size());
-    WorldPackets::Scenario::ScenarioPOIs response;
+    TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "HandleQueryScenarioPOI MissingScenarioPOITreeIDs %u", packet.MissingScenarioPOITreeIDs.size());
 
-    // Read criteria tree ids and add the in a unordered_set so we don't send POIs for the same criteria tree multiple times
-    std::unordered_set<uint32> criteriaTreeIds;
-    for (uint32 MissingScenarioPOITreeID : packet.MissingScenarioPOITreeIDs)
-        criteriaTreeIds.insert(MissingScenarioPOITreeID);
+    WorldPackets::Scenario::ScenarioPOIs poIs;
+    WorldPackets::Scenario::ScenarioPOIs::POIData& infos = poIs.PoiInfos[packet.MissingScenarioPOITreeIDs.size()];
 
-    for (uint32 criteriaTreeId : criteriaTreeIds)
+    for (auto const& treeID : packet.MissingScenarioPOITreeIDs)
     {
-        if (ScenarioPOIVector const* poi = sObjectMgr->GetScenarioPOIVector(criteriaTreeId))
+        ScenarioPOIVector const* poi = sObjectMgr->GetScenarioPOIVector(treeID);
+        if (!poi)
         {
-            WorldPackets::Scenario::ScenarioPOIs::POIData data;
-            data.CriteriaTreeID = criteriaTreeId;
-            data.ScenarioPOIs = poi;
-            response.PoiInfos.push_back(data);
+            infos.CriteriaTreeID = treeID;
+            continue;
+        }
+
+        infos.CriteriaTreeID = treeID;
+        WorldPackets::Scenario::ScenarioPOIs::POIData::BlobData& blobData = infos.BlobDatas[poi->size()];
+
+        for (ScenarioPOIVector::const_iterator itr = poi->begin(); itr != poi->end(); ++itr)
+        {
+            blobData.BlobID = itr->BlobID;
+            blobData.MapID = itr->MapID;
+            blobData.WorldMapAreaID = itr->WorldMapAreaID;
+            blobData.Floor = itr->Floor;
+            blobData.Priority = itr->Priority;
+            blobData.Flags = itr->Flags;
+            blobData.WorldEffectID = itr->WorldEffectID;
+            blobData.PlayerConditionID = itr->PlayerConditionID;
+
+            WorldPackets::Scenario::ScenarioPOIs::POIData::BlobData::POIPointData& points = blobData.Points[itr->points.size()];
+
+            for (std::vector<ScenarioPOIPoint>::const_iterator itr2 = itr->points.begin(); itr2 != itr->points.end(); ++itr2)
+            {
+                points.X = itr2->x;
+                points.Y = itr2->y;
+            }
         }
     }
 
-    SendPacket(response.Write());
+    SendPacket(poIs.Write());
 }

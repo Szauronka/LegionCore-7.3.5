@@ -1,4 +1,5 @@
 /*====================
+    uwow.biz
 ======================*/
 
 #include "stormstout_brewery.h"
@@ -218,6 +219,6 @@ void AddSC_boss_ook_ook()
 {
     RegisterCreatureAI(boss_ook_ook);
     RegisterCreatureAI(npc_barrel);
-    //RegisterAuraScript(spell_ook_ook_barrel_ride);
-    //RegisterAuraScript(spell_ook_ook_barrel);
+    RegisterAuraScript(spell_ook_ook_barrel_ride);
+    RegisterAuraScript(spell_ook_ook_barrel);
 }

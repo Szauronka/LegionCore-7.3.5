@@ -36,10 +36,9 @@ at_area_52_entrance
 EndContentData */
 
 #include "AreaTriggerAI.h"
-#include "GameTime.h"
 #include "InstanceScript.h"
-#include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "ScriptMgr.h"
 
 /*######
 ## at_coilfang_waterfall
@@ -93,7 +92,7 @@ class AreaTrigger_at_legion_teleporter : public AreaTriggerScript
 
         bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/, bool /*enter*/) override
         {
-            if (player->IsAlive() && !player->isInCombat())
+            if (player->isAlive() && !player->isInCombat())
             {
                 if (player->GetTeam() == ALLIANCE && player->GetQuestRewardStatus(QUEST_GAINING_ACCESS_A))
                 {
@@ -288,7 +287,7 @@ class AreaTrigger_at_nats_landing : public AreaTriggerScript
 
         bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/, bool /*enter*/) override
         {
-            if (!player->IsAlive() || !player->HasAura(SPELL_FISH_PASTE))
+            if (!player->isAlive() || !player->HasAura(SPELL_FISH_PASTE))
                 return false;
 
             if (player->GetQuestStatus(QUEST_NATS_BARGAIN) == QUEST_STATUS_INCOMPLETE)
@@ -405,7 +404,7 @@ class AreaTrigger_at_brewfest : public AreaTriggerScript
         {
             uint32 triggerId = trigger->ID;
             // Second trigger happened too early after first, skip for now
-            if (GameTime::GetGameTime() - _triggerTimes[triggerId] < AREATRIGGER_TALK_COOLDOWN)
+            if (sWorld->GetGameTime() - _triggerTimes[triggerId] < AREATRIGGER_TALK_COOLDOWN)
                 return false;
 
             switch (triggerId)
@@ -422,7 +421,7 @@ class AreaTrigger_at_brewfest : public AreaTriggerScript
                     break;
             }
 
-            _triggerTimes[triggerId] = GameTime::GetGameTime();
+            _triggerTimes[triggerId] = sWorld->GetGameTime();
             return false;
         }
 
@@ -458,11 +457,11 @@ class AreaTrigger_at_area_52_entrance : public AreaTriggerScript
         {
             float x = 0.0f, y = 0.0f, z = 0.0f;
 
-            if (!player->IsAlive())
+            if (!player->isAlive())
                 return false;
 
             uint32 triggerId = trigger->ID;
-            if (GameTime::GetGameTime() - _triggerTimes[triggerId] < SUMMON_COOLDOWN)
+            if (sWorld->GetGameTime() - _triggerTimes[triggerId] < SUMMON_COOLDOWN)
                 return false;
 
             switch (triggerId)
@@ -491,7 +490,7 @@ class AreaTrigger_at_area_52_entrance : public AreaTriggerScript
 
             player->SummonCreature(NPC_SPOTLIGHT, x, y, z, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 5000);
             player->AddAura(SPELL_A52_NEURALYZER, player);
-            _triggerTimes[trigger->ID] = GameTime::GetGameTime();
+            _triggerTimes[trigger->ID] = sWorld->GetGameTime();
             return false;
         }
 
@@ -593,6 +592,7 @@ class at_medivh_flame_wreath : public AreaTriggerScript
     }
 };
 
+
 void AddSC_areatrigger_scripts()
 {
     new AreaTrigger_at_coilfang_waterfall();
@@ -608,4 +608,5 @@ void AddSC_areatrigger_scripts()
     new areatrigger_at_dinner_party();
     new areatrigger_skorpyron_scorpid_swarm();
     new at_medivh_flame_wreath();
+
 }

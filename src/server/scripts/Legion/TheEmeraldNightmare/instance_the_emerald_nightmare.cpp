@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "the_emerald_nightmare.h"
 
 DoorData const doorData[] =
@@ -43,9 +47,8 @@ public:
 
     struct instance_the_emerald_nightmare_InstanceMapScript : public InstanceScript
     {
-        instance_the_emerald_nightmare_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_the_emerald_nightmare_InstanceMapScript(Map* map) : InstanceScript(map) 
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 
@@ -80,7 +83,8 @@ public:
         WorldLocation* GetClosestGraveYard(float x, float y, float z) override
         {
             // Init data
-            loc_res_pla.WorldRelocate(1520, x, y, z);
+            loc_res_pla.Relocate(x, y, z);
+            loc_res_pla.SetMapId(1520);
 
             uint32 graveyardId = 0;
 
@@ -96,7 +100,8 @@ public:
             {
                 if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
                 {
-                    loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                    loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                    loc_res_pla.SetMapId(gy->MapID);
                 }
             }
             return &loc_res_pla;
@@ -189,7 +194,7 @@ public:
                         case IN_PROGRESS:
                             for (auto itr : eggGUIDconteiner)
                                 if (auto egg = instance->GetCreature(itr.second))
-                                    if (!egg->IsAlive())
+                                    if (!egg->isAlive())
                                         egg->Respawn();
                             break;
                     }
@@ -253,6 +258,46 @@ public:
             }
         }
 
+        std::string GetSaveData() override
+        {
+            std::ostringstream saveStream;
+            saveStream << "E N " << GetBossSaveData();
+            return saveStream.str();
+        }
+
+        void Load(const char* data) override
+        {
+            if (!data)
+            {
+                OUT_LOAD_INST_DATA_FAIL;
+                return;
+            }
+
+            OUT_LOAD_INST_DATA(data);
+
+            char dataHead1, dataHead2;
+
+            std::istringstream loadStream(data);
+            loadStream >> dataHead1 >> dataHead2;
+
+            if (dataHead1 == 'E' && dataHead2 == 'N')
+            {
+                for (uint32 i = 0; i < MAX_ENCOUNTER; ++i)
+                {
+                    uint32 tmpState;
+                    loadStream >> tmpState;
+                    if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                        tmpState = NOT_STARTED;
+                    SetBossState(i, EncounterState(tmpState));
+                }
+            }
+            else
+                OUT_LOAD_INST_DATA_FAIL;
+
+            OUT_LOAD_INST_DATA_COMPLETE;
+            
+        }
+        
         bool CheckFirstBosses()
         {
             if (GetBossState(DATA_NYTHENDRA) == DONE && 

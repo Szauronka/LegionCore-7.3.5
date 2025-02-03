@@ -1,6 +1,7 @@
 #include "AchievementMgr.h"
 #include "AreaTriggerAI.h"
 #include "BrawlersGuild.h"
+#include "Vehicle.h"
 
 enum eSpells
 {
@@ -624,7 +625,7 @@ public:
                 switch (eventId)
                 {
                     case EVENT_1:
-                        if (!me->GetAnyOwner() || !me->GetAnyOwner()->IsAlive())
+                        if (!me->GetAnyOwner() || !me->GetAnyOwner()->isAlive())
                             me->DespawnOrUnsummon();
                         else
                             DoCast(SPELL_FUSE[urand(0, 2)]);
@@ -671,7 +672,7 @@ class areatrigger_at_fuse : public AreaTriggerScript
     }
 };
 
-void AddSC_brawlers_guild_bosses_rank_five()
+void AddSC_the_brawlers_guild_bosses_rank_five()
 {
     new npc_brawguild_thwack_u_controller();
     new boss_brawguild_thwack_u();

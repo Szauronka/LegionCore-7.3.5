@@ -248,7 +248,7 @@ public:
                 {
                     if (Creature *pCreature = me->GetCreature(*me, instance->GetGuidData(data)))
                     {
-                        if (pCreature->IsAlive())
+                        if (pCreature->isAlive())
                         {
                             pCreature->ExitVehicle();
                             pCreature->AI()->EnterEvadeMode();
@@ -706,7 +706,7 @@ public:
                 if (!player)
                     continue;
 
-                if (player->IsAlive() && !player->isGameMaster())
+                if (player->isAlive() && !player->isGameMaster())
                     return false;
             }
             return true;
@@ -1203,7 +1203,8 @@ public:
                         case EVENT_ROCKET_STRIKE:
                             if (Unit *pTarget = SelectTarget(SELECT_TARGET_FARTHEST, 1, 100, true))
                             {
-                                Position Pos = pTarget->GetPosition();
+                                Position Pos;
+                                pTarget->GetPosition(&Pos);
                                 if (Creature * Strike = me->SummonCreature(34047, Pos, TEMPSUMMON_TIMED_DESPAWN, 10000))
                                     me->CastSpell(Strike, SPELL_ROCKET_STRIKE, true);
                             }
@@ -1347,7 +1348,7 @@ public:
                     DoCast(me, SPELL_MAGNETIC_CORE);
                     DoCast(me, SPELL_MAGNETIC_CORE_VISUAL);
                     if (Creature *pMagneticCore = me->GetCreature(*me, instance->GetGuidData(DATA_MAGNETIC_CORE)))
-                        if (pMagneticCore->IsAlive())
+                        if (pMagneticCore->isAlive())
                             me->NearTeleportTo(pMagneticCore->GetPositionX(), pMagneticCore->GetPositionY(), 368.965f, 0, false);
                     events.RescheduleEvent(EVENT_PLASMA_BALL, 22000, 0, PHASE_AERIAL_SOLO);
                     events.RescheduleEvent(EVENT_SUMMON_BOTS, 24000, 0, PHASE_AERIAL_SOLO);

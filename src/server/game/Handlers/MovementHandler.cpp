@@ -20,7 +20,6 @@
 #include "Anticheat.h"
 #include "ObjectMgr.h"
 #include "WaypointMovementGenerator.h"
-#include "FlightPathMovementGenerator.h"
 #include "Garrison.h"
 #include "PlayerDefines.h"
 #include "InstancePackets.h"
@@ -48,7 +47,7 @@ void WorldSession::HandleWorldPortAck()
 
     player->SetSemaphoreTeleportFar(false);
 
-    if (Unit* mover = player->GetUnitBeingMoved())
+    if (Unit* mover = player->m_mover)
         mover->ClearUnitState(UNIT_STATE_JUMPING);
 
     Map* oldMap = player->GetMap();
@@ -79,7 +78,7 @@ void WorldSession::HandleWorldPortAck()
     if (newMap && GetMap() != newMap)
     {
         //move us to destination phread for future perfom addto map by this function
-        TC_LOG_ERROR("network", "WorldSession::HandleMoveWorldportAckOpcode Map %d could not be enter player %d with bed session code", loc.GetMapId(), player->GetGUIDLow());
+        TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "WorldSession::HandleMoveWorldportAckOpcode Map %d could not be enter player %d with bed session code", loc.GetMapId(), player->GetGUIDLow());
         player->TeleportTo(loc, GetPlayer()->GetTeleportOptions());
         return;
     }
@@ -169,12 +168,12 @@ void WorldSession::HandleWorldPortAck()
         if (MapDifficultyEntry const* mapDiff = sDB2Manager.GetMapDifficultyData(mEntry->ID, diff))
             if (mapDiff->GetRaidDuration())
                 if (time_t timeReset = sWorld->getInstanceResetTime(mapDiff->GetRaidDuration()))
-                    player->SendInstanceResetWarning(mEntry->ID, diff, uint32(timeReset - GameTime::GetGameTime()));
+                    player->SendInstanceResetWarning(mEntry->ID, diff, uint32(timeReset - time(nullptr)));
 
         allowMount = mInstance->AllowMount;
     }
 
-    if (!allowMount || (player->GetMapId() == 530 && player->GetCurrentZoneID() == 0))
+    if (!allowMount || (player->GetMapId() == 530 && player->GetCurrentZoneID() == 0)) //530 - uwow event map
         player->RemoveAurasByType(SPELL_AURA_MOUNTED);
 
     if (player->pvpInfo.inHostileArea)
@@ -193,7 +192,7 @@ void WorldSession::HandleWorldPortAck()
 
 void WorldSession::HandleMoveTeleportAck(WorldPackets::Movement::MoveTeleportAck& packet)
 {
-    Player* plMover = Unit::ToPlayer(_player->GetUnitBeingMoved());
+    Player* plMover = _player->m_mover->ToPlayer();
 
     if (plMover && plMover->IsBeingTeleportedSeamlessly())
         return;
@@ -227,9 +226,9 @@ void WorldSession::HandleMoveTeleportAck(WorldPackets::Movement::MoveTeleportAck
     GetPlayer()->ProcessDelayedOperations();
     GetPlayer()->ReCreateAreaTriggerObjects();
 
-    if (Unit* mover = _player->GetUnitBeingMoved())
+    if (Unit* mover = _player->m_mover)
     {
-        mover->m_movementInfo.MoveTime = GameTime::GetGameTimeMS();
+        mover->m_movementInfo.MoveTime = getMSTime();
         mover->m_movementInfo.ClientMoveTime = packet.ClientMoveTime;
         mover->m_movementInfo.Pos = mover->GetPosition();
 
@@ -249,7 +248,7 @@ void WorldSession::HandleMovementOpcodes(WorldPackets::Movement::ClientPlayerMov
 
 void WorldSession::HandleMovementOpcode(OpcodeClient opcode, MovementInfo& movementInfo)
 {
-    Unit* mover = _player->GetUnitBeingMoved();
+    Unit* mover = _player->m_mover;
 
     if (!mover)
         return;
@@ -268,11 +267,11 @@ void WorldSession::HandleMovementOpcode(OpcodeClient opcode, MovementInfo& movem
     if (movementInfo.Guid != mover->GetGUID() || !movementInfo.Pos.IsPositionValid())
         return;
 
-    if (plrMover && (plrMover->GetUInt32Value(UNIT_FIELD_EMOTE_STATE) != 0))
-        plrMover->SetUInt32Value(UNIT_FIELD_EMOTE_STATE, EMOTE_ONESHOT_NONE);
-
     if (plrMover && !plrMover->GetCheatData()->HandleAnticheatTests(movementInfo, this, opcode))
         return;
+
+    if (plrMover && (plrMover->GetUInt32Value(UNIT_FIELD_EMOTE_STATE) != 0))
+        plrMover->SetUInt32Value(UNIT_FIELD_EMOTE_STATE, EMOTE_ONESHOT_NONE);
 
     if (mover->HasAuraType(SPELL_AURA_MOD_POSSESS) || (plrMover && plrMover->HasAuraType(SPELL_AURA_MOD_POSSESS)))
         if (movementInfo.HasMovementFlag(MOVEMENTFLAG_WALKING))
@@ -305,12 +304,12 @@ void WorldSession::HandleMovementOpcode(OpcodeClient opcode, MovementInfo& movem
         {
             if (!(plrMover->GetBattleground() && plrMover->GetBattleground()->HandlePlayerUnderMap(_player)))
             {
-                if (plrMover->IsAlive())
+                if (plrMover->isAlive())
                 {
                     //! Client Crash.
                     //plrMover->SetFlag(PLAYER_FIELD_PLAYER_FLAGS, PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
                     plrMover->EnvironmentalDamage(DAMAGE_FALL_TO_VOID, GetPlayer()->GetMaxHealth());
-                    if (!plrMover->IsAlive())
+                    if (!plrMover->isAlive())
                         plrMover->KillPlayer();
                 }
             }
@@ -355,7 +354,7 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPackets::Movement::MovementSpe
         return;
 
     // Process anticheat checks, remember client-side speed ...
-    if (_player->GetUnitBeingMoved() == _player && !_player->GetCheatData()->HandleSpeedChangeAck(packet.Ack.movementInfo, this, packet.GetOpcode(), packet.Speed))
+    if (_player->m_mover == _player && !_player->GetCheatData()->HandleSpeedChangeAck(packet.Ack.movementInfo, this, packet.GetOpcode(), packet.Speed))
         return;
 
     // relocate
@@ -391,13 +390,13 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPackets::Movement::MovementSpe
 void WorldSession::HandleMoveKnockBackAck(WorldPackets::Movement::MoveKnockBackAck& packet)
 {
     Player* player = GetPlayer();
-    Unit* mover = player->GetUnitBeingMoved();
+    Unit* mover = player->m_mover;
     if (!mover)
         return;
 
     player->ValidateMovementInfo(&packet.Ack.movementInfo);
 
-    if (player->GetUnitBeingMoved()->GetGUID() != packet.Ack.movementInfo.Guid)
+    if (player->m_mover->GetGUID() != packet.Ack.movementInfo.Guid)
         return;
 
     // relocate
@@ -418,7 +417,7 @@ void WorldSession::HandleMovementAckMessage(WorldPackets::Movement::MovementAckM
 
     player->ValidateMovementInfo(&packet.Ack.movementInfo);
 
-    if (player->GetUnitBeingMoved()->GetGUID() != packet.Ack.movementInfo.Guid)
+    if (player->m_mover->GetGUID() != packet.Ack.movementInfo.Guid)
         return;
 
     if (!_player->GetCheatData()->HandleAnticheatTests(packet.Ack.movementInfo, this, packet.GetOpcode()))
@@ -460,7 +459,7 @@ void WorldSession::HandleSetCollisionHeightAck(WorldPackets::Movement::MoveSetCo
 {
     Player* player = GetPlayer();
     player->ValidateMovementInfo(&packet.Data.movementInfo);
-    if (player->GetUnitBeingMoved()->GetGUID() != packet.Data.movementInfo.Guid)
+    if (player->m_mover->GetGUID() != packet.Data.movementInfo.Guid)
         return;
 
     // relocate
@@ -479,11 +478,11 @@ void WorldSession::HandleSetActiveMover(WorldPackets::Movement::SetActiveMover& 
 {
     if (Player* player = GetPlayer())
     {
-        if (player->IsInWorld() && player->GetUnitBeingMoved() && player->GetUnitBeingMoved()->IsInWorld())
+        if (player->IsInWorld() && player->m_mover && player->m_mover->IsInWorld())
         {
-            if (player->GetUnitBeingMoved()->GetGUID() != packet.ActiveMover)
-                TC_LOG_ERROR("network", "HandleSetActiveMover: incorrect mover guid: mover is %s  and should be %s",
-                    packet.ActiveMover.ToString().c_str(), player->GetUnitBeingMoved()->GetGUID().ToString().c_str());
+            if (player->m_mover->GetGUID() != packet.ActiveMover)
+                TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "HandleSetActiveMover: incorrect mover guid: mover is %s  and should be %s",
+                    packet.ActiveMover.ToString().c_str(), player->m_mover->GetGUID().ToString().c_str());
         }
     }
 }
@@ -551,7 +550,7 @@ void WorldSession::HandleMoveRemoveMovementForceAck(WorldPackets::Movement::Move
 {
     Player* player = GetPlayer();
     player->ValidateMovementInfo(&packet.Ack.movementInfo);
-    if (player->GetUnitBeingMoved()->GetGUID() != packet.Ack.movementInfo.Guid)
+    if (player->m_mover->GetGUID() != packet.Ack.movementInfo.Guid)
         return;
 
     // relocate
@@ -563,7 +562,7 @@ void WorldSession::HandleMoveApplyMovementForceAck(WorldPackets::Movement::MoveA
 {
     Player* player = GetPlayer();
     player->ValidateMovementInfo(&packet.Ack.movementInfo);
-    if (player->GetUnitBeingMoved()->GetGUID() != packet.Ack.movementInfo.Guid)
+    if (player->m_mover->GetGUID() != packet.Ack.movementInfo.Guid)
         return;
 
     // relocate
@@ -577,12 +576,12 @@ void WorldSession::HandleTimeSyncResponse(WorldPackets::Movement::TimeSyncRespon
 
     if (player->m_timeSyncQueue.empty())
     {
-        TC_LOG_DEBUG("network", "Received CMSG_TIME_SYNC_RESPONSE from player %s without requesting it (hacker?)", player->GetName());
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "Received CMSG_TIME_SYNC_RESPONSE from player %s without requesting it (hacker?)", player->GetName());
         return;
     }
 
     if (packet.SequenceIndex != player->m_timeSyncQueue.front())
-        TC_LOG_ERROR("network", "Wrong time sync counter from player %s (cheater?)", player->GetName());
+        TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "Wrong time sync counter from player %s (cheater?)", player->GetName());
 
     player->m_timeSyncClient = packet.ClientTime;
     player->m_timeSyncQueue.pop();
@@ -593,7 +592,7 @@ void WorldSession::HandleDiscardedTimeSyncAcks(WorldPackets::Movement::Discarded
     Player* player = GetPlayer();
 
     if (player->m_sequenceIndex != packet.MaxSequenceIndex)
-        TC_LOG_ERROR("network", "Received CMSG_DISCARDED_TIME_SYNC_ACKS from player %s, but maxSequenceIndex %u isn't equal real server SequenceIndex %u", player->GetName(), packet.MaxSequenceIndex, player->m_sequenceIndex);
+        TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "Received CMSG_DISCARDED_TIME_SYNC_ACKS from player %s, but maxSequenceIndex %u isn't equal real server SequenceIndex %u", player->GetName(), packet.MaxSequenceIndex, player->m_sequenceIndex);
 
     player->m_sequenceIndex = 0;
 }
@@ -607,7 +606,7 @@ void WorldSession::HandleTimeSyncResponseFailed(WorldPackets::Movement::TimeSync
 {
     Player* player = GetPlayer();
 
-    TC_LOG_ERROR("network", "WorldSession::HandleTimeSyncResponseFailed:: what we should do with it?: Player: %s, packet.SequenceIndex: %u, PlayerSequenceIndex: %u ",
+    TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "WorldSession::HandleTimeSyncResponseFailed:: what we should do with it?: Player: %s, packet.SequenceIndex: %u, PlayerSequenceIndex: %u ",
         player->GetName(), packet.SequenceIndex, player->m_sequenceIndex);
 }
 
@@ -645,7 +644,7 @@ void WorldSession::HandleSuspendTokenResponse(WorldPackets::Movement::SuspendTok
 
 void WorldSession::RelocateMover(MovementInfo &movementInfo)
 {
-    Unit* mover = _player->GetUnitBeingMoved();
+    Unit* mover = _player->m_mover;
     if (!mover)
         return;
 
@@ -759,7 +758,7 @@ void WorldSession::RelocateMover(MovementInfo &movementInfo)
 
             if (undermap)
                 if (plrMover->UndermapRecall())
-                    TC_LOG_ERROR("network", "[UNDERMAP] %s [GUID %u]. MapId:%u %f %f %f", plrMover->GetName(), plrMover->GetGUIDLow(), plrMover->GetMapId(), plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ());
+                    TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "[UNDERMAP] %s [GUID %u]. MapId:%u %f %f %f", plrMover->GetName(), plrMover->GetGUIDLow(), plrMover->GetMapId(), plrMover->GetPositionX(), plrMover->GetPositionY(), plrMover->GetPositionZ());
         }
         else if (plrMover->CanFreeMove())
             plrMover->SaveNoUndermapPosition(movementInfo.Pos.GetPositionX(), movementInfo.Pos.GetPositionY(), movementInfo.Pos.GetPositionZ() + 3.0f);

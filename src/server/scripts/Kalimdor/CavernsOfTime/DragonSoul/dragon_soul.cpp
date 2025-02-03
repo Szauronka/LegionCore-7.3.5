@@ -456,7 +456,7 @@ class npc_dragon_soul_earthen_soldier : public CreatureScript
             void Reset()
             {
                 DoCast(me, SPELL_ZERO_POWER, true);
-                me->SetPowerType(POWER_ENERGY);
+                me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 0);
                 me->SetPower(POWER_ENERGY, 0);
                 events.Reset();
@@ -1434,8 +1434,7 @@ class npc_dragon_soul_thrall : public CreatureScript
                                 {
                                     if (Player* player = itr->getSource())
                                     {
-                                        if (player->IsInWorld() && player->GetMapId() == me->GetMapId() &&
-                                                player->IsAlive())
+                                        if (player->IsInWorld() && player->GetMapId() == me->GetMapId() && player->isAlive())
                                         {
                                             wipe = false;
                                             break;
@@ -1909,7 +1908,7 @@ class npc_dragon_soul_twilight_assaulter : public CreatureScript
                 {
                     events.CancelEvent(EVENT_ASSAULTER_VISUAL);
 
-                    Optional<Position> posPtr;
+                    const Position* posPtr;
                     float angle = customPos[5].GetAngle(me);
                     if (angle <= M_PI/4 || angle > M_PI*2 - M_PI/4)
                         posPtr = accessor->GetRandomTwilightAssaulterAssaultPosition(horizontal = false, false, lane, stalkerGUID); // North
@@ -1923,6 +1922,7 @@ class npc_dragon_soul_twilight_assaulter : public CreatureScript
                     if (!posPtr)
                         return;
                     assaultPos = Position(*posPtr);
+                    delete posPtr;
 
                     wasActivated = true;
                     wasAssaulting = true;
@@ -2258,7 +2258,7 @@ class spell_dragon_soul_cobalt_globule_mana_void : public SpellScriptLoader
                     {
                         if (unit->GetTypeId() != TYPEID_PLAYER)
                             return true;
-                        return (unit->ToPlayer()->GetPowerType() != POWER_MANA);
+                        return (unit->ToPlayer()->getPowerType() != POWER_MANA);
                     }
             };
 

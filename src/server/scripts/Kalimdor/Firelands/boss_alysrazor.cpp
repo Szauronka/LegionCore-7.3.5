@@ -560,8 +560,9 @@ class boss_alysrazor : public CreatureScript
                             break;
                         case EVENT_BLAZING_POWER:
                         {
+                            Position pos;
                             int32 offset = (bSpawnCloud ? 8 : -8);
-                            Position pos = me->GetPosition();
+                            me->GetPosition(&pos);
                             pos.m_positionX = pos.m_positionX + offset;
                             pos.m_positionY = pos.m_positionY + offset;
                             //DoCast(me, SPELL_BLAZING_POWER_SUM, true);
@@ -572,8 +573,9 @@ class boss_alysrazor : public CreatureScript
                         }
                         case EVENT_INCINDIARY_CLOUD:
                         {
+                            Position pos;
                             int32 offset = (bSpawnCloud ? 8 : -8);
-                            Position pos = me->GetPosition();
+                            me->GetPosition(&pos);
                             pos.m_positionX = pos.m_positionX + offset;
                             pos.m_positionY = pos.m_positionY + offset;
                             //DoCast(me, SPELL_INCINDIARY_CLOUD_SUM, true);
@@ -856,7 +858,8 @@ class npc_alysrazor_fiery_vortex : public CreatureScript
                                     {
                                         pTornado->CastSpell(pTornado, SPELL_FIERY_TORNADO);
                                         pTornado->ClearUnitState(UNIT_STATE_CASTING);
-                                        Position pos = me->GetNearPosition(5.0f + 12.0f * i, (float(i) * M_PI / 2));
+                                        Position pos;
+                                        me->GetNearPosition(pos, 5.0f + 12.0f * i, (float(i) * M_PI / 2));
                                         pTornado->SetSpeed(MOVE_RUN, 2.0f, true);
                                         pTornado->GetMotionMaster()->MovePoint((bClock ? POINT_TORNADO_1 : POINT_TORNADO_2), pos);
                                         bClock = !bClock;
@@ -1965,5 +1968,5 @@ void AddSC_boss_alysrazor()
     new spell_alysrazor_molten_feather_script();
     new spell_alysrazor_cataclysm();
     new spell_alysrazor_firestorm();
-    //new achievement_do_a_barrel_roll();
+    new achievement_do_a_barrel_roll();
 }

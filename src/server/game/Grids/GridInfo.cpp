@@ -38,6 +38,9 @@ bool GridInfo::getUnloadLock() const
 
 void GridInfo::setUnloadReferenceLock(bool on)
 {
+    if (!this) // https://pastebin.com/7aVfGk6a
+        return;
+
     i_unloadReferenceLock = on ? 1 : 0;
 }
 

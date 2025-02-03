@@ -63,7 +63,7 @@ class Corpse : public WorldObject, public GridObject<Corpse>
         bool LoadCorpseFromDB(ObjectGuid::LowType guid, Field* fields);
 
         void DeleteBonesFromWorld();
-        void DeleteFromDB(CharacterDatabaseTransaction& trans);
+        void DeleteFromDB(SQLTransaction& trans);
 
         ObjectGuid GetOwnerGUID() const;
 

@@ -1741,7 +1741,7 @@ public:
             {
                 Player* player = i->getSource();
 
-                if (player && player->IsAlive())
+                if (player && player->isAlive())
                 {
                     // dps
                     switch (player->getClass())

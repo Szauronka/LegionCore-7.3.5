@@ -211,7 +211,7 @@ class boss_spirit_kings_controler : public CreatureScript
             {   // Qiang always first
                 if (Creature* qiang = me->GetCreature(*me, pInstance->GetGuidData(NPC_QIANG)))
                 {
-                    if (!qiang->IsAlive())
+                    if (!qiang->isAlive())
                         qiang->Respawn();
                     
                     qiang->AI()->DoAction(ACTION_START_FIGHT);                   
@@ -221,7 +221,7 @@ class boss_spirit_kings_controler : public CreatureScript
                 {
                     if (Creature* kings = me->GetCreature(*me, pInstance->GetGuidData(spiritkings[n])))
                     {
-                        if (!kings->IsAlive())
+                        if (!kings->isAlive())
                             kings->Respawn();
                     }
                 }
@@ -271,7 +271,7 @@ class boss_spirit_kings_controler : public CreatureScript
                     {
                         if (Creature* king = me->GetCreature(*me, pInstance->GetGuidData(spiritkingsvirtual[i])))
                         {
-                            if (king->IsAlive())
+                            if (king->isAlive())
                             {
                                 me->Kill(king, true);
                                 king->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
@@ -289,8 +289,8 @@ class boss_spirit_kings_controler : public CreatureScript
                     float angleAltMinus = angle + 3.14f;
 
                     Position posRand, posRandMinus, posRandAlt, posRandAltMinus;
-                    posRand = me->GetNearPosition(30.0f, angle);
-                    posRandAlt = me->GetNearPosition(30.0f, angleAlt);
+                    me->GetNearPosition(posRand, 30.0f, angle);
+                    me->GetNearPosition(posRandAlt, 30.0f, angleAlt);
                     float orient = posRand.GetAngle(me);
                     float orientAlt = posRandAlt.GetAngle(me);
 
@@ -301,16 +301,16 @@ class boss_spirit_kings_controler : public CreatureScript
                     {
                         angle += 0.15f;
                         angleMinus -= 0.15f;
-                        posRand = me->GetNearPosition(30.0f, angle);
-                        posRandMinus = me->GetNearPosition(30.0f, angleMinus);
+                        me->GetNearPosition(posRand, 30.0f, angle);
+                        me->GetNearPosition(posRandMinus, 30.0f, angleMinus);
                         me->SummonCreature(NPC_FLANKING_MOGU, posRand.GetPositionX(), posRand.GetPositionY(), posRand.GetPositionZ(), orient);
                         me->SummonCreature(NPC_FLANKING_MOGU, posRandMinus.GetPositionX(), posRandMinus.GetPositionY(), posRandMinus.GetPositionZ(), orient);
                         if (IsHeroic())
                         {
                             angleAlt += 0.15f;
                             angleAltMinus -= 0.15f;
-                            posRandAlt = me->GetNearPosition(30.0f, angleAlt);
-                            posRandAltMinus = me->GetNearPosition(30.0f, angleAltMinus);
+                            me->GetNearPosition(posRandAlt, 30.0f, angleAlt);
+                            me->GetNearPosition(posRandAltMinus, 30.0f, angleAltMinus);
                             me->SummonCreature(NPC_FLANKING_MOGU, posRandAlt.GetPositionX(), posRandAlt.GetPositionY(), posRandAlt.GetPositionZ(), orientAlt);
                             me->SummonCreature(NPC_FLANKING_MOGU, posRandAltMinus.GetPositionX(), posRandAltMinus.GetPositionY(), posRandAltMinus.GetPositionZ(), orientAlt);
                         }
@@ -335,7 +335,7 @@ class boss_spirit_kings_controler : public CreatureScript
                         {
                             for (uint8 n = 0; n < 4; n++)
                                 if (Creature* king = me->GetCreature(*me, pInstance->GetGuidData(spiritKingsEntry[n])))
-                                    if (king->IsAlive() && king->HasAura(SPELL_NEXT_SPIRIT_VISUAL))
+                                    if (king->isAlive() && king->HasAura(SPELL_NEXT_SPIRIT_VISUAL))
                                         king->RemoveAurasDueToSpell(SPELL_NEXT_SPIRIT_VISUAL);
                             EnterEvadeMode();
                         }
@@ -808,7 +808,7 @@ class npc_flanking_mogu : public CreatureScript
                 if (spell->Id == SPELL_TRIGGER_ATTACK)
                 {
                     Position pos;
-                    pos = me->GetNearPosition(60.0f, me->GetAngle(me));
+                    me->GetNearPosition(pos, 60.0f, me->GetAngle(me));
                     me->GetMotionMaster()->MovePoint(1, pos);
                 }
             }

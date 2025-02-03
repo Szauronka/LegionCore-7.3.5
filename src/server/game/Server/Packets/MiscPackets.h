@@ -517,7 +517,7 @@ namespace WorldPackets
             Personal = 0x2
         };
 
-        struct TC_GAME_API PhaseShiftDataPhase
+        struct PhaseShiftDataPhase
         {
             PhaseShiftDataPhase(uint16 id, EnumClassFlag<PhaseShiftFlags> flags);
             PhaseShiftDataPhase(uint16 id);
@@ -587,7 +587,7 @@ namespace WorldPackets
             ObjectGuid ObjectGUID;
         };
 
-        class TC_GAME_API PlaySound final : public ServerPacket
+        class PlaySound final : public ServerPacket
         {
         public:
             PlaySound(ObjectGuid sourceObjectGuid, int32 soundKitID) : ServerPacket(SMSG_PLAY_SOUND, 20), SourceObjectGuid(sourceObjectGuid), SoundKitID(soundKitID) { }
@@ -687,7 +687,7 @@ namespace WorldPackets
             uint16 AnimKitID = 0;
         };
 
-        class TC_GAME_API SetPlayHoverAnim final : public ServerPacket
+        class SetPlayHoverAnim final : public ServerPacket
         {
         public:
             SetPlayHoverAnim() : ServerPacket(SMSG_SET_PLAY_HOVER_ANIM, 16 + 1) { }
@@ -775,7 +775,7 @@ namespace WorldPackets
         struct TaskProgress
         {
             std::vector<uint16> Counts;
-            time_t FailureTime = GameTime::GetGameTime();
+            time_t FailureTime = time(nullptr);
             uint32 TaskID = 0;
             uint32 Flags = 0;
         };
@@ -800,7 +800,7 @@ namespace WorldPackets
             std::vector<TaskProgress> Progress;
         };
 
-        class TC_GAME_API StreamingMovie final : public ServerPacket
+        class StreamingMovie final : public ServerPacket
         {
         public:
             StreamingMovie() : ServerPacket(SMSG_STREAMING_MOVIES, 4) { }
@@ -988,7 +988,7 @@ namespace WorldPackets
             std::vector<CUFProfile const*> CUFProfiles;
         };
         
-        class TC_GAME_API OverrideLight final : public ServerPacket
+        class OverrideLight final : public ServerPacket
         {
         public:
             OverrideLight() : ServerPacket(SMSG_OVERRIDE_LIGHT, 4 + 4 + 4) { }
@@ -1180,6 +1180,25 @@ namespace WorldPackets
         {
         public:
             ResetChallengeModeCheat(WorldPacket&& packet) : ClientPacket(CMSG_RESET_CHALLENGE_MODE_CHEAT, std::move(packet)) { }
+
+            void Read() override { }
+        };
+
+        class ConversationLineStarted final : public ClientPacket
+        {
+        public:
+            ConversationLineStarted(WorldPacket&& packet) : ClientPacket(CMSG_CONVERSATION_LINE_STARTED, std::move(packet)) { }
+
+            void Read() override;
+
+            ObjectGuid unkObjectGuid;
+            int32 unkint32 = 0;
+        };
+
+        class CheckRAFEmailEnabled final : public ClientPacket
+        {
+        public:
+            CheckRAFEmailEnabled(WorldPacket&& packet) : ClientPacket(CMSG_CHECK_RAF_EMAIL_ENABLED, std::move(packet)) { }
 
             void Read() override { }
         };

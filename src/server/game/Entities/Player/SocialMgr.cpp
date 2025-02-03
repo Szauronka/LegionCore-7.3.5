@@ -62,12 +62,12 @@ bool PlayerSocial::AddToSocialList(ObjectGuid const& friendGuid, SocialFlag flag
     if (GetNumberOfSocialsWithFlag(flag) >= (((flag & SOCIAL_FLAG_FRIEND) != 0) ? SOCIALMGR_FRIEND_LIMIT : SOCIALMGR_IGNORE_LIMIT))
         return false;
 
-    PlayerSocialMap::iterator itr = m_playerSocialMap.find(friendGuid);
-    if (itr != m_playerSocialMap.end())
+    std::lock_guard<std::recursive_mutex> guard(m_social_lock);
+    if (PlayerSocialMap::guarded_ptr itr = m_playerSocialMap.get(friendGuid))
     {
         itr->second.Flags |= flag;
 
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_CHARACTER_SOCIAL_FLAGS);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ADD_CHARACTER_SOCIAL_FLAGS);
 
         stmt->setUInt8(0, itr->second.Flags);
         stmt->setUInt64(1, GetPlayerGUID().GetCounter());
@@ -79,7 +79,7 @@ bool PlayerSocial::AddToSocialList(ObjectGuid const& friendGuid, SocialFlag flag
     {
         m_playerSocialMap.emplace(friendGuid, flag);
 
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHARACTER_SOCIAL);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHARACTER_SOCIAL);
 
         stmt->setUInt64(0, GetPlayerGUID().GetCounter());
         stmt->setUInt64(1, friendGuid.GetCounter());
@@ -92,14 +92,15 @@ bool PlayerSocial::AddToSocialList(ObjectGuid const& friendGuid, SocialFlag flag
 
 void PlayerSocial::RemoveFromSocialList(ObjectGuid const& friendGuid, SocialFlag flag)
 {
-    PlayerSocialMap::iterator itr = m_playerSocialMap.find(friendGuid);
-    if (itr == m_playerSocialMap.end())
+    PlayerSocialMap::guarded_ptr itr = m_playerSocialMap.get(friendGuid);
+    if (!itr)                     // not exist
         return;
 
+    std::lock_guard<std::recursive_mutex> guard(m_social_lock);
     itr->second.Flags &= ~flag;
     if (!itr->second.Flags)
     {
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_SOCIAL);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_SOCIAL);
 
         stmt->setUInt64(0, GetPlayerGUID().GetCounter());
         stmt->setUInt64(1, friendGuid.GetCounter());
@@ -110,7 +111,7 @@ void PlayerSocial::RemoveFromSocialList(ObjectGuid const& friendGuid, SocialFlag
     }
     else
     {
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_REM_CHARACTER_SOCIAL_FLAGS);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_REM_CHARACTER_SOCIAL_FLAGS);
 
         stmt->setUInt8(0, itr->second.Flags);
         stmt->setUInt64(1, GetPlayerGUID().GetCounter());
@@ -122,20 +123,21 @@ void PlayerSocial::RemoveFromSocialList(ObjectGuid const& friendGuid, SocialFlag
 
 void PlayerSocial::SetFriendNote(ObjectGuid const& friendGuid, std::string note)
 {
-    PlayerSocialMap::iterator itr = m_playerSocialMap.find(friendGuid);
-    if (itr == m_playerSocialMap.end())                  // not exist
+    PlayerSocialMap::guarded_ptr itr = m_playerSocialMap.get(friendGuid);
+    if (!itr)                     // not exist
         return;
 
-    itr->second.Note = note;
-    utf8truncate(itr->second.Note, 48);                                  // DB and client size limitation
+    utf8truncate(note, 48);                                  // DB and client size limitation
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHARACTER_SOCIAL_NOTE);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHARACTER_SOCIAL_NOTE);
 
-    stmt->setString(0, itr->second.Note);
+    stmt->setString(0, note);
     stmt->setUInt64(1, GetPlayerGUID().GetCounter());
     stmt->setUInt64(2, friendGuid.GetCounter());
 
     CharacterDatabase.Execute(stmt);
+
+    itr->second.Note = note;
 }
 
 void PlayerSocial::SendSocialList(Player* player, uint32 flags)
@@ -148,6 +150,7 @@ void PlayerSocial::SendSocialList(Player* player, uint32 flags)
     WorldPackets::Social::ContactList contactList;
     contactList.Flags = flags;
 
+    std::lock_guard<std::recursive_mutex> guard(m_social_lock);
     for (auto& v : m_playerSocialMap)
     {
         if (!(v.second.Flags & flags))
@@ -178,8 +181,8 @@ void PlayerSocial::SendSocialList(Player* player, uint32 flags)
 
 bool PlayerSocial::_HasContact(ObjectGuid const& guid, SocialFlag flags)
 {
-    PlayerSocialMap::const_iterator itr = m_playerSocialMap.find(guid);
-    if (itr != m_playerSocialMap.end())
+    PlayerSocialMap::guarded_ptr itr = m_playerSocialMap.get(guid);
+    if (itr)
         return (itr->second.Flags & flags) != 0;
 
     return false;
@@ -228,8 +231,8 @@ void SocialMgr::GetFriendInfo(Player* player, ObjectGuid const& friendGUID, Frie
     bool allowTwoSideWhoList = sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_WHO_LIST);
     AccountTypes gmLevelInWhoList = AccountTypes(sWorld->getIntConfig(CONFIG_GM_LEVEL_IN_WHO_LIST));
 
-    PlayerSocialMap::iterator itr = player->GetSocial()->m_playerSocialMap.find(friendGUID);
-    if (itr != player->GetSocial()->m_playerSocialMap.end())
+    std::lock_guard<std::recursive_mutex> guard(player->GetSocial()->m_social_lock);
+    if (PlayerSocialMap::guarded_ptr itr = player->GetSocial()->m_playerSocialMap.get(friendGUID))
         friendInfo.Note = itr->second.Note;
 
     // PLAYER see his team only and PLAYER can't see MODERATOR, GAME MASTER, ADMINISTRATOR characters
@@ -300,7 +303,7 @@ PlayerSocial* SocialMgr::LoadFromDB(PreparedQueryResult result, ObjectGuid const
         ObjectGuid friendGuid = ObjectGuid::Create<HighGuid::Player>(fields[0].GetUInt64());
         uint8 flags = fields[1].GetUInt8();
 
-        social->m_playerSocialMap[friendGuid] = FriendInfo(flags, fields[2].GetString());
+        social->m_playerSocialMap.emplace(friendGuid, flags, fields[2].GetString());
     } while (result->NextRow());
 
     return social;
@@ -321,8 +324,8 @@ std::vector<Player*> SocialMgr::GetVisibleFriendsContaier(Player* player, bool o
 
     for (auto itr = m_socialMap.begin(); itr != m_socialMap.end(); ++itr)
     {
-        PlayerSocialMap::iterator itr2 = itr->second.m_playerSocialMap.find(guid);
-        if (itr2 != itr->second.m_playerSocialMap.end() && (itr2->second.Flags & SOCIAL_FLAG_FRIEND))
+        auto itr2 = itr->second.m_playerSocialMap.get(guid);
+        if (itr2 && itr2->second.Flags & SOCIAL_FLAG_FRIEND)
         {
             if (online && itr2->second.Status == FRIEND_STATUS_OFFLINE)
                 continue;

@@ -1,11 +1,10 @@
 /*
+    http://uwow.biz
     Dungeon : The Arcway 100-110
 */
 
 #ifndef THE_ARCWAY_H_
 #define THE_ARCWAY_H_
-
-#define DataHeader "AW"
 
 enum eData
 {

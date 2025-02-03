@@ -2,6 +2,13 @@
 Pandaria
 World boss
 */
+
+#include "CreatureAI.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
+
+
 enum eBosses
 {
     BOSS_SHA_OF_ANGER,
@@ -43,7 +50,7 @@ public:
         {
             Talk(3);
             _Reset();
-            me->SetPowerType(POWER_ENERGY);
+            me->setPowerType(POWER_ENERGY);
             me->SetPower(POWER_ENERGY, 0);
             checkdistance = 0;
             berserk = 0;

@@ -23,11 +23,10 @@
 #include <string>
 #include <type_traits>
 #include <openssl/sha.h>
-#include <openssl/hmac.h>
 
 class BigNumber;
 
-class TC_COMMON_API SHA256Hash
+class SHA256Hash
 {
 public:
     typedef std::integral_constant<uint32, SHA256_DIGEST_LENGTH> DigestLength;
@@ -47,7 +46,7 @@ public:
     uint32 GetLength() const;
 
 private:
-    EVP_MD_CTX* _ctx;
+    SHA256_CTX mC;
     uint8 mDigest[SHA256_DIGEST_LENGTH];
 };
 

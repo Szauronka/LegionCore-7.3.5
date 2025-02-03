@@ -1,41 +1,40 @@
 #ifndef EFSW_FILESYSTEM_HPP
 #define EFSW_FILESYSTEM_HPP
 
-#include <efsw/FileInfo.hpp>
 #include <efsw/base.hpp>
+#include <efsw/FileInfo.hpp>
 #include <map>
 
 namespace efsw {
 
-class FileSystem {
-  public:
-	static bool isDirectory( const std::string& path );
+class FileSystem
+{
+	public:
+		static bool isDirectory( const std::string& path );
 
-	static FileInfoMap filesInfoFromPath( std::string path );
+		static FileInfoMap filesInfoFromPath( std::string path );
 
-	static char getOSSlash();
+		static char getOSSlash();
 
-	static bool slashAtEnd( std::string& dir );
+		static bool slashAtEnd( std::string& dir );
 
-	static void dirAddSlashAtEnd( std::string& dir );
+		static void dirAddSlashAtEnd( std::string& dir );
 
-	static void dirRemoveSlashAtEnd( std::string& dir );
+		static void dirRemoveSlashAtEnd( std::string& dir );
 
-	static std::string fileNameFromPath( std::string filepath );
+		static std::string fileNameFromPath( std::string filepath );
 
-	static std::string pathRemoveFileName( std::string filepath );
+		static std::string pathRemoveFileName( std::string filepath );
 
-	static std::string getLinkRealPath( std::string dir, std::string& curPath );
+		static void realPath( std::string curdir, std::string& path );
 
-	static std::string precomposeFileName( const std::string& name );
+		static std::string getLinkRealPath( std::string dir, std::string& curPath );
 
-	static bool isRemoteFS( const std::string& directory );
+		static std::string precomposeFileName(const std::string& name);
 
-	static bool changeWorkingDirectory( const std::string& path );
-
-	static std::string getCurrentWorkingDirectory();
+		static bool isRemoteFS( const std::string& directory );
 };
 
-} // namespace efsw
+}
 
 #endif

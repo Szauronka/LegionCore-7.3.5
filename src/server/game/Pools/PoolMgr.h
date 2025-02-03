@@ -42,7 +42,7 @@ class Pool                                                  // for Pool of Pool 
 typedef std::set<uint64> ActivePoolObjects;
 typedef std::map<uint64, uint32> ActivePoolPools;
 
-class TC_GAME_API ActivePoolData
+class ActivePoolData
 {
     public:
         template<typename T>
@@ -96,14 +96,18 @@ typedef std::multimap<uint32, uint32> PooledQuestRelation;
 typedef std::pair<PooledQuestRelation::const_iterator, PooledQuestRelation::const_iterator> PooledQuestRelationBounds;
 typedef std::pair<PooledQuestRelation::iterator, PooledQuestRelation::iterator> PooledQuestRelationBoundsNC;
 
-class TC_GAME_API PoolMgr
+class PoolMgr
 {
     private:
         PoolMgr();
         ~PoolMgr() {};
 
     public:
-        static PoolMgr* instance();
+        static PoolMgr* instance()
+        {
+            static PoolMgr instance;
+            return &instance;
+        }
 
         void LoadFromDB();
         void LoadQuestPools();
@@ -135,11 +139,11 @@ class TC_GAME_API PoolMgr
         template<typename T>
         void SpawnPool(uint32 pool_id, uint64 db_guid_or_pool_id);
 
-		typedef std::unordered_map<uint32, PoolTemplateData>      PoolTemplateDataMap;
-		typedef std::unordered_map<uint32, PoolGroup<Creature>>   PoolGroupCreatureMap;
-		typedef std::unordered_map<uint32, PoolGroup<GameObject>> PoolGroupGameObjectMap;
-		typedef std::unordered_map<uint32, PoolGroup<Pool>>       PoolGroupPoolMap;
-		typedef std::unordered_map<uint32, PoolGroup<Quest>>      PoolGroupQuestMap;
+        typedef std::unordered_map<uint32, PoolTemplateData>      PoolTemplateDataMap;
+        typedef std::unordered_map<uint32, PoolGroup<Creature>>   PoolGroupCreatureMap;
+        typedef std::unordered_map<uint32, PoolGroup<GameObject>> PoolGroupGameObjectMap;
+        typedef std::unordered_map<uint32, PoolGroup<Pool>>       PoolGroupPoolMap;
+        typedef std::unordered_map<uint32, PoolGroup<Quest>>      PoolGroupQuestMap;
         typedef std::pair<uint64, uint32> SearchPair;
         typedef std::map<uint64, uint32> SearchMap;
 

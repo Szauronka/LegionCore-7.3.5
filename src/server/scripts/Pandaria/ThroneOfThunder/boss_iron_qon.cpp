@@ -95,7 +95,7 @@ class boss_iron_qon : public CreatureScript
                     {
                         if (Creature* maunt = me->GetCreature(*me, instance->GetGuidData(mauntEntry[n])))
                         {
-                            if (!maunt->IsAlive())
+                            if (!maunt->isAlive())
                             {
                                 maunt->Respawn();
                                 maunt->GetMotionMaster()->MoveTargetedHome();
@@ -203,11 +203,13 @@ class npc_iron_qon_maunt : public CreatureScript
                     {
                         maunt->SetCanFly(true);
                         maunt->SetDisableGravity(true);
+                        maunt->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                     }
                     else
                     {
                         maunt->SetCanFly(false);
                         maunt->SetDisableGravity(false);
+                        maunt->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                     }
                 }
             }
@@ -220,7 +222,7 @@ class npc_iron_qon_maunt : public CreatureScript
                     {
                         if (Creature* maunt = me->GetCreature(*me, instance->GetGuidData(mauntEntry[n])))
                         {
-                            if (me->GetEntry() != mauntEntry[n] && !maunt->IsAlive())
+                            if (me->GetEntry() != mauntEntry[n] && !maunt->isAlive())
                             {
                                 maunt->Respawn();
                                 maunt->GetMotionMaster()->MoveTargetedHome();
@@ -245,7 +247,7 @@ class npc_iron_qon_maunt : public CreatureScript
             {
                  if (Creature* iq = me->GetCreature(*me, instance->GetGuidData(NPC_IRON_QON)))
                  {
-                     if (iq->IsAlive())
+                     if (iq->isAlive())
                          iq->RemoveAurasDueToSpell(SPELL_RIDE_VEHICLE);
                  }
             }
@@ -308,7 +310,7 @@ class npc_iron_qon_maunt : public CreatureScript
                         case NPC_ROSHAK:
                             if (Creature* q = me->GetCreature(*me, instance->GetGuidData(NPC_QUETZAL)))
                             {
-                                if (q->IsAlive())
+                                if (q->isAlive())
                                 {
                                     q->RemoveAurasDueToSpell(SPELL_ANIM_SIT);
                                     FlyControl(q, true);
@@ -319,7 +321,7 @@ class npc_iron_qon_maunt : public CreatureScript
                         case NPC_QUETZAL:
                             if (Creature* d = me->GetCreature(*me, instance->GetGuidData(NPC_DAMREN)))
                             {
-                                if (d->IsAlive())
+                                if (d->isAlive())
                                 {
                                     d->RemoveAurasDueToSpell(SPELL_ANIM_SIT);
                                     FlyControl(d, true);

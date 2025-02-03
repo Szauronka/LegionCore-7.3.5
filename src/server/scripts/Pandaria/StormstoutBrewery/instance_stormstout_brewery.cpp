@@ -1,4 +1,5 @@
 /*====================
+    uwow.biz
 ======================*/
 
 #include "stormstout_brewery.h"
@@ -10,7 +11,7 @@ public:
 
     struct instance_stormstout_brewery_InstanceMapScript : public InstanceScript
     {
-        instance_stormstout_brewery_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_stormstout_brewery_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         ObjectGuid ookookGuid;
         ObjectGuid hoptallusGuid;
@@ -28,7 +29,6 @@ public:
 
         void Initialize() override
         {
-            SetHeaders(DataHeader);
             SetBossNumber(3);
             ookookGuid.Clear();
             hoptallusGuid.Clear();

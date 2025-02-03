@@ -29,175 +29,6 @@
 //#include "AreaTriggerAI.h"
 //#include "AreaTrigger.h"
 
-enum MageSpells
-{
-    //7.3.2.25549
-    SPELL_MAGE_COLD_SNAP                         = 235219,
-    SPELL_MAGE_FROST_NOVA                        = 122,
-    SPELL_MAGE_CONE_OF_COLD                      = 120,
-    SPELL_MAGE_CONE_OF_COLD_SLOW                 = 212792,
-    SPELL_MAGE_ICE_BARRIER                       = 11426,
-    SPELL_MAGE_ICE_BLOCK                         = 45438,
-    SPELL_MAGE_GLACIAL_INSULATION                = 235297,
-    SPELL_MAGE_BONE_CHILLING                     = 205027,
-    SPELL_MAGE_BONE_CHILLING_BUFF                = 205766,
-    SPELL_MAGE_CHILLED                           = 205708,
-    SPELL_MAGE_ICE_LANCE                         = 30455,
-    SPELL_MAGE_ICE_LANCE_TRIGGER                 = 228598,
-    SPELL_MAGE_THERMAL_VOID                      = 155149,
-    SPELL_MAGE_ICY_VEINS                         = 12472,
-    SPELL_MAGE_GLACIAL_SPIKE                     = 199786,
-    SPELL_MAGE_ICICLE_PERIODIC_TRIGGER           = 148023,
-    SPELL_MAGE_FLURRY_DEBUFF_PROC                = 228354,
-    SPELL_MAGE_FLURRY                            = 44614,
-    SPELL_MAGE_FLURRY_DAMAGE                     = 228672,
-    SPELL_MAGE_FLURRY_CHILL_PROC                 = 228358,
-    SPELL_MAGE_FLURRY_VISUAL                     = 228596,
-    SPELL_MAGE_SHIELD_OF_ALODI                   = 195354,
-    SPELL_MAGE_BRAIN_FREEZE                      = 190447,
-    SPELL_MAGE_BRAIN_FREEZE_AURA                 = 190446,
-    SPELL_MAGE_BRAIN_FREEZE_IMPROVED             = 231584,
-    SPELL_MAGE_JOUSTER                           = 214626,
-    SPELL_MAGE_CHAIN_REACTION                    = 195419,
-    SPELL_MAGE_CHILLED_TO_THE_CORE               = 195448,
-    SPELL_MAGE_GLARITY_OF_THOUGHT                = 195351,
-    SPELL_MAGE_ICE_NOVA                          = 157997,
-    SPELL_MAGE_FROZEN_TOUCH                      = 205030,
-    SPELL_MAGE_FROZEN_ORB                        = 84714,
-    SPELL_MAGE_FROZEN_ORB_DAMAGE                 = 84721,
-    SPELL_MAGE_BLIZZARD_RANK_2                   = 236662,
-    SPELL_MAGE_UNSTABLE_MAGIC                    = 157976,
-    SPELL_MAGE_UNSTABLE_MAGIC_DAMAGE_FIRE        = 157977,
-    SPELL_MAGE_UNSTABLE_MAGIC_DAMAGE_FROST       = 157978,
-    SPELL_MAGE_UNSTABLE_MAGIC_DAMAGE_ARCANE      = 157979,
-    SPELL_MAGE_FINGERS_OF_FROST                  = 112965,
-    SPELL_MAGE_FINGERS_OF_FROST_AURA             = 44544,
-    SPELL_MAGE_FINGERS_OF_FROST_VISUAL_UI        = 126084,
-    SPELL_MAGE_FROST_BOMB_AURA                   = 112948,
-    SPELL_MAGE_FROST_BOMB_TRIGGERED              = 113092,
-    SPELL_MAGE_FROSTBOLT                         = 116,
-    SPELL_MAGE_FROSTBOLT_TRIGGER                 = 228597,
-    SPELL_MAGE_RAY_OF_FROST                      = 205021,
-    SPELL_MAGE_RAY_OF_FROST_BUFF                 = 208166,
-    SPELL_MAGE_RAY_OF_FROST_DAMAGE_INCREASE      = 208141,
-    SPELL_BLAZING_BARRIER_TRIGGER                = 235314,
-    SPELL_MAGE_SCORCH                            = 2948,
-    SPELL_MAGE_FIREBALL                          = 133,
-    SPELL_MAGE_FIRE_BLAST                        = 108853,
-    SPELL_MAGE_FLAMESTRIKE                       = 2120,
-    SPELL_MAGE_PYROBLAST                         = 11366,
-    SPELL_MAGE_PHOENIX_FLAMES                    = 194466,
-    SPELL_MAGE_DRAGON_BREATH                     = 31661,
-    SPELL_MAGE_PYROMANIAC                        = 205020,
-    SPELL_MAGE_ALEXSTRASZAS_FURY                 = 235870,
-    SPELL_MAGE_LIVING_BOMB_DAMAGE                = 44461,
-    SPELL_MAGE_LIVING_BOMB_DOT                   = 217694,
-    SPELL_MAGE_METEOR_DAMAGE                     = 153564,
-    SPELL_MAGE_METEOR_TIMER                      = 177345,
-    SPELL_MAGE_METEOR_VISUAL                     = 174556,
-    SPELL_MAGE_METEOR_BURN                       = 155158,
-    SPELL_MAGE_COMET_STORM                       = 153595,
-    SPELL_MAGE_COMET_STORM_DAMAGE                = 153596,
-    SPELL_MAGE_COMET_STORM_VISUAL                = 242210,
-    SPELL_MAGE_POLYMORPH_CRITTERMORPH            = 120091,
-    SPELL_MAGE_HEATING_UP                        = 48107,
-    SPELL_MAGE_HOT_STREAK                        = 48108,
-    SPELL_MAGE_ENHANCED_PYROTECHNICS_AURA        = 157644,
-
-    SPELL_MAGE_INCANTERS_FLOW_BUFF               = 116267,
-    SPELL_MAGE_RUNE_OF_POWER_BUFF                = 116014,
-    SPELL_MAGE_OVERPOWERED                       = 155147,
-    SPELL_MAGE_ARCANE_POWER                      = 12042,
-    SPELL_MAGE_CHRONO_SHIFT                      = 235711,
-    SPELL_MAGE_CHRONO_SHIFT_SLOW                 = 236299,
-    SPELL_MAGE_ARCANE_BLAST                      = 30451,
-    SPELL_MAGE_ARCANE_BARRAGE                    = 44425,
-    SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED          = 241241,
-    SPELL_MAGE_PRESENCE_OF_MIND                  = 205025,
-    SPELL_MAGE_ARCANE_MISSILES_VISUAL_TWO        = 79808,
-    SPELL_MAGE_ARCANE_MISSILES_VISUAL_ONE        = 170571,
-    SPELL_MAGE_ARCANE_MISSILES_VISUAL_THREE      = 170572,
-    SPELL_MAGE_ARCANE_MISSILES_TRIGGER           = 7268,
-    SPELL_MAGE_ARCANE_MISSILES                   = 5143,
-    SPELL_MAGE_ARCANE_MISSILES_DAMAGE            = 7268,
-    SPELL_MAGE_ARCANE_MISSILES_POWER             = 208030,
-    SPELL_MAGE_ARCANE_MISSILES_CHARGES           = 79683,
-    SPELL_MAGE_ARCANE_ORB_DAMAGE                 = 153640,
-    SPELL_MAGE_ARCANE_AMPLIFICATION              = 236628,
-
-    //7.3.2.25549 END
-    SPELL_MAGE_RING_OF_FROST_FREEZE              = 82691,
-    SPELL_MAGE_RING_OF_FROST_IMMUNE              = 91264,
-    SPELL_MAGE_RING_OF_FROST                     = 113724,
-    SPELL_MAGE_FIRE_MAGE_PASSIVE                 = 137019,
-    SPELL_MAGE_FIRE_ON                           = 205029,
-    SPELL_MAGE_FIRESTARTER                       = 205026,
-    SPELL_MAGE_CAUTERIZE                         = 87023,
-    SPELL_MAGE_MIRROR_IMAGE_LEFT                 = 58834,
-    SPELL_MAGE_MIRROR_IMAGE_RIGHT                = 58833,
-    SPELL_MAGE_MIRROR_IMAGE_FRONT                = 58831,
-    SPELL_MAGE_COMBUSTION                        = 190319,
-    SPELL_MAGE_WATER_JET                         = 135029,
-    SPELL_MAGE_ICE_FLOES                         = 108839,
-    SPELL_MAGE_CONJURE_REFRESHMENT_GROUP         = 167145,
-    SPELL_MAGE_CONJURE_REFRESHMENT_SOLO          = 116136,
-    SPELL_MAGE_HYPOTHERMIA                       = 41425,
-    SPELL_INFERNO                                = 253220,
-    SPELL_MAGE_BLAZING_BARRIER                   = 235313,
-    SPELL_MAGE_BLAZING_SOUL                      = 235365,
-    SPELL_MAGE_CONTROLLED_BURN                   = 205033,
-    SPELL_MAGE_FLAME_PATCH                       = 205037,
-    SPELL_MAGE_FLAME_PATCH_TRIGGER               = 205470,
-    SPELL_MAGE_FLAME_PATCH_AOE_DMG               = 205472,
-    SPELL_MAGE_CINDERSTORM                       = 198929,
-    SPELL_MAGE_CINDERSTORM_DMG                   = 198928,
-    SPELL_MAGE_IGNITE_DOT                        = 12654,
-
-    SPELL_MAGE_SQUIRREL_FORM                     = 32813,
-    SPELL_MAGE_GIRAFFE_FORM                      = 32816,
-    SPELL_MAGE_SERPENT_FORM                      = 32817,
-    SPELL_MAGE_DRAGONHAWK_FORM                   = 32818,
-    SPELL_MAGE_WORGEN_FORM                       = 32819,
-    SPELL_MAGE_SHEEP_FORM                        = 32820,
-
-    SPELL_MAGE_MASTERY_ICICLES                   = 76613,
-    SPELL_MAGE_ICICLE_DAMAGE                     = 148022,
-    SPELL_MAGE_ICICLE_AURA                       = 205473,
-    SPELL_MAGE_SPLITTING_ICE                     = 56377
-};
-
-// Mirror Image - 55342
-class spell_mage_mirror_image_summon : public SpellScriptLoader
-{
-public:
-    spell_mage_mirror_image_summon() : SpellScriptLoader("spell_mage_mirror_image_summon") { }
-
-    class spell_mage_mirror_image_summon_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_mage_mirror_image_summon_SpellScript);
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            if (Unit* caster = GetCaster())
-            {
-                caster->CastSpell(caster, SPELL_MAGE_MIRROR_IMAGE_LEFT, true);
-                caster->CastSpell(caster, SPELL_MAGE_MIRROR_IMAGE_FRONT, true);
-                caster->CastSpell(caster, SPELL_MAGE_MIRROR_IMAGE_RIGHT, true);
-            }
-        }
-
-        void Register() override
-        {
-            OnEffectHitTarget += SpellEffectFn(spell_mage_mirror_image_summon_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const override
-    {
-        return new spell_mage_mirror_image_summon_SpellScript();
-    }
-};
-
 // Cauterize - 86949
 class spell_mage_cauterize : public SpellScriptLoader
 {
@@ -610,6 +441,21 @@ const uint32 icicles[5][3]
     {148016, 148021, 148012}
 };
 
+enum MageSpells
+{
+    SPELL_MAGE_SQUIRREL_FORM                     = 32813,
+    SPELL_MAGE_GIRAFFE_FORM                      = 32816,
+    SPELL_MAGE_SERPENT_FORM                      = 32817,
+    SPELL_MAGE_DRAGONHAWK_FORM                   = 32818,
+    SPELL_MAGE_WORGEN_FORM                       = 32819,
+    SPELL_MAGE_SHEEP_FORM                        = 32820,
+
+    SplittingIce                                 = 56377,
+    IciclesStack                                 = 205473,
+    IciclesDamage                                = 148022,
+    MasteryIcicles                               = 76613
+};
+
 enum SilvermoonPolymorph
 {
     NPC_AUROSALIA   = 18744,
@@ -681,16 +527,18 @@ class spell_mage_greater_invisibility : public SpellScriptLoader
                 if (Unit* caster = GetCaster())
                 {
                     int32 count = 0;
-                    Unit::AuraEffectList const& mPeriodic = caster->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
-                    for (Unit::AuraEffectList::const_iterator iter = mPeriodic.begin(); iter != mPeriodic.end(); ++iter)
+                    if (Unit::AuraEffectList const* mPeriodic = caster->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE))
                     {
-                        if (!(*iter)) // prevent crash
-                            continue;
-                        Aura* aura = (*iter)->GetBase();
-                        aura->Remove();
-                        count++;
-                        if(count > 1)
-                            return;
+                        for (Unit::AuraEffectList::const_iterator iter = mPeriodic->begin(); iter != mPeriodic->end(); ++iter)
+                        {
+                            if (!(*iter)) // prevent crash
+                                continue;
+                            Aura* aura = (*iter)->GetBase();
+                            aura->Remove();
+                            count++;
+                            if(count > 1)
+                                return;
+                        }
                     }
                     caster->CastSpell(GetTarget(), 113862, true, NULL, aurEff);
                 }
@@ -807,8 +655,7 @@ class spell_mage_icicle : public AuraScript
     {
         if (Unit* caster = GetCaster())
         {
-            iceLanceTarget = caster->GetAnyDataContainer().GetValue<ObjectGuid>("IceLanceTarget", ObjectGuid::Empty);
-            if (iceLanceTarget)
+            if (iceLanceTarget = caster->GetAnyDataContainer().GetValue<ObjectGuid>("IceLanceTarget", ObjectGuid::Empty))
                 return true;
         }
         return false;
@@ -818,7 +665,7 @@ class spell_mage_icicle : public AuraScript
     {
         if (Unit* caster = GetCaster())
         {
-            if (Aura* aura = caster->GetAura(SPELL_MAGE_MASTERY_ICICLES))
+            if (Aura* aura = caster->GetAura(MasteryIcicles))
             {
                 for (auto itr : aura->m_loadedScripts)
                 {
@@ -835,7 +682,7 @@ class spell_mage_icicle : public AuraScript
                                     if (icicles[i][0] == spellId)
                                     {
                                         caster->CastSpell(target, icicles[i][1], true);
-                                        caster->CastCustomSpell(target, SPELL_MAGE_ICICLE_DAMAGE, &tickamount, NULL, NULL, true);
+                                        caster->CastCustomSpell(target, IciclesDamage, &tickamount, NULL, NULL, true);
                                         caster->RemoveAurasDueToSpell(spellId);
                                         return;
                                     }
@@ -1173,8 +1020,23 @@ class spell_mage_displacement : public SpellScriptLoader
                 return SPELL_FAILED_OUT_OF_RANGE;
             }
 
+			void HandleAfterCast()
+			{
+				if (!GetCaster())
+					return;
+
+				if (Player* player = GetCaster()->ToPlayer())
+				{
+					if (player->HasSpellCooldown(1953))
+					{
+						player->RemoveSpellCooldown(1953, true);
+					}
+				}
+			}
+
             void Register() override
             {
+				AfterCast += SpellCastFn(spell_mage_displacement_SpellScript::HandleAfterCast);
                 OnCheckCast += SpellCheckCastFn(spell_mage_displacement_SpellScript::CheckCast);
             }
         };
@@ -1314,8 +1176,20 @@ class spell_mage_shimmer : public SpellScriptLoader
                 return SPELL_CAST_OK;
             }
 
+			void HandleOnCast() {
+
+				if (Unit* caster = GetCaster()) 
+				{
+					if (caster->ToPlayer()) 
+					{
+						caster->ToPlayer()->ModifySpellCooldown(GetSpellInfo()->Id, 1000);
+					}
+				}
+			}
+
             void Register() override
             {
+				OnCast += SpellCastFn(spell_mage_shimmer_SpellScript::HandleOnCast);
                 OnCheckCast += SpellCheckCastFn(spell_mage_shimmer_SpellScript::CheckCast);
             }
         };
@@ -1337,7 +1211,7 @@ class spell_mage_ice_lance_main : public SpellScript
         {
             Trinity::AnyDataContainer& cont = caster->GetAnyDataContainer();
 
-            if (caster->HasAura(SPELL_MAGE_MASTERY_ICICLES) && !caster->HasSpell(199786)) // Mastery: Icicles, Glacial Spike
+            if (caster->HasAura(MasteryIcicles) && !caster->HasSpell(199786)) // Mastery: Icicles, Glacial Spike
             {
                 if (Unit* target = GetOriginalTarget())
                 {
@@ -1357,7 +1231,7 @@ class spell_mage_ice_lance_main : public SpellScript
                 cont.Set("isFrozenTarget", 0);
             }
 
-            if (caster->HasAura(SPELL_MAGE_SPLITTING_ICE))
+            if (caster->HasAura(SplittingIce))
             {
                 if (Spell* spell = GetSpell())
                 {
@@ -1425,7 +1299,7 @@ class spell_mage_ice_lance : public SpellScript
                 {
                     if (target->GetGUID() == jumpTargetGUID)
                     {
-                        if (SpellInfo const* spellinfo = sSpellMgr->GetSpellInfo(SPELL_MAGE_SPLITTING_ICE))
+                        if (SpellInfo const* spellinfo = sSpellMgr->GetSpellInfo(SplittingIce))
                             dmgMod = CalculatePct(dmgMod, spellinfo->Effects[EFFECT_1]->BasePoints);
                     }
                 }
@@ -1886,7 +1760,7 @@ class spell_mage_mastery_icicles: public AuraScript
                                 if (AuraEffect const* eff = caster->GetAuraEffect(spellId, EFFECT_0))
                                 {
                                     float bp = eff->GetAmount();
-                                    caster->CastCustomSpell(target, SPELL_MAGE_ICICLE_DAMAGE, &bp, NULL, NULL, true);
+                                    caster->CastCustomSpell(target, IciclesDamage, &bp, NULL, NULL, true);
 
                                     for (uint8 i = 0; i < 5; i++)
                                     {
@@ -1922,7 +1796,7 @@ class spell_mage_mastery_icicles: public AuraScript
 
     void Cast(Unit* caster, uint32 const& spellId, float& damage)
     {
-        caster->CastSpell(caster, SPELL_MAGE_ICICLE_AURA, true);
+        caster->CastSpell(caster, IciclesStack, true);
         caster->CastCustomSpell(caster, spellId, &damage, NULL, NULL, true);
         getIcicles.push_back(spellId);
     }
@@ -2150,9 +2024,84 @@ public:
 	}
 };*/
 
+// 108853 Fire Blast
+class spell_mage_fire_blast : public SpellScriptLoader
+{
+public:
+	spell_mage_fire_blast() : SpellScriptLoader("spell_mage_fire_blast") { }
+
+	class spell_mage_fire_blast_SpellScript : public SpellScript
+	{
+		PrepareSpellScript(spell_mage_fire_blast_SpellScript);
+
+		void HandleOnCast() {
+			if (Unit* caster = GetCaster()) 
+			{
+				if (caster->ToPlayer()) {
+					caster->ToPlayer()->ModifySpellCooldown(GetSpellInfo()->Id, 500);
+				}
+			}
+		}
+
+		void Register() override
+		{
+			OnCast += SpellCastFn(spell_mage_fire_blast_SpellScript::HandleOnCast);
+		}
+	};
+
+	SpellScript* GetSpellScript() const override
+	{
+		return new spell_mage_fire_blast_SpellScript();
+	}
+};
+
+// Used by 2120 Flamestrike and 11366 Pyroblast
+class spell_mage_hot_streak_big : public SpellScriptLoader
+{
+public:
+	spell_mage_hot_streak_big() : SpellScriptLoader("spell_mage_hot_streak_big") { }
+
+	class spell_mage_hot_streak_big_SpellScript : public SpellScript
+	{
+		PrepareSpellScript(spell_mage_hot_streak_big_SpellScript);
+		enum spellmisc
+		{
+			SPELL_HOT_STREAK = 48108,
+			SPELL_TALENT_PYROMANIAC = 205020,
+		};
+		void HandleAfterCast()
+		{
+			if (Unit* caster = GetCaster())
+			{
+				if (caster->HasAura(SPELL_HOT_STREAK))
+				{
+					caster->RemoveAurasDueToSpell(SPELL_HOT_STREAK);
+					if (AuraEffect* auraEff = caster->GetAuraEffect(SPELL_TALENT_PYROMANIAC, EFFECT_0))
+					{
+						int chance = auraEff->GetAmount();
+						if (roll_chance_i(chance))
+						{
+							caster->CastSpell(caster, SPELL_HOT_STREAK, true);
+						}
+					}
+				}
+			}
+		}
+
+		void Register() override
+		{
+			AfterCast += SpellCastFn(spell_mage_hot_streak_big_SpellScript::HandleAfterCast);
+		}
+	};
+
+	SpellScript* GetSpellScript() const override
+	{
+		return new spell_mage_hot_streak_big_SpellScript();
+	}
+};
+
 void AddSC_mage_spell_scripts()
 {
-    new spell_mage_mirror_image_summon();
     new spell_mage_cauterize();
     new spell_mage_conjure_refreshment();
     new spell_mage_time_warp();
@@ -2193,4 +2142,7 @@ void AddSC_mage_spell_scripts()
     RegisterAuraScript(spell_mage_highblades_will);
     RegisterSpellScript(spell_mage_phoenixs_flames);
 	//new areatrigger_at_mage_frozen_orb();
+
+	new spell_mage_fire_blast();
+	new spell_mage_hot_streak_big();
 }

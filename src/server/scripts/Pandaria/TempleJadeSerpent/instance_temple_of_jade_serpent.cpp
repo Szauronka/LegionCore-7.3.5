@@ -1,7 +1,6 @@
 /*==============
+    uwow.biz
 ==============*/
-
-#include "temple_of_jade_serpent.h"
 
 enum eSpells
 {
@@ -165,16 +164,14 @@ public:
         uint8 countTank;
         uint8 countFigments;
 
-        instance_temple_of_jade_serpent_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_temple_of_jade_serpent_InstanceMapScript(Map* map) : InstanceScript(map)
         {
-            SetHeaders(DataHeader);
-
             // Wise Mari script
             doorWiseMari.Clear();
             roomCenter.m_positionX = 1046.941f;
             roomCenter.m_positionY = -2560.606f;
             roomCenter.m_positionZ = 174.9552f;
-            roomCenter.SetOrientation(4.33f);
+            roomCenter.m_orientation = 4.33f;
             waterDamageTimer = 250;
             wiseMariGUID.Clear();
 
@@ -263,11 +260,12 @@ public:
                 {
                     if (auto wiseMari = Unit::GetUnit(*player, wiseMariGUID))
                     {
-                        if (wiseMari->IsAlive() || wiseMari->isInCombat())
+                        if (wiseMari->isAlive() || wiseMari->isInCombat())
                         {
-                            Position pos = player->GetPosition();
+                            Position pos;
+                            player->GetPosition(&pos);
 
-                            if ((player->GetDistance(roomCenter) < 20.00f && roomCenter.HasInArc(float(M_PI), &pos)) || (!roomCenter.HasInArc(float(M_PI), &pos) && player->GetDistance(roomCenter) < 14.00f))
+                            if ((player->GetDistance(roomCenter) < 20.00f && roomCenter.HasInArc(M_PI, &pos)) || (!roomCenter.HasInArc(M_PI, &pos) && player->GetDistance(roomCenter) < 14.00f))
                                 if (player->GetPositionZ() > 174.05f && player->GetPositionZ() < 174.23f)
                                     player->CastSpell(player, SPELL_CORRUPTED_WATERS, true);
 

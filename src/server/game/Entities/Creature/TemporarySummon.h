@@ -21,25 +21,6 @@
 
 #include "Creature.h"
 
-enum PetEntry
-{
-    // Warlock pets
-    PET_IMP             = 416,
-    PET_FEL_HUNTER      = 691,
-    PET_VOID_WALKER     = 1860,
-    PET_SUCCUBUS        = 1863,
-    PET_DOOMGUARD       = 18540,
-    PET_FELGUARD        = 30146,
-
-    // Death Knight pets
-    PET_GHOUL           = 26125,
-    PET_GARGOYLE        = 27829,
-    PET_ABOMINATION     = 106848,
-
-    // Shaman pet
-    PET_SPIRIT_WOLF     = 29264
-};
-
 enum SummonActionType
 {
     SUMMON_ACTION_TYPE_DEFAULT               = 0,
@@ -59,7 +40,7 @@ struct TempSummonData
     TempSummonType sumType; ///< Summon type, see TempSummonType for available types
 };
 
-class TC_GAME_API TempSummon : public Creature
+class TempSummon : public Creature
 {
     public:
         explicit TempSummon(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject);
@@ -78,7 +59,16 @@ class TC_GAME_API TempSummon : public Creature
         TempSummonType const& GetSummonType() { return m_type; }
         uint32 GetTimer() { return m_timer; }
 		void AddDuration(uint32 time) { m_timer += time; }
+        void CastPetAuras(bool current, uint32 spellId = 0);
+        bool addSpell(uint32 spellId, ActiveStates active = ACT_DECIDE, PetSpellState state = PETSPELL_NEW, PetSpellType type = PETSPELL_NORMAL);
+        bool removeSpell(uint32 spell_id);
+        void LearnPetPassives();
+        void InitLevelupSpellsForLevel();
         void UpdateAttackPowerAndDamage(bool ranged = false) override;
+
+        bool learnSpell(uint32 spell_id);
+        bool unlearnSpell(uint32 spell_id);
+        void ToggleAutocast(SpellInfo const* spellInfo, bool apply);
 
         PetType getPetType() const { return m_petType; }
         void setPetType(PetType type) { m_petType = type; }
@@ -113,33 +103,18 @@ class Minion : public TempSummon
         void RemoveFromWorld() override;
 
         Unit* GetOwner() { return m_owner; }
-
-        // Warlock pets
-        bool IsPetImp() const { return GetEntry() == PET_IMP; }
-        bool IsPetFelHunter() const { return GetEntry() == PET_FEL_HUNTER; }
-        bool IsPetVoidwalker() const { return GetEntry() == PET_VOID_WALKER; }
-        bool IsPetSuccubus() const { return GetEntry() == PET_SUCCUBUS; }
-        bool IsPetDoomguard() const { return GetEntry() == PET_DOOMGUARD; }
-        bool IsPetFelguard() const { return GetEntry() == PET_FELGUARD; }
-
-        // Death Knight pets
-        bool IsPetGhoul() const {return GetEntry() == PET_GHOUL;} // Ghoul may be guardian or pet
-        bool IsPetGargoyle() const { return GetEntry() == PET_GARGOYLE; }
-        bool IsPetAbomination() const { return GetEntry() == PET_ABOMINATION; } // Sludge Belcher dk talent
-
-        // Shaman pet
-        bool IsSpiritWolf() const { return GetEntry() == PET_SPIRIT_WOLF; } // Spirit wolf from feral spirits
-
-        bool IsWarlockPet() const { return IsPetImp() || IsPetFelHunter() || IsPetVoidwalker() || IsPetSuccubus() || IsPetDoomguard() || IsPetFelguard(); }
+        bool IsPetGhoul() const {return GetEntry() == 26125;} // Ghoul may be guardian or pet
+        bool IsPetGargoyle() const { return GetEntry() == 27829; }
+        bool IsWarlockPet() const;
         bool IsGuardianPet() const;
 };
 
-class TC_GAME_API Guardian : public Minion
+class Guardian : public Minion
 {
     public:
         Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject);
         void InitStats(uint32 duration) override;
-        bool InitStatsForLevel(uint8 level);
+        bool InitStatsForLevel(uint8 level, bool initSpells = true);
         void InitSummon() override;
 
         bool UpdateStats(Stats stat) override;

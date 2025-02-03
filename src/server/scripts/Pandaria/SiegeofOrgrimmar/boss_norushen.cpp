@@ -438,7 +438,7 @@ public:
             {
                 if (Player* pl = i->getSource())
                 {
-                    if (pl->IsAlive() && state)
+                    if (pl->isAlive() && state)
                         pl->AddAura(SPELL_CORRUPTION, pl);
                     else
                         pl->RemoveAurasDueToSpell(SPELL_CORRUPTION);
@@ -722,7 +722,7 @@ public:
                             break;
                         default:
                             p->CastSpell(p, SPELL_TEST_OF_SERENITY, false);
-                            TC_LOG_ERROR("entities.player", "Script::npc_norushen_purifying_light: Player %s has not localized role specID.", p->ToString().c_str());
+                            TC_LOG_ERROR(LOG_FILTER_PLAYER, "Script::npc_norushen_purifying_light: Player %s has not localized role specID.", p->ToString().c_str());
                             break;
                     }
                 }
@@ -833,7 +833,7 @@ public:
         void JustDied(Unit* killer)
         {
             if (Player* plr = me->GetPlayer(*me, targetGuid))
-                if (plr->IsAlive())
+                if (plr->isAlive())
                     plr->CastSpell(plr, SPELL_CLEANSE_15, true);
 
             if (Creature* amalgam = me->GetCreature(*me, instance->GetGuidData(NPC_AMALGAM_OF_CORRUPTION)))
@@ -926,7 +926,7 @@ public:
         void JustDied(Unit* killer)
         {
             if (Player* plr = me->GetPlayer(*me, targetGuid))
-                if (plr->IsAlive())
+                if (plr->isAlive())
                     plr->CastSpell(plr, SPELL_CLEANSE_40, true);
 
             if (Creature* amalgam = me->GetCreature(*me, instance->GetGuidData(NPC_AMALGAM_OF_CORRUPTION)))
@@ -1003,7 +1003,7 @@ public:
         {
             events.Reset();
 
-            me->SetPowerType(POWER_ENERGY);
+            me->setPowerType(POWER_ENERGY);
             me->SetMaxPower(POWER_ENERGY, 100);
             me->SetPower(POWER_ENERGY, 100);
         }
@@ -1183,7 +1183,7 @@ public:
         void JustDied(Unit* killer)
         {
             if (Player* pl = me->GetPlayer(*me, targetGuid))
-                if (pl->IsAlive())
+                if (pl->isAlive())
                     pl->CastSpell(pl, SPELL_CLEANSE_100, true);
             me->DespawnOrUnsummon();
         }
@@ -1320,7 +1320,7 @@ public:
         void JustDied(Unit* killer)
         {
             if (Player* plr = me->GetPlayer(*me, targetGuid))
-                if (plr->IsAlive())
+                if (plr->isAlive())
                     plr->CastSpell(plr, SPELL_CLEANSE_100, true);
             me->DespawnOrUnsummon();
         }
@@ -1443,7 +1443,7 @@ public:
             if (action == ACTION_ESCAPE_FROM_VOID_ZONE)
             {
                 Position pos;
-                pos = me->GetNearPosition(5.0f, 5.3f);
+                me->GetNearPosition(pos, 5.0f, 5.3f);
                 me->GetMotionMaster()->MoveCharge(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), 3.0f);
             }
         }
@@ -1510,7 +1510,7 @@ public:
             if (action == ACTION_ESCAPE_FROM_VOID_ZONE)
             {
                 Position pos;
-                pos = me->GetNearPosition(5.0f, 6.0f);
+                me->GetNearPosition(pos, 5.0f, 6.0f);
                 me->GetMotionMaster()->MoveCharge(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), 3.0f);
             }
         }
@@ -1608,7 +1608,7 @@ public:
             if (action == ACTION_ESCAPE_FROM_VOID_ZONE)
             {
                 Position pos;
-                pos = me->GetNearPosition(5.0f, 5.3f);
+                me->GetNearPosition(pos, 5.0f, 5.3f);
                 me->GetMotionMaster()->MoveCharge(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), 3.0f);
             }
         }

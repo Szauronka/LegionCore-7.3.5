@@ -19,8 +19,6 @@
 #ifndef DEF_STEAM_VAULT_H
 #define DEF_STEAM_VAULT_H
 
-#define DataHeader "SV"
-
 #define TYPE_HYDROMANCER_THESPIA        1
 #define TYPE_MEKGINEER_STEAMRIGGER      2
 #define TYPE_WARLORD_KALITHRESH         3

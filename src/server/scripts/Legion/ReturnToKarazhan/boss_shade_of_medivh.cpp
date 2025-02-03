@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "return_to_karazhan.h"
 
 enum Says
@@ -373,7 +377,7 @@ public:
             {
                 for (uint8 i = 0; i < 5; i++)
                 {
-                    pos = GetCaster()->GetNearPosition(20.0f, frand(float(-M_PI/3), float(M_PI/3)));
+                    GetCaster()->GetNearPosition(pos, 20.0f, frand(-M_PI/3, M_PI/3));
                     GetCaster()->SendSpellCreateVisual(GetSpellInfo(), &pos);
                 }
                 tickTimer = 1000;

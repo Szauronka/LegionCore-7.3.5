@@ -32,7 +32,39 @@ MembershipRequest::MembershipRequest(MembershipRequest const& settings) : _comme
 }
 
 MembershipRequest::MembershipRequest(ObjectGuid const& playerGUID, ObjectGuid const& guildId, uint32 availability, uint32 classRoles, uint32 playStyle, std::string& comment, time_t submitTime) : _guildId(guildId), _playerGUID(playerGUID), _time(submitTime), _comment(comment), _availability(availability), _classRoles(classRoles), _playStyle(playStyle) {}
-MembershipRequest::MembershipRequest() : _time(GameTime::GetGameTime()), _availability(0), _classRoles(0), _playStyle(0) { }
+MembershipRequest::MembershipRequest() : _time(time(nullptr)), _availability(0), _classRoles(0), _playStyle(0) { }
+
+uint8 MembershipRequest::GetClass() const
+{
+    if (auto const& nameData = sWorld->GetCharacterInfo(_playerGUID))
+        return nameData->Class;
+
+    return 0;
+}
+
+uint8 MembershipRequest::GetLevel() const
+{
+    if (auto const& nameData = sWorld->GetCharacterInfo(_playerGUID))
+        return nameData->Level;
+
+    return 1;
+}
+
+std::string const& MembershipRequest::GetName() const
+{
+    if (auto const& nameData = sWorld->GetCharacterInfo(_playerGUID))
+        return nameData->Name;
+
+    return "";
+}
+
+uint8 MembershipRequest::GetGender() const
+{
+    if (auto const& nameData = sWorld->GetCharacterInfo(_playerGUID))
+        return nameData->Sex;
+
+    return 0;
+}
 
 time_t MembershipRequest::GetSubmitTime() const
 {
@@ -117,14 +149,14 @@ void GuildFinderMgr::LoadFromDB()
 
 void GuildFinderMgr::LoadGuildSettings()
 {
-    TC_LOG_INFO("server.loading", "Loading guild finder guild-related settings...");
+    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, "Loading guild finder guild-related settings...");
     //                                                           0                1             2                  3             4           5             6         7
     QueryResult result = CharacterDatabase.Query("SELECT gfgs.guildId, gfgs.availability, gfgs.classRoles, gfgs.interests, gfgs.level, gfgs.listed, gfgs.comment, c.race "
         "FROM guild_finder_guild_settings gfgs LEFT JOIN guild_member gm ON gm.guildid=gfgs.guildId LEFT JOIN characters c ON c.guid = gm.guid LIMIT 1");
 
     if (!result)
     {
-        TC_LOG_INFO("server.loading", ">> Loaded 0 guild finder guild-related settings. Table `guild_finder_guild_settings` is empty.");
+        TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 guild finder guild-related settings. Table `guild_finder_guild_settings` is empty.");
         return;
     }
 
@@ -150,18 +182,18 @@ void GuildFinderMgr::LoadGuildSettings()
         ++count;
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u guild finder guild-related settings in %u ms.", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u guild finder guild-related settings in %u ms.", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void GuildFinderMgr::LoadMembershipRequests()
 {
-    TC_LOG_INFO("server.loading", "Loading guild finder membership requests...");
+    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, "Loading guild finder membership requests...");
     //                                                      0         1           2            3           4         5         6
     QueryResult result = CharacterDatabase.Query("SELECT guildId, playerGuid, availability, classRole, interests, comment, submitTime FROM guild_finder_applicant");
 
     if (!result)
     {
-        TC_LOG_INFO("server.loading", ">> Loaded 0 guild finder membership requests. Table `guild_finder_applicant` is empty.");
+        TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 guild finder membership requests. Table `guild_finder_applicant` is empty.");
         return;
     }
 
@@ -185,7 +217,7 @@ void GuildFinderMgr::LoadMembershipRequests()
         ++count;
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u guild finder membership requests in %u ms.", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u guild finder membership requests in %u ms.", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 GuildFinderMgr* GuildFinderMgr::instance()
@@ -198,8 +230,8 @@ void GuildFinderMgr::AddMembershipRequest(ObjectGuid const& guildGuid, Membershi
 {
     _membershipRequests[guildGuid].push_back(request);
 
-    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_GUILD_FINDER_APPLICANT);
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_GUILD_FINDER_APPLICANT);
     stmt->setUInt64(0, request.GetGuildGuid().GetCounter());
     stmt->setUInt64(1, request.GetPlayerGUID().GetCounter());
     stmt->setUInt8(2, request.GetAvailability());
@@ -229,9 +261,9 @@ void GuildFinderMgr::RemoveAllMembershipRequestsFromPlayer(ObjectGuid const& pla
         if (itr2 == itr.second.end())
             return;
 
-        CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_FINDER_APPLICANT);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_FINDER_APPLICANT);
         stmt->setUInt64(0, itr2->GetGuildGuid().GetCounter());
         stmt->setUInt64(1, itr2->GetPlayerGUID().GetCounter());
         trans->Append(stmt);
@@ -254,9 +286,9 @@ void GuildFinderMgr::RemoveMembershipRequest(ObjectGuid const& playerId, ObjectG
     if (itr == _membershipRequests[guildId].end())
         return;
 
-    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_FINDER_APPLICANT);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_FINDER_APPLICANT);
     stmt->setUInt64(0, itr->GetGuildGuid().GetCounter());
     stmt->setUInt64(1, itr->GetPlayerGUID().GetCounter());
     trans->Append(stmt);
@@ -348,9 +380,9 @@ void GuildFinderMgr::SetGuildSettings(ObjectGuid const& guildGuid, LFGuildSettin
 {
     _guildSettings[guildGuid] = settings;
 
-    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_GUILD_FINDER_GUILD_SETTINGS);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_GUILD_FINDER_GUILD_SETTINGS);
     stmt->setUInt64(0, settings.GetGUID().GetCounter());
     stmt->setUInt8(1, settings.GetAvailability());
     stmt->setUInt8(2, settings.GetClassRoles());
@@ -373,11 +405,11 @@ void GuildFinderMgr::DeleteGuild(ObjectGuid const& guildId)
     auto itr = _membershipRequests[guildId].begin();
     while (itr != _membershipRequests[guildId].end())
     {
-        CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
         ObjectGuid applicant = itr->GetPlayerGUID();
 
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_FINDER_APPLICANT);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_FINDER_APPLICANT);
         stmt->setUInt64(0, itr->GetGuildGuid().GetCounter());
         stmt->setUInt64(1, applicant.GetCounter());
         trans->Append(stmt);
@@ -417,19 +449,16 @@ void GuildFinderMgr::SendApplicantListUpdate(Guild& guild)
         WorldPackets::Guild::LFGuildRecruitData data;
         data.RecruitGUID = x.GetPlayerGUID();
         data.RecruitVirtualRealm = GetVirtualRealmAddress();
-        data.Comment = x.GetComment();
+        data.CharacterClass = x.GetClass();
+        data.CharacterGender = x.GetGender();
+        data.CharacterLevel = x.GetLevel();
         data.ClassRoles = x.GetClassRoles();
         data.PlayStyle = x.GetPlayStyle();
         data.Availability = x.GetAvailability();
-        data.SecondsSinceCreated = GameTime::GetGameTime() - x.GetSubmitTime();
-        data.SecondsUntilExpiration = x.GetExpiryTime() - GameTime::GetGameTime();
-        if (CharacterInfo const* charInfo = sWorld->GetCharacterInfo(data.RecruitGUID))
-        {
-            data.Name = charInfo->Name;
-            data.CharacterClass = charInfo->Class;
-            data.CharacterGender = charInfo->Sex;
-            data.CharacterLevel = charInfo->Level;
-        }
+        data.SecondsSinceCreated = time(nullptr) - x.GetSubmitTime();
+        data.SecondsUntilExpiration = x.GetExpiryTime() - time(nullptr);
+        data.Name = x.GetName();
+        data.Comment = x.GetComment();
         recruit.Recruits.push_back(data);
     }
 
@@ -451,19 +480,16 @@ void GuildFinderMgr::SendMembershipRequestListUpdate(Player& player)
         WorldPackets::Guild::LFGuildRecruitData data;
         data.RecruitGUID = x.GetPlayerGUID();
         data.RecruitVirtualRealm = GetVirtualRealmAddress();
-        data.Comment = x.GetComment();
+        data.CharacterClass = x.GetClass();
+        data.CharacterGender = x.GetGender();
+        data.CharacterLevel = x.GetLevel();
         data.ClassRoles = x.GetClassRoles();
         data.PlayStyle = x.GetPlayStyle();
         data.Availability = x.GetAvailability();
-        data.SecondsSinceCreated = GameTime::GetGameTime() - x.GetSubmitTime();
-        data.SecondsUntilExpiration = x.GetExpiryTime() - GameTime::GetGameTime();
-        if (CharacterInfo const* charInfo = sWorld->GetCharacterInfo(data.RecruitGUID))
-        {
-            data.Name = charInfo->Name;
-            data.CharacterClass = charInfo->Class;
-            data.CharacterGender = charInfo->Sex;
-            data.CharacterLevel = charInfo->Level;
-        }
+        data.SecondsSinceCreated = time(nullptr) - x.GetSubmitTime();
+        data.SecondsUntilExpiration = x.GetExpiryTime() - time(nullptr);
+        data.Name = x.GetName();
+        data.Comment = x.GetComment();
         recruits.Recruits.push_back(data);
     }
 

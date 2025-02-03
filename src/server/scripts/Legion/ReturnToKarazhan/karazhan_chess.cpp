@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "return_to_karazhan.h"
 
 #define SIZE_ONE_BOX  5.9f
@@ -40,7 +44,7 @@ public:
         {
             if (spell->Id != 229468)
                 return;
-            if (!me->IsAlive())
+            if (!me->isAlive())
                 return;
             switch(me->GetEntry())
             {

@@ -95,11 +95,9 @@ public:
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
-            // wrack soul is heroic only
             if (wracktimer <= diff)
             {
-                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30.0f, true);
-                if (GetDifficultyID() == DIFFICULTY_HEROIC && target)
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30.0f, true))
                     DoCast(target, SPELL_WRACK_SOUL);
                 wracktimer = 12000;
             }

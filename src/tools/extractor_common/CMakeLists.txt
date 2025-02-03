@@ -19,6 +19,7 @@ target_link_libraries(extractor_common
     trinity-core-interface
   PUBLIC
     casc
+    shared
     common)
 
 target_include_directories(extractor_common

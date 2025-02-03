@@ -92,11 +92,12 @@ class boss_drakos : public CreatureScript
                     {
                         case EVENT_BOMB_SUMMON:
                             {
-                                Position position = me->GetPosition();
+                                Position position;
+                                me->GetPosition(&position);
 
                                 for (uint8 i = 0; i <= (postPull ? 3 : 0); i++)
                                 {
-                                    position = me->GetRandomNearPosition(frand(0.0f, 10.0f));
+                                    me->GetRandomNearPosition(position, frand(0.0f, 10.0f));
                                     me->SummonCreature(NPC_UNSTABLE_SPHERE, position);
                                 }
                             }

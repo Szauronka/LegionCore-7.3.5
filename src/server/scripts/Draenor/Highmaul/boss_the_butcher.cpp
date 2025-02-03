@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 # include "highmaul.hpp"
+#include "SpellAuraEffects.h"
 
 Position const g_MaggotSpawnPos[MaxMaggotToKill] =
 {
@@ -389,7 +390,9 @@ struct boss_the_butcher : public BossAI
         if (action == MaggotKilled)
         {
             std::vector<uint8> indexes = {0, 1, 2, 3, 4, 5};
-            Trinity::Containers::RandomShuffle(indexes);
+            std::random_device rd;
+            std::mt19937 g(rd());
+            std::shuffle(indexes.begin(), indexes.end(), g);
 
             for (uint8 i : indexes)
             {
@@ -493,7 +496,7 @@ struct boss_the_butcher : public BossAI
 
                 for (uint8 i = 0; i < count; ++i)
                 {
-                    float o = frand(0, float(2 * M_PI));
+                    float o = frand(0, 2 * M_PI);
                     float x = posX + (radius * cos(o));
                     float y = posY + (radius * sin(o));
 

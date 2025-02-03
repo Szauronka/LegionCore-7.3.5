@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "the_emerald_nightmare.h"
 
 enum Says
@@ -183,7 +187,7 @@ struct boss_nythendra : public BossAI
             case SPELL_INFESTED_BREATH_FILTER:
             {
                 Position pos;
-                pos = me->GetNearPosition(10.0f, me->GetRelativeAngle(target));
+                me->GetNearPosition(pos, 10.0f, me->GetRelativeAngle(target));
                 if (auto stalker = me->SummonCreature(NPC_BREATH_STALKER, pos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 10000))
                 {
                     for (uint8 i = 0; i < 5; ++i)

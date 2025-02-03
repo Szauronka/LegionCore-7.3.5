@@ -2,6 +2,9 @@
 #include "OutdoorPvPMgr.h"
 #include "AreaTrigger.h"
 #include "AreaTriggerAI.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
 
 enum Misc
 {
@@ -173,7 +176,7 @@ public:
             {
             case STAGE_INTRO:
             {
-                uint16 maxTimer = 180;
+                uint16 maxTimer = sWorld->getBoolConfig(CONFIG_IS_TEST_SERVER) ? 31 : 180;
                 if (m_introCount == maxTimer - 30)
                 {
                     for (uint8 i = 0; i < 8; ++i)
@@ -193,7 +196,7 @@ public:
                                     GetCreatureListWithEntryInGrid(casters, go, 126044, 70.0f);
 
                                     for (auto cre : casters)
-                                        if (cre->IsAlive())
+                                        if (cre->isAlive())
                                             cre->CastSpell(cre, 252832);
                                 }
                             }
@@ -342,7 +345,7 @@ class spell_paraxis_artillery : public SpellScript
             Player* player = obj->ToPlayer();
 
 
-            return player->GetCurrentAreaID() == AREA_WINDIKAR || player->GetCurrentZoneID() != 8899 || !player->IsAlive() || player->HasAura(SPELL_HOLY_SHIELD);
+            return player->GetCurrentAreaID() == AREA_WINDIKAR || player->GetCurrentZoneID() != 8899 || !player->isAlive() || player->HasAura(SPELL_HOLY_SHIELD);
         });
     }
 
@@ -354,7 +357,9 @@ class spell_paraxis_artillery : public SpellScript
 
 void Addsc_paraxis()
 {
-    new OutdoorPvP_Paraxis();
     RegisterCreatureAI(npc_paraxis);
+
     RegisterSpellScript(spell_paraxis_artillery);
+
+    new OutdoorPvP_Paraxis();
 }

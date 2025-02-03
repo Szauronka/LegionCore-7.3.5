@@ -21,11 +21,10 @@
 
 #include "Define.h"
 #include <map>
-#include <functional>
 
 typedef std::multimap<uint64, std::function<void()>> FunctionList;
 
-class TC_COMMON_API FunctionProcessor
+class FunctionProcessor
 {
     public:
         FunctionProcessor();

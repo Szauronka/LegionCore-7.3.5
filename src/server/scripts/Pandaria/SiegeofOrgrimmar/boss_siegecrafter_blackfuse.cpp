@@ -590,7 +590,7 @@ public:
                     if (!PlayerList.isEmpty())
                         for (Map::PlayerList::const_iterator Itr = PlayerList.begin(); Itr != PlayerList.end(); ++Itr)
                             if (Player* player = Itr->getSource())
-                                if (player->IsAlive())
+                                if (player->isAlive())
                                     me->Kill(player, true);
                 }
                 else
@@ -628,12 +628,15 @@ public:
 
                     if (!_pllist.empty())
                     {
-                        Trinity::Containers::RandomShuffle(_pllist);
+                        std::random_device rd;
+                        std::mt19937 g(rd());
+                        std::shuffle(_pllist.begin(), _pllist.end(), g);
+
                         for (std::vector<ObjectGuid>::const_iterator itr = _pllist.begin(); itr != _pllist.end(); itr++)
                         {
                             if (Player* pl = me->GetPlayer(*me, *itr))
                             {
-                                if (pl->IsAlive() && me->GetExactDist(pl) >= 15.0f)
+                                if (pl->isAlive() && me->GetExactDist(pl) >= 15.0f)
                                 {
                                     havetarget = true;
                                     Talk(SAY_SAWBLADE);
@@ -648,7 +651,7 @@ public:
                             {
                                 if (Player* pl = me->GetPlayer(*me, *itr))
                                 {
-                                    if (pl->IsAlive())
+                                    if (pl->isAlive())
                                     {
                                         Talk(SAY_SAWBLADE);
                                         DoCast(pl, SPELL_LAUNCH_SAWBLADE);
@@ -997,7 +1000,7 @@ public:
                 break;
             case NPC_BLACKFUSE_CRAWLER_MINE:
                 if (Player* pl = me->GetPlayer(*me, targetGuid))
-                    if (pl->IsAlive())
+                    if (pl->isAlive())
                         pl->RemoveAurasDueToSpell(SPELL_CRAWLER_MINE_FIXATE_PL);
 
                 if (me->HasAura(SPELL_SUPERHEATED_CRAWLER_MINE))
@@ -1372,7 +1375,7 @@ public:
                 case EVENT_PURSUE:
                 {
                     if (Player* pl = me->GetPlayer(*me, targetGuid))
-                        if (pl->IsAlive())
+                        if (pl->isAlive())
                             pl->RemoveAurasDueToSpell(SPELL_CRAWLER_MINE_FIXATE_PL);
 
                     std::list<Player*>pllist;
@@ -1406,7 +1409,7 @@ public:
                 case EVENT_CHECK_DISTANCE:
                 {
                     Player* pl = me->GetPlayer(*me, targetGuid);
-                    if (pl && pl->IsAlive() && !pl->HasAura(SPELL_ON_CONVEYOR))
+                    if (pl && pl->isAlive() && !pl->HasAura(SPELL_ON_CONVEYOR))
                     {
                         if (IsInControl())
                         {
@@ -1501,7 +1504,7 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             if (me->GetEntry() == NPC_LASER_ARRAY && !me->ToTempSummon())
             {
-                me->SetAnimTier(AnimTier::Fly);
+                me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                 me->AddAura(SPELL_CONVEYOR_DEATH_BEAM_V, me);
                 DoCast(me, SPELL_CONVEYOR_DEATH_BEAM_AT, true);
             }
@@ -1674,7 +1677,8 @@ public:
                         {
                             if (dist != 14.0f)
                             {
-                                Position pos = lturret->GetPosition();
+                                Position pos;
+                                lturret->GetPosition(&pos);
                                 if (Creature* blackfuse = me->GetCreature(*me, instance->GetGuidData(NPC_BLACKFUSE_MAUNT)))
                                 {
                                     if (Creature* _lturret = blackfuse->SummonCreature(NPC_ACTIVATED_LASER_TURRET, pos))
@@ -1739,7 +1743,8 @@ public:
             { 
                 if (GetHitUnit()->ToPlayer())
                 {
-                    Position pos = GetCaster()->GetNearPosition(7.0f, 5.5f);
+                    Position pos;
+                    GetCaster()->GetNearPosition(pos, 7.0f, 5.5f);
                     if (Creature* sawblade = GetCaster()->SummonCreature(NPC_BLACKFUSE_SAWBLADE, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ() + 1.0f, 0.0f, TEMPSUMMON_MANUAL_DESPAWN))
                     {
                         sawblade->AddAura(SPELL_LAUNCH_SAWBLADE_AT, sawblade);

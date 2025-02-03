@@ -1,19 +1,19 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #include "World.h"
@@ -242,7 +242,7 @@ void BattlegroundArathiBasin::_NodeOccupied(uint8 node, TeamId teamID)
     Team team = MS::Battlegrounds::GetTeamByTeamId(teamID);
 
     if (!AddSpiritGuide(node, BgAbSpiritsPos[node], teamID))
-        TC_LOG_ERROR("bg.battleground", "Failed to spawn spirit guide! point: %u, team: %u, ", node, team);
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "Failed to spawn spirit guide! point: %u, team: %u, ", node, team);
 
     uint8 capturedNodes = 0;
     for (uint8 i = 0; i < BG_AB_DYNAMIC_NODES_COUNT; ++i)
@@ -373,9 +373,9 @@ bool BattlegroundArathiBasin::SetupBattleground()
     for (int8 i = 0; i < BG_AB_DYNAMIC_NODES_COUNT; ++i)
     {
         if (!AddObject(BG_AB_OBJECT_BANNER + i, BgABNodes[i], BgABNodePositions[i][0], BgABNodePositions[i][1], BgABNodePositions[i][2], BgABNodePositions[i][3], BgABNodePositions[i][4], BgABNodePositions[i][5], BgABNodePositions[i][6], BgABNodePositions[i][7], RESPAWN_ONE_DAY) ||
-            !AddObject(BG_AB_OBJECT_SPEEDBUFF_STABLES + 3 * i, BGBuffsIDs[0], BgAbBuffPositions[i], Position { }, RESPAWN_ONE_DAY) ||
-            !AddObject(BG_AB_OBJECT_SPEEDBUFF_STABLES + 3 * i + 1, BGBuffsIDs[1], BgAbBuffPositions[i], Position { }, RESPAWN_ONE_DAY) ||
-            !AddObject(BG_AB_OBJECT_SPEEDBUFF_STABLES + 3 * i + 2, BGBuffsIDs[2], BgAbBuffPositions[i], Position { }, RESPAWN_ONE_DAY))
+            !AddObject(BG_AB_OBJECT_SPEEDBUFF_STABLES + 3 * i, BGBuffsIDs[0], BgAbBuffPositions[i], { }, RESPAWN_ONE_DAY) ||
+            !AddObject(BG_AB_OBJECT_SPEEDBUFF_STABLES + 3 * i + 1, BGBuffsIDs[1], BgAbBuffPositions[i], { }, RESPAWN_ONE_DAY) ||
+            !AddObject(BG_AB_OBJECT_SPEEDBUFF_STABLES + 3 * i + 2, BGBuffsIDs[2], BgAbBuffPositions[i], { }, RESPAWN_ONE_DAY))
             return false;
     }
 
@@ -384,7 +384,7 @@ bool BattlegroundArathiBasin::SetupBattleground()
         return false;
 
     for (uint8 i = BG_AB_SPIRIT_ALIANCE; i <= BG_AB_SPIRIT_HORDE; ++i)
-        if (!AddSpiritGuide(i, BgABSpiritGuidePos[i], i == BG_AB_SPIRIT_ALIANCE ? Team::ALLIANCE : Team::HORDE))
+        if (!AddSpiritGuide(i, BgABSpiritGuidePos[i].GetPositionX(), BgABSpiritGuidePos[i].GetPositionY(), BgABSpiritGuidePos[i].GetPositionZ(), BgABSpiritGuidePos[i].GetOrientation(), i == BG_AB_SPIRIT_ALIANCE ? Team::ALLIANCE : Team::HORDE))
             return false;
 
     return true;

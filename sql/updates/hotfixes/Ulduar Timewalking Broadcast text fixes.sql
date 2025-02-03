@@ -1,0 +1,4 @@
+DELETE FROM `broadcast_text` WHERE `ID`=132374;
+INSERT INTO `broadcast_text` (`ID`, `Text`, `Text1`, `EmoteID1`, `EmoteID2`, `EmoteID3`, `EmoteDelay1`, `EmoteDelay2`, `EmoteDelay3`, `EmotesID`, `LanguageID`, `Flags`, `ConditionID`, `SoundEntriesID1`, `SoundEntriesID2`, `VerifiedBuild`) VALUES (132374, NULL, 'Greetings, $n. You probably don\'t remember me, we met next week. Would you like to revisit the Ulduar?', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 26124);
+DELETE FROM `broadcast_text` WHERE `ID`=132376;
+INSERT INTO `broadcast_text` (`ID`, `Text`, `Text1`, `EmoteID1`, `EmoteID2`, `EmoteID3`, `EmoteDelay1`, `EmoteDelay2`, `EmoteDelay3`, `EmotesID`, `LanguageID`, `Flags`, `ConditionID`, `SoundEntriesID1`, `SoundEntriesID2`, `VerifiedBuild`) VALUES (132376, 'Send me into Ulduar. (Timewalking Raid)', 'Send me into Ulduar.', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 26124);

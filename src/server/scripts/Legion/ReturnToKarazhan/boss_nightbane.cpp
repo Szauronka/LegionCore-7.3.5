@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "return_to_karazhan.h"
 #include "Group.h"
 

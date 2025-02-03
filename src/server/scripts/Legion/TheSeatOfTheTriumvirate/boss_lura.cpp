@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     The Seat of the Triumvirate: L'ura [heroic & mythic]
     TODO hp mods to boss and trash
 */
@@ -712,7 +713,7 @@ public:
             Map::PlayerList const &players = me->GetMap()->GetPlayers();
             for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 if (Player* player = itr->getSource()->ToPlayer())
-                    if (!player->isGameMaster() && player->IsAlive())
+                    if (!player->isGameMaster() && player->isAlive())
                             PlayerSelector.push_back(player);
                    
             if (PlayerSelector.empty())

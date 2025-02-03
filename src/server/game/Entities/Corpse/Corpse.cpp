@@ -35,7 +35,7 @@ Corpse::Corpse(CorpseType type) : WorldObject(type != CORPSE_BONES), m_type(type
     m_valuesCount = CORPSE_END;
     _dynamicValuesCount = CORPSE_DYNAMIC_END;
 
-    m_time = GameTime::GetGameTime();
+    m_time = time(nullptr);
 
     lootForBody = false;
     lootRecipient = nullptr;
@@ -81,7 +81,7 @@ bool Corpse::Create(ObjectGuid::LowType guidlow, Player* owner)
 
     if (!IsPositionValid())
     {
-        TC_LOG_ERROR("entities.player", "Corpse (guidlow %lu, owner %s) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
+        TC_LOG_ERROR(LOG_FILTER_PLAYER, "Corpse (guidlow %d, owner %s) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
             guidlow, owner->GetName(), owner->GetPositionX(), owner->GetPositionY());
         return false;
     }
@@ -107,11 +107,11 @@ bool Corpse::Create(ObjectGuid::LowType guidlow, Player* owner)
 void Corpse::SaveToDB()
 {
     // prevent DB data inconsistence problems and duplicates
-    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     DeleteFromDB(trans);
 
     uint16 index = 0;
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CORPSE);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CORPSE);
     stmt->setUInt64(index++, GetGUIDLow());                                           // corpseGuid
     stmt->setUInt64(index++, GetOwnerGUID().GetCounter());                            // guid
     stmt->setFloat (index++, GetPositionX());                                         // posX
@@ -141,16 +141,16 @@ void Corpse::DeleteBonesFromWorld()
 
     if (!corpse)
     {
-        TC_LOG_ERROR("entities.player", "Bones %u not found in world.", GetGUIDLow());
+        TC_LOG_ERROR(LOG_FILTER_PLAYER, "Bones %u not found in world.", GetGUIDLow());
         return;
     }
 
     AddObjectToRemoveList();
 }
 
-void Corpse::DeleteFromDB(CharacterDatabaseTransaction& trans)
+void Corpse::DeleteFromDB(SQLTransaction& trans)
 {
-    CharacterDatabasePreparedStatement* stmt = nullptr;
+    PreparedStatement* stmt = nullptr;
     if (GetType() == CORPSE_BONES)
     {
         // Only specific bones
@@ -178,7 +178,7 @@ time_t const& Corpse::GetGhostTime() const
 
 void Corpse::ResetGhostTime()
 {
-    m_time = GameTime::GetGameTime();
+    m_time = time(nullptr);
 }
 
 CorpseType Corpse::GetType() const
@@ -259,7 +259,7 @@ bool Corpse::LoadCorpseFromDB(ObjectGuid::LowType guid, Field* fields)
 
     if (!IsPositionValid())
     {
-        TC_LOG_ERROR("entities.player", "Corpse (guid: %u, owner: %lu) is not created, given coordinates are not valid (X: %f, Y: %f, Z: %f)",
+        TC_LOG_ERROR(LOG_FILTER_PLAYER, "Corpse (guid: %u, owner: %u) is not created, given coordinates are not valid (X: %f, Y: %f, Z: %f)",
             GetGUIDLow(), GetOwnerGUID().GetCounter(), posX, posY, posZ);
         return false;
     }

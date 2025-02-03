@@ -114,7 +114,7 @@ uint32 GameObjectTemplate::GetTrackingQuestId() const
         break;
     }
 
-    if (auto playerCondition = sPlayerConditionStore.LookupEntry(playerConditionID))
+    if (auto playerCondition = sPlayerConditionStore[playerConditionID])
         return playerCondition->PrevQuestID[1];
     return 0;
 }
@@ -249,26 +249,6 @@ uint32 GameObjectTemplate::GetEventScriptId() const
         return gatheringNode.triggeredEvent;
     default: 
         return 0;
-    }
-}
-
-uint32 GameObjectTemplate::GetTrivialSkillHigh() const
-{
-    switch (type)
-    {
-        case GAMEOBJECT_TYPE_CHEST:          return chest.trivialSkillHigh;
-        case GAMEOBJECT_TYPE_GATHERING_NODE: return gatheringNode.trivialSkillHigh;
-        default: return 0;
-    }
-}
-
-uint32 GameObjectTemplate::GetTrivialSkillLow() const
-{
-    switch (type)
-    {
-        case GAMEOBJECT_TYPE_CHEST:          return chest.trivialSkillLow;
-        case GAMEOBJECT_TYPE_GATHERING_NODE: return gatheringNode.trivialSkillLow;
-        default: return 0;
     }
 }
 

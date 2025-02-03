@@ -1,5 +1,14 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "AreaTriggerAI.h"
 #include "antorus.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "SpellScript.h"
+#include "SpellAuraEffects.h"
 
 enum Says
 {
@@ -228,7 +237,7 @@ struct boss_kingaroth : BossAI
             case SPELL_RUINER_FILTER:
             {
                 Position pos;
-                pos = me->GetNearPosition(35.0f, me->GetRelativeAngle(target));
+                me->GetNearPosition(pos, 35.0f, me->GetRelativeAngle(target));
                 me->CastSpell(pos, SPELL_RUINER_SUMMON, true);
                 break;
             }
@@ -417,7 +426,7 @@ struct boss_kingaroth : BossAI
                         float angle = frand(0.0f, 6.28f);
                         for (uint8 i = 0; i < 5; ++i)
                         {
-                            pos = me->GetNearPosition(40.0f, angle);
+                            me->GetNearPosition(pos, 40.0f, angle);
                             angle += frand(1.0f, 1.25f);
                             me->CastSpell(pos, SPELL_RUINATION_SUMMON, true);
                             me->CastSpell(pos, SPELL_RUINATION_MISSILE, true);
@@ -523,7 +532,7 @@ struct npc_kingaroth_ruiner : public ScriptedAI
 
             for (uint8 i = 0; i < 6; ++i)
             {
-                pos = caster->GetNearPosition(35.0f, angle);
+                caster->GetNearPosition(pos, 35.0f, angle);
                 path[i] = G3D::Vector3(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
                 angle += direction;
             }
@@ -720,7 +729,7 @@ struct npc_kingaroth_garothi : public ScriptedAI
         if (spellId == SPELL_INITIALIZING)
         {
             Position pos;
-            pos = me->GetNearPosition(40.0f, 0.0f);
+            me->GetNearPosition(pos, 40.0f, 0.0f);
             me->GetMotionMaster()->MovePoint(1, pos);
         }
     }
@@ -859,7 +868,8 @@ class spell_kingaroth_diabolic_bomb : public SpellScript
         if (!GetCaster())
             return;
 
-        WorldLocation loc = WorldLocation(GetCaster()->GetMapId(), GetCaster()->GetNearPosition(frand(23.0f, 45.0f), frand(0.0f, 6.28f)));
+        WorldLocation loc;
+        GetCaster()->GetNearPosition(loc, frand(23.0f, 45.0f), frand(0.0f, 6.28f));
         SetExplTargetDest(loc);
     }
 
@@ -1043,11 +1053,13 @@ void AddSC_boss_kingaroth()
     RegisterCreatureAI(npc_kingaroth_apocalypse_blast_stalker);
     RegisterCreatureAI(npc_kingaroth_garothi);
     RegisterCreatureAI(npc_kingaroth_annihilation_trigger);
+
     RegisterSpellScript(spell_kingaroth_diabolic_bomb);
     RegisterSpellScript(spell_kingaroth_diabolic_bomb_dmg);
     RegisterSpellScript(spell_kingaroth_annihilation_dmg);
     RegisterAuraScript(spell_kingaroth_energize_periodic);
     RegisterAuraScript(spell_kingaroth_apocalypse_protocol);
     RegisterAuraScript(spell_kingaroth_initializing);
+
     RegisterAreaTriggerAI(at_kingaroth_annihilation);
 }

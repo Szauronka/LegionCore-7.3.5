@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "AreaTriggerAI.h"
 #include "tomb_of_sargeras.h"
 
@@ -137,7 +141,7 @@ struct boss_sisters_of_the_moon : BossAI
 {
     explicit boss_sisters_of_the_moon(Creature* creature) : BossAI(creature, DATA_SISTERS_OF_THEMOON)
     {
-        if (me->IsAlive())
+        if (me->isAlive())
         {
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
@@ -179,7 +183,7 @@ struct boss_sisters_of_the_moon : BossAI
             case ACTION_2: //Despawn after evade 
             {
                 if (instance->GetBossState(DATA_SISTERS_OF_THEMOON) != NOT_STARTED)
-                {
+               {
                     instance->SetBossState(DATA_SISTERS_OF_THEMOON, NOT_STARTED);
 
                     if (auto kasparian = Creature::GetCreature(*me, sistersVector[0]))
@@ -199,7 +203,7 @@ struct boss_sisters_of_the_moon : BossAI
                             sister->SetReactState(REACT_PASSIVE);
                             sister->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                             sister->DespawnOrUnsummon(200);
-                        }
+                         }
                     }
                     AddDelayedCombat(5000, [=] () -> void { DoAction(ACTION_1); });
                 }
@@ -225,7 +229,7 @@ struct boss_sisters_of_the_moon : BossAI
                     for (auto const& guid : sistersVector)
                     {
                         if (auto sister = Creature::GetCreature(*me, guid))
-                            if (sister->IsAlive() && !sister->isInCombat())
+                            if (sister->isAlive() && !sister->isInCombat())
                                 sister->AI()->DoZoneInCombat(sister, 100.0f);
                     }
                 }

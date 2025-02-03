@@ -1,3 +1,7 @@
+// ==============
+//  UwoW.biz
+// ==============
+
 #include "throne_of_the_tides.h"
 #include "Group.h"
 #include "LFGMgr.h"
@@ -117,7 +121,7 @@ class npc_neptulon : public CreatureScript
                 if (instance->GetBossState(DATA_COMMANDER_ULTHOK) != DONE || instance->GetBossState(DATA_OZUMAT) == IN_PROGRESS || instance->GetBossState(DATA_OZUMAT) == DONE)
                     return false;
 
-                player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_READY, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+                player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_READY, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
                 player->SEND_GOSSIP_MENU(1, creature->GetGUID());
             }
             return true;
@@ -395,7 +399,7 @@ class npc_neptulon : public CreatureScript
                 Map::PlayerList const &pPlayerList = me->GetMap()->GetPlayers();
                 if (!pPlayerList.isEmpty())
                     for (Map::PlayerList::const_iterator itr = pPlayerList.begin(); itr != pPlayerList.end(); ++itr)
-                        if (itr->getSource()->IsAlive())
+                        if (itr->getSource()->isAlive())
                             AliveList.push_back(itr->getSource());
 
                 if (!AliveList.empty())
@@ -413,7 +417,7 @@ class npc_neptulon : public CreatureScript
 
                 if (!PlayerList.isEmpty())
                     for (Map::PlayerList::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
-                        if (itr->getSource()->IsAlive())
+                        if (itr->getSource()->isAlive())
                             return true;
 
                 return false;

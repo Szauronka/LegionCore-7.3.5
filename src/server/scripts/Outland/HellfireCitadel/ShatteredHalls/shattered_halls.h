@@ -19,8 +19,6 @@
 #ifndef DEF_SHATTERED_H
 #define DEF_SHATTERED_H
 
-#define DataHeader "SH"
-
 #define TYPE_NETHEKURSE         1
 #define DATA_NETHEKURSE         2
 #define DATA_NETHEKURSE_DOOR    3

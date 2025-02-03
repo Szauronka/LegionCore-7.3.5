@@ -1,11 +1,14 @@
 /*
+    https://uwow.biz/
     Dungeon : Court of Stars 110
     Encounter: Patrol Captain Gerdo
     Mythic: 100%
 */
 
 #include "ScriptMgr.h"
+#include "ScriptedGossip.h"
 #include "ScriptedCreature.h"
+#include "SpellScript.h"
 #include "court_of_stars.h"
 
 enum Says
@@ -138,13 +141,13 @@ public:
                         DoCast(SPELL_RESONANT_SLASH);
                         float angle = 0.0f;
                         Position pos;
-                        pos = me->GetNearPosition(4.0f, angle);
+                        me->GetNearPosition(pos, 4.0f, angle);
                         if (Creature* frontTrig = me->SummonCreature(NPC_GERDO_TRIG_FRONT, pos))
                         {
                             angle += 3.14f;
                             frontTrig->CastSpell(frontTrig, SPELL_RESONANT_SLASH_FRONT);
                         }
-                        pos = me->GetNearPosition(4.0f, angle);
+                        me->GetNearPosition(pos, 4.0f, angle);
                         if (Creature* backTrig = me->SummonCreature(NPC_GERDO_TRIG_BACK, pos))
                             backTrig->CastSpell(backTrig, SPELL_RESONANT_SLASH_BACK);
                         events.RescheduleEvent(EVENT_RESONANT_SLASH, 12000);
@@ -282,6 +285,8 @@ public:
         void IsSummonedBy(Unit* summoner) override
         {
             me->GetMotionMaster()->MovePath(9100402, false);  //213505
+			me->setFaction(35);
+			me->SetFlag(UNIT_FLAG_IMMUNE_TO_PC, UNIT_FLAG_PACIFIED);
             timer = 13000;
             event = false;
         }
@@ -308,7 +313,7 @@ public:
                 else
                 {
                     if (Unit* owner = me->ToTempSummon()->GetSummoner())
-                        owner->CastSpell(owner, 208703, true);
+                        //owner->CastSpell(owner, 208703, true);
                     me->DespawnOrUnsummon(3000);
                 }
             } else timer -= diff;

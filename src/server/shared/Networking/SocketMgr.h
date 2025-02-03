@@ -1,5 +1,5 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -24,6 +24,8 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <memory>
 
+using boost::asio::ip::tcp;
+
 template<class SocketType>
 class SocketMgr
 {
@@ -37,25 +39,16 @@ public:
     {
         ASSERT(threadCount > 0);
 
-        AsyncAcceptor* acceptor = nullptr;
         try
         {
-            acceptor = new AsyncAcceptor(ioContext, bindIp, port);
+            _acceptor = new AsyncAcceptor(ioContext, bindIp, port);
         }
         catch (boost::system::system_error const& err)
         {
-            TC_LOG_ERROR("network", "Exception caught in SocketMgr.StartNetwork (%s:%u): %s", bindIp.c_str(), port, err.what());
+            TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "Exception caught in SocketMgr.StartNetwork (%s:%u): %s", bindIp.c_str(), port, err.what());
             return false;
         }
 
-        if (!acceptor->Bind())
-        {
-            TC_LOG_ERROR("network", "StartNetwork failed to bind socket acceptor");
-            delete acceptor;
-            return false;
-        }
-
-        _acceptor = acceptor;
         _threadCount = threadCount;
         _threads = CreateThreads();
 
@@ -63,8 +56,6 @@ public:
 
         for (int32 i = 0; i < _threadCount; ++i)
             _threads[i].Start();
-
-        _acceptor->SetSocketFactory([this]() { return GetSocketForAccept(); });
 
         return true;
     }
@@ -93,7 +84,7 @@ public:
                 _threads[i].Wait();
     }
 
-    virtual void OnSocketOpen(boost::asio::ip::tcp::socket&& sock, uint32 threadIndex)
+    virtual void OnSocketOpen(tcp::socket&& sock, uint32 threadIndex)
     {
         try
         {
@@ -104,7 +95,7 @@ public:
         }
         catch (boost::system::system_error const& err)
         {
-            TC_LOG_WARN("network", "Failed to retrieve client's remote address %s", err.what());
+            TC_LOG_INFO(LOG_FILTER_NETWORKIO, "Failed to retrieve client's remote address %s", err.what());
         }
     }
 
@@ -121,14 +112,14 @@ public:
         return min;
     }
 
-    std::pair<boost::asio::ip::tcp::socket*, uint32> GetSocketForAccept()
+    std::pair<tcp::socket*, uint32> GetSocketForAccept()
     {
         uint32 threadIndex = SelectThreadWithMinConnections();
         return std::make_pair(_threads[threadIndex].GetSocketForAccept(), threadIndex);
     }
 
 protected:
-    SocketMgr() : _acceptor(nullptr), _threads(nullptr), _threadCount(0)
+    SocketMgr() : _acceptor(nullptr), _threads(nullptr), _threadCount(1)
     {
     }
 

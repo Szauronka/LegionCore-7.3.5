@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "trial_of_valor.h"
 #include "QuestData.h"
 

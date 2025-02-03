@@ -250,7 +250,7 @@ struct boss_twin_baseAI : public BossAI
         Talk(SAY_DEATH);
         if (Creature* pSister = GetSister())
         {
-            if (!pSister->IsAlive())
+            if (!pSister->isAlive())
             {
                 me->SetFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
                 pSister->SetFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);

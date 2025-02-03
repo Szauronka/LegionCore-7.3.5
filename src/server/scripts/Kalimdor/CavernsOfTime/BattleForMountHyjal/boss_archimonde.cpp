@@ -120,7 +120,7 @@ public:
             {
                 if (Unit* Archimonde = Unit::GetUnit(*me, ArchimondeGUID))
                 {
-                    if (Archimonde->HealthBelowPct(2) || !Archimonde->IsAlive())
+                    if (Archimonde->HealthBelowPct(2) || !Archimonde->isAlive())
                         DoCast(me, SPELL_DENOUEMENT_WISP);
                     else
                         DoCast(Archimonde, SPELL_ANCIENT_SPARK);
@@ -211,7 +211,8 @@ public:
                 }
                 else
                 {
-                    Position pos = me->GetRandomNearPosition(40);
+                    Position pos;
+                    me->GetRandomNearPosition(pos, 40);
                     me->GetMotionMaster()->MovePoint(0, pos.m_positionX, pos.m_positionY, pos.m_positionZ);
                 }
 
@@ -368,7 +369,7 @@ public:
             for (; itr != m_threatlist.end(); ++itr)
             {
                 Unit* unit = Unit::GetUnit(*me, (*itr)->getUnitGuid());
-                if (unit && unit->IsAlive())
+                if (unit && unit->isAlive())
                     targets.push_back(unit);
             }
 

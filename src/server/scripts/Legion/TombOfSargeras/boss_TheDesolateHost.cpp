@@ -1,3 +1,7 @@
+/*
+https://uwow.biz/
+*/
+
 #include "AreaTriggerAI.h"
 #include "tomb_of_sargeras.h"
 
@@ -153,7 +157,7 @@ struct boss_the_desolate_host_generic : BossAI
 {
     explicit boss_the_desolate_host_generic(Creature* creature) : BossAI(creature, DATA_THE_DESOLATE_HOST), summons(me)
     {
-        if (me->IsAlive())
+        if (me->isAlive())
         {
             me->SetReactState(REACT_PASSIVE);
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
@@ -753,7 +757,7 @@ struct npc_tos_desolate_host : ScriptedAI
                     me->SetVisible(true);
                     Talk(SAY_HOST_AGGRO);
                     DoCast(me, SPELL_SHARED_HEALTH, true);
-                    me->SendPlaySpellVisualKit(VISUAL_KIT_1, 0);
+                    me->SendPlaySpellVisualKit(0, VISUAL_KIT_1);
                     me->HandleEmoteCommand(EMOTE_ONESHOT_BATTLE_ROAR);
                     me->SetReactState(REACT_AGGRESSIVE, 2000);
                     DoZoneInCombat(me, 100.0f);
@@ -868,7 +872,7 @@ struct npc_tos_reanimated_templar : ScriptedAI
         if (!mirror)
         {
             if (instance->GetBossState(DATA_THE_DESOLATE_HOST) == IN_PROGRESS)
-                me->SendPlaySpellVisualKit(VISUAL_KIT_2, 0);
+                me->SendPlaySpellVisualKit(0, VISUAL_KIT_2);
             else
                 me->SetStandState(UNIT_STAND_STATE_KNEEL);
 
@@ -973,7 +977,7 @@ struct npc_tos_ghastly_bonewarden : ScriptedAI
         if (!mirror)
         {
             if (instance->GetBossState(DATA_THE_DESOLATE_HOST) == IN_PROGRESS)
-                me->SendPlaySpellVisualKit(VISUAL_KIT_2, 0);
+                me->SendPlaySpellVisualKit(0, VISUAL_KIT_2);
             else
                 DoCast(me, SPELL_SHADOW_CHANNELLING, true);
 
@@ -1086,7 +1090,7 @@ struct npc_tos_fallen_priestess : ScriptedAI
         if (!mirror)
         {
             if (instance->GetBossState(DATA_THE_DESOLATE_HOST) == IN_PROGRESS)
-                me->SendPlaySpellVisualKit(VISUAL_KIT_2, 0);
+                me->SendPlaySpellVisualKit(0, VISUAL_KIT_2);
             else
                 DoCast(me, SPELL_SOUL_REND, true);
 
@@ -1196,7 +1200,7 @@ struct npc_tos_soul_residue : ScriptedAI
         if (!mirror)
         {
             if (instance->GetBossState(DATA_THE_DESOLATE_HOST) == IN_PROGRESS)
-                me->SendPlaySpellVisualKit(VISUAL_KIT_2, 0);
+                me->SendPlaySpellVisualKit(0, VISUAL_KIT_2);
 
             if (IsMythicRaid())
                 DoCast(me, SPELL_BOUND_ESSENCE_AURA, true);
@@ -1292,7 +1296,7 @@ struct npc_tos_soul_residue : ScriptedAI
                 if (!targetGUID.IsEmpty())
                 {
                     auto player = Player::GetPlayer(*me, targetGUID);
-                    if (!player || !player->IsAlive() || (!mirror && !player->HasAura(SPELL_SPIRIT_REALM)) || (mirror && player->HasAura(SPELL_SPIRIT_REALM)))
+                    if (!player || !player->isAlive() || (!mirror && !player->HasAura(SPELL_SPIRIT_REALM)) || (mirror && player->HasAura(SPELL_SPIRIT_REALM)))
                     {
                         targetGUID.Clear();
                         me->StopAttack(true);
@@ -1371,7 +1375,7 @@ class spell_tos_quietus_filter : public SpellScript
                 for (auto const& target : targets)
                 {
                     if (auto player = target->ToPlayer())
-                        if (player->IsAlive() && !player->HasAura(SPELL_SPIRIT_REALM))
+                        if (player->isAlive() && !player->HasAura(SPELL_SPIRIT_REALM))
                             tempTargets.push_back(target);
                 }
             }
@@ -1380,7 +1384,7 @@ class spell_tos_quietus_filter : public SpellScript
                 for (auto const& target : targets)
                 {
                     if (auto player = target->ToPlayer())
-                        if (player->IsAlive() && player->HasAura(SPELL_SPIRIT_REALM))
+                        if (player->isAlive() && player->HasAura(SPELL_SPIRIT_REALM))
                             tempTargets.push_back(target);
                 }
             }
@@ -1844,7 +1848,7 @@ class spell_tos_spiritual_barrier_dissonance : public AuraScript
     {
         if (GetTarget())
         {
-            GetTarget()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            GetTarget()->SetFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_NOT_SELECTABLE_MODEL);
 
             if (GetTarget()->IsPlayer())
             {
@@ -1896,7 +1900,7 @@ class spell_tos_spiritual_barrier_dissonance : public AuraScript
     {
         if (GetTarget())
         {
-            GetTarget()->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            GetTarget()->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_NOT_SELECTABLE_MODEL);
 
             if (GetTarget()->IsPlayer())
                 GetTarget()->ToPlayer()->UpdateCustomField();
@@ -1911,7 +1915,7 @@ class spell_tos_spiritual_barrier_dissonance : public AuraScript
             {
                 tickTimer = 3000;
 
-                if (GetUnitOwner() && GetUnitOwner()->GetMap()->IsHeroicPlusRaid() && GetUnitOwner()->IsAlive())
+                if (GetUnitOwner() && GetUnitOwner()->GetMap()->IsHeroicPlusRaid() && GetUnitOwner()->isAlive())
                 {
                     if (auto instance = GetUnitOwner()->GetInstanceScript())
                         if (instance->GetBossState(DATA_THE_DESOLATE_HOST) != IN_PROGRESS)

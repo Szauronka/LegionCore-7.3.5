@@ -1,22 +1,22 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+*
+* This program is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the
+* Free Software Foundation; either version 2 of the License, or (at your
+* option) any later version.
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 
-#ifndef TRINITY_PRODUCER_CONSUMER_QUEUE_H
-#define TRINITY_PRODUCER_CONSUMER_QUEUE_H
+#ifndef _PCQ_H
+#define _PCQ_H
 
 #include <condition_variable>
 #include <mutex>
@@ -27,25 +27,16 @@
 template <typename T>
 class ProducerConsumerQueue
 {
-private:
-    mutable std::mutex _queueLock;
+    std::mutex _queueLock;
     std::queue<T> _queue;
     std::condition_variable _condition;
     std::atomic<bool> _shutdown;
 
 public:
 
-    ProducerConsumerQueue() : _shutdown(false) { }
+    ProducerConsumerQueue<T>() : _shutdown(false) { }
 
-    void Push(T const& value)
-    {
-        std::lock_guard<std::mutex> lock(_queueLock);
-        _queue.push(value);
-
-        _condition.notify_one();
-    }
-
-    void Push(T&& value)
+    void Push(const T& value)
     {
         std::lock_guard<std::mutex> lock(_queueLock);
         _queue.push(std::move(value));
@@ -53,18 +44,11 @@ public:
         _condition.notify_one();
     }
 
-    bool Empty() const
+    bool Empty()
     {
         std::lock_guard<std::mutex> lock(_queueLock);
 
         return _queue.empty();
-    }
-
-    size_t Size() const
-    {
-        std::lock_guard<std::mutex> lock(_queueLock);
-
-        return _queue.size();
     }
 
     bool Pop(T& value)
@@ -74,7 +58,7 @@ public:
         if (_queue.empty() || _shutdown)
             return false;
 
-        value = std::move(_queue.front());
+        value = _queue.front();
 
         _queue.pop();
 
@@ -85,8 +69,6 @@ public:
     {
         std::unique_lock<std::mutex> lock(_queueLock);
 
-        // we could be using .wait(lock, predicate) overload here but it is broken
-        // https://connect.microsoft.com/VisualStudio/feedback/details/1098841
         while (_queue.empty() && !_shutdown)
             _condition.wait(lock);
 
@@ -106,8 +88,7 @@ public:
         {
             T& value = _queue.front();
 
-            if constexpr (std::is_pointer_v<T>)
-                delete value;
+            DeleteQueuedObject(value);
 
             _queue.pop();
         }
@@ -116,6 +97,13 @@ public:
 
         _condition.notify_all();
     }
+
+private:
+    template<typename E = T>
+    typename std::enable_if<std::is_pointer<E>::value>::type DeleteQueuedObject(E& obj) { delete obj; }
+
+    template<typename E = T>
+    typename std::enable_if<!std::is_pointer<E>::value>::type DeleteQueuedObject(E const& /*packet*/) { }
 };
 
-#endif // TRINITY_PRODUCER_CONSUMER_QUEUE_H
+#endif

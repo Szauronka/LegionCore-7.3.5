@@ -20,48 +20,27 @@
 
 enum eSpells
 {
-    SPELL_SONG_OF_THE_IMPERATOR     = 123793,
-    SPELL_PHEROMONES_OF_ZEAL        = 123812,
-    SPELL_PHEROMONES_OF_ZEAL_BUFF   = 123833,
-    SPELL_GAS_VISUAL                = 123811,
-    SPELL_SONG_OF_THE_EMPRESS       = 123791,
-    SPELL_SONG_OF_THE_EMPRESS_RANGE = 130133,
-    SPELL_INHALE                    = 122852,
-    SPELL_EXHALE                    = 122761,
-    //Platform 1
-    SPELL_NOISE_CANCELLING          = 122707,
-    SPELL_FORCE_AND_VERVE           = 122713,
-    //Platform 2
-    SPELL_ATTENUATION               = 122496,
-    SPELL_BERSERK                   = 47008,
-
-    //Other
-    SPELL_SONIC_RING_VISUAL         = 122334,
-    SPELL_SONIC_RING_VISUAL_H       = 124668,
+    SPELL_SONG_OF_THE_IMPERATOR   = 123793,
+    SPELL_PHEROMONES_OF_ZEAL      = 123812,
+    SPELL_PHEROMONES_OF_ZEAL_BUFF = 123833,
+    SPELL_GAS_VISUAL              = 123811,
 };
 
 enum eEvents
 {
     //Vizier Zorlok
-    EVENT_MELEE_CHECK         = 1,
-    EVENT_GO_LAST_POS         = 2,
-    EVENT_GO_NEXT_PLATFORM    = 3,
-    EVENT_INHALE              = 4,
-    EVENT_EXHALE              = 5,
-    //Platform 1
-    EVENT_FORCE_AND_VERVE     = 6,
-    //Platform 2
-    EVENT_ATTENUATION         = 7,
+    EVENT_GO_LAST_POS         = 6,
+    EVENT_GO_NEXT_PLATFORM    = 7,
 
     //Gas Controller
-    EVENT_CHECK_PLAYERS       = 1,
+    EVENT_CHECK_PLAYERS       = 8,
 };
 
 enum Actions
 {
     //Gas Controller
-    ACTION_GAS_ON             = 1,
-    ACTION_GAS_OFF            = 2,
+    ACTION_GAS_ON             = 3,
+    ACTION_GAS_OFF            = 4,
 };
 
 Position const centerpos = {-2275.27f, 259.1f, 415.34f}; //In air
@@ -72,6 +51,18 @@ Position const platformpos[3] =
     {-2312.74f, 298.69f, 409.89f}, 
     {-2235.27f, 217.29f, 409.89f}, 
     {-2312.05f, 221.74f, 409.89f}, 
+};
+
+Position const bugPos[8] =
+{
+    { -2237.22f, 264.42f, 406.54f, 5.91f },
+    { -2239.55f, 258.53f, 406.54f, 1.39f },
+    { -2271.03f, 223.82f, 406.54f, 3.70f },
+    { -2276.10f, 224.26f, 406.54f, 0.44f },
+    { -2310.10f, 256.39f, 406.54f, 4.44f },
+    { -2309.11f, 261.57f, 406.54f, 4.51f },
+    { -2267.50f, 298.50f, 406.54f, 3.53f },
+    { -2274.91f, 293.97f, 406.54f, 2.53f },
 };
 
 float const curplpos = 409.149f;
@@ -85,32 +76,25 @@ class boss_vizier_zorlok : public CreatureScript
         {
             boss_vizier_zorlokAI(Creature* creature) : BossAI(creature, DATA_VIZIER_ZORLOK)
             {
+                instance = creature->GetInstanceScript();
                 me->SetCanFly(true);
                 me->SetDisableGravity(true);
+                me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
             }
 
+            InstanceScript* instance;
             uint8 newindex, lastindex, flycount;
-            uint8 InhaleCount;
-            uint32 berserkTimer;
-            bool flyMove;
 
-            void Reset()
+            void Reset() override
             {
                 _Reset();
-                events.Reset();
                 GasControl(false);
                 FlyControl(true);
-                flyMove = false;
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveAurasDueToSpell(SPELL_PHEROMONES_OF_ZEAL_BUFF);
-                me->RemoveAurasDueToSpell(SPELL_INHALE);
-                instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PHEROMONES_OF_ZEAL);
-                instance->DoRemoveAurasDueToSpellOnPlayers(122706); // AT buff
                 newindex = 0;
                 lastindex = urand(0, 2);
                 flycount = 0;
-                InhaleCount = 0;
-                berserkTimer = 60 * MINUTE * IN_MILLISECONDS;
             }
 
             void GasControl(bool state)
@@ -119,15 +103,13 @@ class boss_vizier_zorlok : public CreatureScript
                 {
                     if (state)
                     {
-                        //if (Creature* gc = me->GetCreature(*me, instance->GetData64(NPC_GAS_CONTROLLER)))
-                        //    gc->AI()->DoAction(ACTION_GAS_ON);
-                        DoCast(me, SPELL_GAS_VISUAL, true);
+                        if (Creature* gc = me->GetCreature(*me, instance->GetGuidData(NPC_GAS_CONTROLLER)))
+                            gc->AI()->DoAction(ACTION_GAS_ON);
                     }
                     else
                     {
-                        //if (Creature* gc = me->GetCreature(*me, instance->GetData64(NPC_GAS_CONTROLLER)))
-                        //    gc->AI()->DoAction(ACTION_GAS_OFF);
-                        me->RemoveAllAreaObjects();
+                        if (Creature* gc = me->GetCreature(*me, instance->GetGuidData(NPC_GAS_CONTROLLER)))
+                            gc->AI()->DoAction(ACTION_GAS_OFF);
                     }
                 }
             }
@@ -136,34 +118,33 @@ class boss_vizier_zorlok : public CreatureScript
             {
                 if (apply)
                 {
-                    flyMove = true;
                     me->AttackStop();
                     me->SetReactState(REACT_PASSIVE);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL);
                     me->SetCanFly(true);
                     me->SetDisableGravity(true);
+                    me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 }
                 else
                 {
-                    flyMove = false;
                     me->SetCanFly(false);
                     me->SetDisableGravity(false);
+                    me->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
                 }
             }
             
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(Unit* /*who*/) override
             {
                 if (instance)
                     instance->SetBossState(DATA_VIZIER_ZORLOK, IN_PROGRESS);
-
                 FlyControl(true);
                 GasControl(true);
                 GoNextRandomPlatform();
             }
             
-            void MovementInform(uint32 type, uint32 id)
+            void MovementInform(uint32 type, uint32 id) override
             {
                 if (type == POINT_MOTION_TYPE)
                 {
@@ -173,18 +154,8 @@ class boss_vizier_zorlok : public CreatureScript
                         if (flycount < 3)
                             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL);
                         else
-                        {
-                            events.ScheduleEvent(EVENT_MELEE_CHECK, 2000);
-                            events.ScheduleEvent(EVENT_INHALE, 17000);
-                            events.ScheduleEvent(EVENT_EXHALE, 17000);
-                            events.ScheduleEvent(EVENT_FORCE_AND_VERVE, 16000);
-                            events.ScheduleEvent(EVENT_ATTENUATION, 22000);
-                            GasControl(false);
-                            DoCast(me, SPELL_PHEROMONES_OF_ZEAL_BUFF, true);
-                        }
-                        me->RemoveAurasDueToSpell(SPELL_INHALE);
+                            me->AddAura(SPELL_PHEROMONES_OF_ZEAL_BUFF, me);
                         me->SetReactState(REACT_AGGRESSIVE);
-                        DoCast(SPELL_SONG_OF_THE_EMPRESS);
                         DoZoneInCombat(me, 150.0f);
                     }
                 }
@@ -192,65 +163,60 @@ class boss_vizier_zorlok : public CreatureScript
             
             void GoNextRandomPlatform()
             {
-                events.Reset();
-                events.ScheduleEvent(EVENT_MELEE_CHECK, 500);
-                events.ScheduleEvent(EVENT_INHALE, 17000);
-                events.ScheduleEvent(EVENT_EXHALE, 17000);
-
                 do
                 {
                     newindex = urand(0, 2);
                 }
                 while (newindex == lastindex);
 
-                switch (newindex)
-                {
-                    case 0:
-                        events.ScheduleEvent(EVENT_FORCE_AND_VERVE, 16000);
-                        break;
-                    case 1:
-                        events.ScheduleEvent(EVENT_ATTENUATION, 22000);
-                        break;
-                    case 2:
-                        //MK
-                        break;
-                }
-
                 lastindex = newindex;
                 // In future send newindex in id point, for specific platform events.
                 me->GetMotionMaster()->MovePoint(1, platformpos[newindex].GetPositionX(), platformpos[newindex].GetPositionY(), platformpos[newindex].GetPositionZ());
             }
 
-            void DamageTaken(Unit* attacker, uint32 &damage, DamageEffectType dmgType)
+            void DamageTaken(Unit* attacker, uint32 &damage, DamageEffectType dmgType) override
             {
-                if (me->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
-                    if (me->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->m_spellInfo->Id == SPELL_SONG_OF_THE_EMPRESS
-                        || me->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->m_spellInfo->Id == SPELL_SONG_OF_THE_EMPRESS_RANGE)
-                        if (me->IsWithinMeleeRange(me->getVictim()))
-                            me->InterruptSpell(CURRENT_CHANNELED_SPELL);
-
                 if (HealthBelowPct(80) && !flycount ||
                     HealthBelowPct(60) && flycount == 1)
                 {
                     flycount++;
                     FlyControl(true);
-                    me->GetMotionMaster()->MoveJump(centerpos.GetPositionX(), centerpos.GetPositionY(), centerpos.GetPositionZ(), 10.0f, 10.0f);
-                    events.ScheduleEvent(EVENT_GO_NEXT_PLATFORM, 3000);
+                    me->GetMotionMaster()->MoveJump(centerpos.GetPositionX(), centerpos.GetPositionY(), centerpos.GetPositionZ(),10.0f, 10.0f );
+                    events.RescheduleEvent(EVENT_GO_NEXT_PLATFORM, 3000);
                 }
                 else if (HealthBelowPct(40) && flycount == 2)
                 {
                     flycount++;
                     FlyControl(true);
                     GasControl(false);
-                    me->GetMotionMaster()->MoveJump(centerpos.GetPositionX(), centerpos.GetPositionY(), centerpos.GetPositionZ(), 10.0f, 10.0f);
-                    events.ScheduleEvent(EVENT_GO_LAST_POS, 3000);
+                    me->GetMotionMaster()->MoveJump(centerpos.GetPositionX(), centerpos.GetPositionY(), centerpos.GetPositionZ(),10.0f, 10.0f );
+                    events.RescheduleEvent(EVENT_GO_LAST_POS, 3000);
                 }
             }
 
-            void JustDied(Unit* /*killer*/)
+            void SummonedCreatureDies(Creature* summon, Unit* killer) override
+            {
+                if (summon->GetEntry() == 64405)
+                    me->CastSpell(killer, 125785, true);
+            }
+
+            bool CheckAura()
+            {
+                auto const& players = me->GetMap()->GetPlayers();
+                if (!players.isEmpty())
+                    for (auto const& itr : players)
+                        if (Player* player = itr.getSource())
+                        {
+                            if (!player->HasAura(125785))
+                                return false;
+                        }
+
+                return true;
+            }
+            
+            void JustDied(Unit* /*killer*/) override
             {
                 _JustDied();
-
                 Map::PlayerList const& players = me->GetMap()->GetPlayers();
                 if (!players.isEmpty())
                 {
@@ -260,78 +226,37 @@ class boss_vizier_zorlok : public CreatureScript
                             me->GetMap()->ToInstanceMap()->PermBindAllPlayers(pPlayer);
                     }
                 }
+                if (CheckAura())
+                    instance->DoUpdateAchievementCriteria(CRITERIA_TYPE_BE_SPELL_TARGET2, 125782);
             }
 
-            void UpdateAI(uint32 diff)
+            void UpdateAI(uint32 diff) override
             {
                 if (!UpdateVictim())
                     return;
 
-                if (berserkTimer <= diff)
-                {
-                    DoCast(me, SPELL_BERSERK, true);
-                    berserkTimer = 10 * MINUTE * IN_MILLISECONDS;
-                }
-                else berserkTimer -= diff;
-
                 events.Update(diff);
 
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                while (uint32 eventId = events.ExecuteEvent())
+                if (uint32 eventId = events.ExecuteEvent())
                 {
                     switch (eventId)
                     {
-                        case EVENT_MELEE_CHECK:
-                            if (me->getVictim())
-                                if (!me->IsWithinMeleeRange(me->getVictim()) && !flyMove)
-                                    DoCast(me, SPELL_SONG_OF_THE_EMPRESS_RANGE, true);
-                            events.ScheduleEvent(EVENT_MELEE_CHECK, 500);
-                            break;
-                        case EVENT_GO_NEXT_PLATFORM:
-                            GoNextRandomPlatform();
-                            break;
-                        case EVENT_GO_LAST_POS:
-                            me->GetMotionMaster()->MovePoint(1, centerlandpos.GetPositionX(), centerlandpos.GetPositionY(), centerlandpos.GetPositionZ());
-                            events.Reset();
-                            break;
-                        case EVENT_INHALE:
-                            DoCast(SPELL_INHALE);
-                            InhaleCount++;
-                            events.ScheduleEvent(EVENT_INHALE, 18000);
-                            break;
-                        case EVENT_EXHALE:
-                            if (InhaleCount > 1)
-                            {
-                                InhaleCount = 0;
-                                DoCast(SPELL_EXHALE);
-                            }
-                            events.ScheduleEvent(EVENT_EXHALE, 18000);
-                            break;
-                        case EVENT_FORCE_AND_VERVE:
-                            for (uint8 i = 0; i < 3; i++)
-                            {
-                                float angle = urand(0, 6);
-                                float distance = 7 * (i + 0.5);
-                                float x = me->GetPositionX() + distance * std::cos(angle);
-                                float y = me->GetPositionY() + distance * std::sin(angle);
-                                me->CastSpell(x, y, me->GetPositionZ(), SPELL_NOISE_CANCELLING, true);
-                            }
-                            DoCast(SPELL_FORCE_AND_VERVE);
-                            events.ScheduleEvent(EVENT_FORCE_AND_VERVE, 34000);
-                            break;
-                        case EVENT_ATTENUATION:
-                            DoCast(SPELL_ATTENUATION);
-                            events.ScheduleEvent(EVENT_ATTENUATION, 40000);
-                            break;
+                    case EVENT_GO_NEXT_PLATFORM:
+                        GoNextRandomPlatform();
+                        break;
+                    case EVENT_GO_LAST_POS:
+                        me->GetMotionMaster()->MovePoint(1, centerlandpos.GetPositionX(), centerlandpos.GetPositionY(), centerlandpos.GetPositionZ());
+                        for (uint8 i = 0; i < 8; ++i)
+                            me->SummonCreature(64405, bugPos[i]);
+                        break;
                     }
                 }
+
                 DoMeleeAttackIfReady();
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(Creature* creature) const override
         {
             return new boss_vizier_zorlokAI(creature);
         }
@@ -342,9 +267,9 @@ class npc_gas_controller : public CreatureScript
     public:
         npc_gas_controller() : CreatureScript("npc_gas_controller") {}
 
-        struct npc_gas_controllerAI : public ScriptedAI
+        struct npc_gas_controllerAI : public CreatureAI
         {
-            npc_gas_controllerAI(Creature* creature) : ScriptedAI(creature)
+            npc_gas_controllerAI(Creature* creature) : CreatureAI(creature)
             {
                 instance = creature->GetInstanceScript();
                 me->SetReactState(REACT_PASSIVE);
@@ -357,27 +282,27 @@ class npc_gas_controller : public CreatureScript
             EventMap events;
             bool gaseoff;
 
-            void Reset(){}
+            void Reset() override {}
             
-            void DoAction(const int32 action)
+            void DoAction(const int32 action) override
             {
                 switch (action)
                 {
-                    case ACTION_GAS_ON:
-                        DoCast(me, SPELL_GAS_VISUAL);
-                        events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
-                        break;
-                    case ACTION_GAS_OFF:
-                        gaseoff = true;
-                        me->RemoveAllAreaObjects();
-                        break;
+                case ACTION_GAS_ON:
+                    DoCast(me, SPELL_GAS_VISUAL);
+                    events.RescheduleEvent(EVENT_CHECK_PLAYERS, 1000);
+                    break;
+                case ACTION_GAS_OFF:
+                    gaseoff = true;
+                    if (DynamicObject* tr = me->GetDynObject(SPELL_GAS_VISUAL))
+                        tr->RemoveAura();
+                    break;
                 }
             }
 
             void CheckPlayers()
             {
                 if (Map* map = me->GetMap())
-                {
                     if (map->IsDungeon())
                     {
                         Map::PlayerList const &players = map->GetPlayers();
@@ -385,12 +310,12 @@ class npc_gas_controller : public CreatureScript
                         {
                             if (Player* pl = i->getSource())
                             {
-                                if (pl->IsAlive() && pl->GetPositionZ() < curplpos)
+                                if (pl->isAlive() && pl->GetPositionZ() < curplpos)
                                 {
                                     if (!pl->HasAura(SPELL_PHEROMONES_OF_ZEAL))
-                                        me->CastSpell(pl, SPELL_PHEROMONES_OF_ZEAL, true);
+                                        pl->AddAura(SPELL_PHEROMONES_OF_ZEAL, pl);
                                 }
-                                else if (pl->IsAlive() && pl->GetPositionZ() >= curplpos)
+                                else if (pl->isAlive() && pl->GetPositionZ() >= curplpos)
                                     pl->RemoveAurasDueToSpell(SPELL_PHEROMONES_OF_ZEAL);
                             }
                         }
@@ -403,16 +328,15 @@ class npc_gas_controller : public CreatureScript
                                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_PHEROMONES_OF_ZEAL);
                         }
                         else
-                            events.ScheduleEvent(EVENT_CHECK_PLAYERS, 1000);
+                            events.RescheduleEvent(EVENT_CHECK_PLAYERS, 1000);
                     }
-                }
             }
             
-            void EnterEvadeMode(){}
+            void EnterEvadeMode() override {}
 
-            void EnterCombat(Unit* who){}
+            void EnterCombat(Unit* who) override {}
 
-            void UpdateAI(uint32 diff)
+            void UpdateAI(uint32 diff) override
             {
                 events.Update(diff);
 
@@ -425,56 +349,9 @@ class npc_gas_controller : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(Creature* creature) const override
         {
             return new npc_gas_controllerAI(creature);
-        }
-};
-
-//62689, 62716, 62717, 62743, 62744
-class npc_zorlok_sonic_ring : public CreatureScript
-{
-    public:
-        npc_zorlok_sonic_ring() : CreatureScript("npc_zorlok_sonic_ring") {}
-
-        struct npc_zorlok_sonic_ringAI : public ScriptedAI
-        {
-            npc_zorlok_sonic_ringAI(Creature* creature) : ScriptedAI(creature)
-            {
-                instance = creature->GetInstanceScript();
-                me->SetReactState(REACT_PASSIVE);
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            }
-
-            InstanceScript* instance;
-
-            void Reset(){}
-            
-            void IsSummonedBy(Unit* summoner)
-            {
-                DoCast(me, SPELL_SONIC_RING_VISUAL, true);
-                if (me->GetMap()->IsHeroic())
-                    DoCast(me, SPELL_SONIC_RING_VISUAL_H, true);
-                Position pos;
-                pos = me->GetRandomNearPosition(40);
-                me->GetMotionMaster()->MovePoint(1, pos);
-            }
-            
-            void MovementInform(uint32 type, uint32 id)
-            {
-                if (type != POINT_MOTION_TYPE)
-                    return;
-
-                if (id == 1)
-                    me->DespawnOrUnsummon();
-            }
-
-            void UpdateAI(uint32 diff) {}
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_zorlok_sonic_ringAI(creature);
         }
 };
 
@@ -482,5 +359,4 @@ void AddSC_boss_vizier_zorlok()
 {
     new boss_vizier_zorlok();
     new npc_gas_controller();
-    new npc_zorlok_sonic_ring();
 }

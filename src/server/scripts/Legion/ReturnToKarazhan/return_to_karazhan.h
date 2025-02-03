@@ -1,9 +1,11 @@
+/*
+    https://uwow.biz/
+*/
+
 #ifndef RETURN_TO_KARAZHAN_H_
 #define RETURN_TO_KARAZHAN_H_
 
-#include "ScriptPCH.h"
-
-#define DataHeader "RKZ"
+#include "PrecompiledHeaders/ScriptPCH.h"
 
 enum eData
 {

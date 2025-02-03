@@ -1,11 +1,10 @@
 /*
+    http://uwow.biz
     Dungeon : Halls of Valor 100-110
 */
 
 #ifndef HALLS_OF_VALOR_H_
 #define HALLS_OF_VALOR_H_
-
-#define DataHeader "HOV"
 
 enum eData
 {

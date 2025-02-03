@@ -1,10 +1,17 @@
 /*
+    http://uwow.biz
     Dungeon : Black Rook Hold Dungeon 100-110
     Encounter: Illysanna Ravencrest
     Normal: 100%, Heroic: 100%, Mythic: 100%
 */
 
 #include "black_rook_hold_dungeon.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "SpellScript.h"
+#include "GameEventMgr.h"
+#include "GridNotifiers.h"
 
 enum Says
 {
@@ -86,7 +93,7 @@ struct boss_illysanna_ravencrest : public BossAI
 {
     boss_illysanna_ravencrest(Creature* creature) : BossAI(creature, DATA_ILLYSANNA)
     {
-        if (me->IsAlive())
+        if (me->isAlive())
             me->AddDelayedEvent(500, [this]() -> void { Intro(); });
     }
 
@@ -129,7 +136,7 @@ struct boss_illysanna_ravencrest : public BossAI
         DoCast(me, SPELL_FURY_POWER_OVERRIDE, true);
         DoCast(me, SPELL_REGEN_POWER, true);
         me->SetReactState(REACT_AGGRESSIVE);
-        me->SetAnimTier(AnimTier::Ground);
+        me->SetAnimTier(0);
         SetFlyMode(false);
         phaseTwo = false;
         achievement = true;
@@ -193,14 +200,14 @@ struct boss_illysanna_ravencrest : public BossAI
                 Talk(SAY_EYE_BEAMS);
                 me->GetMotionMaster()->Clear(false);
                 me->SetFacingTo(4.05f);
-                me->SetAnimTier(AnimTier::Fly);
+                me->SetAnimTier(3);
                 events.RescheduleEvent(EVENT_SUMMON_ADDS, 1000);
                 events.RescheduleEvent(EVENT_EYE_BEAMS, 2000);
             }
             if (id == 1)
             {
                 SetFlyMode(false);
-                me->SetAnimTier(AnimTier::Ground);
+                me->SetAnimTier(0);
                 me->SetReactState(REACT_AGGRESSIVE, 500);
                 DoCast(me, SPELL_REGEN_POWER, true);
                 phaseTwo = false;
@@ -323,7 +330,7 @@ struct boss_illysanna_ravencrest : public BossAI
                     Talk(SAY_DARK_RUSH);
                     DoCast(SPELL_DARK_RUSH_FILTER);
                     for (auto id : {EVENT_BRUTAL_GLAIVE, EVENT_VENGEFUL_SHEAR, EVENT_PHASE_FLY})
-                        events.RescheduleEvent(id, 9000, true);
+                        events.RecalcEventTimer(id, 9000, true);
                     me->AddDelayedCombat(5500, [this]() -> void { SetCombatMovement(false); });
                     me->AddDelayedCombat(8500, [this]() -> void { SetCombatMovement(true); });
                     events.RescheduleEvent(EVENT_DARK_RUSH_1, 30000);
@@ -651,7 +658,7 @@ struct npc_brh_wyrmtongue_scavenger : public ScriptedAI
                 hyperactiveTimer = 1000;
                 auto target = ObjectAccessor::GetUnit(*me, fixateGUID);
 
-                if (target && target->IsAlive() && target->HasAura(SPELL_HYPERACTIVE_AT, me->GetGUID()))
+                if (target && target->isAlive() && target->HasAura(SPELL_HYPERACTIVE_AT, me->GetGUID()))
                     me->GetMotionMaster()->MovePoint(1, target->GetPosition(), false);
                 else if (auto target = SelectTarget(SELECT_TARGET_RANDOM, 0, 60.0f, true))
                 {
@@ -758,11 +765,12 @@ class spell_illysanna_dark_rush : public SpellScript
             return;
         }
 
-        Position pos = GetCaster()->GetPosition();
-        pos.SetOrientation(GetCaster()->GetAngle(savePos.GetPositionX(), savePos.GetPositionY()) - M_PI);
+        Position pos;
+        GetCaster()->GetPosition(&pos);
+        pos.m_orientation = GetCaster()->GetAngle(savePos.GetPositionX(), savePos.GetPositionY()) - M_PI;
         GetHitDest()->Relocate(pos);
 
-        GetCaster()->GetMotionMaster()->MoveCharge(savePos.GetPositionX(), savePos.GetPositionY(), savePos.GetPositionZ(), 50.0f, GetId());
+        GetCaster()->GetMotionMaster()->MoveCharge(savePos, 50.0f, GetId());
     }
 
     void Register() override
@@ -801,8 +809,10 @@ void AddSC_boss_illysanna_ravencrest()
     RegisterCreatureAI(npc_illysanna_trash_generic);
     RegisterCreatureAI(npc_brh_boulder);
     RegisterCreatureAI(npc_brh_wyrmtongue_scavenger);
+
     RegisterAuraScript(spell_illysanna_periodic_energize);
     RegisterAuraScript(spell_illysanna_eye_beams);
     RegisterSpellScript(spell_illysanna_dark_rush);
-    new achievement_adds_more_like_bads();
+
+    RegisterAchievementScript(achievement_adds_more_like_bads);
 }

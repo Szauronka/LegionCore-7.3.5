@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : The Arcway 100-110
     Encounter: Advisor Vandros
     Mythic: 100%
@@ -145,7 +146,7 @@ public:
                 Map::PlayerList const& players = me->GetMap()->GetPlayers();
                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                     if (Player* player = itr->getSource())
-                        if (player->IsAlive())
+                        if (player->isAlive())
                         {
                             player->CastSpell(player, SPELL_BANISH_IN_TIME_TP, true);
                             player->CastSpell(player, SPELL_BANISH_IN_TIME_TIMER, true);
@@ -261,7 +262,7 @@ public:
             events.RescheduleEvent(EVENT_1, 8000);
             DoCast(me, SPELL_PULSE_VISUAL, true);
             Position pos;
-            pos = me->GetRandomNearPosition(10.0f);
+            me->GetRandomNearPosition(pos, 10.0f);
             me->GetMotionMaster()->MovePoint(1, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
         }
 
@@ -421,7 +422,7 @@ public:
                 if (Unit* summon = me->SummonCreature(AddSum, x, y, z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000))
                 {
                     float angle = i * static_cast<float>(M_PI);
-                    pos = me->GetNearPosition(5.0f, angle);
+                    me->GetNearPosition(pos, 5.0f, angle);
                     summon->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), 193852, true);
                 }
             }

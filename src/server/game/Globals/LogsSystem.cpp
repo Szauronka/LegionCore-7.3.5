@@ -11,14 +11,14 @@ std::string const MainData::Serealize() const
     data["RealmID"] = RealmID;
     data["MapID"] = MapID;
 
-    if (Guild.has_value())
+    if (Guild.is_initialized())
     {
         data["Guild"]["GuildID"] = Guild->GuildID;
         data["Guild"]["GuildName"] = Guild->GuildName;
         data["Guild"]["GuildFaction"] = Guild->GuildFaction;
     }
 
-    if (Encounter.has_value())
+    if (Encounter.is_initialized())
     {
         data["Encounter"]["Expansion"] = Encounter->Expansion;
         data["Encounter"]["EncounterID"] = Encounter->EncounterID;
@@ -30,7 +30,7 @@ std::string const MainData::Serealize() const
         data["Encounter"]["DeadCount"] = Encounter->DeadCount;
     }
 
-    if (Arena.has_value())
+    if (Arena.is_initialized())
     {
         data["Arena"]["WinnerTeamId"] = Arena->WinnerTeamId;
         data["Arena"]["Duration"] = Arena->Duration;

@@ -1,5 +1,5 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,13 +18,16 @@
 #ifndef __SOCKET_H__
 #define __SOCKET_H__
 
-#include "Log.h"
 #include "MessageBuffer.h"
-#include <boost/asio/ip/tcp.hpp>
+#include "Log.h"
 #include <atomic>
-#include <memory>
 #include <queue>
+#include <memory>
+#include <functional>
 #include <type_traits>
+#include <boost/asio/ip/tcp.hpp>
+
+using boost::asio::ip::tcp;
 
 #define READ_BLOCK_SIZE 4096
 #ifdef BOOST_ASIO_HAS_IOCP
@@ -58,22 +61,15 @@
 
             tcp::socket::endpoint_type remote_endpoint() const;
 */
-template<class T, class Stream = boost::asio::ip::tcp::socket>
+template<class T, class Stream = tcp::socket>
 class Socket : public std::enable_shared_from_this<T>
 {
 public:
-    template<typename... Args>
-    explicit Socket(boost::asio::ip::tcp::socket&& socket, Args&&... args) : _socket(std::move(socket), std::forward<Args>(args)...),
-        _remoteAddress(_socket.remote_endpoint().address()), _remotePort(_socket.remote_endpoint().port()),
-        _closed(false), _closing(false), _isWritingAsync(false)
+    explicit Socket(tcp::socket&& socket) : _readBuffer(), _socket(std::move(socket)),
+        _remoteAddress(_socket.remote_endpoint().address()), _remotePort(_socket.remote_endpoint().port()), _closed(false), _closing(false), _isWritingAsync(false)
     {
         _readBuffer.Resize(READ_BLOCK_SIZE);
     }
-
-    Socket(Socket const& other) = delete;
-    Socket(Socket&& other) = delete;
-    Socket& operator=(Socket const& other) = delete;
-    Socket& operator=(Socket&& other) = delete;
 
     virtual ~Socket()
     {
@@ -118,13 +114,10 @@ public:
         _readBuffer.Normalize();
         _readBuffer.EnsureFreeSpace();
         _socket.async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
-            [self = this->shared_from_this()](boost::system::error_code const& error, size_t transferredBytes)
-            {
-                self->ReadHandlerInternal(error, transferredBytes);
-            });
+            std::bind(&Socket<T, Stream>::ReadHandlerInternal, this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
     }
 
-    void AsyncReadWithCallback(void (T::*callback)(boost::system::error_code const&, std::size_t))
+    void AsyncReadWithCallback(void (T::*callback)(boost::system::error_code, std::size_t))
     {
         if (!IsOpen())
             return;
@@ -132,10 +125,7 @@ public:
         _readBuffer.Normalize();
         _readBuffer.EnsureFreeSpace();
         _socket.async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
-            [self = this->shared_from_this(), callback](boost::system::error_code const& error, size_t transferredBytes)
-            {
-                (self.get()->*callback)(error, transferredBytes);
-            });
+            std::bind(callback, this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
     }
 
     void QueuePacket(MessageBuffer&& buffer)
@@ -157,23 +147,19 @@ public:
         boost::system::error_code shutdownError;
         _socket.shutdown(boost::asio::socket_base::shutdown_send, shutdownError);
         if (shutdownError)
-            TC_LOG_DEBUG("network", "Socket::CloseSocket: %s errored when shutting down socket: %u (%s)", GetRemoteIpAddress().to_string().c_str(),
+            TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "Socket::CloseSocket: %s errored when shutting down socket: %i (%s)", GetRemoteIpAddress().to_string().c_str(),
                 shutdownError.value(), shutdownError.message().c_str());
 
         OnClose();
     }
 
     /// Marks the socket for closing after write buffer becomes empty
-    void DelayedCloseSocket()
-    {
-        if (_closing.exchange(true))
-            return;
-
-        if (_writeQueue.empty())
-            CloseSocket();
-    }
+    void DelayedCloseSocket() { _closing = true; }
 
     MessageBuffer& GetReadBuffer() { return _readBuffer; }
+
+    MessageBuffer _readBuffer;
+    std::queue<MessageBuffer> _writeQueue;
 
 protected:
     virtual void OnClose() { }
@@ -189,17 +175,11 @@ protected:
 
 #ifdef TC_SOCKET_USE_IOCP
         MessageBuffer& buffer = _writeQueue.front();
-        _socket.async_write_some(boost::asio::buffer(buffer.GetReadPointer(), buffer.GetActiveSize()),
-            [self = this->shared_from_this()](boost::system::error_code const& error, std::size_t transferedBytes)
-            {
-                self->WriteHandler(error, transferedBytes);
-            });
+        _socket.async_write_some(boost::asio::buffer(buffer.GetReadPointer(), buffer.GetActiveSize()), std::bind(&Socket<T, Stream>::WriteHandler,
+            this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 #else
-        _socket.async_write_some(boost::asio::null_buffers(),
-            [self = this->shared_from_this()](boost::system::error_code const& error, std::size_t transferedBytes)
-            {
-                self->WriteHandlerWrapper(error, transferedBytes);
-            });
+        _socket.async_write_some(boost::asio::null_buffers(), std::bind(&Socket<T, Stream>::WriteHandlerWrapper,
+            this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 #endif
 
         return false;
@@ -208,10 +188,7 @@ protected:
     void SetNoDelay(bool enable)
     {
         boost::system::error_code err;
-        _socket.set_option(boost::asio::ip::tcp::no_delay(enable), err);
-        if (err)
-            TC_LOG_DEBUG("network", "Socket::SetNoDelay: failed to set_option(boost::asio::ip::tcp::no_delay) for %s - %u (%s)",
-                GetRemoteIpAddress().to_string().c_str(), err.value(), err.message().c_str());
+        _socket.set_option(tcp::no_delay(enable), err);
     }
 
     Stream& underlying_stream()
@@ -220,7 +197,7 @@ protected:
     }
 
 private:
-    void ReadHandlerInternal(boost::system::error_code const& error, size_t transferredBytes)
+    void ReadHandlerInternal(boost::system::error_code error, size_t transferredBytes)
     {
         if (error)
         {
@@ -234,7 +211,7 @@ private:
 
 #ifdef TC_SOCKET_USE_IOCP
 
-    void WriteHandler(boost::system::error_code const& error, std::size_t transferedBytes)
+    void WriteHandler(boost::system::error_code error, std::size_t transferedBytes)
     {
         if (!error)
         {
@@ -254,7 +231,7 @@ private:
 
 #else
 
-    void WriteHandlerWrapper(boost::system::error_code const& /*error*/, std::size_t /*transferedBytes*/)
+    void WriteHandlerWrapper(boost::system::error_code /*error*/, std::size_t /*transferedBytes*/)
     {
         _isWritingAsync = false;
         HandleQueue();
@@ -307,9 +284,6 @@ private:
 
     boost::asio::ip::address _remoteAddress;
     uint16 _remotePort;
-
-    MessageBuffer _readBuffer;
-    std::queue<MessageBuffer> _writeQueue;
 
     std::atomic<bool> _closed;
     std::atomic<bool> _closing;

@@ -135,7 +135,7 @@ public:
             {
                 DoModifyThreatPercent(me->getVictim(), -100);
                 Unit* owner = Unit::GetUnit(*me, victimGUID);
-                if (owner && owner->IsAlive())
+                if (owner && owner->isAlive())
                 {
                     me->AddThreat(owner, 999999);
                     AttackStart(owner);
@@ -283,7 +283,7 @@ public:
                 if (me->IsWithinDistInMap(who, attackRadius))
                 {
                     // Check first that object is in an angle in front of this one before LoS check
-                    if (me->HasInArc(float(M_PI / 2.0f), who) && me->IsWithinLOSInMap(who))
+                    if (me->HasInArc(M_PI/2.0f, who) && me->IsWithinLOSInMap(who))
                         AttackStart(who);
                 }
             }
@@ -303,7 +303,7 @@ public:
             for (uint8 i = 0; i < 3; ++i)
             {
                 Unit* add = Unit::GetUnit(*me, SpellBinderGUID[i]);
-                if (add && add->IsAlive())
+                if (add && add->isAlive())
                     ++AliveChannelers;
             }
 
@@ -358,7 +358,7 @@ public:
                     //delete creature
                     Creature* creature = Unit::GetCreature((*me), InnderDemon[i]);
 
-                    if (creature && creature->IsAlive())
+                    if (creature && creature->isAlive())
                         creature->DespawnOrUnsummon();
 
                     InnderDemon[i].Clear();
@@ -375,10 +375,10 @@ public:
                 if (InnderDemon[i])
                 {
                     Creature* unit = Unit::GetCreature((*me), InnderDemon[i]);
-                    if (unit && unit->IsAlive())
+                    if (unit && unit->isAlive())
                     {
                         Unit* unit_target = Unit::GetUnit(*unit, unit->AI()->GetGUID(INNER_DEMON_VICTIM));
-                        if (unit_target && unit_target->IsAlive())
+                        if (unit_target && unit_target->isAlive())
                         {
                             unit->CastSpell(unit_target, SPELL_CONSUMING_MADNESS, true);
                             DoModifyThreatPercent(unit_target, -100);
@@ -549,7 +549,7 @@ public:
                     //SpellInfo* spell = GET_SPELL(SPELL_INSIDIOUS_WHISPER);
                     for (std::vector<Unit*>::const_iterator itr = TargetList.begin(); itr != TargetList.end(); ++itr)
                     {
-                        if ((*itr) && (*itr)->IsAlive())
+                        if ((*itr) && (*itr)->isAlive())
                         {
                             Creature* demon = me->SummonCreature(INNER_DEMON_ID, (*itr)->GetPositionX() + 10, (*itr)->GetPositionY() + 10, (*itr)->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
                             if (demon)
@@ -731,7 +731,7 @@ public:
             {
                 instance->SetGuidData(DATA_LEOTHERAS_EVENT_STARTER, ObjectGuid::Empty);
                 Creature* leotheras = Unit::GetCreature(*me, leotherasGUID);
-                if (leotheras && leotheras->IsAlive())
+                if (leotheras && leotheras->isAlive())
                     CAST_AI(boss_leotheras_the_blind::boss_leotheras_the_blindAI, leotheras->AI())->CheckChannelers(/*false*/);
             }
         }
@@ -756,7 +756,7 @@ public:
                 if (leotherasGUID)
                 {
                     Creature* leotheras = Unit::GetCreature(*me, leotherasGUID);
-                    if (leotheras && leotheras->IsAlive())
+                    if (leotheras && leotheras->isAlive())
                         DoCast(leotheras, BANISH_BEAM);
                 }
             }

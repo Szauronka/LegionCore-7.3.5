@@ -101,7 +101,7 @@ WorldPackets::Mail::MailListEntry::MailListEntry(::Mail const* mail, Player* pla
     StationeryID = mail->stationery;
     SentMoney = mail->money;
     Flags = mail->checked;
-    DaysLeft = float(mail->expire_time - GameTime::GetGameTime()) / DAY;
+    DaysLeft = float(mail->expire_time - time(nullptr)) / DAY;
     MailTemplateID = mail->mailTemplateId;
     Subject = mail->subject;
     Body = mail->body;
@@ -122,8 +122,8 @@ ByteBuffer& operator<<(ByteBuffer& data, WorldPackets::Mail::MailListEntry const
     data << float(entry.DaysLeft);
     data << int32(entry.MailTemplateID);
     data << static_cast<int32>(entry.Attachments.size());
-    data.WriteBit(entry.SenderCharacter.has_value());
-    data.WriteBit(entry.AltSenderID.has_value());
+    data.WriteBit(entry.SenderCharacter.is_initialized());
+    data.WriteBit(entry.AltSenderID.is_initialized());
     data.WriteBits(entry.Subject.size(), 8);
     data.WriteBits(entry.Body.size(), 13);
     data.FlushBits();
@@ -150,7 +150,7 @@ void WorldPackets::Mail::MailGetList::Read()
 
 WorldPacket const* WorldPackets::Mail::MailListResult::Write()
 {
-    _worldPacket << static_cast<uint32>(Mails.size());
+    _worldPacket << static_cast<int32>(Mails.size());
     _worldPacket << int32(TotalNumRecords);
 
     for (auto const& mail : Mails)
@@ -253,7 +253,7 @@ WorldPackets::Mail::MailQueryNextTimeResult::MailNextTimeEntry::MailNextTimeEntr
             break;
     }
 
-    TimeLeft = mail->deliver_time - GameTime::GetGameTime();
+    TimeLeft = mail->deliver_time - time(nullptr);
     AltSenderType = mail->messageType;
     StationeryID = mail->stationery;
 }

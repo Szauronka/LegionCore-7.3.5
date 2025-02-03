@@ -1,19 +1,19 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #include "ArenaAll.h"
@@ -29,6 +29,7 @@
 #include "BattlegroundArathiBasin.h"
 #include "BattlegroundBattleForGilneas.h"
 #include "BattlegroundDeepwindGorge.h"
+#include "BattlegroundDM.h"
 #include "BattlegroundEyeOfTheStorm.h"
 #include "BattlegroundIsleOfConquest.h"
 #include "BattlegroundKotmoguTemplate.h"
@@ -152,7 +153,7 @@ void BattlegroundMgr::Update(uint32 diff)
     {
         if (_nextRatedArenaUpdate < diff)
         {
-            TC_LOG_DEBUG("bg.battleground", "BattlegroundMgr: UPDATING ARENA QUEUES");
+            TC_LOG_DEBUG(LOG_FILTER_BATTLEGROUND, "BattlegroundMgr: UPDATING ARENA QUEUES");
             for (uint8 qtype = MS::Battlegrounds::BattlegroundQueueTypeId::Arena2v2; qtype <= MS::Battlegrounds::BattlegroundQueueTypeId::Arena3v3; ++qtype)
                 for (uint8 bracket = 0; bracket < MS::Battlegrounds::MaxBrackets; ++bracket)
                     _battlegroundQueues[qtype].BattlegroundQueueUpdate(diff, MS::Battlegrounds::BattlegroundTypeId::ArenaAll, bracket, MS::Battlegrounds::GetBgJoinTypeByQueueTypeID(qtype), true);
@@ -246,7 +247,7 @@ void BattlegroundMgr::BuildBattlegroundStatusQueued(WorldPackets::Battleground::
     battlefieldStatus->AsGroup = asGroup;
     battlefieldStatus->SuspendedQueue = true;
     battlefieldStatus->EligibleForMatchmaking = false;
-    battlefieldStatus->WaitTime = getMSTimeDiff(joinTime, GameTime::GetGameTime()) * IN_MILLISECONDS;
+    battlefieldStatus->WaitTime = getMSTimeDiff(joinTime, time(nullptr)) * IN_MILLISECONDS;
 }
 
 void BattlegroundMgr::BuildBattlegroundStatusFailed(WorldPackets::Battleground::BattlefieldStatusFailed* battlefieldStatus, Battleground* bg, Player* player, uint32 queueSlot, uint8 result, ObjectGuid const* errorGuid /*= nullptr*/)
@@ -321,7 +322,7 @@ Battleground* BattlegroundMgr::CreateNewBattleground(uint16 bgTypeId, PVPDifficu
     CreateBattlegroundData const* bgData = GetBattlegroundData(bgTypeId);
     if (!bgData)
     {
-        TC_LOG_ERROR("bg.battleground", "Battleground: CreateNewBattleground - bg template not found for %u", bgTypeId);
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "Battleground: CreateNewBattleground - bg template not found for %u", bgTypeId);
         return nullptr;
     }
 
@@ -418,6 +419,9 @@ Battleground* BattlegroundMgr::CreateNewBattleground(uint16 bgTypeId, PVPDifficu
         case MS::Battlegrounds::BattlegroundTypeId::BrawlBattlegroundSilvershardSix:
             bg = new BattlegroundSilvershardMines;
             break;
+        case MS::Battlegrounds::BattlegroundTypeId::BattlegroundDeathMatch:
+            bg = new BattlegroundDeathMatch;
+            break;
         case MS::Battlegrounds::BattlegroundTypeId::BrawlBattlegroundSouthshoreVsTarrenMill:
             bg = new BrawlBattlegroundSouthshoreVsTarrenMill;
             break;
@@ -438,7 +442,7 @@ Battleground* BattlegroundMgr::CreateNewBattleground(uint16 bgTypeId, PVPDifficu
     bgData = GetBattlegroundData(bgTypeId);
     if (!bgData)
     {
-        TC_LOG_ERROR("bg.battleground", "Battleground: CreateNewBattleground - bg template not found for %u", bgTypeId);
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "Battleground: CreateNewBattleground - bg template not found for %u", bgTypeId);
         return nullptr;
     }
 
@@ -559,6 +563,9 @@ void BattlegroundMgr::CreateBattleground(CreateBattlegroundData& data)
         case MS::Battlegrounds::BattlegroundTypeId::BattlegroundDeepwindGorge:
             bg = new BattlegroundDeepwindGorge;
             break;
+        case MS::Battlegrounds::BattlegroundTypeId::BattlegroundDeathMatch:
+            bg = new BattlegroundDeathMatch;
+            break;
         case MS::Battlegrounds::BattlegroundTypeId::BrawlBattlegroundShadoPan:
             bg = new BrawlBattlegroundShadoPan;
             break;
@@ -589,10 +596,10 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
     uint32 oldMSTime = getMSTime();
 
     //                                               0   1                 2              3       4           5
-    QueryResult result = WorldDatabase.Query("SELECT id, AllianceStartLoc, HordeStartLoc, Weight, ScriptName, MinPlayersPerTeam FROM battleground_template");
+    QueryResult result = WorldDatabase.Query("SELECT id, AllianceStartLoc, HordeStartLoc, Weight, ScriptName, MinPlayersPerTeam  FROM battleground_template");
     if (!result)
     {
-        TC_LOG_ERROR("server.loading", ">> Loaded 0 battlegrounds. DB table `battleground_template` is empty.");
+        TC_LOG_ERROR(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 battlegrounds. DB table `battleground_template` is empty.");
         return;
     }
 
@@ -609,7 +616,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         BattlemasterListEntry const* bl = sBattlemasterListStore.LookupEntry(ID);
         if (!bl)
         {
-            TC_LOG_ERROR("bg.battleground", "Battleground ID %u not found in BattlemasterList.dbc. Battleground not created.", ID);
+            TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "Battleground ID %u not found in BattlemasterList.dbc. Battleground not created.", ID);
             continue;
         }
 
@@ -627,21 +634,22 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         data.MapID = bl->MapID[0];
         data.IsBrawl = bl->Flags & 32;
         data.MaxGroupSize = bl->MaxGroupSize;
+
         uint32 startId = fields[1].GetUInt32();
         if (WorldSafeLocsEntry const* start = sWorldSafeLocsStore.LookupEntry(startId))
-            data.TeamStartLoc[TEAM_ALLIANCE] = Position(start->Loc.X, start->Loc.Y, start->Loc.Z, start->Loc.O);
+            data.TeamStartLoc[TEAM_ALLIANCE].SetPosition(start->Loc);
         else if (!MS::Battlegrounds::IsRandomGeneratedBg(data.bgTypeId))
         {
-            TC_LOG_ERROR("sql.sql", "Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `AllianceStartLoc`. BG not created.", data.bgTypeId, startId);
+            TC_LOG_ERROR(LOG_FILTER_SQL, "Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `AllianceStartLoc`. BG not created.", data.bgTypeId, startId);
             continue;
         }
 
         startId = fields[2].GetUInt32();
         if (WorldSafeLocsEntry const* start = sWorldSafeLocsStore.LookupEntry(startId))
-            data.TeamStartLoc[TEAM_HORDE] = Position(start->Loc.X, start->Loc.Y, start->Loc.Z, start->Loc.O);
+            data.TeamStartLoc[TEAM_HORDE].SetPosition(start->Loc);
         else if (!MS::Battlegrounds::IsRandomGeneratedBg(data.bgTypeId))
         {
-            TC_LOG_ERROR("sql.sql", "Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `HordeStartLoc`. BG not created.", data.bgTypeId, startId);
+            TC_LOG_ERROR(LOG_FILTER_SQL, "Table `battleground_template` for id %u have non-existed WorldSafeLocs.dbc id %u in field `HordeStartLoc`. BG not created.", data.bgTypeId, startId);
             continue;
         }
 
@@ -678,16 +686,14 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
             }
                 
         }
-        ///  TODO
         else if (bl->MapID[1] <= 0 && bl->MapID[0] != 1101) // no deathmatch
             _selectionWeights[MS::Battlegrounds::IternalPvpTypes::Battleground][data.bgTypeId] = selectionWeight;
 
         CreateBattleground(data);
         ++count;
-    } 
-    while (result->NextRow());
+    } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u battlegrounds in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u battlegrounds in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void BattlegroundMgr::SendToBattleground(Player* player, uint32 instanceId, uint16 bgTypeId)
@@ -695,7 +701,7 @@ void BattlegroundMgr::SendToBattleground(Player* player, uint32 instanceId, uint
     if (Battleground* bg = GetBattleground(instanceId, bgTypeId))
         player->TeleportTo(bg->GetMapId(), bg->GetTeamStartPosition(player->GetBGTeamId()));
     else
-        TC_LOG_ERROR("bg.battleground", "player %lu is trying to port to non-existent bg instance %u", player->GetGUID().GetCounter(), instanceId);
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "player %u is trying to port to non-existent bg instance %u", player->GetGUID().GetCounter(), instanceId);
 }
 
 BattlegroundQueue& BattlegroundMgr::GetBattlegroundQueue(uint8 bgQueueTypeId)
@@ -774,7 +780,7 @@ void BattlegroundMgr::LoadBattleMastersEntry()
     QueryResult result = WorldDatabase.Query("SELECT entry, bg_template FROM battlemaster_entry");
     if (!result)
     {
-        TC_LOG_INFO("server.loading", ">> Loaded 0 battlemaster entries. DB table `battlemaster_entry` is empty!");
+        TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 battlemaster entries. DB table `battlemaster_entry` is empty!");
         return;
     }
 
@@ -789,14 +795,14 @@ void BattlegroundMgr::LoadBattleMastersEntry()
         uint32 bgTypeId = fields[1].GetUInt32();
         if (!sBattlemasterListStore.LookupEntry(bgTypeId))
         {
-            TC_LOG_ERROR("sql.sql", "Table `battlemaster_entry` contain entry %u for not existed battleground type %u, ignored.", entry, bgTypeId);
+            TC_LOG_ERROR(LOG_FILTER_SQL, "Table `battlemaster_entry` contain entry %u for not existed battleground type %u, ignored.", entry, bgTypeId);
             continue;
         }
 
         _battleMastersMap[entry] = uint16(bgTypeId);
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u battlemaster entries in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u battlemaster entries in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 uint16 BattlegroundMgr::GetBattleMasterBG(uint32 entry) const
@@ -902,7 +908,7 @@ void BattlegroundMgr::LoadPvpRewards()
         } while (result->NextRow());
     }
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u PvpReward in %u ms", static_cast<uint32>(_pvpRewardsContainer.size()), GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u PvpReward in %u ms", static_cast<uint32>(_pvpRewardsContainer.size()), GetMSTimeDiffToNow(oldMSTime));
 }
 
 bool BattlegroundMgr::isTesting() const
@@ -1078,6 +1084,9 @@ void BattlegroundMgr::InitWargame(Player* player, ObjectGuid opposingPartyMember
 
 uint8 BattlegroundMgr::GetBrawlIternalGroup() const
 {
+    if (sWorld->getBoolConfig(CONFIG_IS_TEST_SERVER))
+        return 1;
+
     tm time{}; // time of first brawl
     time.tm_hour = 8;
     time.tm_min = 0;
@@ -1087,7 +1096,7 @@ uint8 BattlegroundMgr::GetBrawlIternalGroup() const
 
     time_t start = mktime(&time);
     time_t end = start + 168 * 60 * 60;
-    time_t now = GameTime::GetGameTime();
+    time_t now = std::time(NULL);
 
     uint32 mod = uint32(ceil((double(now) - double(end)) / double(168 * 2 * 60 * 60)));
 
@@ -1111,7 +1120,7 @@ bool BattlegroundMgr::IsBrawlActive(uint32& expirationTime) const
 
     time_t start = mktime(&time);
     time_t end = start + 168 * 60 * 60;
-    time_t now = GameTime::GetGameTime();
+    time_t now = std::time(NULL);
 
     uint32 mod = uint32(ceil((double(now) - double(end)) / double(168 * 2 * 60 * 60)));
 
@@ -1124,7 +1133,7 @@ bool BattlegroundMgr::IsBrawlActive(uint32& expirationTime) const
         return true;
     }
 
-    return false;
+    return sWorld->getBoolConfig(CONFIG_IS_TEST_SERVER)  ? true : false;
 }
 
 void BattlegroundMgr::InitializeBrawlData()

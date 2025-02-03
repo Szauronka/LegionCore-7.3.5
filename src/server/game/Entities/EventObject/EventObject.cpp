@@ -140,7 +140,7 @@ bool EventObject::LoadEventObjectFromDB(ObjectGuid::LowType guid, Map* map)
     EventObjectData const* data = sEventObjectDataStore->GetEventObjectData(guid);
     if (!data)
     {
-        TC_LOG_ERROR("sql.sql", "EventObject (GUID: %lu) not found in table `eventobject`, can't load. ", guid);
+        TC_LOG_ERROR(LOG_FILTER_SQL, "EventObject (GUID: %u) not found in table `eventobject`, can't load. ", guid);
         return false;
     }
 
@@ -151,7 +151,7 @@ bool EventObject::LoadEventObjectFromDB(ObjectGuid::LowType guid, Map* map)
     Relocate(data->Pos);
     if (!IsPositionValid())
     {
-        TC_LOG_ERROR("misc", "EventObject (EventObject %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)", data->id, GetPositionX(), GetPositionY());
+        TC_LOG_ERROR(LOG_FILTER_GENERAL, "EventObject (EventObject %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)", data->id, GetPositionX(), GetPositionY());
         return false;
     }
 
@@ -183,7 +183,7 @@ bool EventObject::Create(ObjectGuid::LowType guidlow, Map* map, uint32 phaseMask
 
     if (!IsPositionValid())
     {
-        TC_LOG_ERROR("entities.unit", "EventObject::Create(): given coordinates for eventobject (guidlow %lu, entry %d) are not valid (X: %f, Y: %f, Z: %f, O: %f)", guidlow, entry, x, y, z, ang);
+        TC_LOG_ERROR(LOG_FILTER_UNITS, "EventObject::Create(): given coordinates for eventobject (guidlow %d, entry %d) are not valid (X: %f, Y: %f, Z: %f, O: %f)", guidlow, entry, x, y, z, ang);
         return false;
     }
 
@@ -213,9 +213,9 @@ void EventObject::SaveToDB(uint32 mapid, uint64 spawnMask, uint32 phaseMask)
     data.Pos = GetPosition();
 
     // update in DB
-    WorldDatabaseTransaction trans = WorldDatabase.BeginTransaction();
+    SQLTransaction trans = WorldDatabase.BeginTransaction();
 
-    WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_EVENTOBJECT);
+    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_DEL_EVENTOBJECT);
     stmt->setUInt64(0, m_DBTableGuid);
     trans->Append(stmt);
 
@@ -231,7 +231,7 @@ void EventObject::SaveToDB(uint32 mapid, uint64 spawnMask, uint32 phaseMask)
     stmt->setUInt16(index++, uint16(GetPhaseMask()));
     stmt->setFloat(index++,  GetPositionX());
     stmt->setFloat(index++,  GetPositionY());
-    stmt->setFloat(index++,  GetPositionZ());
+    stmt->setFloat(index++,  GetPositionZH());
     stmt->setFloat(index++,  GetOrientation());
     trans->Append(stmt);
 

@@ -18,31 +18,28 @@
 #ifndef LoginRESTService_h__
 #define LoginRESTService_h__
 
-#include "DeadlineTimer.h"
-#include "Define.h"
 #include "IoContext.h"
-#include "Login.pb.h"
+#include "IpAddress.h"
 #include "Session.h"
-#include <atomic>
-#include <boost/asio/deadline_timer.hpp>
-#include <boost/asio/io_service.hpp>
-#include <boost/asio/ip/address.hpp>
+#include "Define.h"
+#include "Login.pb.h"
 #include <boost/asio/ip/tcp.hpp>
+#include "DeadlineTimer.h"
+#include <atomic>
 #include <mutex>
 #include <thread>
 
-class AsyncLoginRequest;
 struct soap;
 struct soap_plugin;
 
 class LoginRESTService
 {
 public:
-    LoginRESTService() : _ioContext(nullptr), _stopped(false), _port(0), _loginTicketCleanupTimer(nullptr) { }
+    LoginRESTService() : _stopped(false), _port(0), _loginTicketCleanupTimer(nullptr) { }
 
     static LoginRESTService& Instance();
 
-    bool Start(Trinity::Asio::IoContext* ioContext);
+    bool Start(Trinity::Asio::IoContext& ioContext);
     void Stop();
 
     boost::asio::ip::tcp::endpoint const& GetAddressForClient(boost::asio::ip::address const& address) const;
@@ -60,12 +57,10 @@ private:
 
     int32 SendResponse(soap* soapClient, google::protobuf::Message const& response);
 
-    void HandleAsyncRequest(std::shared_ptr<AsyncLoginRequest> request);
-
     std::string CalculateShaPassHash(std::string const& name, std::string const& password);
 
     void AddLoginTicket(std::string const& id, std::unique_ptr<Battlenet::Session::AccountInfo> accountInfo);
-    void CleanupLoginTickets();
+    void CleanupLoginTickets(boost::system::error_code const& error);
 
     struct LoginTicket
     {
@@ -103,18 +98,18 @@ private:
         char const* ContentType;
     };
 
-    Trinity::Asio::IoContext* _ioContext;
     std::thread _thread;
     std::atomic<bool> _stopped;
     Battlenet::JSON::Login::FormInputs _formInputs;
     std::string _bindIP;
     int32 _port;
     int32 _waitTime;
-    std::array<boost::asio::ip::address, 2> _addresses;
-    std::array<boost::asio::ip::tcp::endpoint, 2> _endpoints;
+    boost::asio::ip::tcp::endpoint _externalAddress;
+    boost::asio::ip::tcp::endpoint _localAddress;
+    boost::asio::ip::address_v4 _localNetmask;
     std::mutex _loginTicketMutex;
     std::unordered_map<std::string, LoginTicket> _validLoginTickets;
-    std::shared_ptr<Trinity::Asio::DeadlineTimer> _loginTicketCleanupTimer;
+    Trinity::Asio::DeadlineTimer* _loginTicketCleanupTimer;
 };
 
 #define sLoginService LoginRESTService::Instance()

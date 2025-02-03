@@ -41,7 +41,7 @@ class EventObject;
 static uint32 const INCREMENT_COUNTER = 5000000;
 
 template <class T>
-class TC_GAME_API HashMapHolder
+class HashMapHolder
 {
 public:
     typedef std::unordered_map<ObjectGuid, T*> MapType;
@@ -132,7 +132,7 @@ public:
 
     static MapType& GetContainer() { return _objectMap; }
 
-    static sf::contention_free_shared_mutex< >& GetLock();
+    static sf::contention_free_shared_mutex< >& GetLock() { return i_lock; }
 
     static uint32 _size;
 
@@ -149,7 +149,7 @@ private:
     static std::atomic<bool> _checkLock;
 };
 
-class TC_GAME_API ObjectAccessor
+class ObjectAccessor
 {
     ObjectAccessor();
     ~ObjectAccessor();
@@ -159,7 +159,11 @@ class TC_GAME_API ObjectAccessor
 public:
     // TODO: override these template functions for each holder type and add assertions
 
-    static ObjectAccessor* instance();
+    static ObjectAccessor* instance()
+    {
+        static ObjectAccessor instance;
+        return &instance;
+    }
 
     template<class T> static T* GetObjectInOrOutOfWorld(ObjectGuid guid, T* /*typeSpecifier*/)
     {
@@ -226,14 +230,14 @@ public:
         CellCoord p = Trinity::ComputeCellCoord(x, y);
         if (!p.IsCoordValid())
         {
-            TC_LOG_ERROR("misc", "ObjectAccessor::GetObjectInWorld: invalid coordinates supplied X:%f Y:%f grid cell [%u:%u]", x, y, p.x_coord, p.y_coord);
+            TC_LOG_ERROR(LOG_FILTER_GENERAL, "ObjectAccessor::GetObjectInWorld: invalid coordinates supplied X:%f Y:%f grid cell [%u:%u]", x, y, p.x_coord, p.y_coord);
             return nullptr;
         }
 
         CellCoord q = Trinity::ComputeCellCoord(obj->GetPositionX(), obj->GetPositionY());
         if (!q.IsCoordValid())
         {
-            TC_LOG_ERROR("misc", "ObjectAccessor::GetObjecInWorld: object (GUID: %u TypeId: %u) has invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUIDLow(), obj->GetTypeId(), obj->GetPositionX(), obj->GetPositionY(), q.x_coord, q.y_coord);
+            TC_LOG_ERROR(LOG_FILTER_GENERAL, "ObjectAccessor::GetObjecInWorld: object (GUID: %u TypeId: %u) has invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUIDLow(), obj->GetTypeId(), obj->GetPositionX(), obj->GetPositionY(), q.x_coord, q.y_coord);
             return nullptr;
         }
 

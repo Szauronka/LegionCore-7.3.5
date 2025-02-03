@@ -24,6 +24,9 @@ SDCategory: Black Temple
 EndScriptData */
 
 #include "black_temple.h"
+#include <ScriptMgr.h>
+#include <ScriptedCreature.h>
+#include <ScriptedGossip.h>
 
 #define GETGO(obj, guid)      GameObject* obj = instance->instance->GetGameObject(guid)
 #define GETUNIT(unit, guid)   Unit* unit = Unit::GetUnit(*me, guid)
@@ -418,7 +421,7 @@ public:
                     DoCast(me, SPELL_FLAME_ENRAGE, true);
                     DoResetThreat();
                     Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
-                    if (target && target->IsAlive())
+                    if (target && target->isAlive())
                     {
                         me->AddThreat(me->getVictim(), 5000000.0f);
                         AttackStart(me->getVictim());
@@ -724,7 +727,7 @@ public:
             if (MaievGUID)
             {
                 GETCRE(Maiev, MaievGUID);
-                if (Maiev && Maiev->IsAlive())
+                if (Maiev && Maiev->isAlive())
                     Maiev->AI()->DoAction(NextPhase);
             }
             Phase = NextPhase;
@@ -764,7 +767,7 @@ public:
             Trigger->SetWalk(true);
             Trigger->GetMotionMaster()->MovePoint(0, final.x, final.y, final.z);
 
-            // Trigger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            Trigger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             me->SetTarget(Trigger->GetGUID());
             DoCast(Trigger, SPELL_EYE_BLAST);
         }
@@ -797,7 +800,7 @@ public:
             {
                 EnterEvadeMode();
                 me->MonsterTextEmote(EMOTE_UNABLE_TO_SUMMON, ObjectGuid::Empty);
-                TC_LOG_ERROR("scripts", "SD2 ERROR: Unable to summon Maiev Shadowsong (entry: 23197). Check your database to see if you have the proper SQL for Maiev Shadowsong (entry: 23197)");
+                TC_LOG_ERROR(LOG_FILTER_TSCR, "SD2 ERROR: Unable to summon Maiev Shadowsong (entry: 23197). Check your database to see if you have the proper SQL for Maiev Shadowsong (entry: 23197)");
             }
         }
 
@@ -1838,7 +1841,7 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature)
     {
-        player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP_ITEM, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
         player->SEND_GOSSIP_MENU(10465, creature->GetGUID());
 
         return true;
@@ -1860,7 +1863,7 @@ void boss_illidan_stormrage::boss_illidan_stormrageAI::Reset()
     {
         if (GETCRE(Akama, AkamaGUID))
         {
-            if (!Akama->IsAlive())
+            if (!Akama->isAlive())
                 Akama->Respawn();
             else
             {

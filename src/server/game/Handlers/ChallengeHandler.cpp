@@ -30,8 +30,8 @@ void WorldSession::HandleRequestLeaders(WorldPackets::ChallengeMode::RequestLead
     result.MapID = packet.MapId;
     result.ChallengeID = packet.ChallengeID;
 
-    result.LastGuildUpdate = GameTime::GetGameTime();
-    result.LastRealmUpdate = GameTime::GetGameTime();
+    result.LastGuildUpdate = time(nullptr);
+    result.LastRealmUpdate = time(nullptr);
 
     if (auto bestGuild = sChallengeMgr->BestGuildChallenge(_player->GetGuildId(), packet.ChallengeID))
     {
@@ -159,7 +159,7 @@ void WorldSession::HandleStartChallengeMode(WorldPackets::ChallengeMode::StartCh
             return;
         }
 
-        if (!_player->IsAlive())
+        if (!_player->isAlive())
         {
             ChatHandler(_player).PSendSysMessage("Error: Player not found or die.");
             return;
@@ -176,7 +176,7 @@ void WorldSession::HandleStartChallengeMode(WorldPackets::ChallengeMode::StartCh
             for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
             {
                 Player* player = itr->getSource();
-                if (!player || !player->IsAlive())
+                if (!player || !player->isAlive())
                 {
                     ChatHandler(_player).PSendSysMessage("Error: Player not found or die.");
                     return;

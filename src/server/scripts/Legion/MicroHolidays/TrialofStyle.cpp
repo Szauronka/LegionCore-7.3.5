@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
 */
 
 #include "WorldStatePackets.h"
@@ -1298,7 +1299,7 @@ public:
 
     struct instance_trial_of_style_InstanceMapScript : public InstanceScript
     {
-        instance_trial_of_style_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_trial_of_style_InstanceMapScript(Map* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
         }

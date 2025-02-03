@@ -73,11 +73,10 @@ public:
 
     struct instance_halls_of_reflection_InstanceMapScript : public InstanceScript
     {
-        instance_halls_of_reflection_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_halls_of_reflection_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         void Initialize() override
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
             events.Reset();
             _falricGUID.Clear();
@@ -335,7 +334,7 @@ public:
                     for (GuidSet::const_iterator itr = waveGuidList[waveId].begin(); itr != waveGuidList[waveId].end(); ++itr)
                     {
                         Creature* npc = instance->GetCreature(*itr);
-                        if (!npc || !npc->IsAlive())
+                        if (!npc || !npc->isAlive())
                             ++deadNpcs;
                     }
                     // because the current npc returns IsAlive when OnUnitDeath happens
@@ -525,34 +524,70 @@ public:
             return ObjectGuid::Empty;
         }
 
-        void WriteSaveDataMore(std::ostringstream& data) override
+        std::string GetSaveData() override
         {
-            data << _introEvent << ' ' << _frostwornGeneral << ' ' << _escapeevent;
+            OUT_SAVE_INST_DATA;
+
+            std::ostringstream saveStream;
+            saveStream << "H R " << GetBossSaveData() << _introEvent << ' ' << _frostwornGeneral << ' ' << _escapeevent;
+
+            OUT_SAVE_INST_DATA_COMPLETE;
+            return saveStream.str();
         }
 
-        void ReadSaveDataMore(std::istringstream& data) override
+        void Load(char const* in) override
         {
-            uint32 temp = 0;
-            data >> temp;
-            _introEvent = temp == DONE ? DONE : NOT_STARTED;
-            /*if (temp == DONE)
-                SetData(DATA_INTRO_EVENT, DONE);
-            else
-                SetData(DATA_INTRO_EVENT, NOT_STARTED);*/
+            if (!in)
+            {
+                OUT_LOAD_INST_DATA_FAIL;
+                return;
+            }
 
-            data >> temp;
-            _frostwornGeneral = temp == DONE ? DONE : NOT_STARTED;
-            /*if (temp == DONE)
-                SetData(DATA_FROSWORN_EVENT, DONE);
-            else
-                SetData(DATA_FROSWORN_EVENT, NOT_STARTED);*/
+            OUT_LOAD_INST_DATA(in);
 
-            data >> temp;
-            _escapeevent = temp == DONE ? DONE : NOT_STARTED;
-            /*if (temp == DONE)
-                SetData(DATA_ESCAPE_EVENT, DONE);
+            char dataHead1, dataHead2;
+
+            std::istringstream loadStream(in);
+            loadStream >> dataHead1 >> dataHead2;
+
+            if (dataHead1 == 'H' && dataHead2 == 'R')
+            {
+                for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
+                {
+                    uint32 tmpState;
+                    loadStream >> tmpState;
+                    if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                        tmpState = NOT_STARTED;
+
+                    SetBossState(i, EncounterState(tmpState));
+                }
+
+                uint32 temp = 0;
+                loadStream >> temp;
+                _introEvent = temp == DONE ? DONE : NOT_STARTED;
+                /*if (temp == DONE)
+                    SetData(DATA_INTRO_EVENT, DONE);
+                else
+                    SetData(DATA_INTRO_EVENT, NOT_STARTED);*/
+
+                loadStream >> temp;
+                _frostwornGeneral = temp == DONE ? DONE : NOT_STARTED;
+                /*if (temp == DONE)
+                    SetData(DATA_FROSWORN_EVENT, DONE);
+                else
+                    SetData(DATA_FROSWORN_EVENT, NOT_STARTED);*/
+
+                loadStream >> temp;
+                _escapeevent = temp == DONE ? DONE : NOT_STARTED;
+                /*if (temp == DONE)
+                    SetData(DATA_ESCAPE_EVENT, DONE);
+                else
+                    SetData(DATA_ESCAPE_EVENT, NOT_STARTED);*/
+            }
             else
-                SetData(DATA_ESCAPE_EVENT, NOT_STARTED);*/
+                OUT_LOAD_INST_DATA_FAIL;
+
+            OUT_LOAD_INST_DATA_COMPLETE;
         }
 
     private:

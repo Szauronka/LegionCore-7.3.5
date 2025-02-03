@@ -1,4 +1,5 @@
 /*===================
+    UWOW.BIZ
 =====================*/
 
 #include "siege_of_the_niuzoa_temple.h"
@@ -286,7 +287,7 @@ struct boss_general_pavalak : public BossAI
                 {
                     if (Player* player = itr->getSource())
                     {
-                        if (player->IsAlive() && !player->isGameMaster() && player->GetCurrentAreaID() == 6411)
+                        if (player->isAlive() && !player->isGameMaster() && player->GetCurrentAreaID() == 6411)
                         {
                             playersAlive = true;
                             break;
@@ -403,7 +404,8 @@ struct npc_pavalak_amber_sapper : public ScriptedAI
     void IsSummonedBy(Unit* summoner) override
     {
         DoCast(me, SPELL_CARRYING_EXPLOSIVES, true);
-        Position pos = summoner->GetRandomNearPosition(40.0f);
+        Position pos;
+        summoner->GetRandomNearPosition(pos, 40.0f);
         pos.m_positionZ = 123.49f;
 
         me->GetMotionMaster()->MovePoint(POINT_TARGET, pos);

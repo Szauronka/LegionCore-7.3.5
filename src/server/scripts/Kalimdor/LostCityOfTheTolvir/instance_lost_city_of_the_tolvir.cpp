@@ -35,7 +35,6 @@ class instance_lost_city_of_the_tolvir : public InstanceMapScript
 
             void Initialize()
             {
-                SetHeaders(DataHeader);
                 memset(&Encounter, 0, sizeof(Encounter));
                 memset(&uiTunnelGUID, 0, sizeof(uiTunnelGUID));
                 uiTunnelFlag = 0;

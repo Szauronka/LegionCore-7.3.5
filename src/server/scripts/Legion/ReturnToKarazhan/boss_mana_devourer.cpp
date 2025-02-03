@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "return_to_karazhan.h"
 
 /* enum Says
@@ -101,7 +105,7 @@ public:
                     case EVENT_ENERGY_VOID:
                     {
                         Position pos;
-                        pos = me->GetNearPosition(38.0f, frand(0.0f, 6.28f));
+                        me->GetNearPosition(pos, 38.0f, frand(0.0f, 6.28f));
                         me->CastSpell(pos, SPELL_ENERGY_VOID, false);
                         events.RescheduleEvent(EVENT_ENERGY_VOID, 22000);
                         break;

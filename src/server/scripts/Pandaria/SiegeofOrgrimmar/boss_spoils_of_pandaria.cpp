@@ -426,7 +426,7 @@ public:
             Map::PlayerList const &players = me->GetMap()->GetPlayers();
             for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
                 if (Player* pl = i->getSource())
-                    if (pl->IsAlive())
+                    if (pl->isAlive())
                         pl->SendUpdateWorldState(8431, 0);
             instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_UNSTABLE_DEFENSE_SYSTEMS);
         }
@@ -439,7 +439,7 @@ public:
                 Map::PlayerList const &players = me->GetMap()->GetPlayers();
                 for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
                     if (Player* pl = i->getSource())
-                        if (pl->IsAlive())
+                        if (pl->isAlive())
                             pl->Kill(pl, true);
 
                 DespawnAllAT();
@@ -1612,7 +1612,7 @@ public:
             if (instance->GetBossState(DATA_MALKOROK) == DONE && instance->GetBossState(DATA_SPOILS_OF_PANDARIA) == NOT_STARTED)
             {
                 pl->PrepareGossipMenu(go);
-                pl->ADD_GOSSIP_ITEM(GossipOptionNpc::None, GOSSIP1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+                pl->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
                 pl->SEND_GOSSIP_MENU(pl->GetGossipTextId(go), go->GetGUID());
             }
         }
@@ -1647,7 +1647,8 @@ public:
     bool OnGossipHello(Player* player, GameObject* go)
     {
         go->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_NOT_SELECTABLE);
-        Position pos = go->GetPosition();
+        Position pos;
+        go->GetPosition(&pos);
         if (InstanceScript* instance = go->GetInstanceScript())
         {
             if (Creature* summoner = instance->instance->GetCreature(instance->GetGuidData(go->GetEntry())))
@@ -2141,7 +2142,7 @@ class spell_boss_gusting_bomb : public SpellScriptLoader
 
                     uint32 count = uint32(caster->GetDistance(target) / 2);
                     float angle = caster->GetAngle(target);
-                    GetSpell()->visualPos = target->GetPosition();
+                    target->GetPosition(&GetSpell()->visualPos);
 
                     caster->CastSpell(target, SPELL_GUSTING_BOMB_AOE_DMG, true);
                     if(count > 0)
@@ -2496,7 +2497,7 @@ public:
             {
                 if (GetCaster() && GetTarget())
                 {
-                    if (GetCaster()->IsAlive())
+                    if (GetCaster()->isAlive())
                     {
                         float dist = 5.0f;
                         std::list<Player*>pllist;

@@ -167,7 +167,7 @@ bool Garrison::LoadFromDB(PreparedQueryResult const& garrison, PreparedQueryResu
         //! important not allow add sitelevel to _siteLevel if exist.
         if (type == GARRISON_TYPE_GARRISON && _siteLevel[type])
         {
-            CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_BY_SITE);
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_BY_SITE);
             stmt->setUInt64(0, _owner->GetGUIDLow());
             stmt->setUInt32(1, _siteLevel[type]->GarrLevel > siteLevel->GarrLevel ? siteLevel->ID : _siteLevel[type]->ID);
             CharacterDatabase.Execute(stmt);
@@ -241,7 +241,7 @@ bool Garrison::LoadFromDB(PreparedQueryResult const& garrison, PreparedQueryResu
             if (!building)
                 continue;
 
-            plot->BuildingInfo.PacketInfo.emplace();
+            plot->BuildingInfo.PacketInfo = boost::in_place();
             plot->BuildingInfo.PacketInfo->GarrPlotInstanceID = plotInstanceId;
             plot->BuildingInfo.PacketInfo->GarrBuildingID = buildingId;
             plot->BuildingInfo.PacketInfo->TimeBuilt = timeBuilt;
@@ -309,9 +309,9 @@ bool Garrison::LoadFromDB(PreparedQueryResult const& garrison, PreparedQueryResu
                 offerDuration = missionInfoEntry->OfferDuration;
 
             // time is over
-            if (!StartTime && offerDuration && (offerTime + offerDuration <= GameTime::GetGameTime()))
+            if (!StartTime && offerDuration && (offerTime + offerDuration <= time(nullptr)))
             {
-                CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_MISSIONS_DB_ID);
+                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_MISSIONS_DB_ID);
                 stmt->setUInt64(0, dbId);
                 CharacterDatabase.Execute(stmt);
                 continue;
@@ -327,7 +327,7 @@ bool Garrison::LoadFromDB(PreparedQueryResult const& garrison, PreparedQueryResu
             mission.PacketInfo.TravelDuration = fields[5].GetUInt32();
             mission.PacketInfo.Duration = fields[6].GetUInt32();
             mission.PacketInfo.State = fields[7].GetUInt32();
-            mission.PacketInfo.SuccesChance = fields[8].GetUInt16();
+            mission.PacketInfo.SuccessChance = fields[8].GetUInt16();
 
             if (!sGarrisonMgr.GetMissionRewardByRecID(missionRecID))
                 continue;
@@ -345,21 +345,21 @@ bool Garrison::LoadFromDB(PreparedQueryResult const& garrison, PreparedQueryResu
             fields = followers->Fetch();
 
             auto followerId = fields[1].GetUInt32();
-            auto foloowerEntry = sGarrFollowerStore.LookupEntry(followerId);
-            if (!foloowerEntry)
+            auto followerEntry = sGarrFollowerStore.LookupEntry(followerId);
+            if (!followerEntry)
                 continue;
 
-            if (foloowerEntry->GarrTypeID != GARRISON_TYPE_GARRISON && foloowerEntry->GarrTypeID != GARRISON_TYPE_CLASS_ORDER)
+            if (followerEntry->GarrTypeID != GARRISON_TYPE_GARRISON && followerEntry->GarrTypeID != GARRISON_TYPE_CLASS_ORDER)
                 continue;
 
             auto dbId = fields[0].GetUInt64();
-            _followerIds[foloowerEntry->GarrTypeID].insert(followerId);
-            auto& follower = _followers[foloowerEntry->GarrTypeID][dbId];
+            _followerIds[followerEntry->GarrTypeID].insert(followerId);
+            auto& follower = _followers[followerEntry->GarrTypeID][dbId];
             follower.PacketInfo.DbID = dbId;
             follower.PacketInfo.GarrFollowerID = followerId;
             follower.PacketInfo.Quality = fields[2].GetUInt32();
 
-            switch (foloowerEntry->GarrFollowerTypeID)
+            switch (followerEntry->GarrFollowerTypeID)
             {
             case GarrisonConst::FollowerType::Garrison:
                 follower.PacketInfo.FollowerLevel = std::min(fields[3].GetUInt32(), uint32(GarrisonConst::Globals::MaxFollowerLevel));
@@ -379,7 +379,7 @@ bool Garrison::LoadFromDB(PreparedQueryResult const& garrison, PreparedQueryResu
             follower.PacketInfo.FollowerStatus = fields[9].GetUInt32();
             follower.PacketInfo.Vitality = fields[10].GetUInt16();
 
-            follower.TypeID = foloowerEntry->GarrFollowerTypeID;
+            follower.TypeID = followerEntry->GarrFollowerTypeID;
             follower.DbState = DB_STATE_UNCHANGED;
 
             if (!sGarrBuildingStore.LookupEntry(follower.PacketInfo.CurrentBuildingID))
@@ -410,22 +410,22 @@ bool Garrison::LoadFromDB(PreparedQueryResult const& garrison, PreparedQueryResu
                 }
             }
 
-            if (_missionIds[foloowerEntry->GarrTypeID].empty())
+            if (_missionIds[followerEntry->GarrTypeID].empty())
                 if (auto mission = sGarrisonMgr.GetMissionAtFollowerTaking(followerId))
                     AddMission(mission->ID);
 
-            if (foloowerEntry->Vitality)
+            if (followerEntry->Vitality)
             {
                 follower.PacketInfo.FollowerStatus |= GarrisonConst::GarrisonFollowerFlags::FOLLOWER_STATUS_TROOP;
                 follower.PacketInfo.FollowerStatus |= GarrisonConst::GarrisonFollowerFlags::FOLLOWER_STATUS_NO_XP_GAIN;
 
                 // disable more then limit.
-                uint32 limit = GetTroopLimit(foloowerEntry->Vitality, _owner->GetTeam() == ALLIANCE ? foloowerEntry->AllianceGarrClassSpecID : foloowerEntry->HordeGarrClassSpecID);
-                if (_troopCount[foloowerEntry->Vitality] > limit)
+                uint32 limit = GetTroopLimit(followerEntry->Vitality, _owner->GetTeam() == ALLIANCE ? followerEntry->AllianceGarrClassSpecID : followerEntry->HordeGarrClassSpecID);
+                if (_troopCount[followerEntry->Vitality] > limit)
                     follower.PacketInfo.FollowerStatus |= GarrisonConst::GarrisonFollowerFlags::FOLLOWER_STATUS_INACTIVE;
 
-                ASSERT(foloowerEntry->Vitality < 5);
-                ++_troopCount[foloowerEntry->Vitality];
+                ASSERT(followerEntry->Vitality < 5);
+                ++_troopCount[followerEntry->Vitality];
             }
 
         } while (followers->NextRow());
@@ -470,9 +470,9 @@ bool Garrison::LoadFromDB(PreparedQueryResult const& garrison, PreparedQueryResu
     }
 
     ///!< check generator mission immidieatly.
-    if (GameTime::GetGameTime() > _MissionGen)
+    if (time(nullptr) > _MissionGen)
     {
-        _MissionGen = GameTime::GetGameTime() + DAY;
+        _MissionGen = time(nullptr) + DAY;
         GenerateRandomMission();
     }
 
@@ -486,11 +486,11 @@ bool Garrison::LoadFromDB(PreparedQueryResult const& garrison, PreparedQueryResu
     return true;
 }
 
-void Garrison::SaveToDB(CharacterDatabaseTransaction const& trans)
+void Garrison::SaveToDB(SQLTransaction const& trans)
 {
     bool canSaveBuild = false;
 
-    CharacterDatabasePreparedStatement* stmt = nullptr;
+    PreparedStatement* stmt = nullptr;
     for (auto v : _siteLevel)
     {
         if (!v)
@@ -522,24 +522,23 @@ void Garrison::SaveToDB(CharacterDatabaseTransaction const& trans)
     for (auto &p : _plots)
     {
         Plot &plot = p.second;
-
         // if we have DB_STATE_REMOVED we already have reset the BuildingInfo for this plot
         if (plot.db_state_building == DB_STATE_REMOVED)
         {
             plot.db_state_building = DB_STATE_UNCHANGED;
-
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_BUILDINGS_BY_PLOT);
             stmt->setUInt64(0, _owner->GetGUIDLow());
             stmt->setUInt32(1, plot.BuildingInfo.PacketInfo->GarrPlotInstanceID);
             trans->Append(stmt);
             continue;
         }
-
         if (plot.BuildingInfo.PacketInfo)
         {
             auto buildingEntry = sGarrBuildingStore.LookupEntry(plot.BuildingInfo.PacketInfo->GarrBuildingID);
             if (!buildingEntry)
                 continue;
+
+           
 
             if (plot.db_state_building != DB_STATE_CHANGED && plot.db_state_building != DB_STATE_NEW)
                 continue;
@@ -642,7 +641,7 @@ void Garrison::SaveToDB(CharacterDatabaseTransaction const& trans)
             stmt->setUInt32(index++, mission.PacketInfo.TravelDuration);
             stmt->setUInt32(index++, mission.PacketInfo.Duration);
             stmt->setUInt32(index++, mission.PacketInfo.State);
-            stmt->setUInt16(index++, mission.PacketInfo.SuccesChance);
+            stmt->setUInt16(index++, mission.PacketInfo.SuccessChance);
             trans->Append(stmt);
             mission.DbState = DB_STATE_UNCHANGED;
         }
@@ -686,9 +685,9 @@ void Garrison::SaveToDB(CharacterDatabaseTransaction const& trans)
     }
 }
 
-void Garrison::DeleteFromDB(ObjectGuid::LowType ownerGuid, CharacterDatabaseTransaction const& trans)
+void Garrison::DeleteFromDB(ObjectGuid::LowType ownerGuid, SQLTransaction const& trans)
 {
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON);
     stmt->setUInt64(0, ownerGuid);
     trans->Append(stmt);
 
@@ -735,7 +734,7 @@ bool Garrison::Create(uint32 garrSiteId, bool skip_teleport /* = false*/)
     garrisonCreateResult.GarrSiteLevelID = siteLevel->ID;
     _owner->SendDirectMessage(garrisonCreateResult.Write());
 
-    //_owner->GetPhaseMgr().RemoveUpdateFlag(PHASE_UPDATE_FLAG_AREA_UPDATE); update phase send at quest credit.
+    _owner->GetPhaseMgr().RemoveUpdateFlag(PHASE_UPDATE_FLAG_AREA_UPDATE);
     if (siteLevel->UpgradeMovieID && !skip_teleport)
         _owner->TeleportTo(GetGarrisonMapID(), _owner->GetPositionX(), _owner->GetPositionY(), _owner->GetPositionZ(), _owner->GetOrientation(), TELE_TO_SEAMLESS);
     SendRemoteInfo();
@@ -744,7 +743,7 @@ bool Garrison::Create(uint32 garrSiteId, bool skip_teleport /* = false*/)
 
 void Garrison::Delete()
 {
-    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     DeleteFromDB(_owner->GetGUIDLow(), trans);
     CharacterDatabase.CommitTransaction(trans);
 
@@ -832,8 +831,8 @@ void Garrison::Upgrade()
         _owner->SendDirectMessage(result.Write());
         return;
     }
-
-    GarrSiteLevelEntry const* newSiteLevel = nullptr;
+    
+	GarrSiteLevelEntry const* newSiteLevel = nullptr;
     for (GarrSiteLevelEntry const* v : sGarrSiteLevelStore)
         if (v->GarrSiteID == site->GarrSiteID && v->GarrLevel == site->GarrLevel + 1)
             newSiteLevel = v;
@@ -907,9 +906,9 @@ void Garrison::Upgrade()
         _owner->AchieveCriteriaCredit(_owner->GetTeam() == ALLIANCE ? 38378 : 38354);
     if (oldSite->GarrLevel == 2)
         _owner->AchieveCriteriaCredit(_owner->GetTeam() == ALLIANCE ? 38529 : 38531);
-
-    // Save us
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHARACTER_GARRISON);
+	
+	// Save us
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHARACTER_GARRISON);
     stmt->setUInt32(0, newSiteLevel->ID);
     stmt->setUInt64(1, _owner->GetGUIDLow());
     stmt->setUInt32(2, oldSite->ID);
@@ -952,8 +951,8 @@ void Garrison::Update(uint32 diff)
         return;
 
     updateTimer.Reset();
-
-    for (std::pair<const uint32, Plot>& plot : _plots)
+	
+	for (std::pair<const uint32, Plot>& plot : _plots)
     {
         if (plot.second.BuildingInfo.PacketInfo && !plot.second.BuildingInfo.PacketInfo->Active && !plot.second.BuildingInfo.FinalizerGuid && plot.second.BuildingInfo.CanActivate())
         {
@@ -968,11 +967,9 @@ void Garrison::Update(uint32 diff)
                     {
                         // set some spell id to make the object delete itself after use
                         finalizer->SetSpellId(finalizer->GetGOInfo()->goober.spell);
-
                         finalizer->SetRespawnTime(0);
                         if (uint16 animKit = finalizeInfo->FactionInfo[GetFaction()].AnimKitId)
                             finalizer->SetAnimKitId(animKit, true);
-
                         plot.second.BuildingInfo.FinalizerGuid = finalizer->GetGUID();
                     }
                     else
@@ -986,7 +983,7 @@ void Garrison::Update(uint32 diff)
     {
         for (WorldPackets::Garrison::Shipment &ship_data : _shipments[data.first])
         {
-            if (ship_data.finished || ship_data.end > GameTime::GetGameTime())
+            if (ship_data.finished || ship_data.end > time(nullptr))
                 continue;
 
             ship_data.finished = true;
@@ -1005,9 +1002,9 @@ void Garrison::Update(uint32 diff)
         }
     }
 
-    if (GameTime::GetGameTime() > _MissionGen)
+    if (time(nullptr) > _MissionGen)
     {
-        _MissionGen = GameTime::GetGameTime() + DAY;
+        _MissionGen = time(nullptr) + DAY;
         GenerateRandomMission();
     }
 }
@@ -1123,7 +1120,7 @@ void Garrison::UnlearnBlueprint(uint32 garrBuildingId)
         unlearnBlueprintResult.Result = GARRISON_ERROR_REQUIRES_BLUEPRINT;
     else
     {
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_BLUEPRINTS_BY_BUILD);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_BLUEPRINTS_BY_BUILD);
         stmt->setUInt64(0, _owner->GetGUIDLow());
         stmt->setUInt32(1, garrBuildingId);
         CharacterDatabase.Execute(stmt);
@@ -1188,7 +1185,7 @@ void Garrison::Swap(uint32 plot1, uint32 plot2)
         PlaceBuilding(plot1, BuildingId2, true, true);
     }
 
-    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     SaveToDB(trans);
     CharacterDatabase.CommitTransaction(trans);
 }
@@ -1202,7 +1199,7 @@ void Garrison::PlaceBuilding(uint32 garrPlotInstanceId, uint32 garrBuildingId, b
     {
         placeBuildingResult.BuildingInfo.GarrPlotInstanceID = garrPlotInstanceId;
         placeBuildingResult.BuildingInfo.GarrBuildingID = garrBuildingId;
-        placeBuildingResult.BuildingInfo.TimeBuilt = GameTime::GetGameTime();
+        placeBuildingResult.BuildingInfo.TimeBuilt = time(nullptr);
 
         Plot* plot = GetPlot(garrPlotInstanceId);
 
@@ -1299,7 +1296,7 @@ void Garrison::CancelBuildingConstruction(uint32 garrPlotInstanceId)
             placeBuildingResult.Result = GARRISON_SUCCESS;
             placeBuildingResult.BuildingInfo.GarrPlotInstanceID = garrPlotInstanceId;
             placeBuildingResult.BuildingInfo.GarrBuildingID = restored->ID;
-            placeBuildingResult.BuildingInfo.TimeBuilt = GameTime::GetGameTime();
+            placeBuildingResult.BuildingInfo.TimeBuilt = time(nullptr);
             placeBuildingResult.BuildingInfo.Active = true;
 
             plot->SetBuildingInfo(placeBuildingResult.BuildingInfo, _owner);
@@ -1322,7 +1319,7 @@ void Garrison::ActivateBuilding(uint32 garrPlotInstanceId)
         if (plot->BuildingInfo.CanActivate() && plot->BuildingInfo.PacketInfo && !plot->BuildingInfo.PacketInfo->Active)
         {
             plot->BuildingInfo.PacketInfo->Active = true;
-            plot->BuildingInfo.FinalizerGuid.Clear();
+			plot->BuildingInfo.FinalizerGuid.Clear();
 
             if (Map* map = FindMap())
             {
@@ -1574,13 +1571,13 @@ void Garrison::AddMission(uint32 missionRecID, bool sendLog/* = true*/)
     Mission& mission = _missions[missionEntry->GarrTypeID][dbId];
     mission.PacketInfo.DbID = dbId;
     mission.PacketInfo.RecID = missionRecID;
-    mission.PacketInfo.OfferTime = GameTime::GetGameTime();
+    mission.PacketInfo.OfferTime = time(nullptr);
     mission.PacketInfo.OfferDuration = 0;
     mission.PacketInfo.StartTime = 0;
     mission.PacketInfo.TravelDuration = 0;
     mission.PacketInfo.Duration = 0/*missionEntry->MissionDuration*/;
     mission.PacketInfo.State = MISSION_STATE_AVAILABLE;
-    mission.PacketInfo.SuccesChance = 0;
+    mission.PacketInfo.SuccessChance = 0;
     mission.PacketInfo.UnkInt2 = 0;
     mission.DbState = DB_STATE_NEW;
 
@@ -1765,7 +1762,7 @@ void Garrison::ReTrainFollower(SpellInfo const* spellInfo, uint32 followerID)
     if (!followerEntry)
         return;
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_FOLLOWER_ABILITIES);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_FOLLOWER_ABILITIES);
     stmt->setUInt64(0, follower->PacketInfo.DbID);
     CharacterDatabase.Execute(stmt);
 
@@ -1832,7 +1829,7 @@ void Garrison::RemoveMissionByGuid(uint64 DbID)
             if (itr->second.PacketInfo.DbID == DbID)
             {
                 _missionIds[i].erase(itr->second.PacketInfo.RecID);
-                CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_MISSIONS_DB_ID);
+                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_MISSIONS_DB_ID);
                 stmt->setUInt64(0, DbID);
                 CharacterDatabase.Execute(stmt);
 
@@ -1853,7 +1850,7 @@ void Garrison::SendInfo()
     garrisonInfo.Garrisons.emplace_back();
 
     garrisonInfo.FollowerSoftCaps.emplace_back(1, 25); // has baracks? fuck it, dosntwork at all
-    garrisonInfo.FollowerSoftCaps.emplace_back(2, 10); // @hasTallent 
+    garrisonInfo.FollowerSoftCaps.emplace_back(2, 10); // @hasTalent 
     garrisonInfo.FollowerSoftCaps.emplace_back(4, 5);
 
     WorldPackets::Garrison::GarrisonInfo& garrison = garrisonInfo.Garrisons.back();
@@ -1871,7 +1868,7 @@ void Garrison::SendInfo()
         Plot& plot = p.second;
         garrison.Plots.push_back(&plot.PacketInfo);
         if (plot.BuildingInfo.PacketInfo)
-            garrison.Buildings.push_back(std::to_address(plot.BuildingInfo.PacketInfo));
+            garrison.Buildings.push_back(plot.BuildingInfo.PacketInfo.get_ptr());
     }
 
     for (auto const& p : _followers[type])
@@ -1890,14 +1887,14 @@ void Garrison::SendInfo()
         garrison.MissionRewards.reserve(_missions[type].size());
         garrison.CanStartMission.reserve(_missions[type].size());
         //! rewarded missions.
-        //garrison.ArchivedMissions.reserve(_missions[type].size());
+        garrison.ArchivedMissions.reserve(_missions[type].size());
     }
 
     for (auto const& i : _missions[type])
     {
         garrison.Missions.push_back(&i.second.PacketInfo);
         garrison.CanStartMission.push_back(i.second.PacketInfo.State == MISSION_STATE_AVAILABLE);
-        //garrison.ArchivedMissions.push_back(i.second.PacketInfo.RecID);
+        garrison.ArchivedMissions.push_back(i.second.PacketInfo.RecID);
 
         //! Now we support only one reward at time. 1 item + 1 cur  + 1 bonusAbility. Is really need more? But this way is really easy.
         garrison.MissionRewards.emplace_back();
@@ -2000,7 +1997,7 @@ uint32 Garrison::CanUpgrade(Player* receiver, GarrSiteLevelEntry const* site) co
     switch (site->GarrLevel)
     {
         case 1: 
-            // require bigger is better quest
+        // require bigger is better quest
             if (receiver->GetQuestStatus(receiver->GetTeam() == ALLIANCE ? 36592 : 36567) != QUEST_STATUS_INCOMPLETE)
                 result = GARRISON_ERROR_UPGRADE_CONDITION_FAILED;
             break;
@@ -2016,7 +2013,6 @@ uint32 Garrison::CanUpgrade(Player* receiver, GarrSiteLevelEntry const* site) co
 
     if (sWorld->getBoolConfig(CONFIG_DISABLE_GARE_UPGRADE))
         result = GARRISON_ERROR_UPGRADE_LEVEL_EXCEEDS_GARRISON_LEVEL;
-
     return result;
 }
 
@@ -2025,7 +2021,6 @@ void Garrison::SendGarrisonUpgradebleResult(Player* receiver, int32 garrSiteID) 
     auto site = _siteLevel[GARRISON_TYPE_GARRISON];
     if (!site)
         return;
-
     WorldPackets::Garrison::GarrisonIsUpgradeableResult result;
     result.Result = site->GarrSiteID == garrSiteID ? CanUpgrade(receiver, site) : GARRISON_ERROR_INVALID_SITE_ID;
     receiver->SendDirectMessage(result.Write());
@@ -2204,7 +2199,9 @@ uint32 Garrison::GetMissionSuccessChance(Mission* mission, GarrMissionEntry cons
 
         followersBiasMap[missionFollower->PacketInfo.DbID] = followerBias;
 
-
+        #ifdef GARRISON_CHEST_FORMULA_DEBUG
+        //sLog->outU("Follower %u bias %Lf", missionFollowers[l_Y]->PacketInfo.GarrFollowerID, followerBias);
+        #endif // GARRISON_CHEST_FORMULA_DEBUG
     }
 
     double l_Float8 = 100.0;
@@ -2248,7 +2245,9 @@ uint32 Garrison::GetMissionSuccessChance(Mission* mission, GarrMissionEntry cons
         l_V8 = (seil * l_V11) + currentAdditionalWinChance; ///< l_V8 is never read 01/18/16
         currentAdditionalWinChance = (seil * l_V11) + currentAdditionalWinChance;
 
-
+    #ifdef GARRISON_CHEST_FORMULA_DEBUG
+        // sLog->outU("Added %.2f to success due to follower %u bias. chance %f", (seil * l_V11), missionFollowers[l_Y]->PacketInfo.GarrFollowerID, currentAdditionalWinChance);
+    #endif // GARRISON_CHEST_FORMULA_DEBUG
     }
     #pragma endregion
 
@@ -2313,7 +2312,9 @@ uint32 Garrison::GetMissionSuccessChance(Mission* mission, GarrMissionEntry cons
             l_Unk1 = (l_Unk1 - l_Unk2) * l_V62;
             currentAdditionalWinChance = l_Unk1 + currentAdditionalWinChance;
 
-
+        #ifdef GARRISON_CHEST_FORMULA_DEBUG
+            // sLog->outU("Added %.2f to success due to followers countering boss mechanic %u.", l_Unk1, encoutersMechanics[l_I].second);
+        #endif // GARRISON_CHEST_FORMULA_DEBUG
         }
     }
     #pragma endregion
@@ -2353,7 +2354,9 @@ uint32 Garrison::GetMissionSuccessChance(Mission* mission, GarrMissionEntry cons
 
                             currentAdditionalWinChance = (seil * l_V62) + currentAdditionalWinChance;
 
-
+                        #ifdef GARRISON_CHEST_FORMULA_DEBUG
+                            // sLog->outU("Added %.2f to success due to follower %u enemy race ability %d.", (seil * l_V62), 0, ability->ID);
+                        #endif // GARRISON_CHEST_FORMULA_DEBUG
                         }
                     }
                 }
@@ -2385,7 +2388,9 @@ uint32 Garrison::GetMissionSuccessChance(Mission* mission, GarrMissionEntry cons
 
                     currentAdditionalWinChance = (seil * l_V62) + currentAdditionalWinChance;
 
-
+                #ifdef GARRISON_CHEST_FORMULA_DEBUG
+                    // sLog->outU("Added %.2f to success due to follower %u environment ability %u.", (seil * l_V62), missionFollowers[l_Y]->PacketInfo.GarrFollowerID, ability->ID);
+                #endif // GARRISON_CHEST_FORMULA_DEBUG
                 }
             }
         }
@@ -2397,9 +2402,9 @@ uint32 Garrison::GetMissionSuccessChance(Mission* mission, GarrMissionEntry cons
     double missionDuration = missionEntry->MissionDuration/*GetMissionDuration(missionRecID)*/; ///!< ToDo
     double missionTravelTime = 0/*missionEntry-> GetMissionTravelDuration(missionRecID)*/;
 
-    /*std::set<int32> abilities;
+    std::set<int32> abilities;
     for (auto ab : _abilities)
-        abilities.insert(ab);*/
+        abilities.insert(ab);
 
     for (uint32 l_Y = 0; l_Y < missionFollowers.size(); ++l_Y)
     {
@@ -2427,7 +2432,7 @@ uint32 Garrison::GetMissionSuccessChance(Mission* mission, GarrMissionEntry cons
                             if (l_W != l_Y)
                             {
                                 auto followerEntry = sGarrFollowerStore.LookupEntry(missionFollowers[l_W]->PacketInfo.GarrFollowerID);
-                                if (followerEntry && (followerEntry->HordeCreatureID == abilityEffectEntry->ActionRace) || (followerEntry->AllianceCreatureID == abilityEffectEntry->ActionRace))
+                                if (followerEntry || (followerEntry->HordeCreatureID == abilityEffectEntry->ActionRace) || (followerEntry->AllianceCreatureID == abilityEffectEntry->ActionRace))
                                 {
                                     canProc = true;
                                     break;
@@ -2477,7 +2482,9 @@ uint32 Garrison::GetMissionSuccessChance(Mission* mission, GarrMissionEntry cons
                     seil = (followersBiasMap[missionFollowers[l_Y]->PacketInfo.DbID] + 1.0) * abilityEffectEntry->CombatWeightBase;
 
                 currentAdditionalWinChance = (seil * l_V62) + currentAdditionalWinChance;
-
+            #ifdef GARRISON_CHEST_FORMULA_DEBUG
+                // sLog->outU("Added %.2f to success due to follower %u trait %u.", (seil * l_V62), missionFollowers[l_Y]->PacketInfo.GarrFollowerID, abilityEffectEntry->EffectType);
+            #endif // GARRISON_CHEST_FORMULA_DEBUG
             }
         }
     }
@@ -2508,7 +2515,9 @@ uint32 Garrison::GetMissionSuccessChance(Mission* mission, GarrMissionEntry cons
     if (missionEntry->ID == 926)
         currentAdditionalWinChance += 90;
 
-
+#ifdef GARRISON_CHEST_FORMULA_DEBUG
+    // sLog->outU("Total success chance: %.2f.\n", currentAdditionalWinChance);
+#endif // GARRISON_CHEST_FORMULA_DEBUG
 
     return currentAdditionalWinChance;
 }
@@ -2611,15 +2620,15 @@ uint32 Garrison::GetResNumber() const
     if (!_lastResTaken)
         return default_resource_num;
 
-    uint32 res = (GameTime::GetGameTime() - _lastResTaken) / (min_counter * MINUTE);
+    uint32 res = (time(nullptr) - _lastResTaken) / (min_counter * MINUTE);
     return res > limit_cap ? limit_cap : res;
 }
 
 void Garrison::UpdateResTakenTime()
 {
-    _lastResTaken = GameTime::GetGameTime();
+    _lastResTaken = time(nullptr);
 
-    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     SaveToDB(trans);
     CharacterDatabase.CommitTransaction(trans);
 }
@@ -2779,7 +2788,7 @@ void Garrison::StartClassHallUpgrade(uint32 tallentID)
     }
 
     GarrTalentEntry const* toRemove = nullptr;
-    for (auto data : _classHallTalentStore)
+    for (auto& data : _classHallTalentStore)
     {
         GarrTalentEntry const* talentEntry = sGarrTalentStore.AssertEntry(data.GarrTalentID);
         if (talentEntry->Tier == entry->Tier)
@@ -2806,7 +2815,7 @@ void Garrison::StartClassHallUpgrade(uint32 tallentID)
     WorldPackets::Garrison::GarrisonResearchTalent data;
     data.GarrTypeID = 3;
     data.TalentID = tallentID;
-    data.ResearchTime = GameTime::GetGameTime();
+    data.ResearchTime = time(nullptr);
     _owner->SendDirectMessage(data.Write());
 
     AddTalentToStore(tallentID, data.ResearchTime, toRemove ? GarrisonConst::ClassHallTalentFlag::CLASS_HALL_TALENT_CHANGE : GarrisonConst::ClassHallTalentFlag::CLASS_HALL_TALENT_IN_RESEARCH, DB_STATE_NEW);
@@ -2855,7 +2864,7 @@ void Garrison::AddTalentToStore(uint32 talentID, uint32 _time, uint32 flags, Obj
     if (talentEntry->GarrAbilityID)
         _abilities.insert(talentEntry->GarrAbilityID);
 
-    if (GameTime::GetGameTime() < researchTime)
+    if (time(nullptr) < researchTime)
         talentResearchTimer = researchTime;
     else
     {
@@ -2868,18 +2877,18 @@ void Garrison::AddTalentToStore(uint32 talentID, uint32 _time, uint32 flags, Obj
     _classHallTalentStore.push_back(talentData);
 }
 
-bool Garrison::hasTallent(uint32 talentID) const
+bool Garrison::hasTalent(uint32 talentID) const
 {
     auto talentEntry = sGarrTalentStore.LookupEntry(talentID);
     if (!talentEntry)
         return false;
 
-    for (auto data : _classHallTalentStore)
+    for (auto& data : _classHallTalentStore)
     {
         if (data.GarrTalentID == talentID)
         {
             uint32 const researchTime = data.Flags & GarrisonConst::ClassHallTalentFlag::CLASS_HALL_TALENT_CHANGE ? talentEntry->RespecDurationSecs : talentEntry->ResearchDurationSecs;
-            return GameTime::GetGameTime() > (researchTime + data.ResearchStartTime);
+            return time(nullptr) > (researchTime + data.ResearchStartTime);
         }
     }
 
@@ -3040,7 +3049,7 @@ void Garrison::CreateShipment(ObjectGuid const& guid, uint32 count)
 
 void Garrison::CreateGarrisonShipment(uint32 shipmentID)
 {
-    uint64 dbID = PlaceShipment(shipmentID, GameTime::GetGameTime());
+    uint64 dbID = PlaceShipment(shipmentID, time(nullptr));
 
     WorldPackets::Garrison::CreateShipmentResponse shipmentResponse;
     shipmentResponse.ShipmentRecID = shipmentID;
@@ -3094,7 +3103,7 @@ uint64 Garrison::PlaceShipment(uint32 shipmentID, uint32 start, uint32 end/* = 0
     ObjectDBState state = DB_STATE_UNCHANGED;
 
     if (!start)
-        start = GameTime::GetGameTime();
+        start = time(nullptr);
 
     // find last finishing time.
     if (!end)
@@ -3166,7 +3175,7 @@ void Garrison::CompleteShipments(GameObject *go)
     if (loot_items.empty() && loot->items.empty())
     {
         FreeShipmentChest(idxShipment(shipmentConteinerEntry));
-        //go->SetLootState(GO_ACTIVATED, _owner);
+        go->SetLootState(GO_ACTIVATED, _owner);
         go->ForceValuesUpdateAtIndex(GAMEOBJECT_FIELD_DISPLAY_ID);
         go->ForceValuesUpdateAtIndex(GAMEOBJECT_FIELD_SPELL_VISUAL_ID);
         return;
@@ -3243,7 +3252,7 @@ void Garrison::CompleteShipments(GameObject *go)
 
     loot->clear();
     FreeShipmentChest(idxShipment(shipmentConteinerEntry));
-    //go->SetGoState(GO_STATE_ACTIVE);
+    go->SetGoState(GO_STATE_ACTIVE);
     go->ForceValuesUpdateAtIndex(GAMEOBJECT_FIELD_DISPLAY_ID);
     go->ForceValuesUpdateAtIndex(GAMEOBJECT_FIELD_SPELL_VISUAL_ID);
 
@@ -3252,14 +3261,14 @@ void Garrison::CompleteShipments(GameObject *go)
 void Garrison::FreeShipmentChest(uint32 idx)
 {
     if (!GetSpecialSpawnBuildingTime(idx))
-        SetBuildingData(idx, BUILDING_DATA_SPECIAL_SPAWN, GameTime::GetGameTime() + DAY);
+        SetBuildingData(idx, BUILDING_DATA_SPECIAL_SPAWN, time(nullptr) + DAY);
 
     ShipmentSet &set = _shipments[idx];
     for (auto itr = set.begin(); itr != set.end();)
     {
         if (itr->finished)
         {
-            CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_SHIPMENTS_DBID);
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_GARRISON_SHIPMENTS_DBID);
             stmt->setUInt64(0, itr->ShipmentID);
             CharacterDatabase.Execute(stmt);
 
@@ -3278,7 +3287,7 @@ uint32 Garrison::GetSpecialSpawnBuildingTime(uint32 idx)
 {
     if (uint32 _time = GetBuildingData(idx, BUILDING_DATA_SPECIAL_SPAWN))
     {
-        int diff = _time - GameTime::GetGameTime();
+        int diff = _time - time(nullptr);
         if (diff > 0)
             return diff;
     }
@@ -3353,29 +3362,29 @@ bool Garrison::hasLegionFall() const
     switch (_owner->getClass())
     {
         case CLASS_DEMON_HUNTER:
-            return hasTallent(491);
+            return hasTalent(491);
         case CLASS_DRUID:
-            return hasTallent(494);
+            return hasTalent(494);
         case CLASS_MONK:
-            return hasTallent(500);
+            return hasTalent(500);
         case CLASS_WARLOCK:
-            return hasTallent(512);
+            return hasTalent(512);
         case CLASS_SHAMAN:
-            return hasTallent(509);
+            return hasTalent(509);
         case CLASS_DEATH_KNIGHT:
-            return hasTallent(488);
+            return hasTalent(488);
         case CLASS_PRIEST:
-            return hasTallent(503);
+            return hasTalent(503);
         case CLASS_ROGUE:
-            return hasTallent(506);
+            return hasTalent(506);
         case CLASS_HUNTER:
-            return hasTallent(497);
+            return hasTalent(497);
         case CLASS_PALADIN:
-            return hasTallent(482);
+            return hasTalent(482);
         case CLASS_WARRIOR:
-            return hasTallent(515);
+            return hasTalent(515);
         case CLASS_MAGE:
-            return hasTallent(485);
+            return hasTalent(485);
         default:
             break;
     }
@@ -3388,29 +3397,29 @@ bool Garrison::hasLegendLimitUp() const
     switch (_owner->getClass())
     {
         case CLASS_DEMON_HUNTER:
-            return hasTallent(423);
+            return hasTalent(423);
         case CLASS_DRUID:
-            return hasTallent(357);
+            return hasTalent(357);
         case CLASS_MONK:
-            return hasTallent(258);
+            return hasTalent(258);
         case CLASS_WARLOCK:
-            return hasTallent(368);
+            return hasTalent(368);
         case CLASS_SHAMAN:
-            return hasTallent(42);
+            return hasTalent(42);
         case CLASS_DEATH_KNIGHT:
-            return hasTallent(434);
+            return hasTalent(434);
         case CLASS_PRIEST:
-            return hasTallent(456);
+            return hasTalent(456);
         case CLASS_ROGUE:
-            return hasTallent(445);
+            return hasTalent(445);
         case CLASS_HUNTER:
-            return hasTallent(379);
+            return hasTalent(379);
         case CLASS_PALADIN:
-            return hasTallent(401);
+            return hasTalent(401);
         case CLASS_WARRIOR:
-            return hasTallent(412);
+            return hasTalent(412);
         case CLASS_MAGE:
-            return hasTallent(390);
+            return hasTalent(390);
         default:
             break;
     }

@@ -1,4 +1,5 @@
 /*
+    https://uwow.biz/
 
     To-DO: Conversation 5002/5003 when near. Now it don't work =C
 */
@@ -83,7 +84,7 @@ public:
 
         void Reset() override
         {
-            if (me->IsAlive())
+            if (me->isAlive())
                 _Reset();
 
             me->RemoveAurasDueToSpell(SPELL_DEBUFF_OVERRIDE);
@@ -95,7 +96,7 @@ public:
             me->KillAllDelayedEvents();
             me->RemoveAllAreaObjects();
 
-            if (me->IsAlive())
+            if (me->isAlive())
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_DEBUFF_UNBEAR_TOR);
         }
 
@@ -104,7 +105,7 @@ public:
             _EnterCombat();
             events.Reset();
             
-            me->SetPower(me->GetPowerType(), 0);
+            me->SetPower(me->getPowerType(), 0);
 
             switch (me->GetEntry())
             {
@@ -241,7 +242,7 @@ public:
                         events.RescheduleEvent(EVENT_SCYTHE_SWEEP, 24500);
                         break;
                     case EVENT_CHECK_ENERGY:
-                        if (me->GetPower(me->GetPowerType()) >= 100)
+                        if (me->GetPower(me->getPowerType()) >= 100)
                         {
                             DoCast(me->GetEntry() == NPC_ATRIGAN ? SPELL_BONE_SAW : SPELL_FEL_SQUAL);
                             Talk(1);
@@ -502,7 +503,7 @@ public:
                 return;
 
             if (target->GetDistance2d(6403.13f, -935.55f) <= 30.0f)
-                if (target->IsAlive())
+                if (target->isAlive())
                     target->ToPlayer()->TeleportTo(target->GetMapId(), 6401.96f, -795.64f, 3020.17f, 0.01f, TELE_TO_SEAMLESS);
                 else
                     target->NearTeleportTo(6401.96f, -795.64f, 3020.17f, 0.01f);
@@ -611,7 +612,7 @@ public:
 
     bool OnCheck(Player* source, Unit* /*target*/) override
     {
-        if (source->IsAlive() && source->HasAura(233430))
+        if (source->isAlive() && source->HasAura(233430))
             return true;
 
         return false;

@@ -21,6 +21,7 @@ target_link_libraries(vmap4assembler
   PRIVATE
     trinity-core-interface
   PUBLIC
+    shared
     common
     casc
     zlib)

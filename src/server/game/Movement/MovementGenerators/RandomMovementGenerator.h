@@ -20,35 +20,27 @@
 #define TRINITY_RANDOMMOTIONGENERATOR_H
 
 #include "MovementGenerator.h"
-#include "PathGenerator.h"
-#include "Timer.h"
 
 template<class T>
-class RandomMovementGenerator : public MovementGeneratorMedium<T, RandomMovementGenerator<T>>
+class RandomMovementGenerator : public MovementGeneratorMedium< T, RandomMovementGenerator<T> >
 {
     public:
-        explicit RandomMovementGenerator(float distance = 0.0f) : _path(nullptr), _timer(0), _reference(0.f, 0.f, 0.f), _wanderDistance(distance), _wanderSteps(0), _interrupt(false), _stalled(false) { }
+        RandomMovementGenerator(float spawn_dist = 0.0f) : i_nextMoveTime(0), i_nextMove(0), wander_distance(spawn_dist)
+    {
+    }
 
-        MovementGeneratorType GetMovementGeneratorType() const override { return RANDOM_MOTION_TYPE; }
-
-        void Pause(uint32 timer = 0) override;
-        void Resume(uint32 overrideTimer = 0) override;
-
-        void DoInitialize(T&);
-        void DoFinalize(T&);
-        void DoReset(T&);
-        bool DoUpdate(T&, uint32);
-
+        void _setRandomLocation(T &);
+        void DoInitialize(T &);
+        void DoFinalize(T &);
+        void DoReset(T &);
+        bool DoUpdate(T &, const uint32);
+        bool GetResetPos(T&, float& x, float& y, float& z);
+        MovementGeneratorType GetMovementGeneratorType() override { return RANDOM_MOTION_TYPE; }
     private:
-        void SetRandomLocation(T&);
+        TimeTrackerSmall i_nextMoveTime;
 
-        std::unique_ptr<PathGenerator> _path;
-        TimeTracker _timer;
-        Position _reference;
-        float _wanderDistance;
-        uint8 _wanderSteps;
-        bool _interrupt;
-        bool _stalled;
+        uint32 i_nextMove;
+        float wander_distance;
 };
 #endif
 

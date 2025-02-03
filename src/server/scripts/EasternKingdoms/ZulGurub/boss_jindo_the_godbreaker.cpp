@@ -508,7 +508,7 @@ class SpiritPortalCheck
         {
             if (!obj->ToCreature())
                 return true;
-            return ((obj->ToCreature()->HasUnitState(UNIT_STATE_CASTING)) || (obj->ToCreature()->GetEntry() != i_entry) || !obj->ToCreature()->IsAlive());
+            return ((obj->ToCreature()->HasUnitState(UNIT_STATE_CASTING)) || (obj->ToCreature()->GetEntry() != i_entry) || !obj->ToCreature()->isAlive());
         }
         uint32 i_entry;
 };

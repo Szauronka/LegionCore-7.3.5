@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "the_emerald_nightmare.h"
 
 enum Says
@@ -259,7 +263,7 @@ struct boss_xavius : public BossAI
 
                 for (auto const& player : playerList)
                 {
-                    if (!player || !player->IsAlive() || player->isGameMaster())
+                    if (!player || !player->isAlive() || player->isGameMaster())
                         continue;
 
                     player->CastSpell(player, SPELL_THE_DREAMING_SUM_CLONE, true);
@@ -400,7 +404,7 @@ struct boss_xavius : public BossAI
                 {
                     instance->instance->ApplyOnEveryPlayer([&](Player* player)
                     {
-                        if (player->IsAlive() && !player->isGameMaster() && !player->HasAura(SPELL_NIGHTMARE_TORMENT_ALT_POWER))
+                        if (player->isAlive() && !player->isGameMaster() && !player->HasAura(SPELL_NIGHTMARE_TORMENT_ALT_POWER))
                             player->CastSpell(player, SPELL_NIGHTMARE_TORMENT_ALT_POWER, true);
                     });
                     events.RescheduleEvent(EVENT_CHECK_ALT_POWER, 2000);
@@ -708,7 +712,7 @@ struct npc_xavius_nightmare_blades : public ScriptedAI
                             Position pos;
                             float angle = target->GetRelativeAngle(me);
                             float dist = me->GetDistance(target) + 20.0f;
-                            pos = target->GetNearPosition(dist, angle);
+                            target->GetNearPosition(pos, dist, angle);
 
                             float angle2 = pos.GetRelativeAngle(target);
                             float dist2 = 8.0f;
@@ -768,7 +772,7 @@ struct npc_xavius_inconceivable_horror : public ScriptedAI
                         if (me->GetDistance(owner) > 10.0f)
                         {
                             Position pos;
-                            pos = me->GetNearPosition(me->GetDistance(owner) / 2, me->GetRelativeAngle(owner));
+                            me->GetNearPosition(pos, me->GetDistance(owner) / 2, me->GetRelativeAngle(owner));
                             me->GetMotionMaster()->MovePoint(1, pos);
                             events.RescheduleEvent(EVENT_1, 1000);
                         }
@@ -1179,7 +1183,8 @@ class spell_xavius_unfathomable_reality : public AuraScript
         if (!GetCaster())
             return;
 
-        Position pos = GetCaster()->GetRandomNearPosition(60.0f);
+        Position pos;
+        GetCaster()->GetRandomNearPosition(pos, 60.0f);
         GetCaster()->CastSpell(pos, 206878, true);
     }
 
@@ -1341,7 +1346,7 @@ class spell_xavius_writhing_deep : public SpellScript
         if (auto caster = GetCaster())
         {
             Position pos;
-            pos = caster->GetNearPosition(frand(15.0f, 25.0f), float(urand(0, 6)));
+            caster->GetNearPosition(pos, frand(15.0f, 25.0f), float(urand(0, 6)));
             uint32 spellId = GetSpellInfo()->Effects[effIndex]->TriggerSpell;
             uint32 delay = GetSpellInfo()->Effects[effIndex]->MiscValue;
             caster->CastSpellDelay(pos, spellId, true, delay);

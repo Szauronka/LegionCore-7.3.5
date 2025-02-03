@@ -1,11 +1,10 @@
 /*
+    http://epicwow.com/
     Dungeon : The Everbloom 100
 */
 
 #ifndef THE_EVERBLOOM_H_
 #define THE_EVERBLOOM_H_
-
-#define DataHeader "EB"
 
 enum eData
 {

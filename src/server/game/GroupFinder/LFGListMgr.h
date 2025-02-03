@@ -1,8 +1,18 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//  MILLENIUM-STUDIO
+//  Copyright 2016 Millenium-studio SARL
+//  All Rights Reserved.
+//
+//  Uwow team 2016
+//
+////////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "LFGList.h"
 
-class TC_GAME_API LFGListMgr
+class LFGListMgr
 {
 public:
     static LFGListMgr* instance();

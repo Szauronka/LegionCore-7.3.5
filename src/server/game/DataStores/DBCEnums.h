@@ -642,14 +642,6 @@ enum DifficultyFlags
 
 const uint8 MAX_BOUND = 3;
 
-enum QuestPackageFilter
-{
-    QUEST_PACKAGE_FILTER_LOOT_SPECIALIZATION    = 0,    // Players can select this quest reward if it matches their selected loot specialization
-    QUEST_PACKAGE_FILTER_CLASS                  = 1,    // Players can select this quest reward if it matches their class
-    QUEST_PACKAGE_FILTER_UNMATCHED              = 2,    // Players can select this quest reward if no class/loot_spec rewards are available
-    QUEST_PACKAGE_FILTER_EVERYONE               = 3     // Players can always select this quest reward
-};
-
 enum ScenarioFlags
 {
     SCENARIO_FLAG_CHALLENGE             = 0x1,
@@ -881,6 +873,12 @@ enum LfgQueueType
     LFG_QUEUE_WORLD_PVP     = 5,
     LFG_QUEUE_BRAWL         = 6,
     LFG_QUEUE_MAX           = 7
+};
+
+enum LfgDungeons : uint32
+{
+    LFG_DUNGEON_TIME_WALKING_BLACK_TEMPLE   = 1533,
+    LFG_DUNGEON_TIME_WALKING_ULDUAR         = 1677
 };
 
 enum LfgType
@@ -1270,21 +1268,5 @@ enum PvpScalingEffectTypes
 };
 
 static uint8 const MAX_SPELL_AURA_INTERRUPT_FLAGS = 2;
-
-enum PowerTypeFlags : uint16
-{
-    StopRegenWhileCasting         = 0x0001,
-    UseRegenInterrupt             = 0x0002,
-    FillFractionalPowerOnEnergize = 0x0008,
-    NoClientPrediction            = 0x0010,
-    UnitsUseDefaultPowerOnInit    = 0x0020,
-    NotSetToDefaultOnResurrect    = 0x0040,
-    IsUsedByNPCs                  = 0x0080,
-    ContinueRegenWhileFatigued    = 0x0200,
-    RegenAffectedByHaste          = 0x0400,
-    SetToMaxOnLevelUp             = 0x1000,
-    SetToMaxLevelOnInitialLogIn   = 0x2000,
-    AllowCostModsForPlayers       = 0x4000
-};
 
 #endif

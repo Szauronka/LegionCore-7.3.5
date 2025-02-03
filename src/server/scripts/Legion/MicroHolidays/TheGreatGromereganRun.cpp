@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
 */
 
 struct npc_great_gnomeregan_race_gate : ScriptedAI

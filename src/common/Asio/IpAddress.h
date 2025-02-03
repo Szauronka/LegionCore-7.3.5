@@ -1,5 +1,5 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+ * Copyright (C) 2008-2021 TrinityCore <https://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -27,7 +27,6 @@ namespace Trinity
     {
         using boost::asio::ip::make_address;
         using boost::asio::ip::make_address_v4;
-        using boost::asio::ip::make_address_v6;
         inline uint32 address_to_uint(boost::asio::ip::address_v4 const& address) { return address.to_uint(); }
     }
 }

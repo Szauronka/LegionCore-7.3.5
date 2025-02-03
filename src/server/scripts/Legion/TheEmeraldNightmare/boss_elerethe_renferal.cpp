@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "the_emerald_nightmare.h"
 
 enum Says
@@ -235,7 +239,7 @@ struct boss_elerethe_renferal : public BossAI
 
     void JustDied(Unit* /*killer*/) override
     {
-        me->SetAnimTier(AnimTier::Ground);
+        me->SetAnimTier(0);
         RemoveEventTrash();
         _JustDied();
     }
@@ -245,7 +249,7 @@ struct boss_elerethe_renferal : public BossAI
         BossAI::EnterEvadeMode();
         RemoveEventTrash();
         me->RemoveAllAuras();
-        me->SetAnimTier(AnimTier::Ground);
+        me->SetAnimTier(0);
         me->NearTeleportTo(11405.6f, 11400.7f, -85.32f, 4.62f);
         me->GetMotionMaster()->MoveIdle();
     }
@@ -381,6 +385,7 @@ struct boss_elerethe_renferal : public BossAI
                     DoCast(me, SPELL_VILE_AMBUSH_FILTER, true);
                     break;
                 case SPELL_VILE_AMBUSH_JUMP:
+                    me->SetAnimTier(0);
                     me->SetDisableGravity(false);
                     me->SetReactState(REACT_AGGRESSIVE);
                     if (IsMythicRaid())
@@ -489,7 +494,7 @@ struct boss_elerethe_renferal : public BossAI
                     float angle = -1.0f;
                     for (uint8 i = 0; i < 8; ++i)
                     {
-                        pos = me->GetNearPosition(15.0f, angle);
+                        me->GetNearPosition(pos, 15.0f, angle);
                         me->CastSpell(pos.GetPosition(), SPELL_SHIMMERING_FEATHER_TRIG, true);
                         angle += 0.25f;
                     }
@@ -689,7 +694,7 @@ struct npc_elerethe_surging_egg_sac : public ScriptedAI
             for (uint8 i = 0; i < 4; ++i)
             {
                 Position pos;
-                pos = me->GetRandomNearPosition(3.0f);
+                me->GetRandomNearPosition(pos, 3.0f);
                 me->CastSpell(pos, SPELL_SUM_SKITTERING_SPIDERLING, true);
             }
             me->DespawnOrUnsummon(3000);

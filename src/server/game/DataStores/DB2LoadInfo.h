@@ -4115,7 +4115,7 @@ struct GarrMissionLoadInfo
             { true, FT_INT, "AreaID" },
             { true, FT_INT, "OvermaxRewardPackID" },
             { true, FT_INT, "EnvGarrMechanicID" },
-            { true, FT_INT, "RelationshipData" },
+			{ true, FT_INT, "RelationshipData" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, GarrMissionMeta::Instance(), HOTFIX_SEL_GARR_MISSION);
         return &loadInfo;
@@ -5024,28 +5024,6 @@ struct ImportPriceWeaponLoadInfo
             { false, FT_FLOAT, "Data" },
         };
         static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, ImportPriceWeaponMeta::Instance(), HOTFIX_SEL_IMPORT_PRICE_WEAPON);
-        return &loadInfo;
-    }
-};
-
-struct InvasionClientDataLoadInfo
-{
-    static DB2LoadInfo const* Instance()
-    {
-        static DB2FieldMeta const fields[] =
-        {
-            { false, FT_STRING, "Name" },
-            { false, FT_FLOAT, "IconLocation1" },
-            { false, FT_FLOAT, "IconLocation2" },
-            { true, FT_INT, "ID" },
-            { true, FT_INT, "WorldStateID" },
-            { true, FT_INT, "UiTextureAtlasMemberID" },
-            { true, FT_INT, "ScenarioID" },
-            { true, FT_INT, "WorldQuestID" },
-            { true, FT_INT, "WorldStateValue" },
-            { true, FT_INT, "InvasionEnabledWorldStateID" },
-        };
-        static DB2LoadInfo const loadInfo(&fields[0], std::extent<decltype(fields)>::value, InvasionClientDataMeta::Instance(), HOTFIX_SEL_INVASION_CLIENT_DATA);
         return &loadInfo;
     }
 };

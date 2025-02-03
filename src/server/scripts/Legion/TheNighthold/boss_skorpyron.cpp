@@ -1,3 +1,7 @@
+/*
+https://uwow.biz/
+*/
+
 #include "AreaTriggerAI.h"
 #include "the_nighthold.h"
 #include "Packets/SpellPackets.h"
@@ -209,7 +213,7 @@ struct boss_skorpyron : BossAI
 
             me->AddDelayedEvent(20000, [this, entry, path]() -> void
             {
-                if (me->IsAlive() && me->isInCombat())
+                if (me->isAlive() && me->isInCombat())
                     if (Creature* scrop = me->SummonCreature(entry, 121.33f + frand(-0.3f, 0.3f), 3418.02f + frand(-0.3f, 0.3f), -250.12f, 2.36f))
                     {
                         scrop->GetMotionMaster()->MovePath(path, false);
@@ -231,7 +235,8 @@ struct boss_skorpyron : BossAI
 
         if (spell->Id == SPELL_FRAGMENTS_FILTER)
         {
-            Position pos = target->GetRandomNearPosition(6.0f);
+            Position pos;
+            target->GetRandomNearPosition(pos, 6.0f);
             if (colorMod == RED_MODE)
                 me->CastSpell(pos, SPELL_VOLATILE_FRAGMENTS, true);
             else if (colorMod == GREEN_MODE)
@@ -245,7 +250,7 @@ struct boss_skorpyron : BossAI
     {
         if (spell->Id == SPELL_FOCUSED_BLAST_AT)
         {
-            me->SendPlaySpellVisualKit(VISUAL_KIT_BLAST, 0);
+            me->SendPlaySpellVisualKit(0, VISUAL_KIT_BLAST);
 
             float z = me->GetPositionZ();
             float lineDistance = 2.5f;
@@ -255,7 +260,7 @@ struct boss_skorpyron : BossAI
 
             for (uint8 i = 1; i <= countLine; i++)
             {
-                firstPos = me->GetNearPosition(i * 2.5f, 0.0f);
+                me->GetNearPosition(firstPos, i * 2.5f, 0.0f);
                 SendVisual(firstPos.GetPositionX(), firstPos.GetPositionY(), firstPos.GetPositionZ(), i);
 
                 for (uint8 j = 1; j <= countPointInLine; j++)
@@ -499,7 +504,7 @@ struct npc_skorpyron_generic_scorp : public ScriptedAI
             me->AddUnitState(UNIT_STATE_STUNNED);
             me->AddDelayedEvent(1500, [this]() -> void
             {
-                if (me && me->IsAlive())
+                if (me && me->isAlive())
                     me->ClearUnitState(UNIT_STATE_STUNNED);
             });
             //<<<Hack

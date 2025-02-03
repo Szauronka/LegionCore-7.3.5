@@ -107,10 +107,10 @@ void Mission::Start(Player* owner, std::vector<uint64> const &followers)
     }
 
     PacketInfo.State = MISSION_STATE_IN_PROGRESS;
-    PacketInfo.SuccesChance = garrison->GetMissionSuccessChance(this, missionEntry);
+    PacketInfo.SuccessChance = garrison->GetMissionSuccessChance(this, missionEntry);
     PacketInfo.Duration = missionEntry->MissionDuration;
     PacketInfo.OfferDuration = missionEntry->OfferDuration;
-    PacketInfo.StartTime = GameTime::GetGameTime();
+    PacketInfo.StartTime = time(nullptr);
     DbState = DB_STATE_CHANGED;
 
     WorldPackets::Garrison::GarrisonStartMissionResult missionRes;
@@ -138,15 +138,15 @@ void Mission::Complete(Player* owner)
         return;
 
     //! just do it. should never do it.
-    if (!PacketInfo.SuccesChance)
-        PacketInfo.SuccesChance = garrison->GetMissionSuccessChance(this, missionEntry);
+    if (!PacketInfo.SuccessChance)
+        PacketInfo.SuccessChance = garrison->GetMissionSuccessChance(this, missionEntry);
 
-    auto bonus = roll_chance_f(PacketInfo.SuccesChance);
+    auto bonus = roll_chance_f(PacketInfo.SuccessChance);
     if (bonus)
     {
         PacketInfo.State = MISSION_STATE_WAITING_BONUS;
 
-        if (PacketInfo.SuccesChance > 100 && roll_chance_f(PacketInfo.SuccesChance - 100))
+        if (PacketInfo.SuccessChance > 100 && roll_chance_f(PacketInfo.SuccessChance - 100))
             PacketInfo.State = MISSION_STATE_WAITING_OWERMAX_BONUS;
     }
     else

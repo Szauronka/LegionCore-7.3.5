@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Invasion Azsuna
 */
 
@@ -17,7 +18,7 @@ public:
 
     struct instance_InvasionAzsuna_InstanceMapScript : public InstanceScript
     {
-        instance_InvasionAzsuna_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_InvasionAzsuna_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         WorldLocation loc_res_pla;  // for respawn
         ObjectGuid bombarder_guid;
@@ -53,7 +54,8 @@ public:
         // OnPlayerDeath
         {
             // Init data
-            loc_res_pla.WorldRelocate(1705, x, y, z);
+            loc_res_pla.Relocate(x, y, z);
+            loc_res_pla.SetMapId(1705);
 
             uint32 graveyardId = 0;
 
@@ -64,7 +66,8 @@ public:
 
             if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
             {
-                loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                loc_res_pla.SetMapId(gy->MapID);
             }
 
             return &loc_res_pla;
@@ -121,7 +124,7 @@ public:
                     {
                         if (Player* player = itr->getSource())
                         {
-                            if (player->IsAlive() && !player->isGameMaster())
+                            if (player->isAlive() && !player->isGameMaster())
                                 bomber->CastSpell(player, 235084);
                         }
                     }

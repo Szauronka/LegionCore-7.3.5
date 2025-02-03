@@ -41,7 +41,7 @@ public:
 
     struct instance_gundrak_InstanceMapScript : public InstanceScript
     {
-        instance_gundrak_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_gundrak_InstanceMapScript(Map* map) : InstanceScript(map)
         {
             bHeroicMode = map->IsHeroic();
         }
@@ -88,7 +88,6 @@ public:
 
         void Initialize() override
         {
-            SetHeaders(DataHeader);
             spawnSupport = false;
 
             timer = 0;
@@ -149,7 +148,7 @@ public:
                 case CREATURE_DRAKKARICOLOSSUS: uiDrakkariColossus = creature->GetGUID(); break;
                 case CREATURE_ECK: uiEckTheFerocious = creature->GetGUID(); break;
                 case CREATURE_RUIN_DWELLER:
-                    if (creature->IsAlive())
+                    if (creature->isAlive())
                         DwellerGUIDs.insert(creature->GetGUID());
                     break;
             }

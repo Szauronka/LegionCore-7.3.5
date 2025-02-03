@@ -33,13 +33,13 @@ WorldPacket const* WorldPackets::Taxi::TaxiNodeStatus::Write()
 
 WorldPacket const* WorldPackets::Taxi::ShowTaxiNodes::Write()
 {
-    _worldPacket.WriteBit(WindowInfo.has_value());
+    _worldPacket.WriteBit(WindowInfo.is_initialized());
     _worldPacket.FlushBits();
 
     _worldPacket << uint32(CanLandNodes.size());
     _worldPacket << uint32(CanUseNodes.size());
 
-    if (WindowInfo.has_value())
+    if (WindowInfo.is_initialized())
     {
         _worldPacket << WindowInfo->UnitGUID;
         _worldPacket << uint32(WindowInfo->CurrentNode);

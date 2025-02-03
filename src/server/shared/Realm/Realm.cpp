@@ -19,24 +19,37 @@
 #include "IpAddress.h"
 #include "IpNetwork.h"
 #include "StringFormat.h"
-#include <boost/asio/ip/address.hpp>
-
-void Realm::SetName(std::string name)
-{
-    Name = name;
-    NormalizedName = std::move(name);
-    NormalizedName.erase(std::remove_if(NormalizedName.begin(), NormalizedName.end(), ::isspace), NormalizedName.end());
-}
 
 boost::asio::ip::address Realm::GetAddressForClient(boost::asio::ip::address const& clientAddr) const
 {
-    if (auto addressIndex = Trinity::Net::SelectAddressForClient(clientAddr, Addresses))
-        return Addresses[*addressIndex];
+    boost::asio::ip::address realmIp;
 
+    // Attempt to send best address for client
     if (clientAddr.is_loopback())
-        return Addresses[1];
+    {
+        // Try guessing if realm is also connected locally
+        if (LocalAddress->is_loopback() || ExternalAddress->is_loopback())
+            realmIp = clientAddr;
+        else
+        {
+            // Assume that user connecting from the machine that bnetserver is located on
+            // has all realms available in his local network
+            realmIp = *LocalAddress;
+        }
+    }
+    else
+    {
+        if (!LocalAddress || !LocalSubnetMask)
+            return realmIp;
 
-    return Addresses[0];
+        if (clientAddr.is_v4() && Trinity::Net::IsInNetwork(LocalAddress->to_v4(), LocalSubnetMask->to_v4(), clientAddr.to_v4()))
+            realmIp = *LocalAddress;
+        else
+            realmIp = *ExternalAddress;
+    }
+
+    // Return external IP
+    return realmIp;
 }
 
 uint32 Realm::GetConfigId() const

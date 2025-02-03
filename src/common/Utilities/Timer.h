@@ -21,20 +21,11 @@
 
 #include "Duration.h"
 
-inline TimePoint GetApplicationStartTime()
-{
-    using namespace std::chrono;
-
-    static const steady_clock::time_point ApplicationStartTime = steady_clock::now();
-
-    return ApplicationStartTime;
-}
-
 inline uint32 getMSTime()
 {
-    using namespace std::chrono;
+    static const SystemClock::time_point ApplicationStartTime = SystemClock::now();
 
-    return uint32(duration_cast<milliseconds>(steady_clock::now() - GetApplicationStartTime()).count());
+    return uint32(std::chrono::duration_cast<Milliseconds>(SystemClock::now() - ApplicationStartTime).count());
 }
 
 inline uint32 getMSTimeDiff(uint32 oldMSTime, uint32 newMSTime)
@@ -42,8 +33,7 @@ inline uint32 getMSTimeDiff(uint32 oldMSTime, uint32 newMSTime)
     // getMSTime() have limited data range and this is case when it overflow in this tick
     if (oldMSTime > newMSTime)
         return (0xFFFFFFFF - oldMSTime) + newMSTime;
-    else
-        return newMSTime - oldMSTime;
+    return newMSTime - oldMSTime;
 }
 
 inline uint32 GetMSTimeDiffToNow(uint32 oldMSTime)
@@ -53,7 +43,7 @@ inline uint32 GetMSTimeDiffToNow(uint32 oldMSTime)
 
 inline double getPreciseTime()
 {
-    return std::chrono::duration_cast<Milliseconds>(std::chrono::steady_clock::now().time_since_epoch()).count() / 1000.0;
+    return std::chrono::duration_cast<Milliseconds>(SystemClock::now().time_since_epoch()).count() / 1000.0;
 }
 
 struct IntervalTimer
@@ -150,7 +140,7 @@ private:
 
 struct TimeTrackerSmall
 {
-    explicit TimeTrackerSmall(int32 expiry = 0) : i_expiryTime(expiry)
+    explicit TimeTrackerSmall(uint32 expiry = 0) : i_expiryTime(expiry)
     {
     }
 
@@ -164,7 +154,7 @@ struct TimeTrackerSmall
         return i_expiryTime <= 0;
     }
 
-    void Reset(int32 interval)
+    void Reset(uint32 interval)
     {
         i_expiryTime = interval;
     }

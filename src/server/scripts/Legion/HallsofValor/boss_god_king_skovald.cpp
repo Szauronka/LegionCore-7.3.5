@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Halls of Valor 100-110
     Encounter: God King Skovald
     Normal: 100%, Heroic: 100%, Mythic: 100%
@@ -81,7 +82,7 @@ public:
     {
         boss_god_king_skovaldAI(Creature* creature) : BossAI(creature, DATA_SKOVALD) 
         {
-            if (me->IsAlive())
+            if (me->isAlive())
             {
                 me->SetVisible(false);
                 intro = true;
@@ -252,7 +253,7 @@ public:
                         me->CastSpell(target, 193686, true);
                     break;
                 case SPELL_INFERNAL_FLAMES_FIND_N:
-                    if (!me->isInBack(target, float(M_PI * 0.8f)))
+                    if (!me->isInBack(target, M_PI * 0.8f))
                         DoCast(target, SPELL_INFERNAL_FLAMES_TRIG_AT, true);
                     break;
                 case SPELL_INFERNAL_FLAMES_FIND_H:
@@ -675,7 +676,7 @@ public:
             {
                 if (moveTimer <= diff)
                 {
-                    if (!owner || !owner->IsInWorld() || !owner->IsAlive())
+                    if (!owner || !owner->IsInWorld() || !owner->isAlive())
                     {
                         me->DespawnOrUnsummon();
                         return;
@@ -881,7 +882,7 @@ class spell_skovald_aegis_remove : public SpellScriptLoader
                     return;
 
                 if (Unit* attacker = dmgInfo.GetAttacker())
-                    if (attacker->GetDistance(GetCaster()) < 5.0f && GetCaster()->isInBack(attacker, float(M_PI * 0.8f)))
+                    if (attacker->GetDistance(GetCaster()) < 5.0f && GetCaster()->isInBack(attacker, M_PI * 0.8f))
                         absorbAmount = 0;
                     else
                         absorbAmount = dmgInfo.GetDamage();
@@ -925,8 +926,8 @@ class spell_skovald_aegis_absorb : public SpellScriptLoader
                 if (auto attacker = dmgInfo.GetAttacker())
                 {
                     Position pos;
-                    GetCaster()->SimplePosXYRelocationByAngle(pos, 5.0f, float(M_PI));
-                    if (pos.HasInArc(float(M_PI * 1.4f), attacker))
+                    GetCaster()->SimplePosXYRelocationByAngle(pos, 5.0f, M_PI);
+                    if (pos.HasInArc(M_PI * 1.4f, attacker))
                         absorbAmount = dmgInfo.GetDamage();
                     else
                         absorbAmount = 0;

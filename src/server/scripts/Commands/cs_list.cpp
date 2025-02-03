@@ -15,13 +15,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-Name: list_commandscript
-%Complete: 100
-Comment: All list related commands
-Category: commandscripts
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "Chat.h"
 #include "SpellAuraEffects.h"
@@ -161,7 +154,7 @@ public:
         // inventory case
         uint32 inventoryCount = 0;
 
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_INVENTORY_COUNT_ITEM);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_INVENTORY_COUNT_ITEM);
         stmt->setUInt32(0, itemId);
         result = CharacterDatabase.Query(stmt);
 
@@ -450,13 +443,13 @@ public:
 
         for (uint16 i = 0; i < TOTAL_AURAS; ++i)
         {
-            Unit::AuraEffectList const& auraList = unit->GetAuraEffectsByType(AuraType(i));
-            if (auraList.begin() == auraList.end())
+            Unit::AuraEffectList const* auraList = unit->GetAuraEffectsByType(AuraType(i));
+            if (!auraList || auraList->begin() == auraList->end())
                 continue;
 
-            handler->PSendSysMessage(LANG_COMMAND_TARGET_LISTAURATYPE, auraList.size(), i);
+            handler->PSendSysMessage(LANG_COMMAND_TARGET_LISTAURATYPE, auraList->size(), i);
 
-            for (Unit::AuraEffectList::const_iterator itr = auraList.begin(); itr != auraList.end(); ++itr)
+            for (Unit::AuraEffectList::const_iterator itr = auraList->begin(); itr != auraList->end(); ++itr)
                 handler->PSendSysMessage(LANG_COMMAND_TARGET_AURASIMPLE, (*itr)->GetId(), (*itr)->GetEffIndex(), (*itr)->GetAmount());
         }
 
@@ -669,7 +662,7 @@ public:
         else if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
             return false;
 
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_MAIL_LIST_COUNT);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_MAIL_LIST_COUNT);
         stmt->setUInt64(0, targetGuid.GetGUIDLow());
         PreparedQueryResult result = CharacterDatabase.Query(stmt);
         if (result)
@@ -679,7 +672,7 @@ public:
             std::string nameLink = handler->playerLink(targetName);
             handler->PSendSysMessage(LANG_LIST_MAIL_HEADER, countMail, nameLink.c_str(), targetGuid.ToString().c_str());
             handler->PSendSysMessage(LANG_ACCOUNT_LIST_BAR);
-            CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_MAIL_LIST_INFO);
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_MAIL_LIST_INFO);
             stmt->setUInt64(0, targetGuid.GetGUIDLow());
             PreparedQueryResult result = CharacterDatabase.Query(stmt);
             if (result)
@@ -714,7 +707,7 @@ public:
                             do
                             {
                                 uint32 item_guid        = (*result2)[0].GetUInt64();
-                                CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_MAIL_LIST_ITEMS);
+                                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_MAIL_LIST_ITEMS);
                                 stmt->setUInt64(0, item_guid);
                                 PreparedQueryResult result3 = CharacterDatabase.Query(stmt);
                                 if (result3)

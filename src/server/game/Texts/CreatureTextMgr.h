@@ -24,7 +24,7 @@
 
 struct CreatureTextEntry
 {
-    uint32 creatureId;
+    uint32 entry;
     uint32 duration;
     uint32 sound;
     uint32 BroadcastTextID;
@@ -100,13 +100,17 @@ typedef std::vector<uint8> CreatureTextRepeatIds;
 typedef std::map<uint8, CreatureTextRepeatIds> CreatureTextRepeatGroup;
 typedef std::map<ObjectGuid::LowType, CreatureTextRepeatGroup> CreatureTextRepeatMap;//guid based
 
-class TC_GAME_API CreatureTextMgr
+class CreatureTextMgr
 {
     CreatureTextMgr() {};
     ~CreatureTextMgr() {};
 
     public:
-        static CreatureTextMgr* instance();
+        static CreatureTextMgr* instance()
+        {
+            static CreatureTextMgr instance;
+            return &instance;
+        }
 
         void LoadCreatureTexts();
         CreatureTextMap  const& GetTextMap() const { return mTextMap; }

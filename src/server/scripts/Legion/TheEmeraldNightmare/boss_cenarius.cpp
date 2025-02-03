@@ -1,4 +1,5 @@
 /*
+    https://uwow.biz/
     To-DO: More texts from sniffs
 */
 
@@ -296,8 +297,8 @@ struct boss_cenarius : public BossAI
 
                         for (uint8 i = 0; i < 3; ++i)
                         {
-                            beastsPos[*itr].SimplePosXYRelocationByAngle(posLeft, dist, float(M_PI/3)); //Left
-                            beastsPos[*itr].SimplePosXYRelocationByAngle(posRight, dist, float(- M_PI / 3)); //Right
+                            beastsPos[*itr].SimplePosXYRelocationByAngle(posLeft, dist, M_PI/3); //Left
+                            beastsPos[*itr].SimplePosXYRelocationByAngle(posRight, dist, -M_PI/3); //Right
                             me->SummonCreature(NPC_BEAST_OF_NIGHTMARE, posLeft.GetPositionX(), posLeft.GetPositionY(), posLeft.GetPositionZ(), beastsPos[*itr].GetOrientation());
                             me->SummonCreature(NPC_BEAST_OF_NIGHTMARE, posRight.GetPositionX(), posRight.GetPositionY(), posRight.GetPositionZ(), beastsPos[*itr].GetOrientation());
                             dist += 4;
@@ -310,8 +311,8 @@ struct boss_cenarius : public BossAI
 
                         for (uint8 i = 0; i < 3; ++i)
                         {
-                            beastsPos[*itr].SimplePosXYRelocationByAngle(posLeft, dist, float(M_PI/2)); //Left
-                            beastsPos[*itr].SimplePosXYRelocationByAngle(posRight, dist, float(- M_PI / 2)); //Right
+                            beastsPos[*itr].SimplePosXYRelocationByAngle(posLeft, dist, M_PI/2); //Left
+                            beastsPos[*itr].SimplePosXYRelocationByAngle(posRight, dist, -M_PI/2); //Right
                             me->SummonCreature(NPC_BEAST_OF_NIGHTMARE, posLeft);
                             me->SummonCreature(NPC_BEAST_OF_NIGHTMARE, posRight);
                             dist += 4;
@@ -775,7 +776,7 @@ struct npc_cenarius_allies_of_nature : public ScriptedAI
                         if (me->GetDistance(owner) > 20.0f)
                         {
                             Position pos;
-                            pos = me->GetNearPosition(me->GetDistance(owner) / 2, me->GetRelativeAngle(owner));
+                            me->GetNearPosition(pos, me->GetDistance(owner) / 2, me->GetRelativeAngle(owner));
                             me->GetMotionMaster()->MovePoint(1, pos);
                         }
                         else
@@ -953,7 +954,7 @@ struct npc_cenarius_malfurion_stormrage : public ScriptedAI
                         if (me->GetDistance(owner) > 20.0f)
                         {
                             Position pos;
-                            pos = me->GetNearPosition(me->GetDistance(owner) / 2, me->GetRelativeAngle(owner));
+                            me->GetNearPosition(pos, me->GetDistance(owner) / 2, me->GetRelativeAngle(owner));
                             me->GetMotionMaster()->MovePoint(1, pos);
                         }
                         else
@@ -1064,7 +1065,7 @@ struct npc_cenarius_nightmare_brambles : public ScriptedAI
                     events.RescheduleEvent(EVENT_2, 2000);
 
                     if (auto player = Player::GetPlayer(*me, playerGUID))
-                        if (player->IsAlive() && (player->GetDistance(me) < 100.0f))
+                        if (player->isAlive() && (player->GetDistance(me) < 100.0f))
                             break;
 
                     if (auto owner = me->GetAnyOwner())
@@ -1073,7 +1074,7 @@ struct npc_cenarius_nightmare_brambles : public ScriptedAI
                     break;
                 }
                 case EVENT_3:
-                    me->SendPlaySpellVisualKit(BRAMBLES_KIT_1, 0);
+                    me->SendPlaySpellVisualKit(0, BRAMBLES_KIT_1);
                     if (auto player = Player::GetPlayer(*me, playerGUID))
                         me->GetMotionMaster()->MovePoint(1, player->GetPosition());
                     events.RescheduleEvent(EVENT_3, 1000);
@@ -1152,7 +1153,7 @@ struct npc_cenarius_beast_of_nightmare : public ScriptedAI
         if (spell->Id == SPELL_GRIPPING_FOG_AT)
         {
             Position pos;
-            pos = me->GetNearPosition(100.0f, 0.0f);
+            me->GetNearPosition(pos, 100.0f, 0.0f);
             me->GetMotionMaster()->MovePoint(1, pos, false);
         }
     }

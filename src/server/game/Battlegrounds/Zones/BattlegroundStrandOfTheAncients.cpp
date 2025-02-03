@@ -1,19 +1,19 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #include "Battleground.h"
@@ -281,7 +281,7 @@ bool BattlegroundStrandOfTheAncients::ResetObjs()
         WorldSafeLocsEntry const* sg = sWorldSafeLocsStore.LookupEntry(BG_SA_GYEntries[i]);
         if (!sg)
         {
-            TC_LOG_ERROR("bg.battleground", "SOTA: Can't find GY entry %u", BG_SA_GYEntries[i]);
+            TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "SOTA: Can't find GY entry %u", BG_SA_GYEntries[i]);
             return false;
         }
 
@@ -294,7 +294,7 @@ bool BattlegroundStrandOfTheAncients::ResetObjs()
         {
             GraveyardStatus[i] = MS::Battlegrounds::GetOtherTeamID(Attackers);
             if (!AddSpiritGuide(i + BG_SA_MAXNPC, sg->Loc, MS::Battlegrounds::GetOtherTeamID(Attackers)))
-                TC_LOG_ERROR("bg.battleground", "SOTA: couldn't spawn GY: %u", i);
+                TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "SOTA: couldn't spawn GY: %u", i);
         }
     }
 
@@ -413,7 +413,7 @@ void BattlegroundStrandOfTheAncients::PostUpdateImpl(uint32 diff)
                 SendChatMessage(c, TEXT_ROUND_STARTED);
 
             TotalTime = 0;
-            m_EndTimestamp = GameTime::GetGameTime() + BG_SA_ROUNDLENGTH / IN_MILLISECONDS;
+            m_EndTimestamp = time(nullptr) + BG_SA_ROUNDLENGTH / IN_MILLISECONDS;
             ToggleTimer();
             DemolisherStartState(false);
             Status = BG_SA_ROUND_ONE;
@@ -437,7 +437,7 @@ void BattlegroundStrandOfTheAncients::PostUpdateImpl(uint32 diff)
                 SendChatMessage(sender, TEXT_ROUND_STARTED);
 
             TotalTime = 0;
-            m_EndTimestamp = GameTime::GetGameTime() + EndRoundTimer / IN_MILLISECONDS;
+            m_EndTimestamp = time(nullptr) + EndRoundTimer / IN_MILLISECONDS;
             ToggleTimer();
             DemolisherStartState(false);
             Status = BG_SA_ROUND_TWO;
@@ -604,7 +604,7 @@ void BattlegroundStrandOfTheAncients::TeleportPlayers()
             if (player->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
                 player->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
 
-            if (!player->IsAlive())
+            if (!player->isAlive())
             {
                 player->ResurrectPlayer(1.0f);
                 player->SpawnCorpseBones();
@@ -872,7 +872,7 @@ void BattlegroundStrandOfTheAncients::CaptureGraveyard(BG_SA_Graveyards i, Playe
     WorldSafeLocsEntry const* sg = sWorldSafeLocsStore.LookupEntry(BG_SA_GYEntries[i]);
     if (!sg)
     {
-        TC_LOG_ERROR("bg.battleground", "BattlegroundStrandOfTheAncients::CaptureGraveyard: non-existant GY entry: %u", BG_SA_GYEntries[i]);
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattlegroundStrandOfTheAncients::CaptureGraveyard: non-existant GY entry: %u", BG_SA_GYEntries[i]);
         return;
     }
 
@@ -1018,11 +1018,11 @@ void BattlegroundStrandOfTheAncients::UpdateDemolisherSpawns()
                     // Demolisher is not in list
                     if (DemoliserRespawnList.find(i) == DemoliserRespawnList.end())
                     {
-                        DemoliserRespawnList[i] = GameTime::GetGameTimeMS() + 30000;
+                        DemoliserRespawnList[i] = getMSTime() + 30000;
                     }
                     else
                     {
-                        if (DemoliserRespawnList[i] < GameTime::GetGameTimeMS())
+                        if (DemoliserRespawnList[i] < getMSTime())
                         {
                             Demolisher->Relocate(BG_SA_NpcSpawnlocs[i][0], BG_SA_NpcSpawnlocs[i][1],
                                 BG_SA_NpcSpawnlocs[i][2], BG_SA_NpcSpawnlocs[i][3]);

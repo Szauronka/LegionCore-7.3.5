@@ -1,3 +1,7 @@
+/*
+https://uwow.biz/
+*/
+
 #include "tomb_of_sargeras.h"
 
 enum Says
@@ -108,13 +112,13 @@ public:
 
         void Reset() override
         {
-            if (me->IsAlive())
+            if (me->isAlive())
             {
                 _Reset();
                 achievecomplete = false;
 
                 if (Creature* elder = instance->instance->GetCreature(instance->GetGuidData(NPC_ELDER)))
-                    if (!elder->IsAlive())
+                    if (!elder->isAlive())
                         elder->Respawn();                
             } 
 
@@ -238,7 +242,7 @@ public:
                 if (apply)
                     return;
 
-                me->SetPower(me->GetPowerType(), 0);
+                me->SetPower(me->getPowerType(), 0);
                 DoCast(SPELL_FROSTY_DISCHARGE);
                 break;
             case SPELL_DRAW_IN:
@@ -247,7 +251,7 @@ public:
                 if (!me->HasAura(SPELL_FRIGID_BLOWS))
                 {
                     DoCast(SPELL_FROSTY_DISCHARGE);
-                    me->SetPower(me->GetPowerType(), 0);
+                    me->SetPower(me->getPowerType(), 0);
                 }   
                 break;
             }
@@ -303,7 +307,7 @@ public:
                                 for (const auto& guid : eggs[i])
                                     if (Creature* egg = instance->instance->GetCreature(guid))
                                     {
-                                        if (!egg->IsAlive())
+                                        if (!egg->isAlive())
                                             egg->Respawn(true);
                                         egg->AI()->EnterCombat(me->getVictim());
                                         egg->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_ATTACKABLE_1);
@@ -314,7 +318,7 @@ public:
                             else
                                 if (Creature* egg = instance->instance->GetCreature(eggs[i][urand(0, eggs[i].size())]))
                                 {
-                                    if (!egg->IsAlive())
+                                    if (!egg->isAlive())
                                         egg->Respawn(true);
                                     egg->AI()->EnterCombat(me->getVictim());
                                     egg->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_ATTACKABLE_1);
@@ -332,7 +336,7 @@ public:
                             for (const auto& guid : vector.second)
                                 if (Creature* egg = instance->instance->GetCreature(guid))
                                 {
-                                    if (!egg->IsAlive())
+                                    if (!egg->isAlive())
                                         egg->Respawn(true);
                                     else
                                         egg->SetHealth(egg->GetMaxHealth());
@@ -419,7 +423,7 @@ public:
 
                 for (auto id : { NPC_EVENT_1, NPC_EVENT_2 })
                     if (Creature* add = instance->instance->GetCreature(instance->GetGuidData(id)))
-                        if (add->IsAlive())
+                        if (add->isAlive())
                             ++introAdds;
 
                 if (introAdds)

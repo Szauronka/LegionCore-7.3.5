@@ -25,7 +25,7 @@ class instance_zulgurub : public InstanceMapScript
 
         struct instance_zulgurub_InstanceMapScript : public InstanceScript
         {
-            instance_zulgurub_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+            instance_zulgurub_InstanceMapScript(Map* map) : InstanceScript(map)
             {
                 SetBossNumber(EncounterCount);
                 LoadDoorData(doordata);
@@ -114,7 +114,6 @@ class instance_zulgurub : public InstanceMapScript
                     return uiBosses;
                 return 0;
             }
-
             ObjectGuid GetGuidData(uint32 type) const
             {
                 switch (type)
@@ -145,16 +144,51 @@ class instance_zulgurub : public InstanceMapScript
                 return ObjectGuid::Empty;
             }
 
-            void WriteSaveDataMore(std::ostringstream& data) override
+            std::string GetSaveData()
             {
-                data << uiBosses;
+                OUT_SAVE_INST_DATA;
+
+                std::ostringstream saveStream;
+                saveStream << "Z G " << uiBosses << " " << GetBossSaveData();
+
+                OUT_SAVE_INST_DATA_COMPLETE;
+                return saveStream.str();
             }
 
-            void ReadSaveDataMore(std::istringstream& data) override
+            void Load(char const* str)
             {
-                data >> uiBosses;
-                if (uiBosses > 5)
-                    uiBosses = 0;
+                if (!str)
+                {
+                    OUT_LOAD_INST_DATA_FAIL;
+                    return;
+                }
+
+                OUT_LOAD_INST_DATA(str);
+
+                char dataHead1, dataHead2;
+
+                std::istringstream loadStream(str);
+                loadStream >> dataHead1 >> dataHead2;
+
+                if (dataHead1 == 'Z' && dataHead2 == 'G')
+                {
+                    loadStream >> uiBosses;
+                    if (uiBosses > 5)
+                        uiBosses = 0;
+                    for (uint8 i = 0; i < EncounterCount; ++i)
+                    {
+                        uint32 tmpState;
+                        loadStream >> tmpState;
+                        if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                            tmpState = NOT_STARTED;
+
+                        SetBossState(i, EncounterState(tmpState));
+                    }
+                }
+                else
+                    OUT_LOAD_INST_DATA_FAIL;
+
+                OUT_LOAD_INST_DATA_COMPLETE;
             }
 
         protected:

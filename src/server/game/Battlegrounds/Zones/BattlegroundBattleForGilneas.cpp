@@ -1,23 +1,19 @@
 /*
- * Copyright (C) 2005-2011 MaNGOS <http://www.getmangos.com/>
- *
- * Copyright (C) 2008-2011 Trinity <http://www.trinitycore.org/>
- *
- * Copyright (C) 2010-2011 Project SkyFire <http://www.projectskyfire.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #include "World.h"
@@ -197,7 +193,7 @@ void BattlegroundBattleForGilneas::_NodeOccupied(uint8 node, TeamId team)
         return;
 
     if (!AddSpiritGuide(node, BgBfgSpiritGuidePos[node], team))
-        TC_LOG_ERROR("bg.battleground", "Failed to spawn spirit guide! point: %u, team: %u, ", node, MS::Battlegrounds::GetTeamByTeamId(team));
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "Failed to spawn spirit guide! point: %u, team: %u, ", node, MS::Battlegrounds::GetTeamByTeamId(team));
 
     UpdateWorldState(_capturePoints[node].Point->GetGOInfo()->capturePoint.worldState1, _capturePoints[node].Status);
 
@@ -303,7 +299,7 @@ bool BattlegroundBattleForGilneas::SetupBattleground()
         !AddObject(BG_BFG_OBJECT_BANNER + 1, BG_BFG_GO_NODE_BANNER_1, BgBfgNodePosition[1][0], BgBfgNodePosition[1][1], BgBfgNodePosition[1][2], BgBfgNodePosition[1][3], BgBfgNodePosition[1][4], BgBfgNodePosition[1][5], BgBfgNodePosition[1][6], BgBfgNodePosition[1][7], RESPAWN_ONE_DAY) ||
         !AddObject(BG_BFG_OBJECT_BANNER + 2, BG_BFG_GO_NODE_BANNER_2, BgBfgNodePosition[2][0], BgBfgNodePosition[2][1], BgBfgNodePosition[2][2], BgBfgNodePosition[2][3], BgBfgNodePosition[2][4], BgBfgNodePosition[2][5], BgBfgNodePosition[2][6], BgBfgNodePosition[2][7], RESPAWN_ONE_DAY))
     {
-        TC_LOG_ERROR("bg.battleground", "BattleForGilneas: Can't Create Some Object");
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattleForGilneas: Can't Create Some Object");
         return false;
     }
 
@@ -312,7 +308,7 @@ bool BattlegroundBattleForGilneas::SetupBattleground()
         !AddObject(GILNEAS_BG_OBJECT_GATE_H_1, BG_BFG_GO_GATE_H_1, BgBfgDoorPos[2][0], BgBfgDoorPos[2][1], BgBfgDoorPos[2][2], BgBfgDoorPos[2][3], BgBfgDoorPos[2][4], BgBfgDoorPos[2][5], BgBfgDoorPos[2][6], BgBfgDoorPos[2][7], RESPAWN_IMMEDIATELY) ||
         !AddObject(GILNEAS_BG_OBJECT_GATE_H_2, BG_BFG_GO_GATE_H_2, BgBfgDoorPos[3][0], BgBfgDoorPos[3][1], BgBfgDoorPos[3][2], BgBfgDoorPos[3][3], BgBfgDoorPos[3][4], BgBfgDoorPos[3][5], BgBfgDoorPos[3][6], BgBfgDoorPos[3][7], RESPAWN_IMMEDIATELY))
     {
-        TC_LOG_ERROR("bg.battleground", "BattleForGilneas: Can't Create Doors");
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattleForGilneas: Can't Create Doors");
         return false;
     }
 
@@ -324,11 +320,11 @@ bool BattlegroundBattleForGilneas::SetupBattleground()
         if (!AddObject(GILNEAS_BG_OBJECT_SPEEDBUFF_LIGHTHOUSE + 3 * i, Buff_Entries[0], BgBFGBuffsPos[i][0], BgBFGBuffsPos[i][1], BgBFGBuffsPos[i][2], BgBFGBuffsPos[i][3], 0, 0, sin(BgBFGBuffsPos[i][3] / 2), cos(BgBFGBuffsPos[i][3] / 2), RESPAWN_ONE_DAY) ||
             !AddObject(GILNEAS_BG_OBJECT_SPEEDBUFF_LIGHTHOUSE + 3 * i + 1, Buff_Entries[1], BgBFGBuffsPos[i][0], BgBFGBuffsPos[i][1], BgBFGBuffsPos[i][2], BgBFGBuffsPos[i][3], 0, 0, sin(BgBFGBuffsPos[i][3] / 2), cos(BgBFGBuffsPos[i][3] / 2), RESPAWN_ONE_DAY) ||
             !AddObject(GILNEAS_BG_OBJECT_SPEEDBUFF_LIGHTHOUSE + 3 * i + 2, Buff_Entries[2], BgBFGBuffsPos[i][0], BgBFGBuffsPos[i][1], BgBFGBuffsPos[i][2], BgBFGBuffsPos[i][3], 0, 0, sin(BgBFGBuffsPos[i][3] / 2), cos(BgBFGBuffsPos[i][3] / 2), RESPAWN_ONE_DAY))
-            TC_LOG_ERROR("bg.battleground", "BattleForGilneas: Can't Create Buffs");
+            TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattleForGilneas: Can't Create Buffs");
     }
 
     for (uint8 i = GILNEAS_BG_SPIRIT_ALIANCE; i <= GILNEAS_BG_SPIRIT_HORDE; ++i)
-        if (!AddSpiritGuide(i, BgBfgSpiritGuidePos[i], i == GILNEAS_BG_SPIRIT_ALIANCE ? Team::ALLIANCE : Team::HORDE))
+        if (!AddSpiritGuide(i, BgBfgSpiritGuidePos[i].GetPositionX(), BgBfgSpiritGuidePos[i].GetPositionY(), BgBfgSpiritGuidePos[i].GetPositionZ(), BgBfgSpiritGuidePos[i].GetOrientation(), i == GILNEAS_BG_SPIRIT_ALIANCE ? Team::ALLIANCE : Team::HORDE))
             return false;
 
     return true;

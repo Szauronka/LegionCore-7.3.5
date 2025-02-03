@@ -22,7 +22,6 @@
 #include "Map.h"
 #include "Creature.h"
 
-#define DataHeader "ICC"
 #define ICCScriptName "instance_icecrown_citadel"
 
 uint32 const EncounterCount = 13;

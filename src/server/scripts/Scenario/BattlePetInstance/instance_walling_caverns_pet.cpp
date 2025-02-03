@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
 */
 
 #include "ScriptMgr.h"
@@ -16,7 +17,7 @@ public:
 
     struct instance_walling_caverns_pet_InstanceMapScript : public InstanceScript
     {
-        instance_walling_caverns_pet_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_walling_caverns_pet_InstanceMapScript(Map* map) : InstanceScript(map) {}
         
         std::list<ObjectGuid> gobs{};
 

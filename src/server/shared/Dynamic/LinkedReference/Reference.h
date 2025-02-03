@@ -29,7 +29,6 @@ template <class TO, class FROM> class Reference : public LinkedListElement
     private:
         TO* iRefTo;
         FROM* iRefFrom;
-
     protected:
         // Tell our refTo (target) object that we have a link
         virtual void targetObjectBuildLink() = 0;
@@ -91,14 +90,14 @@ template <class TO, class FROM> class Reference : public LinkedListElement
         Reference<TO, FROM>       * nocheck_prev()       { return((Reference<TO, FROM>       *) LinkedListElement::nocheck_prev()); }
         Reference<TO, FROM> const* nocheck_prev() const { return((Reference<TO, FROM> const*) LinkedListElement::nocheck_prev()); }
 
-        TO* operator->() const { return iRefTo; }
+        TO* operator ->() const { return iRefTo; }
         TO* getTarget() const { return iRefTo; }
 
         FROM* getSource() const { return iRefFrom; }
 
     private:
-        Reference(Reference const&) = delete;
-        Reference& operator=(Reference const&) = delete;
+        Reference(Reference const&);
+        Reference& operator=(Reference const&);
 };
 
 //=====================================================

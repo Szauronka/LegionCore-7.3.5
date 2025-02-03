@@ -53,7 +53,7 @@ public:
 
     struct instance_black_temple_InstanceMapScript : public InstanceScript
     {
-        instance_black_temple_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_black_temple_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
         std::string str_data;
@@ -86,8 +86,6 @@ public:
 
         void Initialize()
         {
-            SetHeaders(DataHeader);
-
             memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
 
             Najentus.Clear();
@@ -140,7 +138,7 @@ public:
                 }
             }
 
-            TC_LOG_DEBUG("scripts", "Instance Black Temple: GetPlayerInMap, but PlayerList is empty!");
+            TC_LOG_DEBUG(LOG_FILTER_TSCR, "Instance Black Temple: GetPlayerInMap, but PlayerList is empty!");
             return NULL;
         }
 

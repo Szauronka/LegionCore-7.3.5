@@ -1,5 +1,15 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "antorus.h"
 #include "AreaTriggerAI.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "SpellScript.h"
+#include "SpellAuraEffects.h"
+
 
 enum Says
 {
@@ -286,7 +296,7 @@ struct boss_argus : BossAI
         _Reset();
         DoCast(me, SPELL_ZERO_ENERGY_REGEN, true);
         DoCast(me, SPELL_TITANIC_ESSENCE, true);
-        me->SetPower(me->GetPowerType(), 0);
+        me->SetPower(me->getPowerType(), 0);
         prePhaseFour = false;
         saySkyAndSeaSays = false;
         sayAvatarOfAggramar = false;
@@ -357,7 +367,7 @@ struct boss_argus : BossAI
         //Repop ghost players
         instance->instance->ApplyOnEveryPlayer([&](Player* player)
         {
-            if (!player->IsAlive() && player->HasAura(8326))
+            if (!player->isAlive() && player->HasAura(8326))
                 player->RepopAtGraveyard();
         });
     }
@@ -623,7 +633,7 @@ struct boss_argus : BossAI
         {
             instance->instance->ApplyOnEveryPlayer([&](Player* player)
             {
-                if (!player->IsAlive())
+                if (!player->isAlive())
                 {
                     player->ResurrectPlayer(1.0f);
                     player->SpawnCorpseBones();
@@ -697,7 +707,7 @@ struct boss_argus : BossAI
 
                 instance->instance->ApplyOnEveryPlayer([&](Player* player)
                 {
-                    if ((prePhaseFour || player->IsAlive()) && player->GetDistance(centrPos) < 50.0f)
+                    if ((prePhaseFour || player->isAlive()) && player->GetDistance(centrPos) < 50.0f)
                         checkAliveTimer = 1000;
                 });
 
@@ -755,7 +765,7 @@ struct boss_argus : BossAI
                     events.RescheduleEvent(EVENT_SKY_AND_SEA, 25000);
                     break;
                 case EVENT_P2_ENERGY:
-                    me->SetPower(me->GetPowerType(), 70);
+                    me->SetPower(me->getPowerType(), 70);
                     DoCast(me, SPELL_P2_ENERGY_CONTROLLER, true);
                     break;
                 case EVENT_EDGE_OF_OBLITERATION:
@@ -851,7 +861,7 @@ struct boss_argus : BossAI
                     me->SummonCreature(NPC_GIFT_OF_THE_LIFEBINDER, 2893.734f, -4545.361f, 292.02f, 3.77f, TEMPSUMMON_DEAD_DESPAWN);
                     me->RemoveAurasDueToSpell(SPELL_P4_ARCANE_DISSOLVE_OUT);
                     me->SetDisplayId(me->GetNativeDisplayId());
-                    me->SetPower(me->GetPowerType(), IsMythicRaid() ? 0 : 75);
+                    me->SetPower(me->getPowerType(), IsMythicRaid() ? 0 : 75);
                     me->AddDelayedCombat(1000, [this]() -> void
                     {
                         instance->DoCastSpellOnPlayers(SPELL_GHOST_TRACKER);
@@ -924,7 +934,7 @@ struct npc_argus_titans_generic : ScriptedAI
     void IsSummonedBy(Unit* summoner) override
     {
         me->CastSpell(me, SPELL_ZERO_ENERGY_REGEN, true);
-        me->SetPower(me->GetPowerType(), 0);
+        me->SetPower(me->getPowerType(), 0);
 
         switch (me->GetEntry())
         {
@@ -1067,11 +1077,11 @@ struct npc_arugs_edge_of_obliteration : ScriptedAI
         if (spell->Id == SPELL_EDGE_OF_OBLITERATION_FILTER)
         {
             float angle = me->GetRelativeAngle(target);
-            pos = me->GetNearPosition(70.0f, angle);
+            me->GetNearPosition(pos, 70.0f, angle);
 
             if (centrPos.GetExactDist2d(&pos) > 50.0f)
             {
-                pos = me->GetNearPosition(50.0f, angle);
+                me->GetNearPosition(pos, 50.0f, angle);
             }
             me->SetFacingTo(me->GetAngle(pos.GetPositionX(), pos.GetPositionY()));
             DoCast(me, SPELL_EDGE_OF_OBLITERATION_AT, true);
@@ -1100,7 +1110,7 @@ struct npc_arugs_edge_of_obliteration : ScriptedAI
 
                 if (IsMythicEdge)
                 {
-                    pos = me->GetNearPosition(90.0f, 0.0f);
+                    me->GetNearPosition(pos, 90.0f, 0.0f);
                     me->CastSpell(pos, SPELL_EDGE_OF_ANNIHILATION_DMG, true);
                     me->CastSpell(pos, SPELL_EDGE_OF_ANNIHILATION_CHARGE, true);
                     me->AddDelayedEvent(3000, [this]() -> void { me->DespawnOrUnsummon(); });
@@ -1311,7 +1321,7 @@ struct npc_argus_gift_of_the_lifebinder : ScriptedAI
         me->CastSpell(me, SPELL_ZERO_ENERGY_REGEN, true);
         me->CastSpell(me, SPELL_GIFT_OF_THE_LIFEBINDER_AT, true);
         me->CastSpell(me, SPELL_LIFE_GIVING_ROOTS, true);
-        powerCount = me->GetPower(me->GetPowerType());
+        powerCount = me->GetPower(me->getPowerType());
     }
 
     void Reset() override {}
@@ -1325,7 +1335,7 @@ struct npc_argus_gift_of_the_lifebinder : ScriptedAI
     {
         if (spell->Id == SPELL_GIFT_OF_THE_LIFEBINDER_SCRIPT)
         {
-            if (!target->IsAlive())
+            if (!target->isAlive())
             {
                 target->ToPlayer()->ResurrectPlayer(1.0f);
                 target->ToPlayer()->SpawnCorpseBones();
@@ -1338,7 +1348,7 @@ struct npc_argus_gift_of_the_lifebinder : ScriptedAI
                     if (powerCount <= 0)
                         powerCount = 0;
 
-                    me->SetPower(me->GetPowerType(), powerCount);
+                    me->SetPower(me->getPowerType(), powerCount);
                 }
                 else
                     me->CastSpell(me, SPELL_WITHERING_ROOTS, true);
@@ -1529,7 +1539,7 @@ struct npc_argus_mote_of_titanic_power : ScriptedAI
 
     void OnAreaTriggerCast(Unit* caster, Unit* target, uint32 spellId, uint32 createATSpellId) override
     {
-        if (energize || target->IsAlive())
+        if (energize || target->isAlive())
             return;
 
         if (spellId == SPELL_MOTE_OF_TITANIC_POWER_ENERGIZE)
@@ -1619,10 +1629,10 @@ class spell_argus_p1_energize_periodic : public AuraScript
         if (!caster || !caster->isInCombat() || aurEff->GetTickNumber() < 11)
             return;
 
-        uint8 powerCount = caster->GetPower(caster->GetPowerType());
+        uint8 powerCount = caster->GetPower(caster->getPowerType());
 
         if (powerCount < 100)
-            caster->SetPower(caster->GetPowerType(), powerCount + 5);
+            caster->SetPower(caster->getPowerType(), powerCount + 5);
         else if (!caster->HasUnitState(UNIT_STATE_CASTING))
             caster->CastSpell(caster, SPELL_CONE_OF_DEATH_FILTER);
     }
@@ -1648,12 +1658,12 @@ class spell_argus_p2_energize_periodic : public AuraScript
         if (!caster || !caster->isInCombat())
             return;
 
-        powerCount = caster->GetPower(caster->GetPowerType());
+        powerCount = caster->GetPower(caster->getPowerType());
         tickCount = aurEff->GetTickNumber() % 2 ? 2 : 3;
 
         if (powerCount < 100)
         {
-            caster->SetPower(caster->GetPowerType(), powerCount + tickCount);
+            caster->SetPower(caster->getPowerType(), powerCount + tickCount);
 
             if (powerCount == 50)
             {
@@ -1690,12 +1700,12 @@ class spell_argus_p4_energize_periodic : public AuraScript
         if (!caster || !caster->isInCombat())
             return;
 
-        powerCount = caster->GetPower(caster->GetPowerType());
+        powerCount = caster->GetPower(caster->getPowerType());
 
         if (powerCount < 99)
-            caster->SetPower(caster->GetPowerType(), powerCount + 2);
+            caster->SetPower(caster->getPowerType(), powerCount + 2);
         else
-            caster->SetPower(caster->GetPowerType(), 0);
+            caster->SetPower(caster->getPowerType(), 0);
 
         if (++tickCount == maxTick)
         {
@@ -1795,8 +1805,8 @@ class spell_argus_titanforging_energize_periodic : public AuraScript
         if (!caster)
             return;
 
-        if (powerCount = caster->GetPower(caster->GetPowerType()))
-            caster->SetPower(caster->GetPowerType(), powerCount - 1);
+        if (powerCount = caster->GetPower(caster->getPowerType()))
+            caster->SetPower(caster->getPowerType(), powerCount - 1);
     }
 
     void OnCheckTick(AuraEffect const* aurEff)
@@ -1805,7 +1815,7 @@ class spell_argus_titanforging_energize_periodic : public AuraScript
         if (!caster)
             return;
 
-        powerCount = caster->GetPower(caster->GetPowerType());
+        powerCount = caster->GetPower(caster->getPowerType());
 
         if (!allowCast && powerCount >= 20)
         {
@@ -2181,7 +2191,8 @@ class spell_argus_rent_soul : public SpellScript
         if (!GetCaster() || !GetHitUnit())
             return;
 
-        Position pos = GetHitUnit()->GetFirstCollisionPosition(frand(10.0f, 25.0f), frand(0.0f, 6.28f));
+        Position pos;
+        GetHitUnit()->GetFirstCollisionPosition(pos, frand(10.0f, 25.0f), frand(0.0f, 6.28f));
         GetCaster()->CastSpell(pos, SPELL_RENT_SOUL_MISSILE, true, nullptr, nullptr, GetHitUnit()->GetGUID());
     }
 
@@ -2273,6 +2284,7 @@ void AddSC_boss_argus()
     RegisterCreatureAI(npc_argus_reorigination_module);
     RegisterCreatureAI(npc_argus_mote_of_titanic_power);
     RegisterCreatureAI(npc_argus_chains_of_sargeras);
+
     RegisterAuraScript(spell_argus_p1_energize_periodic);
     RegisterAuraScript(spell_argus_p2_energize_periodic);
     RegisterAuraScript(spell_argus_p4_energize_periodic);
@@ -2290,6 +2302,7 @@ void AddSC_boss_argus()
     RegisterSpellScript(spell_argus_apocalypsis_module);
     RegisterSpellScript(spell_argus_soulrending_scythe_script);
     RegisterSpellScript(spell_argus_rent_soul);
+
     RegisterAreaTriggerAI(at_argus_sargeras_fear);
     RegisterAreaTriggerAI(at_argus_rent_soul);
 }

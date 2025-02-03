@@ -68,7 +68,7 @@ enum CreatureSummonGroup
     CREATURE_SUMMON_GROUP_COMBAT     = 1,
 };
 
-class TC_GAME_API CreatureAI : public UnitAI
+class CreatureAI : public UnitAI
 {
 protected:
     Creature* const me;
@@ -214,7 +214,7 @@ public:
 protected:
     virtual void MoveInLineOfSight(Unit* /*who*/);
 
-    virtual bool _EnterEvadeMode();
+    bool _EnterEvadeMode();
 
 private:
     bool m_MoveInLineOfSight_locked;

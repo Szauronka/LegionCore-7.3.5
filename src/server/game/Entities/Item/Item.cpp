@@ -245,7 +245,7 @@ Item::Item()
     m_valuesCount = ITEM_END;
     _dynamicValuesCount = ITEM_DYNAMIC_END;
 
-    m_lastPlayedTimeUpdate = GameTime::GetGameTime();
+    m_lastPlayedTimeUpdate = time(nullptr);
 
     m_refundRecipient.Clear();
 
@@ -370,7 +370,7 @@ void Item::UpdateDuration(Player* owner, uint32 diff)
     if (!GetUInt32Value(ITEM_FIELD_EXPIRATION))
         return;
 
-    TC_LOG_DEBUG("entities.player.items", "Item::UpdateDuration Item (Entry: %u Duration %u Diff %u)", GetEntry(), GetUInt32Value(ITEM_FIELD_EXPIRATION), diff);
+    TC_LOG_DEBUG(LOG_FILTER_PLAYER_ITEMS, "Item::UpdateDuration Item (Entry: %u Duration %u Diff %u)", GetEntry(), GetUInt32Value(ITEM_FIELD_EXPIRATION), diff);
 
     if (GetUInt32Value(ITEM_FIELD_EXPIRATION) <= diff)
     {
@@ -393,12 +393,12 @@ void Item::SetSpellCharges(uint8 index, int32 value)
     SetInt32Value(ITEM_FIELD_SPELL_CHARGES + index, value);
 }
 
-void Item::SaveToDB(CharacterDatabaseTransaction& trans)
+void Item::SaveToDB(SQLTransaction& trans)
 {
     auto isInTransaction = bool(trans);
     if (!isInTransaction)
         trans = CharacterDatabase.BeginTransaction();
-    LoginDatabaseTransaction transs = LoginDatabase.BeginTransaction();
+    SQLTransaction transs = LoginDatabase.BeginTransaction();
 
     ObjectGuid::LowType guid = GetGUIDLow();
     switch (uState)
@@ -407,7 +407,7 @@ void Item::SaveToDB(CharacterDatabaseTransaction& trans)
         case ITEM_CHANGED:
         {
             uint8 index = 0;
-            CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(uState == ITEM_NEW ? CHAR_REP_ITEM_INSTANCE : CHAR_UPD_ITEM_INSTANCE);
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(uState == ITEM_NEW ? CHAR_REP_ITEM_INSTANCE : CHAR_UPD_ITEM_INSTANCE);
             stmt->setUInt32(index, GetEntry());
             stmt->setUInt64(++index, GetOwnerGUID().GetCounter());
             stmt->setUInt64(++index, GetGuidValue(ITEM_FIELD_CREATOR).GetCounter());
@@ -454,8 +454,10 @@ void Item::SaveToDB(CharacterDatabaseTransaction& trans)
             stmt->setUInt8(++index, GetUInt32Value(ITEM_FIELD_CONTEXT));
 
             if (uState == ITEM_NEW)
-                stmt->setUInt32(++index, GameTime::GetGameTime());
+                stmt->setUInt32(++index, time(nullptr));
             
+            stmt->setBool(++index, GetDonateItem());
+
             stmt->setUInt64(++index, guid);
 
             trans->Append(stmt);
@@ -648,7 +650,7 @@ void Item::SaveToDB(CharacterDatabaseTransaction& trans)
             if (GetTemplate()->GetArtifactID()) // info about art will not delete
                 break;
             
-            CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE);
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE);
             stmt->setUInt64(0, guid);
             trans->Append(stmt);
             
@@ -682,6 +684,24 @@ void Item::SaveToDB(CharacterDatabaseTransaction& trans)
                 stmt->setUInt64(0, guid);
                 trans->Append(stmt);
             }
+
+            //CharacterDatabase.PExecute("UPDATE character_donate SET state = 1, deletedate = '%s' WHERE itemguid = '%u'", TimeToTimestampStr(time(NULL)).c_str(), guid);
+           /* stmt = CharacterDatabase.GetPreparedStatement(CHAR_ITEM_DONATE_SET_STATE);
+            stmt->setUInt32(0, 1);
+            stmt->setString(1, TimeToTimestampStr(time(NULL)).c_str());
+            stmt->setUInt64(2, guid);
+            trans->Append(stmt);*/
+            
+       //     if (GetOwner())
+     //           TC_LOG_DEBUG(LOG_FILTER_DONATE, "[Status] Status = 1 item  guid = %u, entry = %u, %s", guid, GetEntry(), GetOwner()->GetInfoForDonate().c_str());
+
+            uint8 index = 0;
+            stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_HISTORY_STATUS);
+            stmt->setUInt32(  index, 1);
+            stmt->setUInt64(  ++index, guid); 
+            stmt->setUInt32(  ++index, realm.Id.Realm); 
+            
+            transs->Append(stmt);
 
             if (!isInTransaction)
                 CharacterDatabase.CommitTransaction(trans);
@@ -771,16 +791,7 @@ bool Item::LoadFromDB(ObjectGuid::LowType const& guid, ObjectGuid const& owner_g
 
     SetUInt32Value(ITEM_FIELD_DYNAMIC_FLAGS, itemFlags);
 
-    _LoadIntoDataField(fields[8].GetString(), ITEM_FIELD_ENCHANTMENT, MAX_ENCHANTMENT_SLOT * MAX_ENCHANTMENT_OFFSET);
-    m_randomEnchantment.Type = ItemRandomEnchantmentType(fields[9].GetUInt8());
-    m_randomEnchantment.Id = fields[10].GetUInt32();
-    if (m_randomEnchantment.Type == ItemRandomEnchantmentType::Property)
-        SetUInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID, m_randomEnchantment.Id);
-    else if (m_randomEnchantment.Type == ItemRandomEnchantmentType::Suffix)
-    {
-        SetInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID, -int32(m_randomEnchantment.Id));
-        UpdateItemSuffixFactor();
-    }
+  
 
 
     uint32 durability = fields[11].GetUInt16();
@@ -869,6 +880,19 @@ bool Item::LoadFromDB(ObjectGuid::LowType const& guid, ObjectGuid const& owner_g
     dungeonEncounterID = fields[47].GetUInt32();
     SetUInt32Value(ITEM_FIELD_CONTEXT, fields[48].GetUInt8());
     createdTime = fields[49].GetUInt32();
+	
+	// Enchants must be loaded after all other bonus/scaling data
+    _LoadIntoDataField(fields[8].GetString(), ITEM_FIELD_ENCHANTMENT, MAX_ENCHANTMENT_SLOT * MAX_ENCHANTMENT_OFFSET);
+    m_randomEnchantment.Type = ItemRandomEnchantmentType(fields[9].GetUInt8());
+    m_randomEnchantment.Id = fields[10].GetUInt32();
+    if (m_randomEnchantment.Type == ItemRandomEnchantmentType::Property)
+        SetUInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID, m_randomEnchantment.Id);
+    else if (m_randomEnchantment.Type == ItemRandomEnchantmentType::Suffix)
+    {
+        SetInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID, -int32(m_randomEnchantment.Id));
+        // recalculate suffix factor
+        UpdateItemSuffixFactor();
+    }
 
     // Remove bind flag for items vs NO_BIND set
     if (IsSoulBound() && GetBonding() == NO_BIND)
@@ -879,7 +903,7 @@ bool Item::LoadFromDB(ObjectGuid::LowType const& guid, ObjectGuid const& owner_g
 
     if (need_save)                                           // normal item changed state set not work at loading
     {
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ITEM_INSTANCE_ON_LOAD);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ITEM_INSTANCE_ON_LOAD);
         stmt->setUInt32(0, GetUInt32Value(ITEM_FIELD_EXPIRATION));
         stmt->setUInt32(1, GetUInt32Value(ITEM_FIELD_DYNAMIC_FLAGS));
         stmt->setUInt32(2, GetUInt32Value(ITEM_FIELD_DURABILITY));
@@ -953,27 +977,46 @@ void Item::LoadArtifactData(Player* owner, std::vector<ItemDynamicFieldArtifactP
 }
 
 /*static*/
-void Item::DeleteFromDB(CharacterDatabaseTransaction& trans, ObjectGuid::LowType itemGuid)
+void Item::DeleteFromDB(SQLTransaction& trans, ObjectGuid::LowType itemGuid)
 {
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_INSTANCE);
     stmt->setUInt64(0, itemGuid);
     trans->Append(stmt);
+
+ /*   stmt = CharacterDatabase.GetPreparedStatement(CHAR_ITEM_DONATE_SET_STATE);
+    stmt->setUInt32(0, 1);
+    stmt->setString(1, TimeToTimestampStr(time(NULL)).c_str());
+    stmt->setUInt64(2, itemGuid);
+    trans->Append(stmt); */
+    SQLTransaction transs = LoginDatabase.BeginTransaction();
+
+    uint8 index = 0;
+
+    TC_LOG_DEBUG(LOG_FILTER_DONATE, "[Status] Status = 1 item guid = %u can't find any information", itemGuid);
+
+    stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_HISTORY_STATUS);
+    stmt->setUInt32(  index, 1);
+    stmt->setUInt64(  ++index, itemGuid); 
+    stmt->setUInt32(  ++index, realm.Id.Realm); 
+            
+    transs->Append(stmt);
+    LoginDatabase.CommitTransaction(transs);
 }
 
-void Item::DeleteFromDB(CharacterDatabaseTransaction& trans)
+void Item::DeleteFromDB(SQLTransaction& trans)
 {
     DeleteFromDB(trans, GetGUIDLow());
 }
 
 /*static*/
-void Item::DeleteFromInventoryDB(CharacterDatabaseTransaction& trans, ObjectGuid::LowType itemGuid)
+void Item::DeleteFromInventoryDB(SQLTransaction& trans, ObjectGuid::LowType itemGuid)
 {
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_INVENTORY_BY_ITEM);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_INVENTORY_BY_ITEM);
     stmt->setUInt64(0, itemGuid);
     trans->Append(stmt);
 }
 
-void Item::DeleteFromInventoryDB(CharacterDatabaseTransaction& trans)
+void Item::DeleteFromInventoryDB(SQLTransaction& trans)
 {
     DeleteFromInventoryDB(trans, GetGUIDLow());
 }
@@ -983,7 +1026,7 @@ ItemTemplate const* Item::GetTemplate() const
     return sObjectMgr->GetItemTemplate(GetEntry());
 }
 
-Player* Item::GetOwner()const
+Player* Item::GetOwner() const
 {
     return ObjectAccessor::FindPlayer(GetOwnerGUID());
 }
@@ -1176,7 +1219,7 @@ void Item::AddToUpdateQueueOf(Player* player)
 
     if (player->GetGUID() != GetOwnerGUID())
     {
-        TC_LOG_DEBUG("entities.player.items", "Item::AddToUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GetOwnerGUID().GetGUIDLow(), player->GetGUIDLow());
+        TC_LOG_DEBUG(LOG_FILTER_PLAYER_ITEMS, "Item::AddToUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GetOwnerGUID().GetGUIDLow(), player->GetGUIDLow());
         return;
     }
 
@@ -1198,7 +1241,7 @@ void Item::RemoveFromUpdateQueueOf(Player* player)
 
     if (player->GetGUID() != GetOwnerGUID())
     {
-        TC_LOG_DEBUG("entities.player.items", "Item::RemoveFromUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GetOwnerGUID().GetGUIDLow(), player->GetGUIDLow());
+        TC_LOG_DEBUG(LOG_FILTER_PLAYER_ITEMS, "Item::RemoveFromUpdateQueueOf - Owner's guid (%u) and player's guid (%u) don't match!", GetOwnerGUID().GetGUIDLow(), player->GetGUIDLow());
         return;
     }
 
@@ -1257,6 +1300,9 @@ bool Item::CanBeTraded(bool mail, bool trade) const
     if ((!mail || !IsBoundAccountWide()) && (IsSoulBound() && (!HasFlag(ITEM_FIELD_DYNAMIC_FLAGS, ITEM_FLAG_BOP_TRADEABLE) || !trade)))
         return false;
 
+    if (GetDonateItem())
+        return false;
+    
     if (IsBag() && (Player::IsBagPos(GetPos()) || !ToBag()->IsEmpty()))
         return false;
 
@@ -1991,9 +2037,9 @@ void Item::BuildDynamicValuesUpdate(uint8 updateType, ByteBuffer* data, Player* 
 
 void Item::SaveRefundDataToDB()
 {
-    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_REFUND_INSTANCE);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_REFUND_INSTANCE);
     stmt->setUInt64(0, GetGUIDLow());
     trans->Append(stmt);
 
@@ -2007,11 +2053,11 @@ void Item::SaveRefundDataToDB()
     CharacterDatabase.CommitTransaction(trans);
 }
 
-void Item::DeleteRefundDataFromDB(CharacterDatabaseTransaction* trans)
+void Item::DeleteRefundDataFromDB(SQLTransaction* trans)
 {
     if (trans)
     {
-        CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_REFUND_INSTANCE);
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_REFUND_INSTANCE);
         stmt->setUInt64(0, GetGUIDLow());
         (*trans)->Append(stmt);
 
@@ -2059,7 +2105,7 @@ bool Item::IsCurrencyToken() const
     return GetTemplate()->IsCurrencyToken();
 }
 
-void Item::SetNotRefundable(Player* owner, bool changestate /*=true*/, CharacterDatabaseTransaction* trans /*=NULL*/)
+void Item::SetNotRefundable(Player* owner, bool changestate /*=true*/, SQLTransaction* trans /*=NULL*/)
 {
     if (!HasFlag(ITEM_FIELD_DYNAMIC_FLAGS, ITEM_FLAG_REFUNDABLE))
         return;
@@ -2118,6 +2164,16 @@ uint32 Item::GetPaidExtendedCost()
     return m_paidExtendedCost;
 }
 
+void Item::SetDonateItem(bool apply)
+{
+    DonateItem = apply;
+}
+
+bool Item::GetDonateItem() const
+{
+    return DonateItem;
+}
+
 void Item::UpdatePlayedTime(Player* owner)
 {
     /*  Here we update our played time
@@ -2127,7 +2183,7 @@ void Item::UpdatePlayedTime(Player* owner)
     // Get current played time
     uint32 current_playtime = GetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME);
     // Calculate time elapsed since last played time update
-    time_t curtime = GameTime::GetGameTime();
+    time_t curtime = time(nullptr);
     auto elapsed = uint32(curtime - m_lastPlayedTimeUpdate);
     uint32 new_playtime = current_playtime + elapsed;
     // Check if the refund timer has expired yet
@@ -2148,7 +2204,7 @@ void Item::UpdatePlayedTime(Player* owner)
 
 uint32 Item::GetPlayedTime()
 {
-    return GetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME) + uint32(GameTime::GetGameTime() - m_lastPlayedTimeUpdate);
+    return GetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME) + uint32(time(nullptr) - m_lastPlayedTimeUpdate);
 }
 
 bool Item::IsRefundExpired()
@@ -2170,7 +2226,7 @@ void Item::ClearSoulboundTradeable(Player* currentOwner)
 
     allowedGUIDs.clear();
     SetState(ITEM_CHANGED, currentOwner);
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_BOP_TRADE);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ITEM_BOP_TRADE);
     stmt->setUInt64(0, GetGUIDLow());
     CharacterDatabase.Execute(stmt);
 }
@@ -2422,7 +2478,7 @@ uint32 Item::GetSellPrice()
     if (!classEntry)
         return 0;
 
-    uint32 buyCount = proto->VendorStackCount;
+    uint32 buyCount = proto->GetBuyCount();
 
     if (buyCount < 1)
         buyCount = 1;
@@ -2919,6 +2975,10 @@ bool Item::IsSoulBound() const
 
 bool Item::IsBoundAccountWide() const
 {
+    if(sWorld->getBoolConfig(CONFIG_FUN_OPTION_ENABLED))
+        if (GetEntry() == 146745) // don't need share on account
+            return false;
+        
     return (GetTemplate()->GetFlags() & ITEM_FLAG_IS_BOUND_TO_ACCOUNT) != 0;
 }
 
@@ -3084,7 +3144,7 @@ void BonusData::AddBonus(uint32 type, int32 const (&values)[3])
 
 void Item::ApplyItemChildEquipment(Player* owner, bool apply)
 {
-    //TC_LOG_DEBUG("network", "Item::ApplyItemChildEquipment apply %u", apply);
+    //TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "Item::ApplyItemChildEquipment apply %u", apply);
 
     ItemChildEquipmentEntry const* childEquipement = sDB2Manager.GetItemChildEquipment(GetEntry());
     if (!childEquipement)
@@ -3451,6 +3511,32 @@ void Item::UpgradeLegendary()
     // Correct transmog bonus in craft item
     if (GetUInt32Value(ITEM_FIELD_CONTEXT) == 13 && !GetItemModifiedAppearance() && !_bonusData.AppearanceModID)
         AddBonuses(3408);
+
+    if (GetDonateItem())
+    {
+        if (GetItemLevel(GetOwnerLevel()) >= 915 && GetRequiredLevel() == 101) // Fix bug with old by items
+            AddBonuses(3431);
+
+        bool needClearBonus = false;
+        std::set<uint32> bonusListID;
+        for (uint32 bonusID : GetDynamicValues(ITEM_DYNAMIC_FIELD_BONUS_LIST_IDS))
+        {
+            if(bonusID == 3)
+                needClearBonus = true;
+            bonusListID.insert(bonusID);
+        }
+        if (needClearBonus)
+        {
+            bonusListID.erase(3);
+            ClearDynamicValue(ITEM_DYNAMIC_FIELD_BONUS_LIST_IDS);
+            _bonusData.Initialize(GetTemplate());
+
+            for (uint32 bonusID : bonusListID)
+                AddBonuses(bonusID);
+
+            SetState(ITEM_CHANGED, GetOwner());
+        }
+    }
 
     if (!proto->IsLegionLegendary())
         return;

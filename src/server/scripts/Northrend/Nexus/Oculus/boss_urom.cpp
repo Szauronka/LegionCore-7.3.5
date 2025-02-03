@@ -100,8 +100,9 @@ class boss_urom : public CreatureScript
                 for (uint8 i = 0; i < 3; ++i)
                     group[i] = i;
 
-                //std::random_shuffle(group, group + 3);
-                Trinity::Containers::RandomShuffle(group);
+                std::random_device rd;
+                std::mt19937 g(rd());
+                std::shuffle(group, group + 3, g);
             }
 
             void Reset() override
@@ -231,7 +232,8 @@ class boss_urom : public CreatureScript
                 {
                     if (arcaneExplosionTimer <= diff)
                     {
-                        Position pos = me->getVictim()->GetPosition();
+                        Position pos;
+                        me->getVictim()->GetPosition(&pos);
 
                         me->NearTeleportTo(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation());
                         me->GetMotionMaster()->MoveChase(me->getVictim());

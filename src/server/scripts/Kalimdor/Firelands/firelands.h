@@ -1,7 +1,13 @@
 #ifndef DEF_FIRELANDS_H
 #define DEF_FIRELANDS_H
 
-#define DataHeader "FL"
+#include "SharedDefines.h"
+#include "SpellAuraDefines.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
+
+
 
 const Position FLEntrancePos = {-547.313f, 318.42f, 115.473f, 5.91667f}; // Firelands Entrance
 

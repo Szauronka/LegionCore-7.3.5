@@ -474,7 +474,7 @@ struct boss_kaelthas : public BossAI
                 {
                     if (auto creature = ObjectAccessor::GetCreature(*me, _advisorGuid[i]))
                     {
-                        if (!creature->IsAlive())
+                        if (!creature->isAlive())
                             creature->Respawn(true);
 
                         if (creature->isInCombat())

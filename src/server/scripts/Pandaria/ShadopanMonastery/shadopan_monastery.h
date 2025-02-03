@@ -1,10 +1,9 @@
 /*==============
+    uwow.biz
 ==============*/
 
 #ifndef SHADOPAN_MONASTERY_H_
 #define SHADOPAN_MONASTERY_H_
-
-#define DataHeader "SPM"
 
 uint32 const EncounterCount = 4;
 

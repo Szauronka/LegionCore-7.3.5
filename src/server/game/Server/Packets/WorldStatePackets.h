@@ -24,7 +24,7 @@ namespace WorldPackets
 {
     namespace WorldState
     {
-        class TC_GAME_API InitWorldStates final : public ServerPacket
+        class InitWorldStates final : public ServerPacket
         {
         public:
             InitWorldStates() : ServerPacket(SMSG_INIT_WORLD_STATES, 12) { }

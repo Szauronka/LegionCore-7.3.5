@@ -9,7 +9,7 @@
 
 bool Building::CanActivate() const
 {
-    if (PacketInfo && PacketInfo->TimeBuilt + sGarrBuildingStore.AssertEntry(PacketInfo->GarrBuildingID)->BuildSeconds <= GameTime::GetGameTime())
+    if (PacketInfo && PacketInfo->TimeBuilt + sGarrBuildingStore.AssertEntry(PacketInfo->GarrBuildingID)->BuildSeconds <= time(nullptr))
         return true;
 
     return false;
@@ -108,7 +108,7 @@ GameObject* Plot::CreateGameObject(Map* map, GarrisonFactionIndex faction, Garri
 
     if (!sObjectMgr->GetGameObjectTemplate(entry))
     {
-        TC_LOG_ERROR("entities.player", "Garrison attempted to spawn gameobject whose template doesn't exist (%u)", entry);
+        TC_LOG_ERROR(LOG_FILTER_PLAYER, "Garrison attempted to spawn gameobject whose template doesn't exist (%u)", entry);
         return nullptr;
     }
 
@@ -119,6 +119,8 @@ GameObject* Plot::CreateGameObject(Map* map, GarrisonFactionIndex faction, Garri
         delete building;
         return nullptr;
     }
+
+    
 
     if ((building->GetGoType() == GAMEOBJECT_TYPE_GARRISON_BUILDING || building->GetGoType() == GAMEOBJECT_TYPE_GARRISON_PLOT)/* && building->GetGOInfo()->garrisonBuilding.mapID*/)
     {
@@ -152,7 +154,7 @@ GameObject* Plot::CreateGameObject(Map* map, GarrisonFactionIndex faction, Garri
                     if (auto specTime = garrison->GetSpecialSpawnBuildingTime(buildingEtry->BuildingType))
                     {
                         // fix this? this is probably incorrect as GetSpecialSpawnBuildingTime already returns a diff
-                        int32 d = specTime - GameTime::GetGameTime();
+						int32 d = specTime - time(nullptr);
                         if (d > 0)
                             linkGO->SetRespawnTime(d);
                     }
@@ -237,7 +239,7 @@ void Plot::ClearBuildingInfo(Player* owner)
     plotPlaced.PlotInfo = &PacketInfo;
     owner->SendDirectMessage(plotPlaced.Write());
 
-    BuildingInfo.PacketInfo = std::nullopt;
+    BuildingInfo.PacketInfo = boost::none;
     db_state_building = DB_STATE_REMOVED;
 }
 

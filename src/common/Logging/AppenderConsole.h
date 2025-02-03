@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+ * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,9 +18,11 @@
 #ifndef APPENDERCONSOLE_H
 #define APPENDERCONSOLE_H
 
+#include <string>
 #include "Appender.h"
+#include "LogCommon.h"
 
-enum ColorTypes
+enum ColorTypes : uint8
 {
     BLACK,
     RED,
@@ -36,26 +38,23 @@ enum ColorTypes
     LBLUE,
     LMAGENTA,
     LCYAN,
-    WHITE
+    WHITE,
+
+    MaxColors
 };
 
-const uint8 MaxColors = uint8(WHITE) + 1;
-
-class TC_COMMON_API AppenderConsole : public Appender
+class AppenderConsole : public Appender
 {
-    public:
-        typedef std::integral_constant<AppenderType, APPENDER_CONSOLE>::type TypeIndex;
+public:
+    AppenderConsole(uint8 _id, std::string const& name, LogLevel level, AppenderFlags flags);
+    void InitColors(const std::string& init_str);
 
-        AppenderConsole(uint8 _id, std::string const& name, LogLevel level, AppenderFlags flags, std::vector<char const*> extraArgs);
-        void InitColors(const std::string& init_str);
-        AppenderType getType() const override { return TypeIndex::value; }
-
-    private:
-        void SetColor(bool stdout_stream, ColorTypes color);
-        void ResetColor(bool stdout_stream);
-        void _write(LogMessage const* message) override;
-        bool _colored;
-        ColorTypes _colors[NUM_ENABLED_LOG_LEVELS];
+private:
+    void SetColor(bool stdout_stream, ColorTypes color);
+    void ResetColor(bool stdout_stream);
+    void _write(LogMessage const* message) override;
+    bool _colored;
+    ColorTypes _colors[NUM_ENABLED_LOG_LEVELS];
 };
 
 #endif

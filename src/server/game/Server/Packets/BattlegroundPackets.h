@@ -18,11 +18,9 @@
 #ifndef BattlegroundPackets_h__
 #define BattlegroundPackets_h__
 
-#include "GameTime.h"
 #include "Packet.h"
 #include "Packets/LFGPackets.h"
 #include "BattlegroundDefines.h" // remove this shit -_-
-#include "Optional.h"
 
 namespace WorldPackets
 {
@@ -134,8 +132,6 @@ namespace WorldPackets
 
             struct RatingData
             {
-                RatingData() { } // allows emplace() with clang
-
                 int32 Prematch[MAX_TEAMS] = { };
                 int32 Postmatch[MAX_TEAMS] = { };
                 int32 PrematchMMR[MAX_TEAMS] = { };
@@ -143,8 +139,6 @@ namespace WorldPackets
 
             struct HonorData
             {
-                HonorData() { } // allows emplace() with clang
-
                 uint32 HonorKills = 0;
                 uint32 Deaths = 0;
                 uint32 ContributionPoints = 0;
@@ -374,7 +368,7 @@ namespace WorldPackets
 
             WorldPacket const* Write() override;
 
-            uint32 ServerTime = GameTime::GetGameTimeMS();
+            uint32 ServerTime = getMSTime();
             uint16 MaxPoints = 0;
         };
 
@@ -421,7 +415,7 @@ namespace WorldPackets
             uint8 AwaitingPlayers[MAX_TEAMS] = { };
         };
 
-        class TC_GAME_API BattlefieldStatusQueued final : public ServerPacket
+        class BattlefieldStatusQueued final : public ServerPacket
         {
         public:
             BattlefieldStatusQueued() : ServerPacket(SMSG_BATTLEFIELD_STATUS_QUEUED, 11) { }

@@ -71,7 +71,7 @@ struct ConversationDynamicFieldLines
 };
 #pragma pack(pop)
 
-class TC_GAME_API Conversation : public WorldObject, public GridObject<Conversation>
+class Conversation : public WorldObject, public GridObject<Conversation>
 {
     public:
         Conversation();

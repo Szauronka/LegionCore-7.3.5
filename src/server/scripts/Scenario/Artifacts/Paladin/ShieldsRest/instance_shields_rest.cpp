@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Paladin Specialization: Protection
 */
 
@@ -20,7 +21,7 @@ public:
 
     struct instance_shields_rest_InstanceMapScript : public InstanceScript
     {
-        instance_shields_rest_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_shields_rest_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         std::list<GameObject*> goDoorList;
         std::list<ObjectGuid> trashList;

@@ -142,7 +142,7 @@ void TempSummon::Update(uint32 diff)
                 return;
             }
 
-            if (!isInCombat() && IsAlive())
+            if (!isInCombat() && isAlive())
             {
                 if (m_timer <= diff)
                 {
@@ -157,7 +157,7 @@ void TempSummon::Update(uint32 diff)
         }
         default:
             UnSummon();
-            TC_LOG_ERROR("entities.unit", "Temporary summoned creature (entry: %u) have unknown type %u of ", GetEntry(), m_type);
+            TC_LOG_ERROR(LOG_FILTER_UNITS, "Temporary summoned creature (entry: %u) have unknown type %u of ", GetEntry(), m_type);
             break;
     }
 
@@ -354,7 +354,7 @@ bool TempSummon::InitBaseStat(uint32 creatureId, bool& damageSet)
     CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(GetEffectiveLevel(), cinfo->unit_class);
     Unit* owner = GetAnyOwner();
 
-    //TC_LOG_DEBUG("misc", "TempSummon::InitBaseStat owner %u creatureId %i", owner ? owner->GetGUID() : 0, creatureId);
+    //TC_LOG_DEBUG(LOG_FILTER_PETS, "TempSummon::InitBaseStat owner %u creatureId %i", owner ? owner->GetGUID() : 0, creatureId);
 
     PetStats const* pStats = sObjectMgr->GetPetStats(creatureId);
     if (pStats)                                      // exist in DB
@@ -372,8 +372,8 @@ bool TempSummon::InitBaseStat(uint32 creatureId, bool& damageSet)
             SetHealth(GetCreateHealth());
         }
 
-        if (GetPowerType() != pStats->energy_type)
-            SetPowerType(Powers(pStats->energy_type));
+        if (getPowerType() != pStats->energy_type)
+            setPowerType(Powers(pStats->energy_type));
 
         if (pStats->energy_type)
         {
@@ -451,10 +451,11 @@ void TempSummon::UnSummon(uint32 msTime)
 
     onUnload = true;
 
+    CastPetAuras(false);
     //ASSERT(!isPet());
     if (isPet())
     {
-        ToPet()->Remove(PET_SAVE_NOT_IN_SLOT);
+        ToPet()->Remove();
         ASSERT(!IsInWorld());
         return;
     }
@@ -505,7 +506,7 @@ void TempSummon::RemoveFromWorld()
     }
 
     //if (GetOwnerGUID())
-    //    TC_LOG_ERROR("entities.unit", "Unit %u has owner guid when removed from world", GetEntry());
+    //    TC_LOG_ERROR(LOG_FILTER_UNITS, "Unit %u has owner guid when removed from world", GetEntry());
 
     Creature::RemoveFromWorld();
 }
@@ -559,7 +560,7 @@ void Minion::InitStats(uint32 duration)
 
 void Minion::RemoveFromWorld()
 {
-    if (!IsInWorld())
+    if (!IsInWorld() || !this)
         return;
 
     if (Unit* owner = GetSummoner())
@@ -571,6 +572,17 @@ void Minion::RemoveFromWorld()
 bool Minion::IsGuardianPet() const
 {
     return isPet() || (m_Properties && m_Properties->Control == SUMMON_CATEGORY_PET);
+}
+
+bool Minion::IsWarlockPet() const
+{
+    if (isPet())
+    {
+        if (m_owner && m_owner->getClass() == CLASS_WARLOCK)
+            return true;
+    }
+
+    return false;
 }
 
 Guardian::Guardian(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject) : Minion(properties, owner, isWorldObject)
@@ -655,7 +667,7 @@ void Puppet::Update(uint32 time)
     //check if caster is channelling?
     if (IsInWorld())
     {
-        if (!IsAlive())
+        if (!isAlive())
         {
             UnSummon();
             // TODO: why long distance .die does not remove it

@@ -1,6 +1,5 @@
-#pragma once
 
-#include "Optional.h"
+#pragma once
 
 namespace LogsSystem
 {

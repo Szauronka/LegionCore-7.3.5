@@ -1033,13 +1033,13 @@ class npc_warmaster_blackhorn_twilight_elite_dreadblade_slayer: public CreatureS
                     {
                         case EVENT_BLADE_RUSH:
                         {
-                            startPos = me->GetPosition();
+                            me->GetPosition(&startPos);
                             Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0, NonTankTargetSelector(me));
                             if (!pTarget)
                                 pTarget = me->getVictim();
                             if (pTarget)
                             {
-                                endPos = pTarget->GetPosition();
+                                pTarget->GetPosition(&endPos);
                                 endPos.SetOrientation(0);
                                 if (Unit* rushTarget = me->SummonCreature(NPC_BLADE_RUSH_TARGET, endPos, TEMPSUMMON_TIMED_DESPAWN, 3000))
                                 {
@@ -1141,7 +1141,7 @@ class npc_warmaster_blackhorn_skyfire_harpoon_gun: public CreatureScript
                 if (!creatures.empty())
                     for (std::list<Creature*>::const_iterator itr = creatures.begin(); itr != creatures.end(); ++itr)
                         if (npc_warmaster_blackhorn_twilight_assault_drake::npc_warmaster_blackhorn_twilight_assault_drakeAI* drakeAI = CAST_AI(npc_warmaster_blackhorn_twilight_assault_drake::npc_warmaster_blackhorn_twilight_assault_drakeAI, (*itr)->GetAI()))
-                            if (drakeAI->IsReady() && (*itr)->IsAlive())
+                            if (drakeAI->IsReady() && (*itr)->isAlive())
                                 return (*itr);
 
                 return NULL;
@@ -1619,7 +1619,7 @@ class npc_dragon_soul_sky_captain_swayze : public CreatureScript
                     AnyLivePlayerNoGmCheck(WorldObject const* obj, float range) : _obj(obj), _range(range) {}
                     bool operator()(Player* u)
                     {
-                        if (!u->IsAlive())
+                        if (!u->isAlive())
                             return false;
 
                         if (!_obj->IsWithinDistInMap(u, _range))
@@ -1940,7 +1940,8 @@ class spell_warmaster_blackhorn_shockwave_aoe : public SpellScriptLoader
 
                 GetCaster()->SetTarget(ObjectGuid::Empty);
                 GetCaster()->GetAI()->SetGUID(GetHitUnit()->GetGUID());
-                Position pos = GetCaster()->GetNearPosition(1, GetCaster()->GetRelativeAngle(GetHitUnit()));
+                Position pos;
+                GetCaster()->GetNearPosition(pos, 1, GetCaster()->GetRelativeAngle(GetHitUnit()));
                 GetCaster()->GetMotionMaster()->MovePoint(POINT_SHOCKWAVE, pos);
             }
 

@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2012-2016 Uwow <https://uwow.biz/>
  * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -105,7 +106,7 @@ inline void KillRewarder::_InitGroupData()
             if (member->IsAtGroupRewardDistance(_victim))
             {
                 ++_countForRep;
-                if (!member->IsAlive())
+                if (!member->isAlive())
                     continue;
 
                 const uint8 lvl = member->getLevel();
@@ -118,7 +119,7 @@ inline void KillRewarder::_InitGroupData()
                     _maxLevel = lvl;
                 // 2.4. _maxNotGrayMember - maximum level of alive group member within reward distance, for whom victim is not gray;
                 uint32 grayLevel = Trinity::XP::GetGrayLevel(lvl);
-                if (_victim->GetLevelForTarget(member) > grayLevel && (!_maxNotGrayMember || _maxNotGrayMember->getLevel() < lvl))
+                if (_victim->getLevelForXPReward(member) > grayLevel && (!_maxNotGrayMember || _maxNotGrayMember->getLevel() < lvl))
                     _maxNotGrayMember = member;
             }
     // 2.5. _isFullXP - flag identifying that for all group members victim is not gray, so 100% XP will be rewarded (50% otherwise).
@@ -138,7 +139,7 @@ inline void KillRewarder::_InitXP(Player* player)
 
 inline void KillRewarder::_RewardHonor(Player* player)
 {
-    if (player->IsAlive())
+    if (player->isAlive())
         player->RewardHonor(_victim, _count, -1, true);
 }
 
@@ -150,7 +151,7 @@ inline void KillRewarder::_RewardXP(Player* player, float rate)
         // 4.2.1. If player is in group, adjust XP:
         //        * set to 0 if player's level is more than maximum level of not gray member;
         //        * cut XP in half if _isFullXP is false.
-        if (_maxNotGrayMember && player->IsAlive() &&
+        if (_maxNotGrayMember && player->isAlive() &&
             _maxNotGrayMember->getLevel() >= player->getLevel())
             xp = _isFullXP ?
             uint32(xp * rate) :             // Reward FULL XP if all group members are not gray.
@@ -192,7 +193,7 @@ inline void KillRewarder::_RewardReputation(Player* player, float rate)
 inline void KillRewarder::_RewardKillCredit(Player* player)
 {
     // 4.4. Give kill credit (player must not be in group, or he must be alive or without corpse).
-    if (!_group || player->IsAlive() || !player->GetCorpse())
+    if (!_group || player->isAlive() || !player->GetCorpse())
         if (Creature* creature = _victim->ToCreature())
         {
             ObjectGuid victimGuid = creature->GetGUID();

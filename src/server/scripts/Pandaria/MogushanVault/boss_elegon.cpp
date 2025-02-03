@@ -117,7 +117,7 @@ class boss_elegon : public CreatureScript
                 pInstance = creature->GetInstanceScript();
                 me->SetCanFly(true);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL);
-                me->SetAnimTier(AnimTier::Fly);
+                me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_ALWAYS_STAND | UNIT_BYTE1_FLAG_HOVER);
             }
 
             InstanceScript* pInstance;
@@ -385,7 +385,7 @@ class npc_buff_controller : public CreatureScript
                         {
                             if (Player* pl = i->getSource())
                             {
-                                if (pl->IsAlive() && pl->GetDistance(me) <= 38.9f)
+                                if (pl->isAlive() && pl->GetDistance(me) <= 38.9f)
                                 {
                                     if (!pl->HasAura(SPELL_TOUCH_OF_THE_TITANS))
                                         pl->AddAura(SPELL_TOUCH_OF_THE_TITANS, pl);
@@ -393,7 +393,7 @@ class npc_buff_controller : public CreatureScript
                                     if (!pl->HasAura(SPELL_OVERCHARGED))
                                         pl->AddAura(SPELL_OVERCHARGED, pl);
                                 }
-                                else if (pl->IsAlive() && pl->GetDistance(me) >= 38.9f)
+                                else if (pl->isAlive() && pl->GetDistance(me) >= 38.9f)
                                 {
                                     pl->RemoveAurasDueToSpell(SPELL_TOUCH_OF_THE_TITANS);
                                     pl->RemoveAurasDueToSpell(SPELL_OVERCHARGED);

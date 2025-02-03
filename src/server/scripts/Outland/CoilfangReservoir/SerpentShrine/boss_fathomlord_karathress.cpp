@@ -147,7 +147,7 @@ public:
                     if (RAdvisors[i])
                     {
                         pAdvisor = (Unit::GetCreature((*me), RAdvisors[i]));
-                        if (pAdvisor && !pAdvisor->IsAlive())
+                        if (pAdvisor && !pAdvisor->isAlive())
                         {
                             pAdvisor->Respawn();
                             pAdvisor->AI()->EnterEvadeMode();
@@ -286,7 +286,7 @@ public:
                     if (Advisors[i])
                     {
                         Advisor = (Unit::GetCreature(*me, Advisors[i]));
-                        if (Advisor && Advisor->IsAlive())
+                        if (Advisor && Advisor->isAlive())
                         {
                             continueTriggering = true;
                             break;
@@ -345,7 +345,7 @@ public:
             pet = false;
 
             Creature* Pet = Unit::GetCreature(*me, SummonedPet);
-            if (Pet && Pet->IsAlive())
+            if (Pet && Pet->isAlive())
             {
                 Pet->DealDamage(Pet, Pet->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             }
@@ -364,7 +364,7 @@ public:
                 Karathress = (Unit::GetCreature((*me), instance->GetGuidData(DATA_KARATHRESS)));
 
                 if (Karathress)
-                    if (!me->IsAlive() && Karathress)
+                    if (!me->isAlive() && Karathress)
                         CAST_AI(boss_fathomlord_karathress::boss_fathomlord_karathressAI, Karathress->AI())->EventSharkkisDeath();
             }
         }
@@ -421,7 +421,7 @@ public:
             {
                 DoCast(me, SPELL_THE_BEAST_WITHIN);
                 Creature* Pet = Unit::GetCreature(*me, SummonedPet);
-                if (Pet && Pet->IsAlive())
+                if (Pet && Pet->isAlive())
                 {
                     Pet->CastSpell(Pet, SPELL_PET_ENRAGE, true);
                 }
@@ -504,7 +504,7 @@ public:
                 Karathress = (Unit::GetCreature((*me), instance->GetGuidData(DATA_KARATHRESS)));
 
                 if (Karathress)
-                    if (!me->IsAlive() && Karathress)
+                    if (!me->isAlive() && Karathress)
                         CAST_AI(boss_fathomlord_karathress::boss_fathomlord_karathressAI, Karathress->AI())->EventTidalvessDeath();
             }
         }
@@ -632,7 +632,7 @@ public:
                 Karathress = (Unit::GetCreature((*me), instance->GetGuidData(DATA_KARATHRESS)));
 
                 if (Karathress)
-                    if (!me->IsAlive() && Karathress)
+                    if (!me->isAlive() && Karathress)
                         CAST_AI(boss_fathomlord_karathress::boss_fathomlord_karathressAI, Karathress->AI())->EventCaribdisDeath();
             }
         }
@@ -715,12 +715,12 @@ public:
                 // It can be cast on any of the mobs
                 Unit* unit = NULL;
 
-                while (unit == NULL || !unit->IsAlive())
+                while (unit == NULL || !unit->isAlive())
                 {
                     unit = selectAdvisorUnit();
                 }
 
-                if (unit && unit->IsAlive())
+                if (unit && unit->isAlive())
                     DoCast(unit, SPELL_HEAL);
                 Heal_Timer = 60000;
             } else Heal_Timer -= diff;

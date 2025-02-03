@@ -1,4 +1,5 @@
 /*==============
+    uwow.biz
 ==============*/
 
 #include "shadopan_monastery.h"
@@ -70,7 +71,7 @@ struct boss_gu_cloudstrike : public BossAI
             events.RescheduleEvent(EVENT_OVERCHARGED_SOUL, 2500, PHASE_TWO);
             DoCast(SPELL_CHARGING_SOUL);
             if (auto azureSerpent = instance->instance->GetCreature(instance->GetGuidData(NPC_AZURE_SERPENT)))
-                if (azureSerpent->IsAlive())
+                if (azureSerpent->isAlive())
                     azureSerpent->AI()->DoAction(ACTION_AZURE_SERPENT_P_2);
         }
     }
@@ -298,5 +299,5 @@ void AddSC_boss_gu_cloudstrike()
     RegisterCreatureAI(npc_azure_serpent);
     RegisterSpellScript(spell_kill_guardians);
     RegisterSpellScript(spell_overcharged_soul_damage);
-    //new AreaTrigger_at_gu_intro();
+    new AreaTrigger_at_gu_intro();
 }

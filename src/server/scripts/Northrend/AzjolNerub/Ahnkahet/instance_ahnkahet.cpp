@@ -42,7 +42,7 @@ public:
 
     struct instance_ahnkahet_InstanceScript : public InstanceScript
     {
-        instance_ahnkahet_InstanceScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_ahnkahet_InstanceScript(Map* map) : InstanceScript(map) {}
 
         ObjectGuid Elder_Nadox;
         ObjectGuid Prince_Taldaram;
@@ -68,7 +68,6 @@ public:
 
         void Initialize() override
         {
-            SetHeaders(DataHeader);
             memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
             InitiandGUIDs.clear();
 
@@ -180,7 +179,7 @@ public:
                     for (GuidSet::const_iterator itr = InitiandGUIDs.begin(); itr != InitiandGUIDs.end(); ++itr)
                     {
                         Creature* cr = instance->GetCreature(*itr);
-                        if (cr && cr->IsAlive())
+                        if (cr && cr->isAlive())
                             vInitiands.push_back(*itr);
                     }
                     if (vInitiands.empty())
@@ -213,7 +212,7 @@ public:
                         for (GuidSet::const_iterator itr = InitiandGUIDs.begin(); itr != InitiandGUIDs.end(); ++itr)
                         {
                             Creature* cr = instance->GetCreature(*itr);
-                            if (cr && cr->IsAlive())
+                            if (cr && cr->isAlive())
                             {
                                 cr->SetVisible(false);
                                 cr->setDeathState(JUST_DIED);
@@ -268,7 +267,7 @@ public:
                     for (GuidSet::const_iterator itr = InitiandGUIDs.begin(); itr != InitiandGUIDs.end(); ++itr)
                     {
                         Creature* cr = instance->GetCreature(*itr);
-                        if (!cr || (cr && cr->IsAlive()))
+                        if (!cr || (cr && cr->isAlive()))
                             return 0;
                     }
                     return 1;

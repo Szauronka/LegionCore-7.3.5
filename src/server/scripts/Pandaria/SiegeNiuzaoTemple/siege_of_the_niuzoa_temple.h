@@ -1,10 +1,9 @@
 /*==============
+    uwow.biz
 ==============*/
 
 #ifndef SIEGE_NIUZOA_TEMPLE_H_
 #define SIEGE_NIUZOA_TEMPLE_H_
-
-#define DataHeader "SNT"
 
 enum DataTypes
 {

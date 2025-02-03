@@ -230,7 +230,7 @@ class boss_yorsahj_the_unsleeping: public CreatureScript
                 GetCreatureListWithEntryInGrid(trashmobs, me, NPC_COBALT_GLOBULE_TRASH, 150);
                 for (std::list<Creature*>::const_iterator itr = trashmobs.begin(); itr != trashmobs.end(); ++itr)
                     if (Creature* trash = *itr)
-                        if (trash->IsAlive())
+                        if (trash->isAlive())
                             trash->SetInCombatWithZone();
             }
 
@@ -576,8 +576,8 @@ class boss_yorsahj_the_unsleeping: public CreatureScript
                             u->GetEntry() == NPC_GLOWING_GLOBULE ||
                             u->GetEntry() == NPC_DARK_GLOBULE || 
                             u->GetEntry() == NPC_SHADOWED_GLOBULE ||
-                            u->GetEntry() == NPC_COBALT_GLOBULE) &&
-                                u->IsAlive())
+                            u->GetEntry() == NPC_COBALT_GLOBULE) && 
+                            u->isAlive())
                             return true;
                         return false;
                     }
@@ -1017,7 +1017,7 @@ class spell_yorsahj_the_unsleeping_mana_void : public SpellScriptLoader
                     {
                         if (unit->GetTypeId() != TYPEID_PLAYER)
                             return true;
-                        return (unit->ToPlayer()->GetPowerType() != POWER_MANA);
+                        return (unit->ToPlayer()->getPowerType() != POWER_MANA);
                     }
             };
 

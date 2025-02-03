@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
+ * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,31 +18,34 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#include "Appender.h"
 #include "Define.h"
 #include "LogCommon.h"
 #include <unordered_map>
+#include <memory>
 #include <string>
 
-class Appender;
-struct LogMessage;
-
-class TC_COMMON_API Logger
+class Logger
 {
-    public:
-        Logger(std::string const& name, LogLevel level);
+public:
+    Logger();
+    ~Logger();
 
-        void addAppender(uint8 type, Appender* appender);
-        void delAppender(uint8 type);
+    void Create(std::string const& name, LogFilterType type, LogLevel level);
+    void addAppender(uint8 type, Appender *);
+    void delAppender(uint8 type);
 
-        std::string const& getName() const;
-        LogLevel getLogLevel() const;
-        void setLogLevel(LogLevel level);
-        void write(LogMessage* message) const;
+    std::string const& getName() const;
+    LogFilterType getType() const;
+    LogLevel getLogLevel() const;
+    void setLogLevel(LogLevel level);
+    void write(LogMessage* message);
 
-    private:
-        std::string name;
-        LogLevel level;
-        std::unordered_map<uint8, Appender*> appenders;
+private:
+    std::string name;
+    LogFilterType type;
+    LogLevel level;
+    std::unordered_map<uint8, Appender*> appenders;
 };
 
 #endif

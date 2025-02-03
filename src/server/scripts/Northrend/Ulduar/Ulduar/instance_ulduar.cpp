@@ -50,9 +50,8 @@ public:
 
     struct instance_ulduar_InstanceMapScript : public InstanceScript
     {
-        instance_ulduar_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_ulduar_InstanceMapScript(Map* pMap) : InstanceScript(pMap)
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_BOSS_NUMBER);
             LoadDoorData(doorData);
             ShieldCheck = 0;
@@ -279,7 +278,7 @@ public:
             {
                 if (Player* pPlayer = i->getSource())
                 {
-                    if (pPlayer->IsAlive() && pPlayer->GetVehicle())
+                    if (pPlayer->isAlive() && pPlayer->GetVehicle())
                     {
                         if (Creature* vehicle = pPlayer->GetVehicleBase()->ToCreature())
                         {
@@ -593,7 +592,7 @@ public:
             {
                 // Flame Leviathan's Tower Event triggers
                 Creature* FlameLeviathan = instance->GetCreature(uiLeviathan);
-                if (FlameLeviathan && FlameLeviathan->IsAlive()) // No leviathan, no event triggering ;)
+                if (FlameLeviathan && FlameLeviathan->isAlive()) // No leviathan, no event triggering ;)
                     switch (eventId)
                     {
                         case EVENT_TOWER_OF_STORM_DESTROYED:
@@ -767,7 +766,7 @@ public:
                 if (!player)
                     continue;
                 
-                if (player->IsAlive() && !player->isGameMaster())
+                if (player->isAlive() && !player->isGameMaster())
                     return false;
             }
             return true;
@@ -790,15 +789,21 @@ public:
                 }
             }
         }
-
-        void WriteSaveDataMore(std::ostringstream& data) override
+        
+        std::string GetSaveData() override
         {
-            data << Immortal;
+            std::ostringstream saveStream;
+            saveStream << GetBossSaveData() << " " << Immortal;
+            return saveStream.str();
         }
 
-        void ReadSaveDataMore(std::istringstream& data) override
+        void Load(const char * data) override
         {
-            data >> Immortal;
+            std::istringstream loadStream(LoadBossState(data));
+            uint32 buff;
+            for (uint32 i=0; i<MAX_BOSS_NUMBER; ++i)
+                loadStream >> buff;
+            loadStream >> Immortal;
         }
         
         bool CheckRequiredBosses(uint32 bossId, uint32 entry, Player const* player = NULL) const override

@@ -1,4 +1,10 @@
+/*
+    uwow.biz
+*/
+
 #include "LFGMgr.h"
+#include "ScriptMgr.h"
+#include "SpellScript.h"
 
 //179523
 class spell_launch_voidtalon_scenario : public SpellScript
@@ -41,7 +47,10 @@ class spell_voidtalon_backup : public AuraScript
         if (!player)
             return;
 
-        pos = player->GetPosition();
+        pos.m_positionX = player->GetPositionX();
+        pos.m_positionY = player->GetPositionY();
+        pos.m_positionZ = player->GetPositionZ();
+        pos.m_orientation = player->GetOrientation();
         mapid = player->GetMapId();
     }
 

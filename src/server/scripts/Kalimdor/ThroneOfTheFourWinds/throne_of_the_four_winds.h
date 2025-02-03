@@ -1,8 +1,6 @@
 #ifndef DEF_THRONEOFTHEFOURWINDS_H
 #define DEF_THRONEOFTHEFOURWINDS_H
 
-#define DataHeader "TW"
-
 enum Data
 {
     DATA_CONCLAVE_OF_WIND_EVENT,

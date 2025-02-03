@@ -23,7 +23,7 @@
 class instance_unga_ingoo : public InstanceMapScript
 {
 public:
-    instance_unga_ingoo() : InstanceMapScript("instance_unga_ingoo", 1144) { }
+    instance_unga_ingoo() : InstanceMapScript("instance_unga_ingoo", 1048) { }
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const override
     {
@@ -32,7 +32,7 @@ public:
 
     struct instance_unga_ingoo_InstanceMapScript : public InstanceScript
     {
-        instance_unga_ingoo_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_unga_ingoo_InstanceMapScript(Map* map) : InstanceScript(map)
         { }
 
         void Initialize() override
@@ -77,5 +77,5 @@ public:
 
 void AddSC_instance_unga_ingoo()
 {
-    //new instance_unga_ingoo();
+    new instance_unga_ingoo();
 }

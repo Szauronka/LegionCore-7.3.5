@@ -1,3 +1,13 @@
+////////////////////////////////////////////////////////////////////////////////
+//
+//  MILLENIUM-STUDIO
+//  Copyright 2016 Millenium-studio SARL
+//  All Rights Reserved.
+//
+//  Uwow team 2016
+//
+////////////////////////////////////////////////////////////////////////////////
+
 #include "Object.h"
 #include "LFGListMgr.h"
 #include "GroupMgr.h"
@@ -234,7 +244,7 @@ LFGListEntry * LFGListMgr::GetEntryByApplicant(WorldPackets::LFG::RideTicket app
 
 void LFGListMgr::OnPlayerApplyForGroup(Player* player, WorldPackets::LFG::RideTicket const* applicationTicket, uint32 activityID, std::string comment, uint8 role)
 {
-    if (!sGroupFinderActivityStore.LookupEntry(activityID))
+    if (!sGroupFinderActivityStore[activityID])
         return;
 
     auto entry = GetEntrybyGuidLow(applicationTicket->Id);

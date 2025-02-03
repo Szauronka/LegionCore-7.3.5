@@ -1,3 +1,8 @@
+/*
+* Copyright (C) 2017 uWoW <http://uwow.biz/>
+*
+*/
+
 #ifndef CommentatorPackets_h__
 #define CommentatorPackets_h__
 

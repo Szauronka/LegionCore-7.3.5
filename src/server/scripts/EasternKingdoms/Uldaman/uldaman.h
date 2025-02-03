@@ -19,8 +19,6 @@
 #ifndef DEF_ULDAMAN_H
 #define DEF_ULDAMAN_H
 
-#define DataHeader "UD"
-
 enum eObjects
 {
     GO_ARCHAEDAS_TEMPLE_DOOR            = 141869,

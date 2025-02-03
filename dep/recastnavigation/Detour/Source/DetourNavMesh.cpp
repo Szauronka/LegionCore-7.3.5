@@ -215,7 +215,6 @@ dtNavMesh::~dtNavMesh()
 			dtFree(m_tiles[i].data);
 			m_tiles[i].data = 0;
 			m_tiles[i].dataSize = 0;
-            delete m_tiles[i].dtLock;
 		}
 	}
 	dtFree(m_posLookup);
@@ -248,8 +247,6 @@ dtStatus dtNavMesh::init(const dtNavMeshParams* params)
 	{
 		m_tiles[i].salt = 1;
 		m_tiles[i].next = m_nextFree;
-        m_tiles[i].dtCheckLock = false;
-        m_tiles[i].dtLock = nullptr;
 		m_nextFree = &m_tiles[i];
 	}
 	
@@ -859,7 +856,7 @@ dtStatus dtNavMesh::addTile(unsigned char* data, int dataSize, int flags,
 	// Make sure the location is free.
 	if (getTileAt(header->x, header->y, header->layer))
 		return DT_FAILURE;
-
+		
 	// Allocate a tile.
 	dtMeshTile* tile = 0;
 	if (!lastRef)
@@ -877,7 +874,6 @@ dtStatus dtNavMesh::addTile(unsigned char* data, int dataSize, int flags,
 		int tileIndex = (int)decodePolyIdTile((dtPolyRef)lastRef);
 		if (tileIndex >= m_maxTiles)
 			return DT_FAILURE | DT_OUT_OF_MEMORY;
-
 		// Try to find the specific tile id from the free list.
 		dtMeshTile* target = &m_tiles[tileIndex];
 		dtMeshTile* prev = 0;
@@ -890,7 +886,6 @@ dtStatus dtNavMesh::addTile(unsigned char* data, int dataSize, int flags,
 		// Could not find the correct location.
 		if (tile != target)
 			return DT_FAILURE | DT_OUT_OF_MEMORY;
-
 		// Remove from freelist
 		if (!prev)
 			m_nextFree = tile->next;
@@ -904,7 +899,7 @@ dtStatus dtNavMesh::addTile(unsigned char* data, int dataSize, int flags,
 	// Make sure we could allocate a tile.
 	if (!tile)
 		return DT_FAILURE | DT_OUT_OF_MEMORY;
-
+	
 	// Insert tile into the position lut.
 	int h = computeTileHash(header->x, header->y, m_tileLutMask);
 	tile->next = m_posLookup[h];
@@ -920,13 +915,7 @@ dtStatus dtNavMesh::addTile(unsigned char* data, int dataSize, int flags,
 	const int detailTrisSize = dtAlign4(sizeof(unsigned char)*4*header->detailTriCount);
 	const int bvtreeSize = dtAlign4(sizeof(dtBVNode)*header->bvNodeCount);
 	const int offMeshLinksSize = dtAlign4(sizeof(dtOffMeshConnection)*header->offMeshConCount);
-
-    if (!tile->dtLock)
-        tile->dtLock = new std::recursive_mutex;
-    tile->dtCheckLock = true;
-
-    std::lock_guard<std::recursive_mutex> _dtLock(*tile->dtLock);
-
+	
 	unsigned char* d = data + headerSize;
 	tile->verts = dtGetThenAdvanceBufferPointer<float>(d, vertsSize);
 	tile->polys = dtGetThenAdvanceBufferPointer<dtPoly>(d, polysSize);
@@ -992,8 +981,7 @@ dtStatus dtNavMesh::addTile(unsigned char* data, int dataSize, int flags,
 	
 	if (result)
 		*result = getTileRef(tile);
-
-    tile->dtCheckLock = false;
+	
 	return DT_SUCCESS;
 }
 
@@ -1145,10 +1133,6 @@ dtStatus dtNavMesh::getTileAndPolyByRef(const dtPolyRef ref, const dtMeshTile** 
 	if (it >= (unsigned int)m_maxTiles) return DT_FAILURE | DT_INVALID_PARAM;
 	if (m_tiles[it].salt != salt || m_tiles[it].header == 0) return DT_FAILURE | DT_INVALID_PARAM;
 	if (ip >= (unsigned int)m_tiles[it].header->polyCount) return DT_FAILURE | DT_INVALID_PARAM;
-
-    if (m_tiles[it].dtCheckLock)
-        m_tiles[it].WaitLock();
-
 	*tile = &m_tiles[it];
 	*poly = &m_tiles[it].polys[ip];
 	return DT_SUCCESS;
@@ -1163,10 +1147,6 @@ void dtNavMesh::getTileAndPolyByRefUnsafe(const dtPolyRef ref, const dtMeshTile*
 {
 	unsigned int salt, it, ip;
 	decodePolyId(ref, salt, it, ip);
-
-    if (m_tiles[it].dtCheckLock)
-        m_tiles[it].WaitLock();
-
 	*tile = &m_tiles[it];
 	*poly = &m_tiles[it].polys[ip];
 }
@@ -1540,13 +1520,3 @@ dtStatus dtNavMesh::getPolyArea(dtPolyRef ref, unsigned char* resultArea) const
 	return DT_SUCCESS;
 }
 
-void dtMeshTile::WaitLock() const
-{
-    std::lock_guard<std::recursive_mutex> _dtLock(*dtLock);
-}
-
-dtMeshTile::dtMeshTile()
-{
-    dtCheckLock = false;
-    dtLock = nullptr;
-}

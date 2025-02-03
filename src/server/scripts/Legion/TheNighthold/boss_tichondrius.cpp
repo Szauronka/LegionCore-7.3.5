@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "AreaTriggerAI.h"
 #include "the_nighthold.h"
 
@@ -199,7 +203,7 @@ struct boss_tichonrius : BossAI
                 {
                     if (Creature* blood = me->SummonCreature(NPC_TAINTED_BLOOD, target->GetPosition()))
                     {
-                        pos = blood->GetNearPosition(5.0f, angle);
+                        blood->GetNearPosition(pos, 5.0f, angle);
                         blood->CastSpell(pos, SPELL_FEAST_OF_BLOOD_JUMP, true);
                         blood->CastSpell(target, SPELL_FEAST_OF_BLOOD_FIXATE, true);
                         angle += 2.0f;
@@ -327,7 +331,7 @@ struct boss_tichonrius : BossAI
                     for (uint8 i = 0; i < 4; ++i)
                     {
                         centrPos.SimplePosXYRelocationByAngle(pos, 20.0f, angle);
-                        angle += float(M_PI / 2);
+                        angle += M_PI / 2;
 
                         AddDelayedEvent(500 * i, [this, pos]() -> void
                         {
@@ -410,7 +414,7 @@ struct npc_tichonrius_tainted_blood : ScriptedAI
 
                     if (Player* target = Player::GetPlayer(*me, targetGuid))
                     {
-                        if (target->IsAlive())
+                        if (target->isAlive())
                         {
                             DoResetThreat();
                             me->AddThreat(target, 1000.0f);
@@ -541,7 +545,7 @@ struct npc_tichonrius_carrion_nightmare : ScriptedAI
                     break;
                 }
                 case EVENT_2:
-                    me->SendPlaySpellVisualKit(66613, 0, 0);
+                    me->SendPlaySpellVisualKit(0, 66613, 0);
                     break;
                 case EVENT_3:
                     me->DespawnOrUnsummon();
@@ -617,7 +621,7 @@ struct npc_tichonrius_combat_stalker : ScriptedAI
 
                     for (uint8 i = 0; i < count; ++i)
                     {
-                        pos = me->GetRandomNearPosition(40.0f);
+                        me->GetRandomNearPosition(pos, 40.0f);
                         owner->SummonCreature(NPC_PHANTASMAL_BLOODFANG, pos);
                     }
                 }

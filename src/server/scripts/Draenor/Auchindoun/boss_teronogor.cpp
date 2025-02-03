@@ -9,6 +9,10 @@
 
 #include "ScriptedCreature.h"
 #include "auchindoun.hpp"
+#include "ScriptMgr.h"
+#include "SpellScript.h"
+#include "GameObjectAI.h"
+
 
 enum eTerongorSpells
 {
@@ -296,7 +300,7 @@ public:
                     me->AddAura(SpellTeronogorShield, me);
                     me->CastSpell(me, SpellDemonicCircleVisual);
 
-                    //me->GetMap()->SetObjectVisibility(1000.0f);
+                    me->GetMap()->SetObjectVisibility(1000.0f);
                 }
             }
         }
@@ -413,7 +417,8 @@ public:
 
                 if (m_Instance->instance->IsHeroic())
                 {
-                    Position l_Position = me->GetRandomNearPosition(10.0f);
+                    Position l_Position;
+                    me->GetRandomNearPosition(l_Position, 10.0f);
                     me->SummonCreature(TriggerSummonAbyssal, l_Position, TEMPSUMMON_MANUAL_DESPAWN);
                 }
             }
@@ -672,8 +677,8 @@ public:
         void Reset() override
         {
             events.Reset();
-            //if (me->GetMap())
-            //    me->GetMap()->SetObjectVisibility(1000.0f);
+            if (me->GetMap())
+                me->GetMap()->SetObjectVisibility(1000.0f);
 
             /// Cosmetic channel - 
             if (m_Instance)
@@ -777,8 +782,8 @@ public:
         {
             events.Reset();
 
-            //if (me->GetMap())
-            //    me->GetMap()->SetObjectVisibility(1000.0f);
+            if (me->GetMap())
+                me->GetMap()->SetObjectVisibility(1000.0f);
 
             if (m_Instance)
             {
@@ -956,8 +961,8 @@ public:
         {
             events.Reset();
 
-            //if (me->GetMap())
-            //    me->GetMap()->SetObjectVisibility(1000.0f);
+            if (me->GetMap())
+                me->GetMap()->SetObjectVisibility(1000.0f);
 
             if (m_Instance)
             {
@@ -1095,14 +1100,14 @@ public:
             }
         }
 
-        //void OnAddThreat(Unit* victim, float& threat, SpellSchoolMask /*p_SchoolMask*/, SpellInfo const* /*p_ThreatSpell*/) override
+        //void OnAddThreat(Unit* /*victim*/, float& /*fThreat*/, SpellSchoolMask /*schoolMask*/, SpellInfo const* /*threatSpell*/) override
         //{
-        //    if (m_Target)
-        //    {
-        //        if (victim->GetGUID() != m_Target)
-        //            threat = 0;
-        //        return;
-        //    }
+            //if (m_Target)
+            //{
+                //if (victim->GetGUID() != m_Target)
+                    //threat = 0;
+                //return;
+            //}
         //}
 
         void UpdateAI(uint32 diff) override
@@ -1398,7 +1403,7 @@ public:
             {
                 if (Creature* m_Azzakel = m_Instance->instance->GetCreature(m_Instance->GetGuidData(DataBossAzzakael)))
                 {
-                    if (m_Azzakel->IsAlive())
+                    if (m_Azzakel->isAlive())
                         return false;
 
                     if (boss_teronogor::boss_teronogorAI* l_LinkAI = CAST_AI(boss_teronogor::boss_teronogorAI, m_Teronogor->GetAI()))
@@ -1421,7 +1426,7 @@ public:
     }
 };
 
-/// Soul Transport Object 02 - 345366
+/// Soul Transport Object 02 - 231739 345366
 class auchindoun_teronogor_gameobject_soul_transporter_02 : public GameObjectScript
 {
 public:
@@ -1448,7 +1453,7 @@ public:
                                     p_Player->AddUnitMovementFlag(MOVEMENTFLAG_ROOT);
                                     p_Player->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_DISABLE_TURN);
                                     p_Player->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL | UNIT_FLAG_IMMUNE_TO_NPC);
-                                    p_Player->m_Events.AddEvent(new auchindoun_soul_transportation_event(p_Player, 4), p_Player->m_Events.CalculateTime(1 * IN_MILLISECONDS));
+                                    p_Player->m_Events.AddEvent(new auchindoun_soul_transportation_event(p_Player, 0), p_Player->m_Events.CalculateTime(1 * IN_MILLISECONDS));
                                     return true;
                                 }
                             }
@@ -1460,7 +1465,7 @@ public:
 
         return false;
     }
-    /*
+    
     struct auchindoun_teronogor_gameobject_soul_transporter_02AI : public GameObjectAI
     {
         auchindoun_teronogor_gameobject_soul_transporter_02AI(GameObject* p_GameObject) : GameObjectAI(p_GameObject) { }
@@ -1483,10 +1488,10 @@ public:
     {
         return new auchindoun_teronogor_gameobject_soul_transporter_02AI(p_GameObject);
     }
-    */
+    
 };
 
-/// Soul Transport Object 03 - 345367
+/// Soul Transport Object 03 - 231740, 345367
 class auchindoun_teronogor_gameobject_soul_transporter_03 : public GameObjectScript
 {
 public:
@@ -1509,7 +1514,7 @@ public:
                             p_Player->AddUnitMovementFlag(MOVEMENTFLAG_ROOT);
                             p_Player->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_DISABLE_TURN);
                             p_Player->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL | UNIT_FLAG_IMMUNE_TO_NPC);
-                            p_Player->m_Events.AddEvent(new auchindoun_soul_transportation_event(p_Player, 7), p_Player->m_Events.CalculateTime(1 * IN_MILLISECONDS));
+                            p_Player->m_Events.AddEvent(new auchindoun_soul_transportation_event(p_Player, 0), p_Player->m_Events.CalculateTime(1 * IN_MILLISECONDS));
                             return true;
                         }
                     }
@@ -1520,7 +1525,7 @@ public:
 
         return false;
     }
-    /*
+    
     struct auchindoun_teronogor_gameobject_soul_transporter_02AI : public GameObjectAI
     {
     auchindoun_teronogor_gameobject_soul_transporter_02AI(GameObject* p_GameObject) : GameObjectAI(p_GameObject) { }
@@ -1543,10 +1548,10 @@ public:
     {
     return new auchindoun_teronogor_gameobject_soul_transporter_02AI(p_GameObject);
     }
-    */
+    
 };
 
-/// Soul Transport Object 04 - 345368
+/// Soul Transport Object 04 - 231741,345368
 class auchindoun_teronogor_gameobject_soul_transporter_04 : public GameObjectScript
 {
 public:
@@ -1569,7 +1574,7 @@ public:
                             p_Player->AddUnitMovementFlag(MOVEMENTFLAG_ROOT);
                             p_Player->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_DISABLE_TURN);
                             p_Player->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL | UNIT_FLAG_IMMUNE_TO_NPC);
-                            p_Player->m_Events.AddEvent(new auchindoun_soul_transportation_event(p_Player, 10), p_Player->m_Events.CalculateTime(1 * IN_MILLISECONDS));
+                            p_Player->m_Events.AddEvent(new auchindoun_soul_transportation_event(p_Player, 0), p_Player->m_Events.CalculateTime(1 * IN_MILLISECONDS));
 
                             return true;
                         }
@@ -1580,7 +1585,7 @@ public:
 
         return false;
     }
-    /*
+    
     struct auchindoun_teronogor_gameobject_soul_transporter_02AI : public GameObjectAI
     {
     auchindoun_teronogor_gameobject_soul_transporter_02AI(GameObject* p_GameObject) : GameObjectAI(p_GameObject) { }
@@ -1591,7 +1596,7 @@ public:
     {
     if (Creature* l_Teronogor = instance->instance->GetCreature(instance->GetGuidData(DataBossTeronogor)))
     {
-    go->SetLootState(instance);
+    //go->SetLootState(instance);
     go->UseDoorOrButton(10 * IN_MILLISECONDS, false, l_Teronogor);
     }
     }
@@ -1603,24 +1608,24 @@ public:
     {
     return new auchindoun_teronogor_gameobject_soul_transporter_02AI(p_GameObject);
     }
-    */
+    
 };
 
 void AddSC_boss_teronogor()
 {
     new boss_teronogor();                                           ///< 77734
     new auchindoun_teronogor_mob_gromkash();                        ///< 77889
-    //new auchindoun_teronogor_mob_abyssal();                         ///< 77905
+    new auchindoun_teronogor_mob_abyssal();                         ///< 77905
     new auchindoun_teronogor_mob_durag();                           ///< 77890
     new auchindoun_teronogor_mob_gulkosh();                         ///< 78437
     new auchindoun_teronogor_mob_shaadum();                         ///< 78728
-    //new auchindoun_teronogor_mob_spirit();
+    new auchindoun_teronogor_mob_spirit();
     new auchindoun_teronogor_spell_chaos_wave();                    ///< 157001
-    //new auchindoun_teronogor_spell_demonic_leap();                  ///< 148969
+    new auchindoun_teronogor_spell_demonic_leap();                  ///< 148969
     new auchindoun_teronogor_spell_seed_of_malevolence();           ///< 156921
     new auchindoun_teronogor_spell_demonic_leap_jump();             ///< 157039
     new auchindoun_teronogor_gameobject_soul_transporter_01();      ///< 231736
-    //new auchindoun_teronogor_gameobject_soul_transporter_02();      ///< 345366
-    //new auchindoun_teronogor_gameobject_soul_transporter_03();      ///< 345367
-    //new auchindoun_teronogor_gameobject_soul_transporter_04();      ///< 345368
+    new auchindoun_teronogor_gameobject_soul_transporter_02();      ///< 231739 
+    new auchindoun_teronogor_gameobject_soul_transporter_03();      ///< 231740
+    new auchindoun_teronogor_gameobject_soul_transporter_04();      ///< 231741
 }

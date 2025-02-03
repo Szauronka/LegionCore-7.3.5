@@ -63,7 +63,7 @@ public:
             else GlobalCooldown = 0;
 
             //Buff timer (only buff when we are alive and not in combat
-            if (!me->isInCombat() && me->IsAlive())
+            if (!me->isInCombat() && me->isAlive())
             {
                 if (BuffTimer <= diff)
                 {
@@ -228,7 +228,7 @@ public:
 
 void AddSC_generic_creature()
 {
-    //new generic_creature;
+    new generic_creature;
     new trigger_periodic;
-    //new trigger_death;
+    new trigger_death;
 }

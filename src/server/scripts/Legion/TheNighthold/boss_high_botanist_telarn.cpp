@@ -1,3 +1,7 @@
+/*
+https://uwow.biz/
+*/
+
 #include "the_nighthold.h"
 
 enum Says
@@ -179,7 +183,7 @@ struct boss_high_botanist_telarn : BossAI
 {
     explicit boss_high_botanist_telarn(Creature* creature) : BossAI(creature, DATA_TELARN)
     {
-        if (me->IsAlive())
+        if (me->isAlive())
         {
             if (IsMythicRaid())
             {
@@ -334,7 +338,7 @@ struct boss_high_botanist_telarn : BossAI
                     for (auto const& guid : botanistList)
                     {
                         if (auto botanist = Unit::GetCreature(*me, guid))
-                            if (botanist->IsAlive() && !botanist->isInCombat())
+                            if (botanist->isAlive() && !botanist->isInCombat())
                                 botanist->AI()->DoZoneInCombat(botanist, 100.0f);
                     }
                 }
@@ -1221,7 +1225,8 @@ struct npc_telarn_controlled_chaos_stalker : public ScriptedAI
         {
             if (naturSolar)
             {
-                Position collapsePos = me->GetNearPosition(frand(minRange, maxRange), frand(0.0f, 6.28f));
+                Position collapsePos;
+                me->GetNearPosition(collapsePos, frand(minRange, maxRange), frand(0.0f, 6.28f));
                 owner->SummonCreature(NPC_SOLAR_COLLAPSE_STALKER, collapsePos);
             }
         }
@@ -1358,7 +1363,7 @@ struct npc_telarn_parasitic_lasher : public ScriptedAI
                 case EVENT_2:
                     if (auto target = ObjectAccessor::GetUnit(*me, targetGUID))
                     {
-                        if (!target->IsAlive())
+                        if (!target->isAlive())
                         {
                             events.RescheduleEvent(EVENT_1, 1000);
                             break;
@@ -1407,7 +1412,7 @@ struct npc_telarn_solar_collapse_stalker : public ScriptedAI
                 Position pos;
                 for (uint8 i = 1; i <= 12; ++i)
                 {
-                    pos = me->GetNearPosition(25.0f, 0.523f * i);
+                    me->GetNearPosition(pos, 25.0f, 0.523f * i);
                     me->PlayOrphanSpellVisual(pos, 0.0f, { pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ() + 0.1f }, 58128, 1.5f, ObjectGuid::Empty, true);
                 }
             }
@@ -1439,7 +1444,7 @@ struct npc_telarn_solar_collapse_stalker : public ScriptedAI
 
         for (uint8 i = 1; i <= count; ++i)
         {
-            pos = me->GetNearPosition(range, angle * i);
+            me->GetNearPosition(pos, range, angle * i);
             me->CastSpell(pos, SPELL_SOLAR_COLLAPSE_MISSLE_1, true);
 
             me->AddDelayedEvent(500, [this, idx, pos] () -> void
@@ -1607,7 +1612,7 @@ class spell_telarn_parasitic_fixate : public AuraScript
 
     void OnTick(AuraEffect const* aurEff)
     {
-        if (!GetCaster() || !GetCaster()->IsAlive())
+        if (!GetCaster() || !GetCaster()->isAlive())
             aurEff->GetBase()->Remove();
     }
 
@@ -1685,7 +1690,7 @@ class spell_telarn_parasitic_fetter_mark : public AuraScript
             float angle = frand(0.0f, 6.28f);
             for (uint8 i = 0; i < 2; ++i)
             {
-                pos = GetTarget()->GetNearPosition(5.0f, angle);
+                GetTarget()->GetNearPosition(pos, 5.0f, angle);
                 angle *= 2.0f;
 
                 if (auto lasher = GetCaster()->SummonCreature(NPC_PARASITIC_LASHER, pos))

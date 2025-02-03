@@ -74,9 +74,8 @@ class instance_serpent_shrine : public InstanceMapScript
 
         struct instance_serpentshrine_cavern_InstanceMapScript : public InstanceScript
         {
-            instance_serpentshrine_cavern_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+            instance_serpentshrine_cavern_InstanceMapScript(Map* map) : InstanceScript(map)
             {
-                SetHeaders(DataHeader);
             }
 
             void Initialize()
@@ -138,7 +137,7 @@ class instance_serpent_shrine : public InstanceMapScript
                     {
                         if (Player* player = i->getSource())
                         {
-                            if (player->IsAlive() && /*i->getSource()->GetPositionZ() <= -21.434931f*/player->IsInWater())
+                            if (player->isAlive() && /*i->getSource()->GetPositionZ() <= -21.434931f*/player->IsInWater())
                             {
                                 if (Water == WATERSTATE_SCALDING)
                                 {

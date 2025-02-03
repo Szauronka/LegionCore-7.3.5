@@ -23,7 +23,7 @@
 class instance_the_secrets_of_ragefire : public InstanceMapScript
 {
 public:
-    instance_the_secrets_of_ragefire() : InstanceMapScript("instance_the_secrets_of_ragefire", 1144) { }
+    instance_the_secrets_of_ragefire() : InstanceMapScript("instance_the_secrets_of_ragefire", 1131) { }
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const override
     {
@@ -32,7 +32,7 @@ public:
 
     struct instance_the_secrets_of_ragefire_InstanceMapScript : public InstanceScript
     {
-        instance_the_secrets_of_ragefire_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_the_secrets_of_ragefire_InstanceMapScript(Map* map) : InstanceScript(map)
         { }
 
         void Initialize() override
@@ -77,5 +77,5 @@ public:
 
 void AddSC_instance_the_secrets_of_ragefire()
 {
-    //new instance_the_secrets_of_ragefire();
+    new instance_the_secrets_of_ragefire();
 }

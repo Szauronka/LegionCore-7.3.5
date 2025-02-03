@@ -103,7 +103,7 @@ public:
         {
             if (instance)
             {
-                if (me->IsAlive())
+                if (me->isAlive())
                 {
                     instance->SetData(DATA_SUPREMUSEVENT, NOT_STARTED);
                     //ToggleDoors(true);

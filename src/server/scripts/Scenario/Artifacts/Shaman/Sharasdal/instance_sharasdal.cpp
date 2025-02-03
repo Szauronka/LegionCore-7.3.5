@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Shaman: Sharasdal
 */
 
@@ -18,7 +19,7 @@ public:
 
     struct instance_sharasdal_InstanceMapScript : public InstanceScript
     {
-        instance_sharasdal_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_sharasdal_InstanceMapScript(Map* map) : InstanceScript(map) {}
         
         WorldLocation loc_res_pla;  // for respawn
 
@@ -26,8 +27,9 @@ public:
         // OnPlayerDeath
         {            
             // Init data
-            loc_res_pla.WorldRelocate(1600, x, y, z);
-
+            loc_res_pla.Relocate(x, y, z);
+            loc_res_pla.SetMapId(1600);
+            
             return &loc_res_pla;
         }
 

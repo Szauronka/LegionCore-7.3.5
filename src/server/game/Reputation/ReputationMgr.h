@@ -63,7 +63,7 @@ typedef std::map<uint32, ReputationRank> ForcedReactions;
 
 class Player;
 
-class TC_GAME_API ReputationMgr
+class ReputationMgr
 {
     public:                                                 // constructors and global modifiers
         explicit ReputationMgr(Player* owner);
@@ -73,7 +73,7 @@ class TC_GAME_API ReputationMgr
         void Clear();
         uint32 GetSize();
 
-        void SaveToDB(CharacterDatabaseTransaction& trans);
+        void SaveToDB(SQLTransaction& trans);
         void LoadFromDB(PreparedQueryResult result);
 
         static ReputationRank GetReactionLevel(int32 standing);

@@ -18,24 +18,18 @@
 
 #include "AccountMgr.h"
 #include "DatabaseEnv.h"
-#ifndef _WEB_API
 #include "ObjectAccessor.h"
 #include "Player.h"
-#endif
 #include "Util.h"
 #include "SHA1.h"
-#include "SHA256.h"
 
 namespace AccountMgr
 {
 
-AccountOpResult CreateAccount(std::string username, std::string password, bool async)
+AccountOpResult CreateAccount(std::string username, std::string password, uint32 bnetAccountId /*= 0*/, uint8 bnetIndex /*= 0*/)
 {
-    if (utf8length(username) > MAX_EMAIL_STR)
+    if (utf8length(username) > MAX_ACCOUNT_STR)
         return AccountOpResult::AOR_NAME_TOO_LONG;          // username's too long
-
-    if (utf8length(password) > MAX_PASS_STR)
-        return AccountOpResult::AOR_PASS_TOO_LONG;
 
     Utf8ToUpperOnlyLatin(username);
     Utf8ToUpperOnlyLatin(password);
@@ -43,23 +37,35 @@ AccountOpResult CreateAccount(std::string username, std::string password, bool a
     if (GetId(username))
         return AccountOpResult::AOR_NAME_ALREADY_EXIST;     // username does already exist
 
-    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_ACCOUNT);
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_ACCOUNT);
+
     stmt->setString(0, username);
     stmt->setString(1, CalculateShaPassHash(username, password));
 
-    if (async)
-        LoginDatabase.Execute(stmt);
+	if (bnetAccountId && bnetIndex)
+    {
+        stmt->setUInt32(2, bnetAccountId);
+        stmt->setUInt8(3, bnetIndex);
+    }
     else
-        LoginDatabase.DirectExecute(stmt);
+    {
+        stmt->setNull(2);
+        stmt->setNull(3);
+    }
+
+    LoginDatabase.Execute(stmt);
+
+    //stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_REALM_CHARACTERS_INIT);
+
+    //LoginDatabase.Execute(stmt);
 
     return AccountOpResult::AOR_OK;                         // everything's fine
 }
 
-#ifndef _WEB_API
 AccountOpResult DeleteAccount(uint32 accountId)
 {
     // Check if accounts exists
-    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_BY_ID);
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_BY_ID);
     stmt->setUInt32(0, accountId);
     PreparedQueryResult result = LoginDatabase.Query(stmt);
 
@@ -67,11 +73,11 @@ AccountOpResult DeleteAccount(uint32 accountId)
         return AccountOpResult::AOR_NAME_NOT_EXIST;
 
     // Obtain accounts characters
-    CharacterDatabasePreparedStatement* stmt2 = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARS_BY_ACCOUNT_ID);
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARS_BY_ACCOUNT_ID);
 
     stmt->setUInt32(0, accountId);
 
-    result = CharacterDatabase.Query(stmt2);
+    result = CharacterDatabase.Query(stmt);
 
     if (result)
     {
@@ -92,19 +98,19 @@ AccountOpResult DeleteAccount(uint32 accountId)
     }
 
     // table realm specific but common for all characters of account for realm
-    stmt2 = CharacterDatabase.GetPreparedStatement(CHAR_DEL_TUTORIALS);
-    stmt2->setUInt32(0, accountId);
-    CharacterDatabase.Execute(stmt2);
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_TUTORIALS);
+    stmt->setUInt32(0, accountId);
+    CharacterDatabase.Execute(stmt);
 
-    stmt2 = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ACCOUNT_DATA);
-    stmt2->setUInt32(0, accountId);
-    CharacterDatabase.Execute(stmt2);
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_ACCOUNT_DATA);
+    stmt->setUInt32(0, accountId);
+    CharacterDatabase.Execute(stmt);
 
-    stmt2 = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_BAN);
-    stmt2->setUInt32(0, accountId);
-    CharacterDatabase.Execute(stmt2);
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHARACTER_BAN);
+    stmt->setUInt32(0, accountId);
+    CharacterDatabase.Execute(stmt);
 
-    LoginDatabaseTransaction trans = LoginDatabase.BeginTransaction();
+    SQLTransaction trans = LoginDatabase.BeginTransaction();
 
     stmt = LoginDatabase.GetPreparedStatement(LOGIN_DEL_ACCOUNT);
     stmt->setUInt32(0, accountId);
@@ -126,22 +132,21 @@ AccountOpResult DeleteAccount(uint32 accountId)
 
     return AccountOpResult::AOR_OK;
 }
-#endif
 
-AccountOpResult ChangeUsername(uint32 accountId, std::string newUsername, std::string newPassword, bool async)
+AccountOpResult ChangeUsername(uint32 accountId, std::string newUsername, std::string newPassword)
 {
     // Check if accounts exists
-    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_BY_ID);
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_BY_ID);
     stmt->setUInt32(0, accountId);
     PreparedQueryResult result = LoginDatabase.Query(stmt);
 
     if (!result)
         return AccountOpResult::AOR_NAME_NOT_EXIST;
 
-    if (utf8length(newUsername) > MAX_EMAIL_STR)
+    if (utf8length(newUsername) > MAX_ACCOUNT_STR)
         return AccountOpResult::AOR_NAME_TOO_LONG;
 
-    if (utf8length(newPassword) > MAX_PASS_STR)
+    if (utf8length(newPassword) > MAX_ACCOUNT_STR)
         return AccountOpResult::AOR_PASS_TOO_LONG;
 
     Utf8ToUpperOnlyLatin(newUsername);
@@ -153,43 +158,37 @@ AccountOpResult ChangeUsername(uint32 accountId, std::string newUsername, std::s
     stmt->setString(1, CalculateShaPassHash(newUsername, newPassword));
     stmt->setUInt32(2, accountId);
 
-    if (async)
-        LoginDatabase.Execute(stmt);
-    else
-        LoginDatabase.DirectExecute(stmt);
+    LoginDatabase.Execute(stmt);
 
     return AccountOpResult::AOR_OK;
 }
 
-AccountOpResult ChangePassword(uint32 accountId, std::string newPassword, bool async)
+AccountOpResult ChangePassword(uint32 accountId, std::string newPassword)
 {
     std::string username;
 
     if (!GetName(accountId, username))
         return AccountOpResult::AOR_NAME_NOT_EXIST;     // account doesn't exist
 
-    if (utf8length(newPassword) > MAX_PASS_STR)
+    if (utf8length(newPassword) > MAX_ACCOUNT_STR)
         return AccountOpResult::AOR_PASS_TOO_LONG;
 
     Utf8ToUpperOnlyLatin(username);
     Utf8ToUpperOnlyLatin(newPassword);
 
-    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_PASSWORD);
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_PASSWORD);
 
     stmt->setString(0, CalculateShaPassHash(username, newPassword));
     stmt->setUInt32(1, accountId);
 
-    if (async)
-        LoginDatabase.Execute(stmt);
-    else
-        LoginDatabase.DirectExecute(stmt);
+    LoginDatabase.Execute(stmt);
 
     return AccountOpResult::AOR_OK;
 }
 
 uint32 GetId(std::string username)
 {
-    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCOUNT_ID_BY_USERNAME);
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCOUNT_ID_BY_USERNAME);
     stmt->setString(0, username);
     PreparedQueryResult result = LoginDatabase.Query(stmt);
 
@@ -198,7 +197,7 @@ uint32 GetId(std::string username)
 
 uint32 GetSecurity(uint32 accountId)
 {
-    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCOUNT_ACCESS_GMLEVEL);
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_ACCOUNT_ACCESS_GMLEVEL);
     stmt->setUInt32(0, accountId);
     PreparedQueryResult result = LoginDatabase.Query(stmt);
 
@@ -207,7 +206,7 @@ uint32 GetSecurity(uint32 accountId)
 
 uint32 GetSecurity(uint32 accountId, int32 realmId)
 {
-    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_GMLEVEL_BY_REALMID);
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_GMLEVEL_BY_REALMID);
     stmt->setUInt32(0, accountId);
     stmt->setInt32(1, realmId);
     PreparedQueryResult result = LoginDatabase.Query(stmt);
@@ -217,7 +216,7 @@ uint32 GetSecurity(uint32 accountId, int32 realmId)
 
 bool GetName(uint32 accountId, std::string& name)
 {
-    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_USERNAME_BY_ID);
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_GET_USERNAME_BY_ID);
     stmt->setUInt32(0, accountId);
     PreparedQueryResult result = LoginDatabase.Query(stmt);
 
@@ -240,7 +239,7 @@ bool CheckPassword(uint32 accountId, std::string password)
     Utf8ToUpperOnlyLatin(username);
     Utf8ToUpperOnlyLatin(password);
 
-    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_CHECK_PASSWORD);
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_CHECK_PASSWORD);
     stmt->setUInt32(0, accountId);
     stmt->setString(1, CalculateShaPassHash(username, password));
     PreparedQueryResult result = LoginDatabase.Query(stmt);
@@ -251,26 +250,23 @@ bool CheckPassword(uint32 accountId, std::string password)
 uint32 GetCharactersCount(uint32 accountId)
 {
     // check character count
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_SUM_CHARS);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_SUM_CHARS);
     stmt->setUInt32(0, accountId);
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
     return result ? (*result)[0].GetUInt64() : 0;
 }
 
-std::string CalculateShaPassHash(const std::string& name, const std::string& password)
+std::string CalculateShaPassHash(std::string& name, std::string& password)
 {
-    SHA256Hash email;
-    email.UpdateData(name);
-    email.Finalize();
-
-    SHA256Hash sha;
-    sha.UpdateData(ByteArrayToHexStr(email.GetDigest(), email.GetLength()));
+    SHA1Hash sha;
+    sha.Initialize();
+    sha.UpdateData(name);
     sha.UpdateData(":");
     sha.UpdateData(password);
     sha.Finalize();
 
-    return ByteArrayToHexStr(sha.GetDigest(), sha.GetLength(), true);
+    return ByteArrayToHexStr(sha.GetDigest(), sha.GetLength());
 }
 
 bool IsPlayerAccount(uint32 gmlevel)

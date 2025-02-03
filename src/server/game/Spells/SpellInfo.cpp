@@ -446,17 +446,26 @@ bool SpellEffectInfo::IsAura(AuraType aura) const
 
 bool SpellEffectInfo::IsTargetingArea() const
 {
+    if (!this)
+        return false;
+
     return TargetA.IsArea() || TargetB.IsArea();
 }
 
 bool SpellEffectInfo::IsAreaAuraEffect() const
 {
+    if (!this)
+        return false;
+
     return Effect == SPELL_EFFECT_APPLY_AREA_AURA_PARTY || Effect == SPELL_EFFECT_APPLY_AREA_AURA_RAID || Effect == SPELL_EFFECT_APPLY_AREA_AURA_FRIEND || Effect == SPELL_EFFECT_APPLY_AREA_AURA_ENEMY ||
         Effect == SPELL_EFFECT_APPLY_AREA_AURA_PET || Effect == SPELL_EFFECT_APPLY_AURA_ON_PET_OR_SELF || Effect == SPELL_EFFECT_APPLY_AURA_WITH_VALUE || Effect == SPELL_EFFECT_APPLY_AREA_AURA_OWNER;
 }
 
 bool SpellEffectInfo::IsFarUnitTargetEffect() const
 {
+    if (!this)
+        return false;
+
     return Effect == SPELL_EFFECT_SUMMON_PLAYER
         || Effect == SPELL_EFFECT_SUMMON_RAF_FRIEND
         || Effect == SPELL_EFFECT_RESURRECT
@@ -471,11 +480,17 @@ bool SpellEffectInfo::IsFarDestTargetEffect() const
 
 bool SpellEffectInfo::IsUnitOwnedAuraEffect() const
 {
+    if (!this)
+        return false;
+
     return IsAreaAuraEffect() || Effect == SPELL_EFFECT_APPLY_AURA;
 }
 
 float SpellEffectInfo::CalcValue(Unit const* caster, float const* bp, Unit const* target, Item* m_castItem, bool lockBasePoints, float* variance /*= nullptr*/, int32 comboPoints /*= 0*/) const
 {
+    if (!this)
+        return 0;
+
     if (caster)
         if (auto const& casterLevel = caster->GetEffectiveLevel())
             if (_spellInfo->MaxUsableLevel && casterLevel > _spellInfo->MaxUsableLevel)
@@ -506,9 +521,9 @@ float SpellEffectInfo::CalcValue(Unit const* caster, float const* bp, Unit const
     {
         uint32 level = _spellInfo->SpellLevel;
         if (target && _spellInfo->IsPositiveEffect(EffectIndex) && Effect == SPELL_EFFECT_APPLY_AURA)
-            level = target->GetLevelForTarget(caster);
+            level = target->getLevelForTarget(caster);
         else if (caster)
-            level = caster->GetLevelForTarget(target);
+            level = caster->getLevelForTarget(target);
 
         if (!_spellInfo->HasAttribute(SPELL_ATTR11_SEND_ITEM_LEVEL) && _spellInfo->HasAttribute(SPELL_ATTR10_USE_SPELL_BASE_LEVEL_FOR_SCALING) && _spellInfo->BaseLevel)
             level = _spellInfo->BaseLevel;
@@ -568,7 +583,7 @@ float SpellEffectInfo::CalcValue(Unit const* caster, float const* bp, Unit const
     {
         if (caster)
         {
-            auto level = int32(caster->GetLevelForTarget(target));
+            auto level = int32(caster->getLevelForTarget(target));
             if (level > int32(_spellInfo->MaxLevel) && _spellInfo->MaxLevel > 0)
                 level = int32(_spellInfo->MaxLevel);
             else if (level < int32(_spellInfo->BaseLevel))
@@ -614,7 +629,7 @@ float SpellEffectInfo::CalcValue(Unit const* caster, float const* bp, Unit const
         // amount multiplication based on caster's level
         if (!basePointsPerLevel && _spellInfo->HasAttribute(SPELL_ATTR0_LEVEL_DAMAGE_CALCULATION))
         {
-            auto level = int32(caster->GetLevelForTarget(target));
+            auto level = int32(caster->getLevelForTarget(target));
             if (level > int32(_spellInfo->MaxLevel) && _spellInfo->MaxLevel > 0)
                 level = int32(_spellInfo->MaxLevel);
             else if (level < int32(_spellInfo->BaseLevel))
@@ -662,7 +677,7 @@ float SpellEffectInfo::CalcValue(Unit const* caster, float const* bp, Unit const
             }
 
             if (canEffectScale)
-                value = int32(value * 0.25f * exp(caster->GetLevelForTarget(target) * (60 - _spellInfo->SpellLevel) / 1000.0f));
+                value = int32(value * 0.25f * exp(caster->getLevelForTarget(target) * (60 - _spellInfo->SpellLevel) / 1000.0f));
         }
 
         switch (_spellInfo->Id)
@@ -902,7 +917,7 @@ SpellEffectInfo::StaticData  SpellEffectInfo::_data[TOTAL_SPELL_EFFECTS] =
     {EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST}, // 106 SPELL_EFFECT_SUMMON_RAID_MARKER
     {EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST}, // 107 SPELL_EFFECT_LOOT_CORPSE
     {EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT}, // 108 SPELL_EFFECT_DISPEL_MECHANIC
-    {EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST}, // 109 SPELL_EFFECT_RESURRECT_PET
+    {EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST}, // 109 SPELL_EFFECT_SUMMON_DEAD_PET
     {EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT}, // 110 SPELL_EFFECT_110
     {EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT}, // 111 SPELL_EFFECT_DURABILITY_DAMAGE
     {EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT}, // 112 SPELL_EFFECT_112
@@ -1854,11 +1869,6 @@ bool SpellInfo::IsChanneled() const
     return (GetMisc()->MiscData.Attributes[1] & (SPELL_ATTR1_CHANNELED_1 | SPELL_ATTR1_CHANNELED_2)) != 0;
 }
 
-bool SpellInfo::IsMoveAllowedChannel() const
-{
-    return IsChanneled() && HasAttribute(SPELL_ATTR5_USABLE_WHILE_MOVING);
-}
-
 bool SpellInfo::IsBreakingStealth() const
 {
     return !HasAttribute(SPELL_ATTR1_NOT_BREAK_STEALTH);
@@ -2033,13 +2043,13 @@ SpellCastResult SpellInfo::CheckShapeshift(uint32 form) const
         shapeInfo = sSpellShapeshiftFormStore.LookupEntry(form);
         if (!shapeInfo)
         {
-            TC_LOG_ERROR("spells", "GetErrorAtShapeshiftedCast: unknown shapeshift %u", form);
+            TC_LOG_ERROR(LOG_FILTER_SPELLS_AURAS, "GetErrorAtShapeshiftedCast: unknown shapeshift %u", form);
             return SPELL_CAST_OK;
         }
         actAsShifted = !(shapeInfo->Flags & SHAPESHIFT_FORM_IS_NOT_A_SHAPESHIFT); // shapeshift acts as normal form for spells
     }
 
-    //TC_LOG_DEBUG("spells", "SpellInfo::CheckShapeshift Id %i form %u stanceMask %i Shapeshift.ShapeshiftExclude %u Shapeshift.ShapeshiftMask %u actAsShifted %u flags1 %u", Id, form, stanceMask, Shapeshift.ShapeshiftExclude, Shapeshift.ShapeshiftMask, actAsShifted, shapeInfo->flags1);
+    //TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "SpellInfo::CheckShapeshift Id %i form %u stanceMask %i Shapeshift.ShapeshiftExclude %u Shapeshift.ShapeshiftMask %u actAsShifted %u flags1 %u", Id, form, stanceMask, Shapeshift.ShapeshiftExclude, Shapeshift.ShapeshiftMask, actAsShifted, shapeInfo->flags1);
 
     if (actAsShifted)
     {
@@ -2073,13 +2083,13 @@ SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 a
     // normal case
     if (CastingReq.RequiredAreasID > 0)
     {
-        TC_LOG_TRACE("spells", "CheckLocation: area group (%u) start match check", CastingReq.RequiredAreasID);
-        bool found = false;
+        TC_LOG_TRACE(LOG_FILTER_SPELLS_AURAS, "CheckLocation: area group (%u) start match check", CastingReq.RequiredAreasID);
+		bool found = false;
         std::vector<uint32> areaGroupMembers = sDB2Manager.GetAreasForGroup(CastingReq.RequiredAreasID);
         for (uint32 areaId : areaGroupMembers)
         {
-            TC_LOG_TRACE("spells", "CheckLocation: area group (%u) - trying to match areaId (%u) with zone_id/area_id (%u/%u)", CastingReq.RequiredAreasID, areaId, zone_id, area_id);
-            if (areaId == zone_id || areaId == area_id)
+            TC_LOG_TRACE(LOG_FILTER_SPELLS_AURAS, "CheckLocation: area group (%u) - trying to match areaId (%u) with zone_id/area_id (%u/%u)", CastingReq.RequiredAreasID, areaId, zone_id, area_id);
+			if (areaId == zone_id || areaId == area_id)
             {
                 found = true;
                 break;
@@ -2135,7 +2145,7 @@ SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 a
         }
         if (!foundNoCheck)
         {
-            TC_LOG_TRACE("spells", "CheckLocation: Spell (%u) cast failed due to spellAreaMapBounds", Id);
+            TC_LOG_TRACE(LOG_FILTER_SPELLS_AURAS, "CheckLocation: Spell (%u) cast failed due to spellAreaMapBounds", Id);
             return SPELL_FAILED_INCORRECT_AREA;
         }
     }
@@ -2397,7 +2407,7 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
     if (HasAttribute(SPELL_ATTR3_ONLY_TARGET_PLAYERS) && !unitTarget->ToPlayer())
         return SPELL_FAILED_TARGET_NOT_PLAYER;
 
-    if (!IsAllowingDeadTarget() && !unitTarget->IsAlive())
+    if (!IsAllowingDeadTarget() && !unitTarget->isAlive())
         return SPELL_FAILED_TARGETS_DEAD;
 
     // check this flag only for implicit targets (chain and area), allow to explicitly target units for spells like Shield of Righteousness
@@ -2455,18 +2465,18 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
 SpellCastResult SpellInfo::CheckExplicitTarget(Unit const* caster, WorldObject const* target, Item const* itemTarget) const
 {
     uint32 neededTargets = GetExplicitTargetMask();
-    //TC_LOG_DEBUG("spells", "SpellInfo::CheckExplicitTarget neededTargets %i target %i Id %i", neededTargets, target ? target->GetGUID() : 0, Id);
+    //TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "SpellInfo::CheckExplicitTarget neededTargets %i target %i Id %i", neededTargets, target ? target->GetGUID() : 0, Id);
     if (!target)
     {
         if (neededTargets & (TARGET_FLAG_UNIT_MASK | TARGET_FLAG_GAMEOBJECT_MASK | TARGET_FLAG_CORPSE_MASK) && !(neededTargets & TARGET_FLAG_DEST_LOCATION))
             if (!(neededTargets & TARGET_FLAG_GAMEOBJECT_ITEM) || !itemTarget)
                 return SPELL_FAILED_BAD_TARGETS;
 
-        //TC_LOG_DEBUG("spells", "SpellInfo::CheckExplicitTarget Id %i non bad target", Id);
+        //TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "SpellInfo::CheckExplicitTarget Id %i non bad target", Id);
         return SPELL_CAST_OK;
     }
 
-    //TC_LOG_DEBUG("spells", "SpellInfo::CheckExplicitTarget Id %i", Id);
+    //TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "SpellInfo::CheckExplicitTarget Id %i", Id);
     if (Unit const* unitTarget = target->ToUnit())
     {
         if (neededTargets & (TARGET_FLAG_UNIT_ENEMY | TARGET_FLAG_UNIT_ALLY | TARGET_FLAG_UNIT_RAID | TARGET_FLAG_UNIT_PARTY | TARGET_FLAG_UNIT_MINIPET | TARGET_FLAG_UNIT_PASSENGER))
@@ -2607,7 +2617,7 @@ uint32 SpellInfo::GetMechanicMask(uint32 miscVal) const
             break;
     }
 
-    //TC_LOG_DEBUG("spells", "SpellInfo::GetMechanicMask Id %u miscVal %u mechanic_immunity_list %u", Id, miscVal, mechanic_immunity_list);
+    //TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "SpellInfo::GetMechanicMask Id %u miscVal %u mechanic_immunity_list %u", Id, miscVal, mechanic_immunity_list);
     return mechanic_immunity_list;
 }
 
@@ -2713,6 +2723,10 @@ uint32 SpellInfo::CalcCastTime(Unit* caster, Spell* spell) const
 
     int32 castTime = 0;
 
+    // hack -- no cast time while prep
+    if (sWorld->getBoolConfig(CONFIG_FUN_OPTION_ENABLED) && caster && (caster->HasAura(SPELL_BG_PREPARATION) || caster->HasAura(SPELL_ARENA_PREPARATION)))
+        return castTime;
+
     int32 calcLevel = spell ? spell->GetCaster()->GetEffectiveLevel() : 0;
     if (MaxLevel && uint32(calcLevel) > MaxLevel)
         calcLevel = MaxLevel;
@@ -2740,7 +2754,7 @@ uint32 SpellInfo::CalcCastTime(Unit* caster, Spell* spell) const
     if (spell)
         spell->GetCaster()->ModSpellCastTime(this, castTime, spell);
 
-        return std::max(castTime, 0);
+    return std::max(castTime, 0);
 }
 
 uint32 SpellInfo::GetMaxTicks() const
@@ -2801,7 +2815,7 @@ void SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask, Sp
             auto PowerType = Powers(power->PowerType > 127 ? power->PowerType - 256 : power->PowerType);
             // Base powerCost
             int32 powerCost = power->ManaCost;
-            // TC_LOG_DEBUG("spells", "CalcPowerCost Id %u powerCost %i PowerCostPct %f ManaCostAdditional %u", Id, powerCost, power->PowerCostPct, power->ManaCostAdditional);
+            // TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "CalcPowerCost Id %u powerCost %i PowerCostPct %f ManaCostAdditional %u", Id, powerCost, power->PowerCostPct, power->ManaCostAdditional);
 
             // PCT cost from total amount
             if (power->PowerCostPct)
@@ -2817,7 +2831,7 @@ void SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask, Sp
                         break;
                     default:
                         powerCost += int32(CalculatePct(caster->GetCreatePowers(Powers(PowerType)), power->PowerCostPct));
-                        // TC_LOG_DEBUG("spells", "CalcPowerCost: Power type '%i' in spell %d, powerCost %i, GetCreatePowers %i", PowerType, Id, powerCost, caster->GetCreatePowers(PowerType));
+                        // TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "CalcPowerCost: Power type '%i' in spell %d, powerCost %i, GetCreatePowers %i", PowerType, Id, powerCost, caster->GetCreatePowers(PowerType));
                         //return powerCost;
                 }
             }
@@ -2839,15 +2853,15 @@ void SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask, Sp
                 return false;
             });
 
-            // TC_LOG_DEBUG("spells", "CalcPowerCost Id %u powerCost %i", Id, powerCost);
+            // TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "CalcPowerCost Id %u powerCost %i", Id, powerCost);
 
             if (power->OptionalCost)
             {
                 int32 powerCostAdditional = power->OptionalCost;
-                Unit::AuraEffectList const& mModPowerCost = caster->GetAuraEffectsByType(SPELL_AURA_MOD_ADDITIONAL_POWER_COST);
-                for (Unit::AuraEffectList::const_iterator i = mModPowerCost.begin(); i != mModPowerCost.end(); ++i)
-                    if (PowerType == (*i)->GetMiscValue() && (*i)->IsAffectingSpell(this))
-                        powerCostAdditional += (*i)->GetAmount();
+                if (Unit::AuraEffectList const* mModPowerCost = caster->GetAuraEffectsByType(SPELL_AURA_MOD_ADDITIONAL_POWER_COST))
+                    for (Unit::AuraEffectList::const_iterator i = mModPowerCost->begin(); i != mModPowerCost->end(); ++i)
+                        if (PowerType == (*i)->GetMiscValue() && (*i)->IsAffectingSpell(this))
+                            powerCostAdditional += (*i)->GetAmount();
 
                 int32 addCost = caster->GetPower(PowerType) - powerCost;
                 if (addCost > 0)
@@ -2868,7 +2882,7 @@ void SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask, Sp
                     modOwner->ApplySpellMod(Id, SPELLMOD_SPELL_COST2, powerCost);
             }
 
-            // TC_LOG_DEBUG("spells", "CalcPowerCost Id %u powerCost %i", Id, powerCost);
+            // TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "CalcPowerCost Id %u powerCost %i", Id, powerCost);
 
             if (!caster->IsControlledByPlayer() && G3D::fuzzyEq(power->PowerCostPct, 0.0f) && SpellLevel)
             {
@@ -2890,7 +2904,7 @@ void SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask, Sp
                 return false;
             }));
 
-            // TC_LOG_DEBUG("spells", "CalcPowerCost Id %u powerCost %i PowerType %i", Id, powerCost, PowerType);
+            // TC_LOG_DEBUG(LOG_FILTER_SPELLS_AURAS, "CalcPowerCost Id %u powerCost %i PowerType %i", Id, powerCost, PowerType);
 
             if (power->ManaCost >= 0 && powerCost < 0)
                 powerCost = 0;
@@ -3053,10 +3067,9 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
                 case 61716: // Rabbit Costume
                 case 61734: // Noblegarden Bunny
                 case 62344: // Fists of Stone
-                case 73523: // Rigor Mortis
+                case 143842:// Mark of Anguish 
                 case 78627: // Deepstone Oil
                 case 78639: // Deepstone Oil mount
-                case 143842:// Mark of Anguish
                     return true;
                 default:
                     break;
@@ -3627,7 +3640,7 @@ SpellPowerEntry const* SpellInfo::GetPowerInfo(uint8 powerIndex) const
 {
     if (powerIndex >= MAX_POWERS_FOR_SPELL)
     {
-        TC_LOG_ERROR("spells", "Invalid power index: %u, for spell: %u.", powerIndex, Id);
+        TC_LOG_ERROR(LOG_FILTER_SPELLS_AURAS, "Invalid power index: %u, for spell: %u.", powerIndex, Id);
         powerIndex = 0;
     }
 
@@ -3688,14 +3701,15 @@ uint32 SpellInfo::GetSpellXSpellVisualId(Unit* caster, Unit* target) const
     SpellInfo const* spellInfo = this;
     if (caster)
     {
-        auto const& visualOverrides = caster->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_SPELL_VISUAL);
-        for (auto effect : visualOverrides)
-            if (uint32(effect->GetMiscValue()) == Id)
-                if (auto visualSpell = sSpellMgr->GetSpellInfo(effect->GetMiscValueB()))
-                {
-                    spellInfo = visualSpell;
-                    break;
-                }
+        auto const* visualOverrides = caster->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_SPELL_VISUAL);
+        if (visualOverrides && !visualOverrides->empty())
+            for (auto effect : *visualOverrides)
+                if (uint32(effect->GetMiscValue()) == Id)
+                    if (auto visualSpell = sSpellMgr->GetSpellInfo(effect->GetMiscValueB()))
+                    {
+                        spellInfo = visualSpell;
+                        break;
+                    }
     }
 
     return [spellInfo, caster, target]() -> uint32
@@ -4122,7 +4136,7 @@ bool SpellInfo::IsMultiSingleTarget() const
         case 203539: // Greater Blessing of Wisdom
         case 211681: // Power Word: Fortitude (Honor Talent)
         case 214206: // Atonement(Honor Talent)
-        case 188550: // T18 Resto 4P lifebloom 2 targets
+		case 188550: // T18 Resto 4P lifebloom 2 targets
             return true;
         default:
             break;
@@ -4140,7 +4154,7 @@ uint32 SpellInfo::GetMultiSingleTargetCount() const
         case 211681: // Power Word: Fortitude (Honor Talent)
             return Effects[EFFECT_1]->BasePoints;
         case 214206: // Atonement(Honor Talent)
-        case 188550: // T18 Resto 4P lifebloom 2 targets
+		case 188550: // T18 Resto 4P lifebloom 2 targets
             return TargetRestrictions.MaxAffectedTargets;
         default:
             break;
@@ -4260,27 +4274,29 @@ bool SpellInfo::CanAutoCast(Unit* m_caster, Unit* target) const
         if (!CanAutoCastEffect(m_caster, target, Effects[j]->Effect) || !CanAutoCastAura(m_caster, target, Effects[j]->ApplyAuraName))
             return false;
 
-        Unit::AuraEffectList const& auras = target->GetAuraEffectsByType(AuraType(Effects[j]->ApplyAuraName));
-        for (Unit::AuraEffectList::const_iterator auraIt = auras.begin(); auraIt != auras.end(); ++auraIt)
+        if (Unit::AuraEffectList const* auras = target->GetAuraEffectsByType(AuraType(Effects[j]->ApplyAuraName)))
         {
-            if (Id == (*auraIt)->GetSpellInfo()->Id)
-                return false;
-
-            switch (sSpellMgr->CheckSpellGroupStackRules(this, (*auraIt)->GetSpellInfo()))
+            for (Unit::AuraEffectList::const_iterator auraIt = auras->begin(); auraIt != auras->end(); ++auraIt)
             {
-                case SPELL_GROUP_STACK_RULE_EXCLUSIVE:
+                if (Id == (*auraIt)->GetSpellInfo()->Id)
                     return false;
-                case SPELL_GROUP_STACK_RULE_EXCLUSIVE_FROM_SAME_CASTER:
-                    if (m_caster == (*auraIt)->GetCaster())
+
+                switch (sSpellMgr->CheckSpellGroupStackRules(this, (*auraIt)->GetSpellInfo()))
+                {
+                    case SPELL_GROUP_STACK_RULE_EXCLUSIVE:
                         return false;
-                    break;
-                case SPELL_GROUP_STACK_RULE_EXCLUSIVE_SAME_EFFECT: // this one has further checks, but i don't think they're necessary for autocast logic
-                case SPELL_GROUP_STACK_RULE_EXCLUSIVE_HIGHEST:
-                    if (abs(Effects[j]->BasePoints) <= abs((*auraIt)->GetAmount()))
-                        return false;
-                    break;
-                default:
-                    break;
+                    case SPELL_GROUP_STACK_RULE_EXCLUSIVE_FROM_SAME_CASTER:
+                        if (m_caster == (*auraIt)->GetCaster())
+                            return false;
+                        break;
+                    case SPELL_GROUP_STACK_RULE_EXCLUSIVE_SAME_EFFECT: // this one has further checks, but i don't think they're necessary for autocast logic
+                    case SPELL_GROUP_STACK_RULE_EXCLUSIVE_HIGHEST:
+                        if (abs(Effects[j]->BasePoints) <= abs((*auraIt)->GetAmount()))
+                            return false;
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 

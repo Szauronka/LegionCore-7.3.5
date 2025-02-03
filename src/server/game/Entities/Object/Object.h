@@ -20,13 +20,12 @@
 #define _OBJECT_H
 
 #include "Common.h"
+#include "UpdateFields.h"
+#include "UpdateData.h"
+#include "ObjectDefines.h"
 #include "GridDefines.h"
 #include "Map.h"
-#include "ModelIgnoreFlags.h"
 #include "MovementInfo.h"
-#include "ObjectDefines.h"
-#include "UpdateData.h"
-#include "UpdateFields.h"
 
 enum TempSummonType : uint8
 {
@@ -76,6 +75,10 @@ class CreatureAI;
 class ZoneScript;
 class Unit;
 class Transport;
+
+#ifdef ELUNA
+class ElunaEventProcessor;
+#endif
 
 /// Key for AccessRequirement
 struct AccessRequirementKey
@@ -167,13 +170,11 @@ private:
     std::vector<uint32> const& _data;
 };
 
-float const DEFAULT_COLLISION_HEIGHT = 2.03128f; // Most common value in dbc
-
-class TC_GAME_API Object
+class Object
 {
     public:
         virtual ~Object();
-
+		Trinity::AnyData Variables;
         bool IsInWorld() const;
         bool IsDelete() const;
         bool IsPreDelete() const;
@@ -195,6 +196,7 @@ class TC_GAME_API Object
 
         TypeID GetTypeId() const { return m_objectTypeId; }
         bool isType(uint16 mask) const { return (mask & m_objectType) != 0; }
+		uint16 GetOjectType() { return m_objectType; }
 
         virtual void BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) const;
         void SendUpdateToPlayer(Player* player);
@@ -322,8 +324,6 @@ class TC_GAME_API Object
         void ForceValuesUpdateAtIndex(uint32);
         
         bool IsPlayer() const { return GetTypeId() == TYPEID_PLAYER; }
-        static Player* ToPlayer(Object* o) { return o ? o->ToPlayer() : nullptr; }
-        static Player const* ToPlayer(Object const* o) { return o ? o->ToPlayer() : nullptr; }
         Player* ToPlayer() { if (IsPlayer()) return reinterpret_cast<Player*>(this); return nullptr; }
         Player const* ToPlayer() const { if (IsPlayer()) return reinterpret_cast<Player const*>(this); return nullptr; }
 
@@ -338,8 +338,6 @@ class TC_GAME_API Object
         bool IsUnitOwnedByPlayer() const;
 
         bool IsGameObject() const { return GetTypeId() == TYPEID_GAMEOBJECT; }
-        static GameObject* ToGameObject(Object* o) { return o ? o->ToGameObject() : nullptr; }
-        static GameObject const* ToGameObject(Object const* o) { return o ? o->ToGameObject() : nullptr; }
         GameObject* ToGameObject() { if (IsGameObject()) return reinterpret_cast<GameObject*>(this); return nullptr; }
         GameObject const* ToGameObject() const { if (IsGameObject()) return reinterpret_cast<GameObject const*>(this); return nullptr; }
 
@@ -444,7 +442,7 @@ class TC_GAME_API Object
 
 typedef cyber_ptr<WorldObject> C_PTR;
 
-class TC_GAME_API WorldObject : public Object, public WorldLocation
+class WorldObject : public Object, public WorldLocation
 {
     protected:
         explicit WorldObject(bool isWorldObject); //note: here it means if it is in grid object list or world object list
@@ -453,28 +451,36 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         virtual void Update (uint32 /*time_diff*/) { }
 
-        void Clear() override;
+        void Clear();
 
-        virtual void RemoveFromWorld() override;
+        void Relocate(float x, float y, float z, float orientation) override;
+        void Relocate(float x, float y, float z) override;
+        void Relocate(float x, float y) override;
+        void Relocate(const Position &pos) override;
+        void Relocate(const Position* pos) override;
+
+        void SetOrientation(float orientation);
+
+        virtual void RemoveFromWorld();
 
         void GetNearPoint2D(float &x, float &y, float distance, float absAngle, bool allowObjectSize = true) const;
         void GetNearPoint2D(Position &pos, float distance, float angle, bool allowObjectSize = true) const;
         void GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d, float absAngle) const;
         void GetClosePoint(float& x, float& y, float& z, float size, float distance2d = 0, float angle = 0) const;
         void MovePosition(Position &pos, float dist, float angle);
-        Position GetNearPosition(float dist, float angle);
+        void GetNearPosition(Position& pos, float dist, float angle);
         void MovePositionToFirstCollision(Position &pos, float dist, float angle);
         void MovePositionToTransportCollision(Position &pos, float dist, float angle);
-        Position GetFirstCollisionPosition(float dist, float angle);
+        void GetFirstCollisionPosition(Position& pos, float dist, float angle);
         void MovePositionToCollisionBetween(Position &pos, float distMin, float distMax, float angle);
-        Position GetRandomNearPosition(float radius);
+        void GetCollisionPositionBetween(Position& pos, float distMin, float distMax, float angle);
+        void GetRandomNearPosition(Position& pos, float radius);
         void GetContactPoint(const WorldObject* obj, float& x, float& y, float& z, float distance2d = CONTACT_DISTANCE) const;
         void GenerateCollisionNonDuplicatePoints(std::list<Position>& randPosList, uint8 maxPoint, float randMin, float randMax, float minDist);
 
         float GetObjectSize() const;
-        virtual float GetCombatReach() const { return 0.0f; } // overridden (only) in Unit
         void UpdateGroundPositionZ(float x, float y, float &z) const;
-        void UpdateAllowedPositionZ(float x, float y, float &z, float* groundZ = nullptr) const;
+        void UpdateAllowedPositionZ(float x, float y, float &z) const;
         virtual bool IsInWater() const { return false; }
         virtual bool IsUnderWater() const { return false; }
 
@@ -484,25 +490,30 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         uint32 GetInstanceId() const { return m_InstanceId; }
         bool InInstance() const { return m_currMap && m_currMap->Instanceable(); }
 
+        // Phase and PhaseMask Rare System
         virtual void SetPhaseMask(uint32 newPhaseMask, bool update);
         uint32 GetPhaseMask() const { return m_phaseMask; }
-        bool RemovePhase(uint32 PhaseID);
-        bool InSamePhase(WorldObject const* obj) const;
         bool InSamePhase(uint32 phasemask) const { return (GetPhaseMask() & phasemask) != 0; }
+        bool InSamePhase(WorldObject const* obj) const;
 
         virtual void SetPhaseId(std::set<uint32> const& newPhaseId, bool update);
+        bool RemovePhase(uint32 PhaseID);
         bool HasPhaseId(uint32 PhaseID) const;
         std::set<uint32> const& GetPhases() const;
         bool InSamePhaseId(WorldObject const* obj) const;
         bool InSamePhaseId(std::set<uint32> const& phase, bool otherUsePlayerPhasingRules) const;
+        void setIgnorePhaseIdCheck(bool apply) { m_ignorePhaseIdCheck = apply; }
+        bool IgnorePhaseId() const { return m_ignorePhaseIdCheck; }
+
+        // This methods it s emptly, terrain swamp add in phase_definition only
+
+
+
         void RebuildTerrainSwaps();
         void RebuildWorldMapAreaSwaps();
         std::set<uint32> const& GetTerrainSwaps() const { return _terrainSwaps; }
         std::set<uint32> const& GetWorldMapAreaSwaps() const { return _worldMapAreaSwaps; }
         bool IsInTerrainSwap(uint32 terrainSwap) const { return _terrainSwaps.find(terrainSwap) != _terrainSwaps.end(); }
-
-        void setIgnorePhaseIdCheck(bool apply)  { m_ignorePhaseIdCheck = apply; }
-        bool IgnorePhaseId() const { return m_ignorePhaseIdCheck; }
 
         bool m_zoneForce;
         uint32 m_zoneId;
@@ -519,7 +530,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         uint32 GetAreaId() const;
         void GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const;
 
-        InstanceScript* GetInstanceScript() const;
+        InstanceScript* GetInstanceScript();
 
         const char* GetName() const { return m_name.c_str(); }
         void SetName(std::string const& newname) { m_name=newname; }
@@ -540,10 +551,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         bool IsWithinDist2d(const Position* pos, float dist) const;
         bool IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D = true, bool ignoreObjectSize = false) const; // use only if you will sure about placing both object at same map
         bool IsWithinDistInMap(WorldObject const* obj, float dist2compare, bool is3D = true, bool ignoreObjectSize = false) const;
-        bool IsWithinLOS(float x, float y, float z, VMAP::ModelIgnoreFlags ignoreFlags = VMAP::ModelIgnoreFlags::Nothing) const;
-        bool IsWithinLOSInMap(WorldObject const* obj, VMAP::ModelIgnoreFlags ignoreFlags = VMAP::ModelIgnoreFlags::Nothing) const;
-        Position GetHitSpherePointFor(Position const& dest) const;
-        void GetHitSpherePointFor(Position const& dest, float& x, float& y, float& z) const;
+        bool IsWithinLOS(float x, float y, float z) const;
+        bool IsWithinLOSInMap(const WorldObject* obj) const;
         bool GetDistanceOrder(WorldObject const* obj1, WorldObject const* obj2, bool is3D = true) const;
         bool IsInRange(WorldObject const* obj, float minRange, float maxRange, bool is3D = true) const;
         bool IsInRange2d(float x, float y, float minRange, float maxRange) const;
@@ -568,6 +577,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         virtual void SendMessageToSetInRange(WorldPacket const* data, float dist, bool self, GuidUnorderedSet const& ignoredList = GuidUnorderedSet());
         virtual void SendMessageToSet(WorldPacket const* data, Player const* skipped_rcvr, GuidUnorderedSet const& ignoredList = GuidUnorderedSet());
 
+        virtual uint8 getLevelForTarget(WorldObject const* /*target*/) const { return 1; }
+
         void Talk(std::string const& text, ChatMsg msgType, Language language, float textRange, WorldObject const* target);
         void Talk(uint32 textId, ChatMsg msgType, float textRange, WorldObject const* target);
         void MonsterSay(const char* text, uint32 language, ObjectGuid TargetGuid);
@@ -579,8 +590,6 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void MonsterTextEmote(int32 textId, ObjectGuid TargetGuid, bool IsBossEmote = false);
         void MonsterWhisper(int32 textId, ObjectGuid receiver, bool IsBossWhisper = false);
         void MonsterYellToZone(int32 textId, uint32 language, ObjectGuid TargetGuid);
-
-        virtual uint8 GetLevelForTarget(WorldObject const* /*target*/) const { return 1; }
 
         void PlayDistanceSound(uint32 soundID, Player* target = nullptr);
         void PlayDirectSound(uint32 sound_id, Player* target = nullptr);
@@ -663,6 +672,12 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void SetWorldObject(bool apply);
         void SetTratsport(Transport* transport, Unit* owner = nullptr);
 
+        Position GetPosition() const override;
+        void GetPosition(float& x, float& y, Transport* transport = nullptr) const override;
+        void GetPosition(float& x, float& y, float& z, Transport* transport = nullptr) const override;
+        void GetPosition(float& x, float& y, float& z, float& o, Transport* transport = nullptr) const override;
+        void GetPosition(Position* pos, Transport* transport = nullptr) const override;
+
         bool IsPermanentWorldObject() const { return m_isWorldObject; }
         bool IsWorldObject() const;
 
@@ -688,8 +703,6 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         virtual float GetStationaryY() const { return GetPositionY(); }
         virtual float GetStationaryZ() const { return GetPositionZ(); }
         virtual float GetStationaryO() const { return GetOrientation(); }
-
-        virtual float GetCollisionHeight() const { return 0.0f; }
 
         //template<class NOTIFIER> void VisitNearbyObject(const float &radius, NOTIFIER &notifier) const;
         template<class NOTIFIER>
@@ -730,6 +743,10 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         // transports
         Transport* m_transport;
+
+#ifdef ELUNA
+        ElunaEventProcessor* ElunaEvents;
+#endif
 
     protected:
         std::string m_name;
@@ -778,7 +795,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 namespace Trinity
 {
     // Binary predicate to sort WorldObjects based on the distance to a reference WorldObject
-    class TC_GAME_API ObjectDistanceOrderPred
+    class ObjectDistanceOrderPred
     {
             const WorldObject* m_refObj;
             const bool m_ascending;

@@ -1133,7 +1133,7 @@ class spell_item_crystal_prison_dummy_dnd : public SpellScriptLoader
                 if (Creature* target = GetHitCreature())
                     if (target->isDead() && !target->isPet())
                     {
-                        GetCaster()->SummonGameObject(OBJECT_IMPRISONED_DOOMGUARD, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), target->GetOrientation(), 0, 0, 0, 0, uint32(target->GetRespawnTime()-GameTime::GetGameTime()));
+                        GetCaster()->SummonGameObject(OBJECT_IMPRISONED_DOOMGUARD, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), target->GetOrientation(), 0, 0, 0, 0, uint32(target->GetRespawnTime()-time(NULL)));
                         target->DespawnOrUnsummon();
                     }
             }
@@ -2047,7 +2047,7 @@ class spell_alchemist_rejuvenation : public SpellScriptLoader
             {
                 if(Unit* caster = GetCaster())
                 {
-                    if(caster->GetPowerType() == POWER_MANA)
+                    if(caster->getPowerType() == POWER_MANA)
                     {
                         switch (caster->getLevel())
                         {
@@ -2500,7 +2500,7 @@ class spell_item_goren_gas_extractor : public SpellScriptLoader
             {
                 if (Player* player = GetCaster()->ToPlayer())
                     if (Unit* target = player->GetSelectedUnit())
-                        if (!target->IsAlive() && (target->GetEntry() == 79190 || target->GetEntry() == 80345))
+                        if (!target->isAlive() && (target->GetEntry() == 79190 || target->GetEntry() == 80345))
                             return SPELL_CAST_OK;
 
                 return SPELL_FAILED_BAD_TARGETS;
@@ -2540,7 +2540,7 @@ class spell_autographed_hearthstone_card : public SpellScript
                 }
 
                 player->PlayDistanceSound(47498, NULL);
-                player->SendPlaySpellVisualKit(52852, 0, 0);
+                player->SendPlaySpellVisualKit(0, 52852, 0);
                 break;
             case 2:
                 if (auto entry = sBroadcastTextStore.LookupEntry(90711))
@@ -2550,7 +2550,7 @@ class spell_autographed_hearthstone_card : public SpellScript
                 }
 
                 player->PlayDistanceSound(47499, NULL);
-                player->SendPlaySpellVisualKit(52855, 0, 0);
+                player->SendPlaySpellVisualKit(0, 52855, 0);
                 break;
             case 3:
                 if (auto entry = sBroadcastTextStore.LookupEntry(90712))
@@ -2560,7 +2560,7 @@ class spell_autographed_hearthstone_card : public SpellScript
                 }
 
                 player->PlayDistanceSound(47500, NULL);
-                player->SendPlaySpellVisualKit(52856, 0, 0);
+                player->SendPlaySpellVisualKit(0, 52856, 0);
                 break;
             case 4:
                 if (auto entry = sBroadcastTextStore.LookupEntry(90715))
@@ -2570,7 +2570,7 @@ class spell_autographed_hearthstone_card : public SpellScript
                 }
 
                 player->PlayDistanceSound(47501, NULL);
-                player->SendPlaySpellVisualKit(52857, 0, 0);
+                player->SendPlaySpellVisualKit(0, 52857, 0);
                 break;
             }
         }
@@ -2616,7 +2616,7 @@ class spell_item_slightly_chewed_insult_book : public SpellScript
             return;
 
         text = DB2Manager::GetBroadcastTextValue(entry, player->GetSession()->GetSessionDbLocaleIndex());
-        player->Yell(text, LANG_UNIVERSAL, false);
+        player->Yell(text, LANG_UNIVERSAL, NULL);
     }
 
     void Register() override
@@ -2641,8 +2641,8 @@ class spell_gamons_heroic_spirit : public SpellScript
             return;
 
         text = DB2Manager::GetBroadcastTextValue(entry, player->GetSession()->GetSessionDbLocaleIndex());
-        player->Yell(text, LANG_UNIVERSAL, false);
-        player->PlayDistanceSound(38282, nullptr);
+        player->Yell(text, LANG_UNIVERSAL, NULL);
+        player->PlayDistanceSound(38282, NULL);
     }
 
     void Register() override
@@ -3342,7 +3342,7 @@ class spell_flip_it_trigger_table_two : public SpellScript
     }
 };
 
-/*// 257233 - Mark of the Pantheon
+/// 257233 - Mark of the Pantheon
 class spell_item_mark_of_the_panteon : public AuraScript
 {
     PrepareAuraScript(spell_item_mark_of_the_panteon);
@@ -3401,7 +3401,7 @@ class spell_item_mark_of_the_panteon : public AuraScript
     {
         AfterEffectApply += AuraEffectApplyFn(spell_item_mark_of_the_panteon::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
     }
-};*/
+};
 
 // 242629 - Cunning of the Deceiver
 class spell_item_cunning_of_the_deceiver : public SpellScript
@@ -4542,6 +4542,55 @@ public:
 	}
 };
 
+
+// spell id: 215751, item id: 138393
+class spell_item_essence_swapper : public SpellScriptLoader
+{
+public:
+    spell_item_essence_swapper() : SpellScriptLoader("spell_item_essence_swapper") { }
+
+    class spell_item_essence_swapper_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_item_essence_swapper_AuraScript);
+
+        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Unit* target = GetTarget();
+            Unit* ownerUnit = target->GetOwner();
+            Player* ownerPlayer = ownerUnit->ToPlayer();
+            Unit* hati = ownerPlayer->GetHati();
+            if (!target || !target->isPet() || !ownerUnit || !ownerPlayer || !hati)
+                return;
+
+            hati->SetDisplayId(target->GetDisplayId());
+
+            switch (target->GetDisplayId())
+            {
+            case 79002: // void-elf basic pet too small
+                hati->SetObjectScale(2.4f);
+                ownerPlayer->SetHatiModel(target->GetDisplayId(), 2.4f);
+                break;
+            default:
+                hati->SetObjectScale(target->GetObjectScale());
+                ownerPlayer->SetHatiModel(target->GetDisplayId(), target->GetObjectScale());
+                break;
+            }
+        }
+
+        void Register() override
+        {
+            AfterEffectRemove += AuraEffectRemoveFn(spell_item_essence_swapper_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const override
+    {
+        return new spell_item_essence_swapper_AuraScript();
+    }
+};
+
+
+
 void AddSC_item_spell_scripts()
 {
     // 23074 Arcanite Dragonling
@@ -4628,7 +4677,7 @@ void AddSC_item_spell_scripts()
     RegisterAuraScript(spell_item_faded_wizard_hat);
     RegisterAuraScript(spell_item_demon_hunters_aspect);
     new spell_item_ocean_embrace();
-    //RegisterAuraScript(spell_item_mark_of_the_panteon);
+    RegisterAuraScript(spell_item_mark_of_the_panteon);
     RegisterSpellScript(spell_item_cunning_of_the_deceiver);
     RegisterAuraScript(spell_item_walling_souls);
     RegisterSpellScript(spell_mystic_image);
@@ -4655,6 +4704,8 @@ void AddSC_item_spell_scripts()
     RegisterAuraScript(spell_item_guardians_familiar);
     RegisterSpellScript(spell_item_toy_train_set_pulse);
     RegisterSpellScript(spell_item_last_deck_of_nemelex_nobeh);
+    new spell_item_essence_swapper();
+
 
 	new spell_item_acrid_catalyst_injector<SPELL_FERVOR_OF_THE_LEGION, SPELL_BURTALITY_OF_THE_LEGION, SPELL_MALICE_OF_THE_LEGION>("spell_item_acrid_catalyst_injector");
 }

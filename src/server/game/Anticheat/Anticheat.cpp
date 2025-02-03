@@ -84,7 +84,7 @@ void PlayerCheatsMgr::LoadFromDB()
     if (!EnableAnticheat())
         return;
 
-    TC_LOG_INFO("misc", "Loading table 'cheat_sanctions'");
+    TC_LOG_INFO(LOG_FILTER_GENERAL, "Loading table 'cheat_sanctions'");
     _sanctions.clear();
 
     QueryResult result = WorldDatabase.Query("SELECT cheatType, tickCount, tickAction, totalCount, totalAction, comment FROM cheat_sanctions;");
@@ -103,15 +103,15 @@ void PlayerCheatsMgr::LoadFromDB()
         s.comment       = fields[5].GetString();
 
         if (s.cheatType >= CHEATS_COUNT)
-            TC_LOG_ERROR("misc", "cheat_sanctions has record with invalid cheatType %u > CHEATS_COUNT (%u)", s.cheatType, CHEATS_COUNT);
+            TC_LOG_ERROR(LOG_FILTER_GENERAL, "cheat_sanctions has record with invalid cheatType %u > CHEATS_COUNT (%u)", s.cheatType, CHEATS_COUNT);
         else if (s.tickSanction >= CHEAT_MAX_ACTIONS || s.totalSanction >= CHEAT_MAX_ACTIONS)
-            TC_LOG_ERROR("misc", "cheat_sanctions has record with invalid action (must be < %u)", CHEAT_MAX_ACTIONS);
+            TC_LOG_ERROR(LOG_FILTER_GENERAL, "cheat_sanctions has record with invalid action (must be < %u)", CHEAT_MAX_ACTIONS);
         else
             _sanctions.emplace_back(s);
     }
     while (result->NextRow());
 
-    TC_LOG_INFO("misc", ">> %lu anticheat checks loaded", _sanctions.size());
+    TC_LOG_INFO(LOG_FILTER_GENERAL, ">> %u anticheat checks loaded", _sanctions.size());
 }
 
 void PlayerCheatsMgr::LoadConfig()
@@ -494,7 +494,7 @@ bool PlayerCheatData::HandleAnticheatTests(MovementInfo& movementInfo, WorldSess
         // detect new flyhack (these two flags should never happen at the same time)
         if ((moveFlags & MOVEMENTFLAG_FLYING) && !(me->HasAuraType(SPELL_AURA_FLY) || me->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
             || me->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || me->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)
-            || me->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS)))
+            || me->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS) || me->HasAura(53173)))
         {
             for (auto &order : _orders)
             {
@@ -878,7 +878,7 @@ bool PlayerCheatData::InterpolateMovement(MovementInfo const& mi, uint32 diffMs,
     x = mi.Pos.m_positionX;
     y = mi.Pos.m_positionY;
     z = mi.Pos.m_positionZ;
-    outOrientation = mi.Pos.GetOrientation();
+    outOrientation = mi.Pos.m_orientation;
     float o = outOrientation;
     // Not allowed to move
     if (mi.MoveFlags[0] & MOVEMENTFLAG_ROOT)
@@ -895,7 +895,7 @@ bool PlayerCheatData::InterpolateMovement(MovementInfo const& mi, uint32 diffMs,
     else if (mi.MoveFlags[0] & (MOVEMENTFLAG_PITCH_UP | MOVEMENTFLAG_PITCH_DOWN))
         speed = GetClientSpeed(MOVE_PITCH_RATE);
     if (mi.MoveFlags[0] & MOVEMENTFLAG_BACKWARD)
-        o += float(M_PI);
+        o += M_PI_F;
     else if (mi.MoveFlags[0] & MOVEMENTFLAG_STRAFE_LEFT)
     {
         if (mi.MoveFlags[0] & MOVEMENTFLAG_FORWARD)
@@ -974,7 +974,7 @@ bool PlayerCheatData::InterpolateMovement(MovementInfo const& mi, uint32 diffMs,
 
     if (!(mi.MoveFlags[0] & (MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR | MOVEMENTFLAG_SWIMMING)))
         z = me->GetMap()->GetHeight(x, y, z);
-    return me->GetMap()->isInLineOfSight(mi.Pos.m_positionX, mi.Pos.m_positionY, mi.Pos.m_positionZ + 0.5f, x, y, z + 0.5f, me->GetPhases(), VMAP::ModelIgnoreFlags::Nothing);
+    return me->GetMap()->isInLineOfSight(mi.Pos.m_positionX, mi.Pos.m_positionY, mi.Pos.m_positionZ + 0.5f, x, y, z + 0.5f, me->GetPhases());
 }
 
 bool PlayerCheatData::GetMaxAllowedDist(MovementInfo const& mi, uint32 diffMs, float &dxy, float &dz, float &speed)
@@ -1043,10 +1043,10 @@ bool PlayerCheatData::HandleCustomAnticheatTests(uint32 opcode, MovementInfo& mo
 {
     // TODO These checks are unreliable and should be implemented in other way
 
-    if (!me->GetUnitBeingMoved()->IsPlayer())
+    if (!me->m_mover->IsPlayer())
         return true;
 
-    Player* mover = me->GetUnitBeingMoved()->ToPlayer();
+    Player* mover = me->m_mover->ToPlayer();
 
     /* teleport hack check */
     if (!mover->m_transport && !mover->m_movementInfo.transport.Guid && !mover->isInFlight())
@@ -1094,7 +1094,7 @@ bool PlayerCheatData::HandleCustomAnticheatTests(uint32 opcode, MovementInfo& mo
             }
 
             // save prevoius point
-            Player::SavePositionInDB(mover->GetMapId(), mover->m_movementInfo.Pos.m_positionX, mover->m_movementInfo.Pos.m_positionY, mover->m_movementInfo.Pos.m_positionZ, mover->m_movementInfo.Pos.GetOrientation(), mover->GetZoneId(), mover->GetGUID());
+            Player::SavePositionInDB(mover->GetMapId(), mover->m_movementInfo.Pos.m_positionX, mover->m_movementInfo.Pos.m_positionY, mover->m_movementInfo.Pos.m_positionZ, mover->m_movementInfo.Pos.m_orientation, mover->GetZoneId(), mover->GetGUID());
             me->GetSession()->KickPlayer();
             return false;
         }
@@ -1145,7 +1145,7 @@ bool PlayerCheatData::HandleCustomAnticheatTests(uint32 opcode, MovementInfo& mo
         // detect new flyhack (these two flags should never happen at the same time)
         if ((moveFlags & MOVEMENTFLAG_FLYING) && !(mover->HasAuraType(SPELL_AURA_FLY) || mover->HasAuraType(SPELL_AURA_MOD_INCREASE_VEHICLE_FLIGHT_SPEED)
             || mover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || mover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED)
-            || mover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS)))
+            || mover->HasAuraType(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS) || me->HasAura(53173)))
         {
             AddCheats(1 << CHEAT_TYPE_FLY_HACK);
             removeMoveFlags |= MOVEMENTFLAG_FLYING;

@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Priest: Tuure
 */
 
@@ -83,7 +84,7 @@ public:
                     {
                         if (Creature* jeims = me->FindNearestCreature(106137, 20.0f, true))
                         {
-                            jeims->GetMotionMaster()->MoveFollow(me, PET_FOLLOW_DIST, float(PET_FOLLOW_ANGLE), MOTION_SLOT_IDLE);
+                            jeims->GetMotionMaster()->MoveFollow(me, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE, MOTION_SLOT_IDLE);
                             jeims->AI()->Talk(0);
                         }
                         me->GetMotionMaster()->MovePath(9859002, false);
@@ -660,11 +661,8 @@ public:
     {
         go_tuure_crateAI(GameObject* go) : GameObjectAI(go) {}
 
-        bool GossipHello(Player* player, bool isUse) override
+        bool GossipHello(Player* player) override
         {
-            if (!isUse)
-                return true;
-
             player->UpdateAchievementCriteria(CRITERIA_TYPE_SCRIPT_EVENT_2, 50633);
             if (Creature* boja = player->FindNearestCreature(106253, 60.0f, true))
             {

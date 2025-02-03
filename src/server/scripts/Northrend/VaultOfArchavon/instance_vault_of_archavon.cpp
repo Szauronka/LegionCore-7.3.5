@@ -33,9 +33,8 @@ class instance_vault_of_archavon : public InstanceMapScript
 
         struct instance_vault_of_archavon_InstanceMapScript : public InstanceScript
         {
-            instance_vault_of_archavon_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+            instance_vault_of_archavon_InstanceMapScript(Map* map) : InstanceScript(map)
             {
-                SetHeaders(DataHeader);
                 SetBossNumber(EncounterCount);
 
                 EmalonGUID.Clear();
@@ -86,13 +85,13 @@ class instance_vault_of_archavon : public InstanceMapScript
                 switch (type)
                 {
                     case DATA_ARCHAVON:
-                        ArchavonDeath = GameTime::GetGameTime();
+                        ArchavonDeath = time(NULL);
                         break;
                     case DATA_EMALON:
-                        EmalonDeath = GameTime::GetGameTime();
+                        EmalonDeath = time(NULL);
                         break;
                     case DATA_KORALON:
-                        KoralonDeath = GameTime::GetGameTime();
+                        KoralonDeath = time(NULL);
                         break;
                     default:
                         return true;

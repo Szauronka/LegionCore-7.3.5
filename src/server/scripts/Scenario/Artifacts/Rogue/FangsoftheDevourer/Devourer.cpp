@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Rogue: Devourer
 */
 
@@ -237,11 +238,8 @@ public:
     {
         go_devourer_miscAI(GameObject* go) : GameObjectAI(go) {}
 
-        bool GossipHello(Player* player, bool isUse) override
+        bool GossipHello(Player* player) override
         {
-            if (!isUse)
-                return true;
-
             if (player->HasItemCount(136802, 1))
             {
                 uint32 criteria = 0;
@@ -395,13 +393,14 @@ public:
                     case EVENT_2:
                         float radius = 5.0f; // растояние от кастера
                         float coneAngle = 0.0f; // угол куда поставится моб с АТ
-                        Position position = me->GetNearPosition(radius, coneAngle);
+                        Position position;
+                        me->GetNearPosition(position, radius, coneAngle);
                         me->CastSpell(position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), 210157, true);
                         coneAngle = 2.0f; // угол куда поставится моб с АТ
-                        position = me->GetNearPosition(radius, coneAngle);
+                        me->GetNearPosition(position, radius, coneAngle);
                         me->CastSpell(position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), 210157, true);
                         coneAngle = 4.0f; // угол куда поставится моб с АТ
-                        position = me->GetNearPosition(radius, coneAngle);
+                        me->GetNearPosition(position, radius, coneAngle);
                         me->CastSpell(position.GetPositionX(), position.GetPositionY(), position.GetPositionZ(), 210157, true);
                         events.RescheduleEvent(EVENT_2, 11000);
                         break;

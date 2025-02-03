@@ -1,3 +1,7 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "tomb_of_sargeras.h"
 #include "WaypointManager.h"
 #include "QuestData.h"

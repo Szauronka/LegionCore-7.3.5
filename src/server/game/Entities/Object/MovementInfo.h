@@ -2,7 +2,6 @@
 #ifndef MovementInfo_h__
 #define MovementInfo_h__
 
-#include "GameTime.h"
 #include "ObjectGuid.h"
 #include "Position.h"
 
@@ -61,6 +60,7 @@ struct MovementInfo
         uint32 startClientTime;
     } fall;
 
+    
     GuidVector RemoveForcesIDs;
     std::map<ObjectGuid, WorldPackets::Movement::MovementForce> Forces;
     ObjectGuid Guid;
@@ -81,7 +81,7 @@ struct MovementInfo
     {
         Guid.Clear();
         Pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
-        MoveTime = GameTime::GetGameTimeMS();
+        MoveTime = getMSTime();
         memset(MoveFlags, 0, sizeof(MoveFlags));
         transport.Reset();
         fall.Reset();
@@ -107,6 +107,7 @@ struct MovementInfo
     void RemoveExtraMovementFlag(uint32 flag) { MoveFlags[1] &= ~flag; }
     bool HasExtraMovementFlag(uint32 flag) const { return (MoveFlags[1] & flag) != 0; }
 
+    void ChangeOrientation(float o) { Pos.m_orientation = o; }
     void ChangePosition(float x, float y, float z, float o) { Pos.Relocate(x, y, z, o); }
     void UpdateTime(uint32 _time) { MoveTime = _time; }
 

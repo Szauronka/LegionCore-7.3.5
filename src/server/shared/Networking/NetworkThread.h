@@ -1,5 +1,5 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,17 +23,25 @@
 #include "Errors.h"
 #include "IoContext.h"
 #include "Log.h"
+#include "Timer.h"
 #include <boost/asio/ip/tcp.hpp>
 #include <atomic>
+#include <chrono>
 #include <memory>
 #include <mutex>
+#include <set>
 #include <thread>
+
+#include <cds/init.h>
+#include <cds/gc/hp.h>
+
+using boost::asio::ip::tcp;
 
 template<class SocketType>
 class NetworkThread
 {
 public:
-    NetworkThread() : _connections(0), _stopped(false), _thread(nullptr), _ioContext(1),
+    NetworkThread() : _connections(0), _stopped(false), _thread(nullptr),
         _acceptSocket(_ioContext), _updateTimer(_ioContext)
     {
     }
@@ -77,7 +85,7 @@ public:
         return _connections;
     }
 
-    void AddSocket(std::shared_ptr<SocketType> sock)
+    virtual void AddSocket(std::shared_ptr<SocketType> sock)
     {
         std::lock_guard<std::mutex> lock(_newSocketsLock);
 
@@ -86,7 +94,7 @@ public:
         SocketAdded(sock);
     }
 
-    boost::asio::ip::tcp::socket* GetSocketForAccept() { return &_acceptSocket; }
+    tcp::socket* GetSocketForAccept() { return &_acceptSocket; }
 
 protected:
     virtual void SocketAdded(std::shared_ptr<SocketType> /*sock*/) { }
@@ -115,15 +123,17 @@ protected:
 
     void Run()
     {
-        TC_LOG_DEBUG("misc", "Network Thread Starting");
+        TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "Network Thread Starting");
 
-        _updateTimer.expires_from_now(boost::posix_time::milliseconds(1));
-        _updateTimer.async_wait([this](boost::system::error_code const&) { Update(); });
+        cds::threading::Manager::attachThread();
+
+        _updateTimer.expires_from_now(boost::posix_time::milliseconds(10));
+        _updateTimer.async_wait(std::bind(&NetworkThread<SocketType>::Update, this));
         _ioContext.run();
 
-        TC_LOG_DEBUG("misc", "Network Thread exits");
         _newSockets.clear();
         _sockets.clear();
+        cds::threading::Manager::detachThread();
     }
 
     void Update()
@@ -131,8 +141,10 @@ protected:
         if (_stopped)
             return;
 
-        _updateTimer.expires_from_now(boost::posix_time::milliseconds(1));
-        _updateTimer.async_wait([this](boost::system::error_code const&) { Update(); });
+        _updateTimer.expires_from_now(boost::posix_time::milliseconds(10));
+        _updateTimer.async_wait(std::bind(&NetworkThread<SocketType>::Update, this));
+
+        uint32 _s = getMSTime();
 
         AddNewSockets();
 
@@ -151,6 +163,10 @@ protected:
 
             return false;
         }), _sockets.end());
+
+        uint32 _ms = GetMSTimeDiffToNow(_s);
+        if (_ms > 250)
+            sLog->outDiff("NetworkThread::Update: Diff - %ums _sockets %u", _ms, _sockets.size());
     }
 
 private:
@@ -167,7 +183,7 @@ private:
     SocketContainer _newSockets;
 
     Trinity::Asio::IoContext _ioContext;
-    boost::asio::ip::tcp::socket _acceptSocket;
+    tcp::socket _acceptSocket;
     Trinity::Asio::DeadlineTimer _updateTimer;
 };
 

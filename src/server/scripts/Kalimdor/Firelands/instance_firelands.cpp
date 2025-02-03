@@ -32,9 +32,8 @@ class instance_firelands : public InstanceMapScript
 
         struct instance_firelands_InstanceMapScript : public InstanceScript
         {
-            instance_firelands_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+            instance_firelands_InstanceMapScript(Map* map) : InstanceScript(map)
             {
-                SetHeaders(DataHeader);
                 SetBossNumber(MAX_ENCOUNTER);
                 LoadDoorData(doordata);
                 uiShannoxGUID.Clear();
@@ -288,16 +287,54 @@ class instance_firelands : public InstanceMapScript
                 }
             }
 
-            void WriteSaveDataMore(std::ostringstream& data) override
+            std::string GetSaveData()
             {
-                data << uiEvent;
+                OUT_SAVE_INST_DATA;
+
+                std::string str_data;
+
+                std::ostringstream saveStream;
+                saveStream << "F L " << GetBossSaveData() << uiEvent << ' ';
+
+                str_data = saveStream.str();
+
+                OUT_SAVE_INST_DATA_COMPLETE;
+                return str_data;
             }
 
-            void ReadSaveDataMore(std::istringstream& data) override
+            void Load(const char* in)
             {
-                uint32 tempEvent = 0;
-                data >> tempEvent;
-                uiEvent = (tempEvent != DONE ? 0 : DONE);
+                if (!in)
+                {
+                    OUT_LOAD_INST_DATA_FAIL;
+                    return;
+                }
+
+                OUT_LOAD_INST_DATA(in);
+
+                char dataHead1, dataHead2;
+
+                std::istringstream loadStream(in);
+                loadStream >> dataHead1 >> dataHead2;
+
+                if (dataHead1 == 'F' && dataHead2 == 'L')
+                {
+                    for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
+                    {
+                        uint32 tmpState;
+                        loadStream >> tmpState;
+                        if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                            tmpState = NOT_STARTED;
+                        SetBossState(i, EncounterState(tmpState));
+                    }
+
+                    uint32 tempEvent = 0;
+                    loadStream >> tempEvent;
+                    uiEvent = (tempEvent != DONE ? 0 : DONE);
+
+                } else OUT_LOAD_INST_DATA_FAIL;
+
+                OUT_LOAD_INST_DATA_COMPLETE;
             }
 
             private:

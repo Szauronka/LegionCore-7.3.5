@@ -1,11 +1,10 @@
 /*
+    http://uwow.biz
     Dungeon : Eye of Azshara 100-110
 */
 
 #ifndef EYE_OF_AZSHARA_H_
 #define EYE_OF_AZSHARA_H_
-
-#define DataHeader "EOA"
 
 enum eData
 {

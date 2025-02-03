@@ -16,15 +16,35 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "WaypointManager.h"
 #include "DatabaseEnv.h"
 #include "GridDefines.h"
+#include "WaypointManager.h"
 #include "Log.h"
 
-WaypointMgr* WaypointMgr::instance()
+WaypointMgr::WaypointMgr()
 {
-    static WaypointMgr instance;
-    return &instance;
+}
+
+WaypointMgr::~WaypointMgr()
+{
+    for (WaypointPathContainer::iterator itr = _waypointStore.begin(); itr != _waypointStore.end(); ++itr)
+    {
+        for (WaypointPath::const_iterator it = itr->second.begin(); it != itr->second.end(); ++it)
+            delete *it;
+
+        itr->second.clear();
+    }
+
+    for (WaypointPathContainer::iterator itr = _waypointScriptStore.begin(); itr != _waypointScriptStore.end(); ++itr)
+    {
+        for (WaypointPath::const_iterator it = itr->second.begin(); it != itr->second.end(); ++it)
+            delete *it;
+
+        itr->second.clear();
+    }
+
+    _waypointStore.clear();
+    _waypointScriptStore.clear();
 }
 
 void WaypointMgr::Load()
@@ -32,11 +52,11 @@ void WaypointMgr::Load()
     uint32 oldMSTime = getMSTime();
 
     //                                                0    1         2           3          4            5           6        7      8       9        10              11
-    QueryResult result = WorldDatabase.Query("SELECT id, point, position_x, position_y, position_z, orientation, move_type, speed, delay, action, action_chance, delay_chance FROM waypoint_data ORDER BY id, point");
+    QueryResult result = WorldDatabase.Query("SELECT id, point, position_x, position_y, position_z, orientation, move_flag, speed, delay, action, action_chance, delay_chance FROM waypoint_data ORDER BY id, point");
 
     if (!result)
     {
-        TC_LOG_ERROR("server.loading", ">> Loaded 0 waypoints. DB table `waypoint_data` is empty!");
+        TC_LOG_ERROR(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 waypoints. DB table `waypoint_data` is empty!");
 
         return;
     }
@@ -46,6 +66,7 @@ void WaypointMgr::Load()
     do
     {
         Field* fields = result->Fetch();
+        WaypointData* wp = new WaypointData();
 
         uint32 pathId = fields[0].GetUInt32();
         WaypointPath& path = _waypointStore[pathId];
@@ -58,43 +79,36 @@ void WaypointMgr::Load()
         Trinity::NormalizeMapCoord(x);
         Trinity::NormalizeMapCoord(y);
 
-        WaypointData waypoint;
-        waypoint.id = fields[1].GetUInt32();
-        waypoint.x = x;
-        waypoint.y = y;
-        waypoint.z = z;
-        waypoint.orientation = o;
-        waypoint.move_type = fields[6].GetUInt32();
+        wp->id = fields[1].GetUInt32();
+        wp->x = x;
+        wp->y = y;
+        wp->z = z;
+        wp->orientation = o;
+        wp->run = fields[6].GetUInt8();
+        wp->speed = fields[7].GetFloat();
+        wp->delay = fields[8].GetUInt32();
+        wp->event_id = fields[9].GetUInt32();
+        wp->event_chance = fields[10].GetInt16();
+        wp->delay_chance = fields[11].GetInt16();
 
-        if (waypoint.move_type >= WAYPOINT_MOVE_TYPE_MAX)
-        {
-            TC_LOG_ERROR("sql.sql", "Waypoint %u in waypoint_data has invalid move_type, ignoring", waypoint.id);
-            continue;
-        }
-
-        waypoint.speed = fields[7].GetFloat();
-        waypoint.delay = fields[8].GetUInt32();
-        waypoint.event_id = fields[9].GetUInt32();
-        waypoint.event_chance = fields[10].GetInt16();
-        waypoint.delay_chance = fields[11].GetInt16();
-
-        path.push_back(std::move(waypoint));
+        path.push_back(wp);
         ++count;
     }
     while (result->NextRow());
 
     //                                    0    1         2           3          4            5           6        7      8       9        10
-    result = WorldDatabase.Query("SELECT id, point, position_x, position_y, position_z, orientation, move_type, speed, delay, action, action_chance FROM waypoint_data_script ORDER BY id, point");
+    result = WorldDatabase.Query("SELECT id, point, position_x, position_y, position_z, orientation, move_flag, speed, delay, action, action_chance FROM waypoint_data_script ORDER BY id, point");
 
     if (!result)
     {
-        TC_LOG_ERROR("server.loading", ">> Loaded 0 waypoints. DB table `waypoint_data_script` is empty!");
+        TC_LOG_ERROR(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 waypoints. DB table `waypoint_data_script` is empty!");
         return;
     }
 
     do
     {
         Field* fields = result->Fetch();
+        WaypointData* wp = new WaypointData();
 
         uint32 pathId = fields[0].GetUInt32();
         WaypointPath& path = _waypointScriptStore[pathId];
@@ -107,40 +121,38 @@ void WaypointMgr::Load()
         Trinity::NormalizeMapCoord(x);
         Trinity::NormalizeMapCoord(y);
 
-        WaypointData waypoint;
-        waypoint.id = fields[1].GetUInt32();
-        waypoint.x = x;
-        waypoint.y = y;
-        waypoint.z = z;
-        waypoint.orientation = o;
-        waypoint.move_type = fields[6].GetUInt32();
+        wp->id = fields[1].GetUInt32();
+        wp->x = x;
+        wp->y = y;
+        wp->z = z;
+        wp->orientation = o;
+        wp->run = fields[6].GetUInt8();
+        wp->speed = fields[7].GetFloat();
+        wp->delay = fields[8].GetUInt32();
+        wp->event_id = fields[9].GetUInt32();
+        wp->event_chance = fields[10].GetInt16();
 
-        if (waypoint.move_type >= WAYPOINT_MOVE_TYPE_MAX)
-        {
-            TC_LOG_ERROR("sql.sql", "Waypoint %u in waypoint_data_script has invalid move_type, ignoring", waypoint.id);
-            continue;
-        }
-
-        waypoint.speed = fields[7].GetFloat();
-        waypoint.delay = fields[8].GetUInt32();
-        waypoint.event_id = fields[9].GetUInt32();
-        waypoint.event_chance = fields[10].GetInt16();
-
-        path.push_back(std::move(waypoint));
+        path.push_back(wp);
         ++count;
     }
     while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u waypoints in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO(LOG_FILTER_SERVER_LOADING, ">> Loaded %u waypoints in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+
 }
 
 void WaypointMgr::ReloadPath(uint32 id)
 {
-    auto itr = _waypointStore.find(id);
+    WaypointPathContainer::iterator itr = _waypointStore.find(id);
     if (itr != _waypointStore.end())
-        _waypointStore.erase(itr);
+    {
+        for (WaypointPath::const_iterator it = itr->second.begin(); it != itr->second.end(); ++it)
+            delete *it;
 
-    WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_WAYPOINT_DATA_BY_ID);
+        _waypointStore.erase(itr);
+    }
+
+    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_WAYPOINT_DATA_BY_ID);
     stmt->setUInt32(0, id);
     PreparedQueryResult result = WorldDatabase.Query(stmt);
     if (!result)
@@ -151,6 +163,7 @@ void WaypointMgr::ReloadPath(uint32 id)
     do
     {
         Field* fields = result->Fetch();
+        WaypointData* wp = new WaypointData();
 
         float x = fields[1].GetFloat();
         float y = fields[2].GetFloat();
@@ -160,34 +173,31 @@ void WaypointMgr::ReloadPath(uint32 id)
         Trinity::NormalizeMapCoord(x);
         Trinity::NormalizeMapCoord(y);
 
-        WaypointData waypoint;
-        waypoint.id = fields[0].GetUInt32();
-        waypoint.x = x;
-        waypoint.y = y;
-        waypoint.z = z;
-        waypoint.orientation = o;
-        waypoint.move_type = fields[5].GetUInt32();
+        wp->id = fields[0].GetUInt32();
+        wp->x = x;
+        wp->y = y;
+        wp->z = z;
+        wp->orientation = o;
+        wp->run = fields[5].GetUInt8();
+        wp->speed = fields[6].GetFloat();
+        wp->delay = fields[7].GetUInt32();
+        wp->event_id = fields[8].GetUInt32();
+        wp->event_chance = fields[9].GetUInt8();
+        wp->delay_chance = fields[10].GetUInt8();
 
-        if (waypoint.move_type >= WAYPOINT_MOVE_TYPE_MAX)
-        {
-            TC_LOG_ERROR("sql.sql", "Waypoint %u in waypoint_data has invalid move_type, ignoring", waypoint.id);
-            continue;
-        }
-
-        waypoint.speed = fields[6].GetFloat();
-        waypoint.delay = fields[7].GetUInt32();
-        waypoint.event_id = fields[8].GetUInt32();
-        waypoint.event_chance = fields[9].GetUInt8();
-        waypoint.delay_chance = fields[10].GetUInt8();
-
-        path.push_back(std::move(waypoint));
+        path.push_back(wp);
 
     }
     while (result->NextRow());
 
     itr = _waypointScriptStore.find(id);
     if (itr != _waypointScriptStore.end())
+    {
+        for (WaypointPath::const_iterator it = itr->second.begin(); it != itr->second.end(); ++it)
+            delete *it;
+
         _waypointScriptStore.erase(itr);
+    }
 
     stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_WAYPOINT_DATA_SCRIPT_BY_ID);
     stmt->setUInt32(0, id);
@@ -200,6 +210,7 @@ void WaypointMgr::ReloadPath(uint32 id)
     do
     {
         Field* fields = result->Fetch();
+        WaypointData* wp = new WaypointData();
 
         float x = fields[1].GetFloat();
         float y = fields[2].GetFloat();
@@ -209,26 +220,18 @@ void WaypointMgr::ReloadPath(uint32 id)
         Trinity::NormalizeMapCoord(x);
         Trinity::NormalizeMapCoord(y);
 
-        WaypointData waypoint;
-        waypoint.id = fields[0].GetUInt32();
-        waypoint.x = x;
-        waypoint.y = y;
-        waypoint.z = z;
-        waypoint.orientation = o;
-        waypoint.move_type = fields[5].GetUInt32();
+        wp->id = fields[0].GetUInt32();
+        wp->x = x;
+        wp->y = y;
+        wp->z = z;
+        wp->orientation = o;
+        wp->run = fields[5].GetUInt8();
+        wp->speed = fields[6].GetFloat();
+        wp->delay = fields[7].GetUInt32();
+        wp->event_id = fields[8].GetUInt32();
+        wp->event_chance = fields[9].GetUInt8();
 
-        if (waypoint.move_type >= WAYPOINT_MOVE_TYPE_MAX)
-        {
-            TC_LOG_ERROR("sql.sql", "Waypoint %u in waypoint_data_script has invalid move_type, ignoring", waypoint.id);
-            continue;
-        }
-
-        waypoint.speed = fields[6].GetFloat();
-        waypoint.delay = fields[7].GetUInt32();
-        waypoint.event_id = fields[8].GetUInt32();
-        waypoint.event_chance = fields[9].GetUInt8();
-
-        pathS.push_back(std::move(waypoint));
+        pathS.push_back(wp);
 
     }
     while (result->NextRow());

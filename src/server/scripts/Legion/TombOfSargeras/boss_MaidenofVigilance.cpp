@@ -1,3 +1,7 @@
+/*
+https://uwow.biz/
+*/
+
 #include "tomb_of_sargeras.h"
 
 enum Says
@@ -112,7 +116,7 @@ struct boss_maiden_of_vigilance : BossAI
 
     void Reset() override
     {
-        if (me->IsAlive())
+        if (me->isAlive())
             _Reset();
 
         me->KillAllDelayedEvents();
@@ -220,7 +224,7 @@ struct boss_maiden_of_vigilance : BossAI
                 if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0,
                                                                         [spell](Unit* targett)
                                                                         {
-                                                                            if (!targett->IsPlayer() || !targett->IsAlive() || !targett->ToPlayer()->isInTankSpec())
+                                                                            if (!targett->IsPlayer() || !targett->isAlive() || !targett->ToPlayer()->isInTankSpec())
                                                                                 return false;
 
                                                                             return targett->HasAura(spell);
@@ -230,7 +234,7 @@ struct boss_maiden_of_vigilance : BossAI
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 
                                                                             [spell](Unit* targett)
                                                                             {
-                                                                                if (!targett->IsPlayer() || !targett->IsAlive() || targett->ToPlayer()->isInTankSpec())
+                                                                                if (!targett->IsPlayer() || !targett->isAlive() || targett->ToPlayer()->isInTankSpec())
                                                                                     return false;
 
                                                                                 return targett->HasAura(spell);
@@ -284,7 +288,7 @@ struct boss_maiden_of_vigilance : BossAI
                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0,
                                                                             [spellid](Unit* targett)
                                                                             {
-                                                                                if (!targett->IsPlayer() || !targett->IsAlive())
+                                                                                if (!targett->IsPlayer() || !targett->isAlive())
                                                                                     return false;
 
                                                                                 return targett->HasAura(spellid);
@@ -297,7 +301,7 @@ struct boss_maiden_of_vigilance : BossAI
 
     void OnApplyOrRemoveAura(uint32 spellId, AuraRemoveMode /*mode*/, bool apply) override
     {
-        if (spellId != SPELL_BLOWBACK || !me->isInCombat() || !me->IsAlive())
+        if (spellId != SPELL_BLOWBACK || !me->isInCombat() || !me->isAlive())
             return;
 
         me->ApplySpellImmune(0, IMMUNITY_MECHANIC, MECHANIC_INTERRUPT, apply);
@@ -336,7 +340,7 @@ struct boss_maiden_of_vigilance : BossAI
             auto list = me->getThreatManager().getThreatList();
             for (auto& itr: list)
                 if (Unit* target = itr->getTarget())
-                    if (target->IsPlayer() && target->IsAlive())
+                    if (target->IsPlayer() && target->isAlive())
                     {
                         needEvade = false;
                         break;
@@ -445,7 +449,7 @@ struct npc_tos_essences : ScriptedAI
             return;
         
          Unit* unit = me->GetTargetUnit();
-         if (!unit || !unit->IsAlive())
+         if (!unit || !unit->isAlive())
              unit = me->FindNearestPlayer(60, true);
 
          if (unit)
@@ -463,7 +467,7 @@ struct npc_tos_essences : ScriptedAI
             for (const auto& itr : players)
             {
                 Player* who = itr.getSource();
-                if (!who->IsAlive())
+                if (!who->isAlive())
                     continue;
 
                 if (me->GetDistance(who) < 0.22f && !justDoIt)
@@ -720,7 +724,7 @@ class spell_tos_infusions : public AuraScript
         else
         {
             target->RemoveAurasDueToSpell(GetSpellInfo()->Id == SPELL_FEL_INFUSION ? 241316 : 241315);
-            if (target->IsAlive())
+            if (target->isAlive())
                 target->CastSpell(target, GetSpellInfo()->Id == SPELL_FEL_INFUSION ? 241316 : 241315, true);
         }
     }

@@ -10,8 +10,6 @@
 // 106093 - summit teleport aoe
 // 106092 - temple teleport aoe
 
-#define DataHeader "DS"
-
 enum Datas
 {
     DATA_MORCHOK            = 0,
@@ -333,7 +331,7 @@ class instance_dragon_soul_trash_accessor
 {
 public:
     virtual Creature* GetNextTwilightAssaulterStalker(Creature const* current) = 0;
-    virtual Optional<Position> GetRandomTwilightAssaulterAssaultPosition(bool horizonal, bool fromEnd, uint8& lane, ObjectGuid& targetGUID) = 0;
+    virtual Position const* GetRandomTwilightAssaulterAssaultPosition(bool horizonal, bool fromEnd, uint8& lane, ObjectGuid& targetGUID) = 0;
     virtual void FreeTwilightAssaulterAssaultLane(bool horizontal, uint8 lane) = 0;
     virtual void CleanTwilightAssaulterAssaultLane(bool horizontal, uint8 lane) = 0;
 };

@@ -35,7 +35,7 @@ struct OutdoorPvPData
 };
 
 // class to handle player enter / leave / areatrigger / GO use events
-class TC_GAME_API OutdoorPvPMgr
+class OutdoorPvPMgr
 {
         OutdoorPvPMgr();
         ~OutdoorPvPMgr() {}

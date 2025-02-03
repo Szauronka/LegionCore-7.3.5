@@ -1,9 +1,13 @@
 /*
+    http://epicwow.com/
     Dungeon : Upper Blackrock Spire 90-100
     Encounter: Orebender Gor'ashan
 */
 
 #include "upper_blackrock_spire.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
 
 enum Says
 {

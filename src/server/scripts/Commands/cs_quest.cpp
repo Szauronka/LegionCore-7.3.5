@@ -15,18 +15,10 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-Name: quest_commandscript
-%Complete: 100
-Comment: All quest related commands
-Category: commandscripts
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "ObjectMgr.h"
 #include "Chat.h"
 #include "QuestData.h"
-#include "ScenarioMgr.h"
 
 class quest_commandscript : public CommandScript
 {
@@ -37,12 +29,16 @@ public:
     {
         static std::vector<ChatCommand> questCommandTable =
         {
-            { "autocomplete",   SEC_ADMINISTRATOR,  false, &HandleQuestAutocomplete,           ""},
+
+
             { "add",            SEC_ADMINISTRATOR,  false, &HandleQuestAdd,                    ""},
             { "complete",       SEC_ADMINISTRATOR,  false, &HandleQuestComplete,               ""},
             { "remove",         SEC_ADMINISTRATOR,  false, &HandleQuestRemove,                 ""},
-            { "reward",         SEC_ADMINISTRATOR,  false, &HandleQuestReward,                 ""},
+            { "autocomplete",   SEC_ADMINISTRATOR,  false, &HandleQuestAutocomplete,           ""},
+			{ "reward",         SEC_ADMINISTRATOR,  false, &HandleQuestReward,                 ""},
             { "status",         SEC_PLAYER,         false, &HandleQuestStatus,                 ""}
+
+
         };
         static std::vector<ChatCommand> commandTable =
         {
@@ -53,8 +49,9 @@ public:
 
     static bool HandleQuestAutocomplete(ChatHandler* handler, const char* args)
     {
-        Player* player = handler->getSelectedPlayer();
-        if (!player)
+        Player* player = handler->getSelectedPlayerOrSelf();
+        
+		if (!player)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
             handler->SetSentErrorMessage(true);
@@ -89,7 +86,8 @@ public:
 
     static bool HandleQuestAdd(ChatHandler* handler, const char* args)
     {
-        Player* player = handler->getSelectedPlayer();
+        Player* player = handler->getSelectedPlayerOrSelf();
+
         if (!player)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -129,14 +127,20 @@ public:
 
         // ok, normal (creature/GO starting) quest
         if (player->CanAddQuest(quest, true))
-            player->AddQuestAndCheckCompletion(quest, NULL);
+        {
+            player->AddQuest(quest, NULL);
+
+            if (player->CanCompleteQuest(entry))
+                player->CompleteQuest(entry);
+        }
 
         return true;
     }
 
     static bool HandleQuestRemove(ChatHandler* handler, const char* args)
     {
-        Player* player = handler->getSelectedPlayer();
+        Player* player = handler->getSelectedPlayerOrSelf();
+
         if (!player)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -161,6 +165,8 @@ public:
             return false;
         }
 
+        QuestStatus oldStatus = player->GetQuestStatus(entry);
+
         // remove all quest entries for 'entry' from quest log
         for (uint8 slot = 0; slot < MAX_QUEST_LOG_SIZE; ++slot)
         {
@@ -177,13 +183,16 @@ public:
         player->RemoveActiveQuest(entry);
         player->RemoveRewardedQuest(entry);
 
+        sScriptMgr->OnQuestStatusChange(player, quest, oldStatus, QUEST_STATUS_NONE);
+
         handler->SendSysMessage(LANG_COMMAND_QUEST_REMOVED);
         return true;
     }
 
     static bool HandleQuestComplete(ChatHandler* handler, const char* args)
     {
-        Player* player = handler->getSelectedPlayer();
+        Player* player = handler->getSelectedPlayerOrSelf();
+
         if (!player)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -214,7 +223,7 @@ public:
         //if (sWorld->getBoolConfig(CONFIG_QUEST_ENABLE_QUEST_TRACKER)) // check if Quest Tracker is enabled
         //{
         //    // prepare Quest Tracker datas
-        //    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_QUEST_TRACK_GM_COMPLETE);
+        //    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_QUEST_TRACK_GM_COMPLETE);
         //    stmt->setUInt32(0, quest->GetQuestId());
         //    stmt->setUInt64(1, player->GetGUID().GetGUIDLow());
 
@@ -228,8 +237,9 @@ public:
 
     static bool HandleQuestReward(ChatHandler* handler, char const* args)
     {
-        Player* player = handler->getSelectedPlayer();
-        if (!player)
+        Player* player = handler->getSelectedPlayerOrSelf();
+        
+		if (!player)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
             handler->SetSentErrorMessage(true);
@@ -249,32 +259,9 @@ public:
         // If player doesn't have the quest
         if (!quest || player->GetQuestStatus(entry) != QUEST_STATUS_COMPLETE)
         {
-            // check for scenario reward quest in current instance; only allow rewarding one time
-            // this is helpful when leveling and encountering bugged scenarios
-            bool isActiveScenario = false;
-
-            if (quest && player->GetMap() && player->GetMap()->IsDungeon() && player->GetMap()->GetInstanceId())
-            {
-                if (auto scenario = sScenarioMgr->GetScenario(player->GetMap()->GetInstanceId()))
-                {
-                    auto steps = sScenarioMgr->GetScenarioSteps(scenario->GetScenarioId());
-                    for (auto step : *steps)
-                    {
-                        if (step->RewardQuestID == quest->Id)
-                        {
-                            isActiveScenario = !player->HasCompletedQuest(quest->Id);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!isActiveScenario)
-            {
-                handler->PSendSysMessage(LANG_COMMAND_QUEST_NOTFOUND, entry);
-                handler->SetSentErrorMessage(true);
-                return false;
-            }
+            handler->PSendSysMessage(LANG_COMMAND_QUEST_NOTFOUND, entry);
+            handler->SetSentErrorMessage(true);
+            return false;
         }
 
         player->RewardQuest(quest, 0, player);
@@ -283,7 +270,8 @@ public:
 
     static bool HandleQuestStatus(ChatHandler* handler, char const* args)
     {
-        Player* player = handler->getSelectedPlayer();
+        Player* player = handler->getSelectedPlayerOrSelf();
+
         if (!player)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);

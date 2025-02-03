@@ -300,7 +300,7 @@ struct AreaTriggerInfo
     bool AllowBoxCheck;
 };
 
-class TC_GAME_API AreaTrigger : public WorldObject, public GridObject<AreaTrigger>, public MapObject
+class AreaTrigger : public WorldObject, public GridObject<AreaTrigger>, public MapObject
 {
         struct ActionInfo
         {
@@ -351,6 +351,8 @@ class TC_GAME_API AreaTrigger : public WorldObject, public GridObject<AreaTrigge
         int32 GeTimeToTarget() const;
         void SetTimeToTarget(int32 timeToTarget);
         void Delay(int32 delaytime);
+        void SetPeriodicProcTimer(uint32 periodicProctimer) { _basePeriodicProcTimer = periodicProctimer; _periodicProcTimer = periodicProctimer; }
+        GuidUnorderedSet const& GetInsideUnits() const { return _insideUnits; }
         float GetVisualScale(bool max = false) const;
         float GetRadius() const;
         void CalculateRadius(Spell* spell = nullptr);
@@ -440,6 +442,8 @@ class TC_GAME_API AreaTrigger : public WorldObject, public GridObject<AreaTrigge
         uint32 _sequenceDelay;
         uint32 _sequenceStep;
         uint32 _liveTime;
+        uint32 _periodicProcTimer;
+        uint32 _basePeriodicProcTimer;
         GuidList affectedPlayers;
         GuidList affectedPlayersForAllTime;
         float _radius;
@@ -465,6 +469,7 @@ class TC_GAME_API AreaTrigger : public WorldObject, public GridObject<AreaTrigge
         AreaTriggerSpline _spline;
         AreaTriggerCircle* _CircleData;
         AreaTriggerScaleData _scaleData;
+        GuidUnorderedSet _insideUnits;
 
         SpellInfo const* m_spellInfo;
         Spell* m_spell;

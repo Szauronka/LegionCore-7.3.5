@@ -307,11 +307,11 @@ class boss_morchok: public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_UPDATE_HEALTH:
-                            if (me->IsAlive())
+                            if (me->isAlive())
                             {
                                 if (pKohcrom)
                                 {
-                                    if (!pKohcrom->IsAlive())
+                                    if (!pKohcrom->isAlive())
                                         break;
 
                                     if (me->GetHealth() < 500000 || pKohcrom->GetHealth() < 500000)
@@ -357,7 +357,8 @@ class boss_morchok: public CreatureScript
 
                             Talk(ANN_CRYSTAL);
                             Talk(SAY_CRYSTAL);
-                            Position pos = me->GetNearPosition(frand(25.0f, 45.0f), frand(0, float(2 * M_PI)));
+                            Position pos;
+                            me->GetNearPosition(pos, frand(25.0f, 45.0f), frand(0, 2 * M_PI));
                             me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_RESONATING_CRYSTAL, true);
                             events.ScheduleEvent(EVENT_RESONATING_CRYSTAL, urand(12000, 14000));
                             if (bKohcrom && !bFirstCrystal && pKohcrom)
@@ -541,7 +542,8 @@ class npc_morchok_kohcrom: public CreatureScript
                             break;
                         case EVENT_RESONATING_CRYSTAL:
                         {
-                            Position pos = me->GetNearPosition(frand(25.0f, 45.0f), frand(0, float(2 * M_PI)));
+                            Position pos;
+                            me->GetNearPosition(pos, frand(25.0f, 45.0f), frand(0, 2 * M_PI));
                             me->CastSpell(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), SPELL_RESONATING_CRYSTAL, true);
                             break;
                         }

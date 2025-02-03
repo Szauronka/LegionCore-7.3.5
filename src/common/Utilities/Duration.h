@@ -1,5 +1,5 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,12 +18,7 @@
 #ifndef _DURATION_H_
 #define _DURATION_H_
 
-// HACKS TERRITORY
-#if __has_include(<__msvc_chrono.hpp>)
-#include <__msvc_chrono.hpp> // skip all the formatting/istream/locale/mutex bloat
-#else
 #include <chrono>
-#endif
 
 /// Milliseconds shorthand typedef.
 typedef std::chrono::milliseconds Milliseconds;
@@ -37,16 +32,20 @@ typedef std::chrono::minutes Minutes;
 /// Hours shorthand typedef.
 typedef std::chrono::hours Hours;
 
-/// time_point shorthand typedefs
+/// Point in time shorthand typedef.
 typedef std::chrono::steady_clock::time_point TimePoint;
-typedef std::chrono::system_clock::time_point SystemTimePoint;
+
+/// Represents a monotonic clock typedef.
+typedef std::chrono::steady_clock SteadyClock;
+
+/// The system-wide real time wall clock typedef.
+typedef std::chrono::system_clock SystemClock;
+
+/// Represents a time interval typedef.
+typedef std::chrono::system_clock::duration Duration;
 
 /// Makes std::chrono_literals globally available.
-using namespace std::chrono_literals;
-
-constexpr std::chrono::hours operator""_days(unsigned long long days)
-{
-    return std::chrono::hours(days * 24h);
-}
+// ToDo: Enable this when TC supports C++14.
+// using namespace std::chrono_literals;
 
 #endif // _DURATION_H_

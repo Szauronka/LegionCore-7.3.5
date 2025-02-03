@@ -27,6 +27,31 @@
 #include "Group.h"
 #include "ChannelMgr.h"
 #include "CreatureAI.h"
+#include <boost/algorithm/string/find.hpp>
+#include <boost/algorithm/string/find_iterator.hpp>
+
+typedef boost::find_iterator<std::string::iterator> string_find_iterator;
+
+// Return substring count inside some string
+inline uint32 CountSubstring(std::string text, std::string term)
+{
+	uint32 strInsideCount = 0;
+
+	for (string_find_iterator It = boost::make_find_iterator(text, boost::first_finder(term, boost::algorithm::is_iequal()));
+		It != string_find_iterator();
+		++It)
+	{
+		strInsideCount += 1;
+	}
+
+	return strInsideCount;
+}
+
+// Check if substring is contained inside some string
+inline bool ContainString(std::string text, std::string search)
+{
+	return boost::find_first(text, search);
+}
 
 bool WorldSession::processChatmessageFurtherAfterSecurityChecks(std::string& msg, uint32 lang)
 {
@@ -38,42 +63,11 @@ bool WorldSession::processChatmessageFurtherAfterSecurityChecks(std::string& msg
 
         if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_SEVERITY) && !ChatHandler(this).isValidChatMessage(msg.c_str()))
         {
-            TC_LOG_ERROR("network", "Player %s (GUID: %u) sent a chatmessage with an invalid link: %s", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), msg.c_str());
+            TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "Player %s (GUID: %u) sent a chatmessage with an invalid link: %s", GetPlayer()->GetName(), GetPlayer()->GetGUIDLow(), msg.c_str());
             if (sWorld->getIntConfig(CONFIG_CHAT_STRICT_LINK_CHECKING_KICK))
                 KickPlayer();
             else
                 ChatHandler(this).PSendSysMessage("You can't use bad link in you message");
-            return false;
-        }
-    }
-
-    return true;
-}
-
-inline bool isNasty(uint8 c)
-{
-    if (c == '\t')
-        return false;
-    if (c <= '\037') // ASCII control block
-        return true;
-    return false;
-}
-
-inline bool ValidateMessage(Player const* player, std::string& msg)
-{
-    // cut at the first newline or carriage return
-    std::string::size_type pos = msg.find_first_of("\n\r");
-    if (pos == 0)
-        return false;
-    else if (pos != std::string::npos)
-        msg.erase(pos);
-
-    // abort on any sort of nasty character
-    for (uint8 c : msg)
-    {
-        if (isNasty(c))
-        {
-            TC_LOG_ERROR("network", "Player %s %s sent a message containing invalid character %u - blocked", player->GetName(), player->GetGUID().ToString().c_str(), uint32(c));
             return false;
         }
     }
@@ -88,13 +82,6 @@ void WorldSession::HandleChatMessageAFK(WorldPackets::Chat::ChatMessageAFK& chat
         return;
 
     if (sender->isInCombat())
-        return;
-
-    // do message validity checks
-    if (!ValidateMessage(sender, chatMessageAFK.Text))
-        return;
-
-    if (!processChatmessageFurtherAfterSecurityChecks(chatMessageAFK.Text, LANG_COMMON))
         return;
 
     if (sender->HasAura(1852))
@@ -128,13 +115,6 @@ void WorldSession::HandleChatMessageDND(WorldPackets::Chat::ChatMessageDND& chat
     Player* sender = GetPlayer();
 
     if (sender->isInCombat())
-        return;
-
-    // do message validity checks
-    if (!ValidateMessage(sender, chatMessageDND.Text))
-        return;
-
-    if (!processChatmessageFurtherAfterSecurityChecks(chatMessageDND.Text, LANG_COMMON))
         return;
 
     if (sender->HasAura(1852))
@@ -214,7 +194,7 @@ void WorldSession::HandleChatMessageOpcode(WorldPackets::Chat::ChatMessage& pack
             type = CHAT_MSG_INSTANCE_CHAT;
             break;
         default:
-            TC_LOG_ERROR("network", "HandleMessagechatOpcode : Unknown chat opcode (%u)", packet.GetOpcode());
+            TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "HandleMessagechatOpcode : Unknown chat opcode (%u)", packet.GetOpcode());
             return;
     }
 
@@ -240,17 +220,17 @@ void WorldSession::HandleChatMessage(ChatMsg type, uint32 lang, std::string msg,
 {
     if (type >= MAX_CHAT_MSG_TYPE)
     {
-        TC_LOG_ERROR("network", "CHAT: Wrong message type received: %u", type);
+        TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "CHAT: Wrong message type received: %u", type);
         return;
     }
 
     Player* sender = GetPlayer();
 
-    //TC_LOG_DEBUG("misc", "CHAT: packet received. type %u, lang %u", type, lang);
+    //TC_LOG_DEBUG(LOG_FILTER_GENERAL, "CHAT: packet received. type %u, lang %u", type, lang);
 
     if (!sender->CanSpeak() && type != CHAT_MSG_DND)
     {
-        std::string timeStr = secsToTimeString(m_muteTime - GameTime::GetGameTime());
+        std::string timeStr = secsToTimeString(m_muteTime - time(nullptr));
         SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING), timeStr.c_str());
         return;
     }
@@ -323,9 +303,9 @@ void WorldSession::HandleChatMessage(ChatMsg type, uint32 lang, std::string msg,
                 }
 
                 // but overwrite it by SPELL_AURA_MOD_LANGUAGE auras (only single case used)
-                Unit::AuraEffectList const& ModLangAuras = sender->GetAuraEffectsByType(SPELL_AURA_MOD_LANGUAGE);
-                if (ModLangAuras.begin() != ModLangAuras.end())
-                    lang = (*ModLangAuras.begin())->GetMiscValue();
+                if (Unit::AuraEffectList const* ModLangAuras = sender->GetAuraEffectsByType(SPELL_AURA_MOD_LANGUAGE))
+                    if (ModLangAuras->begin() != ModLangAuras->end())
+                        lang = (*ModLangAuras->begin())->GetMiscValue();
             }
         }
     }
@@ -345,10 +325,6 @@ void WorldSession::HandleChatMessage(ChatMsg type, uint32 lang, std::string msg,
         return;
 
     if (ChatHandler(this).PlayerExtraCommand(msg.c_str()))
-        return;
-
-    // do message validity checks
-    if (!ValidateMessage(sender, msg))
         return;
 
     if (!processChatmessageFurtherAfterSecurityChecks(msg, lang))
@@ -374,6 +350,17 @@ void WorldSession::HandleChatMessage(ChatMsg type, uint32 lang, std::string msg,
         if (!badWord.empty())
             isSpamm = true;
     }
+
+	// Check if this msg have a quest link and is valid
+	// If link don't have this form |Hquest:quest_id:real_level:min_level:max_scaling_level| the link is broken and crash the player client
+	// Example of valid quest link: |cff808080|Hquest:28757:3:1:255|h[¡Rechazar el ataque!]|h|r
+	// Example of broken quest link: |cffffff00|Hquest:28757:3|h[¡Rechazar el ataque!]|h|r
+	
+	if (ContainString(msg, "|Hquest:"))
+	{
+		if (CountSubstring(msg, ":") != 4)
+			return;
+	}
 
     switch (type)
     {
@@ -616,7 +603,7 @@ void WorldSession::HandleChatMessage(ChatMsg type, uint32 lang, std::string msg,
             break;
         }
         default:
-            TC_LOG_ERROR("network", "CHAT: unknown message type %u, lang: %u", type, lang);
+            TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "CHAT: unknown message type %u, lang: %u", type, lang);
             break;
     }
 }
@@ -643,7 +630,7 @@ void WorldSession::HandleChatAddonMessageOpcode(WorldPackets::Chat::ChatAddonMes
             type = CHAT_MSG_RAID;
             break;
         default:
-            TC_LOG_ERROR("network", "HandleAddonMessagechatOpcode: Unknown addon chat opcode (%u)", packet.GetOpcode());
+            TC_LOG_ERROR(LOG_FILTER_NETWORKIO, "HandleAddonMessagechatOpcode: Unknown addon chat opcode (%u)", packet.GetOpcode());
             return;
     }
 
@@ -732,7 +719,7 @@ void WorldSession::HandleChatAddonMessage(ChatMsg type, std::string const& prefi
         }
         default:
         {
-            TC_LOG_ERROR("misc", "HandleAddonMessagechatOpcode: unknown addon message type %u", type);
+            TC_LOG_ERROR(LOG_FILTER_GENERAL, "HandleAddonMessagechatOpcode: unknown addon message type %u", type);
             break;
         }
     }
@@ -740,13 +727,10 @@ void WorldSession::HandleChatAddonMessage(ChatMsg type, std::string const& prefi
 
 void WorldSession::HandleEmote(WorldPackets::Character::EmoteClient& /*packet*/)
 {
-    if (!GetPlayer()->IsAlive() || GetPlayer()->HasUnitState(UNIT_STATE_DIED))
+    if (!GetPlayer()->isAlive() || GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         return;
 
     sScriptMgr->OnPlayerClearEmote(GetPlayer());
-
-    if (_player->GetUInt32Value(UNIT_FIELD_EMOTE_STATE))
-        _player->SetUInt32Value(UNIT_FIELD_EMOTE_STATE, 0);
 }
 
 void WorldSession::HandleTextEmoteOpcode(WorldPackets::Chat::CTextEmote& packet)
@@ -755,7 +739,7 @@ void WorldSession::HandleTextEmoteOpcode(WorldPackets::Chat::CTextEmote& packet)
     if (!player)
         return;
 
-    if (!player->IsAlive())
+    if (!player->isAlive())
         return;
 
     if (player->IsSpectator())
@@ -763,7 +747,7 @@ void WorldSession::HandleTextEmoteOpcode(WorldPackets::Chat::CTextEmote& packet)
 
     if (!player->CanSpeak())
     {
-        SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING), secsToTimeString(m_muteTime - GameTime::GetGameTime()).c_str());
+        SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING), secsToTimeString(m_muteTime - time(nullptr)).c_str());
         return;
     }
 
@@ -773,9 +757,7 @@ void WorldSession::HandleTextEmoteOpcode(WorldPackets::Chat::CTextEmote& packet)
     if (!em)
         return;
 
-    uint32 emoteAnim = em->EmoteID;
-
-    switch (emoteAnim)
+    switch (em->EmoteID)
     {
         case EMOTE_STATE_SLEEP:
         case EMOTE_STATE_SIT:
@@ -784,14 +766,14 @@ void WorldSession::HandleTextEmoteOpcode(WorldPackets::Chat::CTextEmote& packet)
             break;
         case EMOTE_STATE_DANCE:
         case EMOTE_STATE_READ:
-            player->SetUInt32Value(UNIT_FIELD_EMOTE_STATE, emoteAnim);
+            player->SetUInt32Value(UNIT_FIELD_EMOTE_STATE, em->EmoteID);
             break;
         default:
             // Only allow text-emotes for "dead" entities (feign death included)
             if (player->HasUnitState(UNIT_STATE_DIED))
                 break;
 
-            player->HandleEmoteCommand(emoteAnim);
+            player->HandleEmoteCommand(em->EmoteID);
             break;
     }
 
@@ -842,7 +824,9 @@ void WorldSession::SendChatRestrictedNotice(ChatRestrictionType restriction)
 
 void WorldSession::HandleChatRegisterAddonPrefixes(WorldPackets::Chat::ChatRegisterAddonPrefixes& packet)
 {
-    _registeredAddonPrefixes.insert(_registeredAddonPrefixes.end(), packet.Prefixes.begin(), packet.Prefixes.end());
+    for (std::string& prefix : packet.Prefixes)
+        _registeredAddonPrefixes.insert(prefix);
+
     if (_registeredAddonPrefixes.size() > WorldPackets::Chat::ChatRegisterAddonPrefixes::MAX_PREFIXES)
     {
         _filterAddonMessages = false;

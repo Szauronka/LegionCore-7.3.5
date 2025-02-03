@@ -1,3 +1,20 @@
+/*
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
+ */
 
 #include "ArenaTolvir.h"
 #include "Battleground.h"
@@ -54,7 +71,7 @@ bool ArenaTolvir::SetupBattleground()
         !AddObject(BG_TV_OBJECT_BUFF_1, BG_TV_OBJECT_TYPE_BUFF_1, -10717.63f, 383.8223f, 24.412825f, 1.555f, 0.0f, 0.0f, 0.70154f, BATTLEGROUND_COUNTDOWN_MAX) ||
         !AddObject(BG_TV_OBJECT_BUFF_2, BG_TV_OBJECT_TYPE_BUFF_2, -10716.6f, 475.364f, 24.4131f, 0.0f, 0.0f, 0.70068f, -0.713476f, BATTLEGROUND_COUNTDOWN_MAX))
     {
-        TC_LOG_ERROR("sql.sql", "ArenaTolvir: Failed to spawn some object!");
+        TC_LOG_ERROR(LOG_FILTER_SQL, "ArenaTolvir: Failed to spawn some object!");
         return false;
     }
 

@@ -1,4 +1,13 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "antorus.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "SpellScript.h"
+#include "SpellAuraEffects.h"
 
 enum Says
 {
@@ -157,7 +166,7 @@ struct boss_aggramar : BossAI
     void Reset() override
     {
         _Reset();
-        me->SetPower(me->GetPowerType(), IsMythicRaid() ? 60 : 0);
+        me->SetPower(me->getPowerType(), IsMythicRaid() ? 60 : 0);
         me->SetReactState(REACT_AGGRESSIVE);
         DoCast(me, SPELL_ENABLE_ALTER_POWER, true);
         DoCast(me, SPELL_TAESHALACH_REACH, true);
@@ -301,8 +310,8 @@ struct boss_aggramar : BossAI
                 float angle = me->GetRelativeAngle(target) - 1.57f;
                 for (uint8 i = 0; i < 3; ++i)
                 {
-                    pos = me->GetNearPosition(5.0f, angle);
-                    pos.SetOrientation(me->GetAngle(pos.GetPositionX(), pos.GetPositionY()));
+                    me->GetNearPosition(pos, 5.0f, angle);
+                    pos.m_orientation = me->GetAngle(pos.GetPositionX(), pos.GetPositionY());
                     me->CastSpell(pos, SPELL_WAKE_OF_FLAME_AT, true);
                     angle += 1.57f;
                 }
@@ -325,8 +334,8 @@ struct boss_aggramar : BossAI
             case SPELL_WAKE_OF_FLAME_FILTER:
             {
                 Position pos;
-                pos = me->GetNearPosition(5.0f, me->GetRelativeAngle(target));
-                pos.SetOrientation(me->GetAngle(pos.GetPositionX(), pos.GetPositionY()));
+                me->GetNearPosition(pos, 5.0f, me->GetRelativeAngle(target));
+                pos.m_orientation = me->GetAngle(pos.GetPositionX(), pos.GetPositionY());
                 me->CastSpell(pos, SPELL_WAKE_OF_FLAME_AT, true);
                 break;
             }
@@ -389,7 +398,7 @@ struct boss_aggramar : BossAI
 
             for (uint8 i = 0; i < 6; ++i)
             {
-                pos = me->GetNearPosition(50.0f, angle);
+                me->GetNearPosition(pos, 50.0f, angle);
                 me->CastSpellDelay(pos, SPELL_SUMMON_EMBER, true, 3000 + (i * delay));
                 angle += 1.046f;
             }
@@ -398,7 +407,7 @@ struct boss_aggramar : BossAI
 
             for (uint8 i = 0; i < 2; ++i)
             {
-                pos = me->GetNearPosition(15.0f, angle);
+                me->GetNearPosition(pos, 15.0f, angle);
                 me->CastSpellDelay(pos, SPELL_SUMMON_FLAMES, true, 4000);
                 angle += 3.14f;
             }
@@ -655,7 +664,7 @@ class spell_aggramar_energize_periodic : public AuraScript
         if (!caster || !caster->isInCombat())
             return;
 
-        powerCount = caster->GetPower(caster->GetPowerType());
+        powerCount = caster->GetPower(caster->getPowerType());
 
         if (powerCount == 0 || powerCount == 20 || powerCount == 40 || powerCount == 57 || powerCount == 80)
             tickCount = 2;
@@ -663,7 +672,7 @@ class spell_aggramar_energize_periodic : public AuraScript
             tickCount = 3;
 
         if (powerCount < 100)
-            caster->SetPower(caster->GetPowerType(), powerCount + tickCount);
+            caster->SetPower(caster->getPowerType(), powerCount + tickCount);
         else if (!caster->HasUnitState(UNIT_STATE_CASTING))
         {
             caster->CastSpell(caster, SPELL_TAESHALACH_TECHNIQUE);
@@ -701,7 +710,7 @@ class spell_aggramar_wrought_in_flame : public AuraScript
 
         if (powerCount < 100.0f)
         {
-            caster->SetPower(caster->GetPowerType(), powerCount);
+            caster->SetPower(caster->getPowerType(), powerCount);
 
             if (auto _aurEff = GetAura()->GetEffect(EFFECT_3))
                 _aurEff->ChangeAmount(++scaleSize);
@@ -953,7 +962,7 @@ class spell_aggramar_command_empowered_flare : public SpellScript
         for (uint8 i = 0; i < maxCount; ++i)
         {
             GetHitDest()->SimplePosXYRelocationByAngle(pos, 5.0f, angle);
-            pos.SetOrientation(GetHitDest()->GetAngle(pos.GetPositionX(), pos.GetPositionY()));
+            pos.m_orientation = GetHitDest()->GetAngle(pos.GetPositionX(), pos.GetPositionY());
             GetCaster()->CastSpell(pos, SPELL_WAKE_OF_FLAME_AT, true);
             angle += 6.28f / maxCount;
         }
@@ -970,6 +979,7 @@ void AddSC_boss_aggramar()
     RegisterCreatureAI(boss_aggramar);
     RegisterCreatureAI(npc_aggramar_ember_of_taeshalach);
     RegisterCreatureAI(npc_aggramar_flame_of_taeshalach);
+
     RegisterAuraScript(spell_aggramar_energize_periodic);
     RegisterAuraScript(spell_aggramar_wrought_in_flame);
     RegisterAuraScript(spell_aggramar_meteor_swarm);

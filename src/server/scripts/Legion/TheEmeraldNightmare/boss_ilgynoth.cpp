@@ -1,4 +1,5 @@
 /*
+    https://uwow.biz/
     TODO: Нехватает инфы по евентам с суммонами, сколько суммонится и когда по времени.
 */
 
@@ -323,7 +324,7 @@ struct boss_ilgynoth : public BossAI
                     for (uint8 i = 0; i < 6; ++i)
                     {
                         angle += 1.0f;
-                        pos = me->GetNearPosition(20.0f, angle);
+                        me->GetNearPosition(pos, 20.0f, angle);
                         me->CastSpell(pos, SPELL_SUM_SHRIVELED_EYESTALK, true);
                     }
                     events.RescheduleEvent(EVENT_SUM_SHRIVELED_EYESTALK, 20000);
@@ -615,7 +616,7 @@ struct npc_ilgynoth_tentacles : public ScriptedAI
                             dist += 0.54f;
                             AddDelayedEvent(50 * i, [this, groundPos] () -> void
                             {
-                                if (me && me->IsAlive() && me->isInCombat())
+                                if (me && me->isAlive() && me->isInCombat())
                                     me->CastSpell(groundPos, SPELL_GROUND_SLAM_VISUAL, true);
                             });
                         }
@@ -653,7 +654,7 @@ struct npc_ilgynoth_nightmare_horror : public ScriptedAI
 
     void Reset() override
     {
-        me->SetPowerType(POWER_ENERGY);
+        me->setPowerType(POWER_ENERGY);
         me->SetMaxPower(POWER_ENERGY, 100);
         me->SetPower(POWER_ENERGY, 0);
         tickPower_Timer = 1000;

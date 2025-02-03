@@ -19,6 +19,9 @@
 #define _LFGQUEUE_H
 
 #include "LFG.h"
+#include <cds/gc/hp.h>
+#include <cds/container/impl/feldman_hashmap.h>
+#include "HashFuctor.h"
 
 namespace lfg
 {
@@ -94,7 +97,7 @@ private:
 };
 
 typedef std::map<uint32, LfgWaitTime> LfgWaitTimesContainer;
-typedef std::map<std::string, LfgCompatibilityData> LfgCompatibleContainer;
+typedef cds::container::FeldmanHashMap< cds::gc::HP, std::string, LfgCompatibilityData, stringTraits > LfgCompatibleContainer;
 typedef std::map<ObjectGuid, LfgQueueData> LfgQueueDataContainer;
 
 /**

@@ -138,46 +138,44 @@ enum GroupCategory : uint8
 
 enum GroupUpdateFlags
 {
-    GROUP_UPDATE_FLAG_NONE              = 0x00000000,       // nothing
-    GROUP_UPDATE_FLAG_OTHER_PARTY       = 0x00000001,       // for (2) uint8 unk
-    GROUP_UPDATE_FLAG_STATUS            = 0x00000002,       // uint16
-    GROUP_UPDATE_FLAG_POWER_TYPE        = 0x00000004,       // uint8 (PowerType)
-    GROUP_UPDATE_FLAG_POWER_DISPLAY_ID  = 0x00000008,       // uint16 (unk)
-    GROUP_UPDATE_FLAG_CUR_HP            = 0x00000010,       // uint32 (HP)
-    GROUP_UPDATE_FLAG_MAX_HP            = 0x00000020,       // uint32 (max HP)
-    GROUP_UPDATE_FLAG_CUR_POWER         = 0x00000040,       // int16 (power value)
-    GROUP_UPDATE_FLAG_MAX_POWER         = 0x00000080,       // int16 (max power value)
-    GROUP_UPDATE_FLAG_LEVEL             = 0x00000100,       // uint16 (level value)
-    GROUP_UPDATE_FLAG_WMO_GROUP_ID      = 0x00000200,       // int16 (unk)
-    GROUP_UPDATE_FLAG_ZONE              = 0x00000400,       // uint16 (zone id)
+    GROUP_UPDATE_FLAG_NONE = 0x00000000,       // nothing
+    GROUP_UPDATE_FLAG_OTHER_PARTY = 0x00000001,       // for (2) uint8 unk
+    GROUP_UPDATE_FLAG_STATUS = 0x00000002,       // uint16
+    GROUP_UPDATE_FLAG_POWER_TYPE = 0x00000004,       // uint8 (PowerType)
+    GROUP_UPDATE_FLAG_POWER_DISPLAY_ID = 0x00000008,       // uint16 (unk)
+    GROUP_UPDATE_FLAG_CUR_HP = 0x00000010,       // uint32 (HP)
+    GROUP_UPDATE_FLAG_MAX_HP = 0x00000020,       // uint32 (max HP)
+    GROUP_UPDATE_FLAG_CUR_POWER = 0x00000040,       // int16 (power value)
+    GROUP_UPDATE_FLAG_MAX_POWER = 0x00000080,       // int16 (max power value)
+    GROUP_UPDATE_FLAG_LEVEL = 0x00000100,       // uint16 (level value)
+    GROUP_UPDATE_FLAG_WMO_GROUP_ID = 0x00000200,       // int16 (unk)
+    GROUP_UPDATE_FLAG_ZONE = 0x00000400,       // uint16 (zone id)
     GROUP_UPDATE_FLAG_SPECIALIZATION_ID = 0x00000800,       // int16 (specID)
     GROUP_UPDATE_FLAG_WMO_DOODAD_PLACEMENT_ID = 0x00001000, // int32 (unk)
-    GROUP_UPDATE_FLAG_POSITION          = 0x00002000,       // uint16 (x), uint16 (y), uint16 (z)
-    GROUP_UPDATE_FLAG_VEHICLE_SEAT      = 0x00104000,       // int32 (vehicle seat id)
-    GROUP_UPDATE_FLAG_AURAS             = 0x00008000,       // uint8 (unk), uint64 (mask), uint32 (count), for each bit set: uint32 (spell id) + uint16 (AuraFlags)  (if has flags Scalable -> 3x int32 (bps))
-    GROUP_UPDATE_FLAG_PET               = 0x00010000,       // complex (pet)
-    GROUP_UPDATE_FLAG_PHASE             = 0x00020000,       // int32 (unk), uint32 (phase count), for (count) uint16(phaseId)
-
-    GROUP_UPDATE_FULL = GROUP_UPDATE_FLAG_OTHER_PARTY   | GROUP_UPDATE_FLAG_STATUS      | GROUP_UPDATE_FLAG_POWER_TYPE |
-                        GROUP_UPDATE_FLAG_POWER_DISPLAY_ID        | GROUP_UPDATE_FLAG_CUR_HP      | GROUP_UPDATE_FLAG_MAX_HP |
-                        GROUP_UPDATE_FLAG_CUR_POWER     | GROUP_UPDATE_FLAG_MAX_POWER   | GROUP_UPDATE_FLAG_LEVEL |
-                        GROUP_UPDATE_FLAG_WMO_GROUP_ID     | GROUP_UPDATE_FLAG_ZONE        | GROUP_UPDATE_FLAG_SPECIALIZATION_ID |
-                        GROUP_UPDATE_FLAG_WMO_DOODAD_PLACEMENT_ID    | GROUP_UPDATE_FLAG_POSITION    | GROUP_UPDATE_FLAG_VEHICLE_SEAT |
-                        GROUP_UPDATE_FLAG_AURAS         | GROUP_UPDATE_FLAG_PET         | GROUP_UPDATE_FLAG_PHASE
+    GROUP_UPDATE_FLAG_POSITION = 0x00002000,       // uint16 (x), uint16 (y), uint16 (z)
+    GROUP_UPDATE_FLAG_VEHICLE_SEAT = 0x00104000,       // int32 (vehicle seat id)
+    GROUP_UPDATE_FLAG_AURAS = 0x00008000,       // uint8 (unk), uint64 (mask), uint32 (count), for each bit set: uint32 (spell id) + uint16 (AuraFlags)  (if has flags Scalable -> 3x int32 (bps))
+    GROUP_UPDATE_FLAG_PET = 0x00010000,       // complex (pet)
+    GROUP_UPDATE_FLAG_PHASE = 0x00020000,       // int32 (unk), uint32 (phase count), for (count) uint16(phaseId)
+    
+    GROUP_UPDATE_FULL = GROUP_UPDATE_FLAG_OTHER_PARTY | GROUP_UPDATE_FLAG_STATUS | GROUP_UPDATE_FLAG_POWER_TYPE |
+    GROUP_UPDATE_FLAG_POWER_DISPLAY_ID | GROUP_UPDATE_FLAG_CUR_HP | GROUP_UPDATE_FLAG_MAX_HP |
+    GROUP_UPDATE_FLAG_CUR_POWER | GROUP_UPDATE_FLAG_MAX_POWER | GROUP_UPDATE_FLAG_LEVEL |
+    GROUP_UPDATE_FLAG_WMO_GROUP_ID | GROUP_UPDATE_FLAG_ZONE | GROUP_UPDATE_FLAG_SPECIALIZATION_ID |
+    GROUP_UPDATE_FLAG_WMO_DOODAD_PLACEMENT_ID | GROUP_UPDATE_FLAG_POSITION | GROUP_UPDATE_FLAG_VEHICLE_SEAT |
+    GROUP_UPDATE_FLAG_AURAS | GROUP_UPDATE_FLAG_PET | GROUP_UPDATE_FLAG_PHASE
 };
-
 enum GroupUpdatePetFlags
 {
-    GROUP_UPDATE_FLAG_PET_NONE      = 0x00000000,       // nothing
-    GROUP_UPDATE_FLAG_PET_GUID      = 0x00000001,       // ObjectGuid (pet guid)
-    GROUP_UPDATE_FLAG_PET_NAME      = 0x00000002,       // cstring (name, NULL terminated string)
-    GROUP_UPDATE_FLAG_PET_MODEL_ID  = 0x00000004,       // uint16 (model id)
-    GROUP_UPDATE_FLAG_PET_CUR_HP    = 0x00000008,       // uint32 (HP)
-    GROUP_UPDATE_FLAG_PET_MAX_HP    = 0x00000010,       // uint32 (max HP)
-    GROUP_UPDATE_FLAG_PET_AURAS     = 0x00000020,       // [see GROUP_UPDATE_FLAG_AURAS]
-
-    GROUP_UPDATE_PET_FULL = GROUP_UPDATE_FLAG_PET_GUID      | GROUP_UPDATE_FLAG_PET_NAME    | GROUP_UPDATE_FLAG_PET_MODEL_ID |
-                            GROUP_UPDATE_FLAG_PET_CUR_HP    | GROUP_UPDATE_FLAG_PET_MAX_HP  | GROUP_UPDATE_FLAG_PET_AURAS // all pet flags
+    GROUP_UPDATE_FLAG_PET_NONE = 0x00000000,       // nothing
+    GROUP_UPDATE_FLAG_PET_GUID = 0x00000001,       // ObjectGuid (pet guid)
+    GROUP_UPDATE_FLAG_PET_NAME = 0x00000002,       // cstring (name, NULL terminated string)
+    GROUP_UPDATE_FLAG_PET_MODEL_ID = 0x00000004,       // uint16 (model id)
+    GROUP_UPDATE_FLAG_PET_CUR_HP = 0x00000008,       // uint32 (HP)
+    GROUP_UPDATE_FLAG_PET_MAX_HP = 0x00000010,       // uint32 (max HP)
+    GROUP_UPDATE_FLAG_PET_AURAS = 0x00000020,       // [see GROUP_UPDATE_FLAG_AURAS]
+    GROUP_UPDATE_PET_FULL = GROUP_UPDATE_FLAG_PET_GUID | GROUP_UPDATE_FLAG_PET_NAME | GROUP_UPDATE_FLAG_PET_MODEL_ID |
+    GROUP_UPDATE_FLAG_PET_CUR_HP | GROUP_UPDATE_FLAG_PET_MAX_HP | GROUP_UPDATE_FLAG_PET_AURAS // all pet flags
 };
 
 class Roll
@@ -237,7 +235,7 @@ struct RaidMarker
     ObjectGuid TransportGUID;
 };
 
-class TC_GAME_API Group
+class Group
 {
     public:
         struct MemberSlot
@@ -256,7 +254,7 @@ class TC_GAME_API Group
         typedef std::unordered_map< uint32 /*mapId*/, InstanceGroupBind> BoundInstancesMap;
     protected:
         typedef MemberSlotList::iterator member_witerator;
-        typedef std::set<Player*> InvitesList;
+        typedef cds::container::FeldmanHashSet< cds::gc::HP, Player*, PlayerHashAccessor > InvitesList;
 
         typedef std::vector<Roll*> Rolls;
 

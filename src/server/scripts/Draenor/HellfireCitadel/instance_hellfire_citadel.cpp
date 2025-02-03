@@ -1,4 +1,6 @@
+#include "ScriptMgr.h"
 #include "hellfire_citadel.h"
+#include "InstanceScript.h"
 
 class instance_hellfire_citadel : public InstanceMapScript
 {
@@ -7,13 +9,12 @@ public:
 
     struct instance_hellfire_citadel_InstanceMapScript : public InstanceScript
     {
-        instance_hellfire_citadel_InstanceMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_hellfire_citadel_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         WorldLocation loc_res_pla;
 
         void Initialize() override
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 
@@ -39,7 +40,8 @@ public:
 
             if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
             {
-                loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                loc_res_pla.SetMapId(gy->MapID);
             }
 
             return &loc_res_pla;

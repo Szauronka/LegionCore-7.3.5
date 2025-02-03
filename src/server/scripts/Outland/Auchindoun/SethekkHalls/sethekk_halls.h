@@ -19,8 +19,6 @@
 #ifndef DEF_SETHEKK_HALLS_H
 #define DEF_SETHEKK_HALLS_H
 
-#define DataHeader "STKH"
-
 enum eTypes
 {
     DATA_IKISSDOOREVENT = 1,

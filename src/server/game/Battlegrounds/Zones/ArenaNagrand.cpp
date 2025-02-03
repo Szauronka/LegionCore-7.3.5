@@ -1,3 +1,21 @@
+/*
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
+ */
+
 #include "ArenaNagrand.h"
 #include "Battleground.h"
 
@@ -55,7 +73,7 @@ bool ArenaNagrandArena::SetupBattleground()
         !AddObject(BG_NA_OBJECT_BUFF_1, BG_NA_OBJECT_TYPE_BUFF_1, -2090.78f, 6629.46f, 12.84f, 0.53f, 0, 0, 0.6626201f, -0.7489557f, 120) ||
         !AddObject(BG_NA_OBJECT_BUFF_2, BG_NA_OBJECT_TYPE_BUFF_2, -1995.612f, 6679.230f, 13.068f, 3.522f, 0, 0, 0.03489945f, -0.9993908f, 120))
     {
-        TC_LOG_ERROR("sql.sql", "BatteGroundNA: Failed to spawn some object!");
+        TC_LOG_ERROR(LOG_FILTER_SQL, "BatteGroundNA: Failed to spawn some object!");
         return false;
     }
 

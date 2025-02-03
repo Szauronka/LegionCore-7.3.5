@@ -615,7 +615,7 @@ public:
                     Player* player = me->GetAnyOwner()->ToPlayer();
                     player->AddDelayedEvent(700, [player] () -> void
                     {
-                        if (player && player->IsAlive())
+                        if (player && player->isAlive())
                             if (BrawlersGuild* brawlerGuild = player->GetBrawlerGuild())
                                 brawlerGuild->BossReport(player->GetGUID(), true);
                     });
@@ -631,7 +631,7 @@ public:
                 {
                     if (Unit* owner = me->GetAnyOwner())
                     {
-                        if (!owner->IsAlive())
+                        if (!owner->isAlive())
                             KilledUnit(owner);
                     }
                     else
@@ -689,7 +689,7 @@ public:
 };
 
 
-void AddSC_brawlers_guild_bosses_rank_two()
+void AddSC_the_brawlers_guild_bosses_rank_two()
 {
     new boss_brawguild_dippy();
     new boss_brawguild_bill();

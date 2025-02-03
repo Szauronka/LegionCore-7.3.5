@@ -1,5 +1,5 @@
 /*
- * This file is part of the TrinityCore Project. See AUTHORS file for Copyright information
+ * Copyright (C) 2008-2018 TrinityCore <https://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -38,11 +38,6 @@ namespace boost
         namespace ip
         {
             class address;
-            class address_v4;
-            class address_v6;
-
-            class network_v4;
-            class network_v6;
 
             class tcp;
 

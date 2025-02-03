@@ -22,17 +22,11 @@
 #include <iterator>
 
 template<class T>
-class DBStorageIterator
+class DBStorageIterator : public std::iterator<std::forward_iterator_tag, T>
 {
 public:
-    using iterator_category = std::forward_iterator_tag;
-    using value_type = T;
-    using difference_type = std::ptrdiff_t;
-    using pointer = T*;
-    using reference = T&;
-
     DBStorageIterator() : _index(nullptr), _pos(0), _end(0) { }
-    DBStorageIterator(T const* const* index, uint32 size, uint32 pos = 0) : _index(index), _pos(pos), _end(size)
+    DBStorageIterator(T** index, uint32 size, uint32 pos = 0) : _index(index), _pos(pos), _end(size)
     {
         if (_pos < _end)
         {
@@ -67,7 +61,7 @@ public:
     }
 
 private:
-    T const* const* _index;
+    T** _index;
     uint32 _pos;
     uint32 _end;
 };

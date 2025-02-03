@@ -1,4 +1,13 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "antorus.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "SpellScript.h"
+#include "SpellAuraEffects.h"
 
 enum Says
 {
@@ -309,8 +318,8 @@ struct boss_hasabel : BossAI
                 FelStorm();
                 break;
             case SPELL_COLLAPSING_WORLD:
-                events.RescheduleEvent(EVENT_TRANSPORT_PORTAL, 10000);
-                events.RescheduleEvent(EVENT_FELSTORM_BARRAGE, 10000);
+                events.RecalcEventTimer(EVENT_TRANSPORT_PORTAL, 10000);
+                events.RecalcEventTimer(EVENT_FELSTORM_BARRAGE, 10000);
                 break;
         }
     }
@@ -446,7 +455,7 @@ struct boss_hasabel : BossAI
 
                 instance->instance->ApplyOnEveryPlayer([&](Player* player)
                 {
-                    if (player && player->IsAlive())
+                    if (player && player->isAlive())
                     {
                         if (player->GetDistance(platformPos[0]) <= 40.0f)
                         {
@@ -507,16 +516,17 @@ struct boss_hasabel : BossAI
                     Talk(SAY_FELSTORM_BARRAGE);
                     DoCast(SPELL_FELSTORM_BARRAGE);
                     collapsingWorldDelayed = 10000;
-                    events.RescheduleEvent(EVENT_TRANSPORT_PORTAL, 10000);
+                    events.RecalcEventTimer(EVENT_TRANSPORT_PORTAL, 10000);
                     events.RescheduleEvent(EVENT_FELSTORM_BARRAGE, 32000);
                     break;
                 case EVENT_TRANSPORT_PORTAL:
                 {
                     if (urand(0, 1))
                         Talk(SAY_TRANSPORT_PORTAL);
-                    Position pos = me->GetFirstCollisionPosition(frand(10.0f, 20.0f), frand(0.0f, 6.28f));
+                    Position pos;
+                    me->GetFirstCollisionPosition(pos, frand(10.0f, 20.0f), frand(0.0f, 6.28f));
                     me->CastSpell(pos, SPELL_TRANSPORT_PORTAL, false);
-                    events.RescheduleEvent(EVENT_FELSTORM_BARRAGE, 10000);
+                    events.RecalcEventTimer(EVENT_FELSTORM_BARRAGE, 10000);
                     events.RescheduleEvent(EVENT_TRANSPORT_PORTAL, 40000);
                     break;
                 }
@@ -851,7 +861,7 @@ struct npc_hasabel_guards : public ScriptedAI
 
                 instance->instance->ApplyOnEveryPlayer([&](Player* player)
                 {
-                    if (player && player->IsAlive() && player->HasAura(platformAura[1]))
+                    if (player && player->isAlive() && player->HasAura(platformAura[1]))
                         hasPlayerPlatform = true;
                 });
 
@@ -1036,7 +1046,7 @@ struct npc_hasabel_portal_summon : public ScriptedAI
 
                 instance->instance->ApplyOnEveryPlayer([&](Player* player)
                 {
-                    if (player && player->IsAlive())
+                    if (player && player->isAlive())
                     {
                         if (player->GetDistance(platformPos[0]) <= 40.0f)
                             hasPlayerNexusPlatform = true;
@@ -1343,7 +1353,7 @@ class spell_hasabel_felsilk_wrap : public AuraScript
 
     void HandlePeriodic(AuraEffect const* aurEff)
     {
-        if (!GetCaster() || !GetCaster()->IsAlive())
+        if (!GetCaster() || !GetCaster()->isAlive())
             aurEff->GetBase()->Remove();
 
         if (GetUnitOwner() && !(aurEff->GetTickNumber() % 4))
@@ -1473,6 +1483,7 @@ void AddSC_boss_hasabel()
     RegisterCreatureAI(npc_hasabel_portal_summon);
     RegisterCreatureAI(npc_hasabel_everburning_flames);
     RegisterCreatureAI(npc_hasabel_felsilk_web);
+
     RegisterSpellScript(spell_hasabel_bursting_darkness);
     RegisterAuraScript(spell_hasabel_reality_tear);
     RegisterAuraScript(spell_hasabel_energize);

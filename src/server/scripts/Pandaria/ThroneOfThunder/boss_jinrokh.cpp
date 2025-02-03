@@ -384,7 +384,7 @@ public:
                 {
                     if (Player* pl = me->GetPlayer(*me, targetGuid))
                     {
-                        if (pl->IsAlive())
+                        if (pl->isAlive())
                         {
                             DoCast(me, SPELL_LIGHTNING_BALL_AURA_INC_S, true);
                             DoCast(pl, SPELL_LIGHTNING_BALL_TARGET, true);
@@ -539,7 +539,7 @@ public:
             if (me->ToTempSummon())
                 if (Unit* jinrokh = me->ToTempSummon()->GetSummoner())
                     if (jinrokh->ToCreature())
-                        if (jinrokh->IsAlive() && jinrokh->isInCombat())
+                        if (jinrokh->isAlive() && jinrokh->isInCombat())
                             jinrokh->ToCreature()->AI()->DoAction(ACTION_SET_STORM_TIMER);
         }
 
@@ -783,7 +783,7 @@ public:
                 {
                     if (Creature* jinrokh = GetTarget()->GetCreature(*GetTarget(), instance->GetGuidData(NPC_JINROKH)))
                     {
-                        if (jinrokh->IsAlive() && jinrokh->isInCombat())
+                        if (jinrokh->isAlive() && jinrokh->isInCombat())
                         {
                             for (uint8 n = 0; n < 4; n++)
                             {
@@ -867,7 +867,7 @@ public:
                 {
                     for (std::list<Player*>::const_iterator itr = pllist.begin(); itr != pllist.end(); itr++)
                     {
-                        if ((*itr)->IsAlive() && GetCaster()->GetExactDist2d(*itr) <= dist)
+                        if ((*itr)->isAlive() && GetCaster()->GetExactDist2d(*itr) <= dist)
                         {
                             (*itr)->CastSpell(*itr, SPELL_CONDUCTIVE_WATER_DEBUFF, true, 0, 0, GetCaster()->GetGUID());
                             (*itr)->CastSpell(*itr, GetCaster()->HasAura(SPELL_STATIC_WATER_VISUAL) ? SPELL_ELECTRIFIED_WATERS : SPELL_FLUIDITY, true);

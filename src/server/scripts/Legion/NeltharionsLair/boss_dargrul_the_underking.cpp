@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Neltharions Lair 100-110
     Encounter: Dargrul the Underking
     Normal: 100%, Heroic: 100%, Mythic: 100%
@@ -123,7 +124,7 @@ struct boss_dargrul_the_underking : public BossAI
             for (uint8 i = 0; i < 100; ++i)
             {
                 angle = frand(-0.17f, 0.17f);
-                pos = me->GetNearPosition(i, angle);
+                me->GetNearPosition(pos, i, angle);
                 me->CastSpell(pos, SPELL_LANDSLIDE_MISSILE, true);
             }
         }
@@ -272,7 +273,7 @@ struct npc_dargrul_molten_charskin : public ScriptedAI
                 case EVENT_1:
                 {
                     Unit* player = Unit::GetUnit(*me, playerGuid);
-                    if (!player || !player->IsAlive() || !player->HasAura(SPELL_FIXATE_PLR))
+                    if (!player || !player->isAlive() || !player->HasAura(SPELL_FIXATE_PLR))
                     {
                         if (me->GetAnyOwner())
                             if (Creature* summoner = me->GetAnyOwner()->ToCreature())
@@ -438,7 +439,7 @@ struct npc_nl_understone_demolisher : public ScriptedAI
                 {
                     me->SetReactState(REACT_AGGRESSIVE);
                     Unit* player = Unit::GetUnit(*me, playerGuid);
-                    if (!player || !player->IsAlive() || !player->HasAura(SPELL_FIXATE_PLR))
+                    if (!player || !player->isAlive() || !player->HasAura(SPELL_FIXATE_PLR))
                     {
                         if (Unit* plrTarget = SelectTarget(SELECT_TARGET_RANDOM, checkPlayers(), 80.0f, true))
                         {

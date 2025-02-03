@@ -1,9 +1,13 @@
 /*
+    http://epicwow.com/
     Dungeon : Shadowmoon Burial Grounds 100
     Encounter: Sadana Bloodfury
 */
 
 #include "shadowmoon_burial_grounds.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
 
 enum Says
 {

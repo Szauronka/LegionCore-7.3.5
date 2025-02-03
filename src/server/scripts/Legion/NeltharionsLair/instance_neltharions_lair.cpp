@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
     Dungeon : Neltharions Lair 100-110
 */
 
@@ -26,9 +27,8 @@ public:
 
     struct instance_neltharions_lair_InstanceMapScript : public InstanceScript
     {
-        instance_neltharions_lair_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_neltharions_lair_InstanceMapScript(Map* map) : InstanceScript(map) 
         {
-            SetHeaders(DataHeader);
             SetBossNumber(MAX_ENCOUNTER);
         }
 
@@ -117,7 +117,8 @@ public:
 
         WorldLocation* GetClosestGraveYard(float x, float y, float z) override
         {
-            loc_res_pla.WorldRelocate(1458, x, y, z);
+            loc_res_pla.Relocate(x, y, z);
+            loc_res_pla.SetMapId(1458);
 
             uint32 graveyardId = 5355;
 
@@ -132,7 +133,8 @@ public:
             {
                 if (WorldSafeLocsEntry const* gy = sWorldSafeLocsStore.LookupEntry(graveyardId))
                 {
-                    loc_res_pla.WorldRelocate(gy->MapID, gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                    loc_res_pla.Relocate(gy->Loc.X, gy->Loc.Y, gy->Loc.Z);
+                    loc_res_pla.SetMapId(gy->MapID);
                 }
             }
             return &loc_res_pla;

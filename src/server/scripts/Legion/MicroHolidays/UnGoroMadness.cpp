@@ -1,4 +1,5 @@
 /*
+    http://uwow.biz
 */
 
 //118271
@@ -59,7 +60,8 @@ struct npc_clutchmother_zavas : public ScriptedAI
         {
             for (uint8 i = 0; i < 24; ++i)
             {
-                Position pos = me->GetRandomNearPosition(60.0f);
+                Position pos;
+                me->GetRandomNearPosition(pos, 60.0f);
                 me->CastSpell(pos, 235676, true);
             }
         }
@@ -152,7 +154,7 @@ struct npc_giantfin : public ScriptedAI
             for (uint8 i = 0; i < 24; ++i)
             {
                 Position pos;
-                pos = me->GetRandomNearPosition(60.0f);
+                me->GetRandomNearPosition(pos, 60.0f);
                 me->CastSpell(pos, 235676, true);
             }
         }
@@ -168,7 +170,7 @@ struct npc_giantfin : public ScriptedAI
             for (uint8 i = 0; i < threatSize; ++i)
             {
                 Position pos;
-                pos = me->GetRandomNearPosition(60.0f);
+                me->GetRandomNearPosition(pos, 60.0f);
                 me->CastSpell(pos, 235774, true);
             }
         }
@@ -299,7 +301,7 @@ struct npc_sunkeeper_croesus : public ScriptedAI
             for (uint8 i = 0; i < 24; ++i)
             {
                 Position pos;
-                pos = me->GetRandomNearPosition(60.0f);
+                me->GetRandomNearPosition(pos, 60.0f);
                 me->CastSpell(pos, 235676, true);
             }
         }
@@ -390,7 +392,7 @@ struct npc_skrox : public ScriptedAI
             for (uint8 i = 0; i < 24; ++i)
             {
                 Position pos;
-                pos = me->GetRandomNearPosition(60.0f);
+                me->GetRandomNearPosition(pos, 60.0f);
                 me->CastSpell(pos, 235676, true);
             }
         }
@@ -487,7 +489,7 @@ struct npc_akaridal : public ScriptedAI
             for (uint8 i = 0; i < 24; ++i)
             {
                 Position pos;
-                pos = me->GetRandomNearPosition(60.0f);
+                me->GetRandomNearPosition(pos, 60.0f);
                 me->CastSpell(pos, 235676, true);
             }
         }
@@ -567,7 +569,7 @@ struct npc_tyrantus : public ScriptedAI
             for (uint8 i = 0; i < 24; ++i)
             {
                 Position pos;
-                pos = me->GetRandomNearPosition(60.0f);
+                me->GetRandomNearPosition(pos, 60.0f);
                 me->CastSpell(pos, 235676, true);
             }
         }
@@ -644,7 +646,7 @@ struct npc_dadanga : public ScriptedAI
             for (uint8 i = 0; i < 24; ++i)
             {
                 Position pos;
-                pos = me->GetRandomNearPosition(60.0f);
+                me->GetRandomNearPosition(pos, 60.0f);
                 me->CastSpell(pos, 235676, true);
             }
         }
@@ -726,7 +728,7 @@ struct npc_sherazin : public ScriptedAI
             for (uint8 i = 0; i < 24; ++i)
             {
                 Position pos;
-                pos = me->GetRandomNearPosition(60.0f);
+                me->GetRandomNearPosition(pos, 60.0f);
                 me->CastSpell(pos, 235676, true);
             }
         }
@@ -755,7 +757,7 @@ struct npc_sherazin : public ScriptedAI
                 for (uint8 i = 0; i < 3; ++i)
                 {
                     Position pos;
-                    pos = me->GetRandomNearPosition(20.0f);
+                    me->GetRandomNearPosition(pos, 20.0f);
                     me->CastSpell(pos, 236127, true);
                 }
             }
@@ -864,7 +866,7 @@ struct npc_queen_zavra : public ScriptedAI
             for (uint8 i = 0; i < 24; ++i)
             {
                 Position pos;
-                pos = me->GetRandomNearPosition(60.0f);
+                me->GetRandomNearPosition(pos, 60.0f);
                 me->CastSpell(pos, 235676, true);
             }
         }
@@ -945,7 +947,8 @@ struct npc_tar_tyrant : public ScriptedAI
         {
             for (uint8 i = 0; i < 24; ++i)
             {
-                Position pos = me->GetRandomNearPosition(60.0f);
+                Position pos;
+                me->GetRandomNearPosition(pos, 60.0f);
                 me->CastSpell(pos, 235676, true);
             }
         }
@@ -991,7 +994,8 @@ struct npc_tar_tyrant : public ScriptedAI
             case EVENT_2:
                 for (uint8 i = 0; i < 3; ++i)
                 {
-                    Position pos = me->GetFirstCollisionPosition(frand(40.0f, 50.0f), frand(0.0f, 6.28f));
+                    Position pos;
+                    me->GetFirstCollisionPosition(pos, frand(40.0f, 50.0f), frand(0.0f, 6.28f));
                     me->CastSpell(pos, 236315, false);
                 }
                 DoCast(236314);
@@ -1551,27 +1555,27 @@ class spell_bloom : public SpellScript
 
 void AddSC_UnGoroMadness()
 {
-    //RegisterCreatureAI(npc_clutchmother_zavas);
-    //RegisterCreatureAI(npc_ravenous_larva);
-    //RegisterCreatureAI(npc_giantfin);
-    //RegisterCreatureAI(npc_sunkeeper_croesus);
-    //RegisterCreatureAI(npc_skrox);
-    //RegisterCreatureAI(npc_akaridal);
-    //RegisterCreatureAI(npc_tyrantus);
-    //RegisterCreatureAI(npc_queen_zavra);
-    //RegisterCreatureAI(npc_tar_tyrant);
-    //RegisterCreatureAI(npc_dadanga);
-    //RegisterCreatureAI(npc_tar_pit);
-    //RegisterCreatureAI(npc_reanimated_sludge);
-    //RegisterCreatureAI(npc_water_bubble);
-    //RegisterCreatureAI(npc_water_bubble_murloc);
-    //RegisterCreatureAI(npc_crystal_vine);
-    //RegisterSpellScript(spell_dino_mojo);
-    //RegisterSpellScript(spell_adaptation);
-    //RegisterSpellScript(spell_bloom);
-    //RegisterAuraScript(spell_dino_mojo_bonus);
-    //RegisterAuraScript(spell_fertile_toxin);
-    //RegisterAuraScript(spell_adaptation_caustic_blood);
-    //RegisterAuraScript(spell_tar_strike);
-    //RegisterAuraScript(spell_adaptation_heavy_footed);
+    RegisterCreatureAI(npc_clutchmother_zavas);
+    RegisterCreatureAI(npc_ravenous_larva);
+    RegisterCreatureAI(npc_giantfin);
+    RegisterCreatureAI(npc_sunkeeper_croesus);
+    RegisterCreatureAI(npc_skrox);
+    RegisterCreatureAI(npc_akaridal);
+    RegisterCreatureAI(npc_tyrantus);
+    RegisterCreatureAI(npc_queen_zavra);
+    RegisterCreatureAI(npc_tar_tyrant);
+    RegisterCreatureAI(npc_dadanga);
+    RegisterCreatureAI(npc_tar_pit);
+    RegisterCreatureAI(npc_reanimated_sludge);
+    RegisterCreatureAI(npc_water_bubble);
+    RegisterCreatureAI(npc_water_bubble_murloc);
+    RegisterCreatureAI(npc_crystal_vine);
+    RegisterSpellScript(spell_dino_mojo);
+    RegisterSpellScript(spell_adaptation);
+    RegisterSpellScript(spell_bloom);
+    RegisterAuraScript(spell_dino_mojo_bonus);
+    RegisterAuraScript(spell_fertile_toxin);
+    RegisterAuraScript(spell_adaptation_caustic_blood);
+    RegisterAuraScript(spell_tar_strike);
+    RegisterAuraScript(spell_adaptation_heavy_footed);
 }

@@ -1,9 +1,13 @@
 /*
+    http://epicwow.com/
     Dungeon : Upper Blackrock Spire 90-100
     Encounter: Warlord Zaela
 */
 
 #include "upper_blackrock_spire.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "Vehicle.h"
 
 #define MIN_X -0.5f
 #define MAX_X 42.92f
@@ -195,7 +199,7 @@ struct boss_warlord_zaela : public BossAI
                 summon->GetMotionMaster()->MovePath((NPC_EMBERSCALE_IRONFLIGHT * 100) + rand, false);
             }
             else
-                summon->SetAnimTier(AnimTier::Ground);
+                summon->RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
             break;
         }
         }
@@ -322,7 +326,7 @@ struct npc_emberscale_ironflight : public CreatureAI
     {
         if (action == ACTION_DRAKE_INTRO)
         {
-            me->SetAnimTier(AnimTier::Hover);
+            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
             me->GetMotionMaster()->MovePoint(1, drakePos[2]);
         }
     }
@@ -331,7 +335,7 @@ struct npc_emberscale_ironflight : public CreatureAI
     {
         if (me->GetEntry() == NPC_EMBERSCALE_IRONFLIGHT_2)
         {
-            me->SetAnimTier(AnimTier::Hover);
+            me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
             me->GetMotionMaster()->MovePoint(1, drakePos[5]);
         }
     }
@@ -401,7 +405,7 @@ struct npc_emberscale_matron : public ScriptedAI
     {
         me->SetReactState(REACT_PASSIVE);
         me->SetCanFly(true);
-        me->SetAnimTier(AnimTier::Hover);
+        me->SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
         me->SetSpeed(MOVE_FLIGHT, 4.0f);
     }
 

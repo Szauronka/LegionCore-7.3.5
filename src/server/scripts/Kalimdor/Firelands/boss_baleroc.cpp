@@ -1,5 +1,6 @@
 #include "firelands.h"
 
+
 enum ScriptTexts
 {
     SAY_AGGRO       = 0,
@@ -524,8 +525,8 @@ class spell_baleroc_final_countdown : public SpellScriptLoader
                 if (!GetCaster())
                     return;
 
-                if (bCanLink && target1 && target1->IsAlive() && target1->IsInWorld() &&
-                    target2 && target2->IsAlive() && target2->IsInWorld())
+                if (bCanLink &&target1 && target1->isAlive() && target1->IsInWorld() &&
+                    target2 && target2->isAlive() && target2->IsInWorld())
                 {
                     GetCaster()->CastSpell(target1, SPELL_FINAL_COUNTDOWN_AURA, true);
                     GetCaster()->CastSpell(target2, SPELL_FINAL_COUNTDOWN_AURA, true);
@@ -637,5 +638,5 @@ void AddSC_boss_baleroc()
     new spell_baleroc_tormented_aoe();
     new spell_baleroc_final_countdown();
     new spell_baleroc_final_countdown_script();
-    //new achievement_share_the_pain();
+    new achievement_share_the_pain();
 }

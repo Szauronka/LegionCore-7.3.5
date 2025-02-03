@@ -23,7 +23,7 @@
 class instance_lions_landing : public InstanceMapScript
 {
 public:
-    instance_lions_landing() : InstanceMapScript("instance_lions_landing", 1144) { }
+    instance_lions_landing() : InstanceMapScript("instance_lions_landing", 1103) { }
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const override
     {
@@ -32,7 +32,7 @@ public:
 
     struct instance_lions_landing_InstanceMapScript : public InstanceScript
     {
-        instance_lions_landing_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+        instance_lions_landing_InstanceMapScript(Map* map) : InstanceScript(map)
         { }
 
         void Initialize() override
@@ -77,5 +77,5 @@ public:
 
 void AddSC_instance_lions_landing()
 {
-    //new instance_lions_landing();
+    new instance_lions_landing();
 }

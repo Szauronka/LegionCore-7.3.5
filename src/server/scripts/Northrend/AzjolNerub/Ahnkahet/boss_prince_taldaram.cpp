@@ -213,7 +213,7 @@ public:
                             for (std::list<HostileReference*>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                             {
                                 target = Unit::GetUnit(*me, (*itr)->getUnitGuid());
-                                if (target && target->GetTypeId() == TYPEID_PLAYER && target->IsAlive())
+                                if (target && target->GetTypeId() == TYPEID_PLAYER && target->isAlive())
                                     target_list.push_back(target);
                                 target = NULL;
                             }
@@ -240,7 +240,7 @@ public:
         {
             Unit* pEmbraceTarget = GetEmbraceTarget();
 
-            if (Phase == FEEDING && pEmbraceTarget && pEmbraceTarget->IsAlive())
+            if (Phase == FEEDING && pEmbraceTarget && pEmbraceTarget->isAlive())
             {
               uiEmbraceTakenDamage += damage;
               if (uiEmbraceTakenDamage > (uint32) DUNGEON_MODE(DATA_EMBRACE_DMG, H_DATA_EMBRACE_DMG))
@@ -389,7 +389,7 @@ public:
             return true;
 
         Creature* pPrinceTaldaram = Unit::GetCreature(*go, instance->GetGuidData(DATA_PRINCE_TALDARAM));
-        if (pPrinceTaldaram && pPrinceTaldaram->IsAlive())
+        if (pPrinceTaldaram && pPrinceTaldaram->isAlive())
         {
             go->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_NOT_SELECTABLE);
             go->SetGoState(GO_STATE_ACTIVE);

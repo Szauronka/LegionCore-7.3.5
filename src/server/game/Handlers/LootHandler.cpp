@@ -25,7 +25,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPackets::Loot::AutoStoreLo
     Player* player = GetPlayer();
     Loot* loot = nullptr;
 
-    if (!player || !player->CanContact() || !player->IsAlive())
+    if (!player || !player->CanContact() || !player->isAlive())
         return;
 
     for (WorldPackets::Loot::LootRequest const& req : packet.Loot)
@@ -43,7 +43,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPackets::Loot::AutoStoreLo
             }
 
             loot = &go->loot;
-            //TC_LOG_DEBUG("loot", "HandleAutostoreLootItemOpcode lguid %lu, pguid %u lguid %lu", lguid, player->personalLoot.GetGUID(), loot->GetGUID());
+            //TC_LOG_DEBUG(LOG_FILTER_LOOT, "HandleAutostoreLootItemOpcode lguid %u, pguid %u lguid %u", lguid, player->personalLoot.GetGUID(), loot->GetGUID());
         }
         else if (lguid.IsItem())
         {
@@ -81,8 +81,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPackets::Loot::AutoStoreLo
         {
             Creature* creature = player->GetMap()->GetCreature(lguid);
 
-            bool lootAllowed = creature &&
-                    creature->IsAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
+            bool lootAllowed = creature && creature->isAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
 
             Unit *looter = creature ? creature->GetOtherRecipient() : nullptr;
             if (!looter)
@@ -129,7 +128,7 @@ void WorldSession::HandleLootMoney(WorldPackets::Loot::LootMoney& /*packet*/)
 
 void WorldSession::HandleLootUnit(WorldPackets::Loot::LootUnit& packet)
 {
-    if (!GetPlayer()->IsAlive() || !packet.Unit.IsCreatureOrVehicle())
+    if (!GetPlayer()->isAlive() || !packet.Unit.IsCreatureOrVehicle())
         return;
 
     LootCorps(packet.Unit);
@@ -144,7 +143,7 @@ void WorldSession::LootCorps(ObjectGuid corpsGUID, WorldObject* lootedBy)
     if (!player)
         return;
 
-    if (!player->IsAlive())
+    if (!player->isAlive())
         return;
 
     WorldObject* _looted = lootedBy ? lootedBy : player;
@@ -192,7 +191,7 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
     Loot* loot = nullptr;
     Loot* lootPesonal = nullptr;
 
-    TC_LOG_DEBUG("network", "WORLD: DoLootRelease lguid %lu", lguid.GetCounter());
+    TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "WORLD: DoLootRelease lguid %u", lguid.GetCounter());
 
     player->SetLootGUID(ObjectGuid::Empty);
 
@@ -390,8 +389,7 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
     {
         Creature* creature = player->GetMap()->GetCreature(lguid);
 
-        bool lootAllowed = creature &&
-                creature->IsAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
+        bool lootAllowed = creature && creature->isAlive() == (player->getClass() == CLASS_ROGUE && creature->lootForPickPocketed);
 
         Unit *looter = creature ? creature->GetOtherRecipient() : nullptr;
         if (!looter)
@@ -431,7 +429,7 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
         if (loot->isLooted() && creature->lootList.empty())
         {
             // skip pickpocketing loot for speed, skinning timer reduction is no-op in fact
-            if (!creature->IsAlive())
+            if (!creature->isAlive())
                 creature->AllLootRemovedFromCorpse();
 
             creature->RemoveFlag(OBJECT_FIELD_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
@@ -536,7 +534,7 @@ void WorldSession::HandleDoMasterLootRoll(WorldPackets::Loot::DoMasterLootRoll& 
     packet.LootListID -= 1; //restore slot index;
     if (packet.LootListID >= loot->items.size() + loot->quest_items.size())
     {
-        // TC_LOG_DEBUG("loot", "MasterLootItem: Player %s might be using a hack! (slot %d, size %lu)", GetPlayer()->GetName(), packet.LootListID, (unsigned long)loot->items.size());
+        // TC_LOG_DEBUG(LOG_FILTER_LOOT, "MasterLootItem: Player %s might be using a hack! (slot %d, size %lu)", GetPlayer()->GetName(), packet.LootListID, (unsigned long)loot->items.size());
         return;
     }
 
@@ -589,15 +587,15 @@ void WorldSession::HandleMasterLootItem(WorldPackets::Loot::MasterLootItem& pack
         uint8 _LootListID = lootData.LootListID - 1;    //restore slot index; WTF?
         if (_LootListID >= loot->items.size() + loot->quest_items.size())
         {
-            TC_LOG_DEBUG("loot", "MasterLootItem: Player %s might be using a hack! (slot %d, size %zu)",
-                GetPlayer()->GetName(), _LootListID, loot->items.size());
+            TC_LOG_DEBUG(LOG_FILTER_LOOT, "MasterLootItem: Player %s might be using a hack! (slot %d, size %lu)",
+                GetPlayer()->GetName(), _LootListID, static_cast<uint32>(loot->items.size()));
             return;
         }
 
         LootItem& item = _LootListID >= static_cast<uint8>(loot->items.size()) ? loot->quest_items[_LootListID - static_cast<uint8>(loot->items.size())] : loot->items[_LootListID];
         if (item.currency)
         {
-            TC_LOG_DEBUG("loot", "WorldSession::HandleMasterLootItem: player %s tried to give currency via master loot! Hack alert! Slot %u, currency id %u",
+            TC_LOG_DEBUG(LOG_FILTER_LOOT, "WorldSession::HandleMasterLootItem: player %s tried to give currency via master loot! Hack alert! Slot %u, currency id %u",
                 GetPlayer()->GetName(), _LootListID, item.item.ItemID);
             return;
         }

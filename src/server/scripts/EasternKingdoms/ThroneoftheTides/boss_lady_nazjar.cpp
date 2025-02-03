@@ -1,3 +1,7 @@
+// ==============
+//  UwoW.biz
+// ==============
+
 #include "throne_of_the_tides.h"
 
 enum ScriptTexts

@@ -26,7 +26,6 @@ class instance_halls_of_origination : public InstanceMapScript
         {
             instance_halls_of_origination_InstanceMapScript(InstanceMap *map) : InstanceScript(map)
             {
-                SetHeaders(DataHeader);
                 SetBossNumber(MAX_ENCOUNTER);
                 LoadDoorData(doorData);
                 uiTempleGuardianAnhuurGUID.Clear();
@@ -203,18 +202,50 @@ class instance_halls_of_origination : public InstanceMapScript
                 SaveToDB();
             }
 
-            void WriteSaveDataMore(std::ostringstream& data) override
+            std::string GetSaveData()
             {
-                data << uiWardensDone;
+                OUT_SAVE_INST_DATA;
+
+                std::ostringstream saveStream;
+                saveStream << "H O" << GetBossSaveData() << uiWardensDone << " "; 
+
+                OUT_SAVE_INST_DATA_COMPLETE;
+                return saveStream.str();
             }
 
-            void ReadSaveDataMore(std::istringstream& data) override
+            void Load(const char* in)
             {
-                uint32 wardens = 0;
-                data >> wardens;
-                //uiWardensDone = wardens;
-                if (wardens > 4) wardens = 4;
-                SetData(DATA_WARDENS, wardens);
+                if (!in)
+                {
+                    OUT_LOAD_INST_DATA_FAIL;
+                    return;
+                }
+
+                OUT_LOAD_INST_DATA(in);
+
+                char dataHead1, dataHead2;
+
+                std::istringstream loadStream(in);
+                loadStream >> dataHead1 >> dataHead2;
+
+                if (dataHead1 == 'H' && dataHead2 == 'O')
+                {
+                    for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
+                    {
+                        uint32 tmpState;
+                        loadStream >> tmpState;
+                        if (tmpState == IN_PROGRESS || tmpState > SPECIAL)
+                            tmpState = NOT_STARTED;
+                        SetBossState(i, EncounterState(tmpState));
+                    }
+                    uint32 wardens = 0;
+                    loadStream >> wardens;
+                    //uiWardensDone = wardens;
+                    if (wardens > 4) wardens = 4;
+                    SetData(DATA_WARDENS, wardens);
+                }else OUT_LOAD_INST_DATA_FAIL;
+
+                OUT_LOAD_INST_DATA_COMPLETE;
             }
 
             private:

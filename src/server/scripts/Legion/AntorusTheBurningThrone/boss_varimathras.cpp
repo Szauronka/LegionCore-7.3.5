@@ -1,4 +1,15 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "antorus.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "SpellScript.h"
+#include "SpellAuraEffects.h"
+#include "GameEventMgr.h"
+#include "GridNotifiers.h"
 
 enum Says
 {
@@ -304,7 +315,7 @@ struct npc_shadow_of_varimathras : public ScriptedAI
             me->AddDelayedEvent(100, [this] () -> void
             {
                 me->PlayOneShotAnimKit(13242);
-                me->SendPlaySpellVisualKit(83768, 0);
+                me->SendPlaySpellVisualKit(0, 83768);
             });
         }
 
@@ -529,6 +540,7 @@ void AddSC_boss_varimathras()
 {
     RegisterCreatureAI(boss_varimathras);
     RegisterCreatureAI(npc_shadow_of_varimathras);
+
     RegisterAuraScript(spell_varimathras_energy_gain);
     RegisterAuraScript(spell_varimathras_control_aura);
     RegisterAuraScript(spell_varimathras_torment_of_fel);

@@ -405,7 +405,7 @@ struct ItemSocketInfo
 };
 #pragma pack(pop)
 
-class TC_GAME_API Item : public Object
+class Item : public Object
 {
     public:
         static Item* CreateItem(uint32 item, uint32 count, Player const* player = nullptr);
@@ -423,7 +423,7 @@ class TC_GAME_API Item : public Object
         ObjectGuid GetOwnerGUID() const;
 
         void SetOwnerGUID(ObjectGuid guid);
-        Player* GetOwner()const;
+        Player* GetOwner() const;
 
         ItemBondingType GetBonding() const;
         bool IsSturdiness() const;
@@ -433,19 +433,19 @@ class TC_GAME_API Item : public Object
         bool IsBoundAccountWide() const;
         bool IsBindedNotWith(Player const* player) const;
         bool IsBoundByEnchant() const;
-        virtual void SaveToDB(CharacterDatabaseTransaction& trans);
+        virtual void SaveToDB(SQLTransaction& trans);
         virtual bool LoadFromDB(ObjectGuid::LowType const& guid, ObjectGuid const& owner_guid, Field* fields, uint32 entry, uint8 oLevel = 0);
         void LoadArtifactData(Player* owner, std::vector<ItemDynamicFieldArtifactPowers>& powers);  // must be called after LoadFromDB to have gems (relics) initialized
 
         void AddBonuses(uint32 bonusListID);
         void ApplyItemChildEquipment(Player* owner, bool apply);
 
-        static void DeleteFromDB(CharacterDatabaseTransaction& trans, ObjectGuid::LowType itemGuid);
-        virtual void DeleteFromDB(CharacterDatabaseTransaction& trans);
-        static void DeleteFromInventoryDB(CharacterDatabaseTransaction& trans, ObjectGuid::LowType itemGuid);
-        void DeleteFromInventoryDB(CharacterDatabaseTransaction& trans);
+        static void DeleteFromDB(SQLTransaction& trans, ObjectGuid::LowType itemGuid);
+        virtual void DeleteFromDB(SQLTransaction& trans);
+        static void DeleteFromInventoryDB(SQLTransaction& trans, ObjectGuid::LowType itemGuid);
+        void DeleteFromInventoryDB(SQLTransaction& trans);
         void SaveRefundDataToDB();
-        void DeleteRefundDataFromDB(CharacterDatabaseTransaction* trans);
+        void DeleteRefundDataFromDB(SQLTransaction* trans);
 
         Bag* ToBag();
 
@@ -583,13 +583,15 @@ class TC_GAME_API Item : public Object
         void SetFixedLevel(uint8 level);
 
         // Item Refund system
-        void SetNotRefundable(Player* owner, bool changestate = true, CharacterDatabaseTransaction* trans = nullptr);
+        void SetNotRefundable(Player* owner, bool changestate = true, SQLTransaction* trans = nullptr);
         void SetRefundRecipient(ObjectGuid const& pGuidLow);
         void SetPaidMoney(uint64 money);
         void SetPaidExtendedCost(uint32 iece);
         ObjectGuid GetRefundRecipient();
         uint64 GetPaidMoney();
         uint32 GetPaidExtendedCost();
+        void SetDonateItem(bool apply);
+        bool GetDonateItem() const; // can't be traded, selled or add on auction
 
         void UpdatePlayedTime(Player* owner);
         uint32 GetPlayedTime();
@@ -674,6 +676,7 @@ class TC_GAME_API Item : public Object
         ObjectGuid m_refundRecipient;
         uint64 m_paidMoney;
         uint32 m_paidExtendedCost;
+        bool DonateItem = false;
         GuidSet allowedGUIDs;
         ItemRandomEnchantmentId m_randomEnchantment;
         uint32 m_scaleLvl;

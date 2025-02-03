@@ -1,19 +1,19 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+ *###############################################################################
+ *#                                                                             #
+ *# Copyright (C) 2022 Project Nighthold <https://github.com/ProjectNighthold>  #
+ *#                                                                             #
+ *# This file is free software; as a special exception the author gives         #
+ *# unlimited permission to copy and/or distribute it, with or without          #
+ *# modifications, as long as this notice is preserved.                         #
+ *#                                                                             #
+ *# This program is distributed in the hope that it will be useful, but         #
+ *# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the      #
+ *# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    #
+ *#                                                                             #
+ *# Read the THANKS file on the source root directory for more info.            #
+ *#                                                                             #
+ *###############################################################################
  */
 
 #include "BattlegroundMgr.h"
@@ -181,24 +181,28 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, uint16 B
     ginfo->JoinType = JoinType;
     ginfo->IsRated = isRated;
     ginfo->IsInvitedToBGInstanceGUID = 0;
-    ginfo->JoinTime                  = GameTime::GetGameTime();
+    ginfo->JoinTime                  = time(nullptr);
     ginfo->RemoveInviteTime          = 0;
 
     if (_team)
     {
         ginfo->Team = _team; // Wargame
     }
-    else if (sWorld->getBoolConfig(CONFIG_CROSSFACTIONBG) && JoinType == MS::Battlegrounds::JoinType::None)
+    else if ((sWorld->getBoolConfig(CONFIG_CROSSFACTIONBG) && JoinType == MS::Battlegrounds::JoinType::None) || BgTypeId == MS::Battlegrounds::BattlegroundTypeId::BattlegroundDeathMatch)   
     {
         if (m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() == m_SelectionPools[TEAM_HORDE].GetPlayerCount())
-            ginfo->Team = leader->GetBgQueueTeam();
+            ginfo->Team = leader->GetBGTeam();
         else if (m_SelectionPools[TEAM_ALLIANCE].GetPlayerCount() > m_SelectionPools[TEAM_HORDE].GetPlayerCount())
             ginfo->Team = HORDE;
         else
             ginfo->Team = ALLIANCE;
     }
-    else
-        ginfo->Team = leader->GetBgQueueTeam();
+	else
+	{
+		//Mercenary
+		ginfo->Team = leader->GetBGQueueTeam();
+	}
+	
 
     ginfo->MatchmakerRating = mmr;
     ginfo->OpponentsMatchmakerRating = 0;
@@ -207,14 +211,14 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, uint16 B
     ginfo->RoleSoloQ = leader->GetRoleForSoloQ();
 
     uint32 index = 0;
-    if ((!isPremade && !isRated) || JoinType == MS::Battlegrounds::JoinType::ArenaSoloQ3v3)
+    if ((!isPremade && (!isRated || BgTypeId == MS::Battlegrounds::BattlegroundTypeId::BattlegroundDeathMatch)) || JoinType == MS::Battlegrounds::JoinType::ArenaSoloQ3v3)
         index += MAX_TEAMS;
     if (ginfo->Team == HORDE)
         index++;
 
-    TC_LOG_DEBUG("bg.battleground", "Adding Group to BattlegroundQueue bgTypeId : %u, bracketID : %u, bracket_type: %u, mmr: %i, index : %u", BgTypeId, bracketEntry->RangeIndex, bracket, ginfo->MatchmakerRating, index);
+    TC_LOG_DEBUG(LOG_FILTER_BATTLEGROUND, "Adding Group to BattlegroundQueue bgTypeId : %u, bracketID : %u, bracket_type: %u, mmr: %i, index : %u", BgTypeId, bracketEntry->RangeIndex, bracket, ginfo->MatchmakerRating, index);
 
-    uint32 lastOnlineTime = GameTime::GetGameTime();
+    uint32 lastOnlineTime = time(nullptr);
 
     if (isRated && sWorld->getBoolConfig(CONFIG_ARENA_QUEUE_ANNOUNCER_ENABLE))
         sWorld->SendWorldText(LANG_ARENA_QUEUE_ANNOUNCE_WORLD_JOIN, ginfo->JoinType, ginfo->JoinType, ginfo->MatchmakerRating);
@@ -232,13 +236,13 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, uint16 B
             info.GroupInfo = ginfo;
             ginfo->Players[member->GetGUID()] = &info;
 
-            if (ginfo->Team != member->GetTeam())
-            {
-                if (member->GetTeam() == ALLIANCE)
-                    member->CastSpell(member, SPELL_MERCENARY_CONTRACT_HORDE);
-                else
-                    member->CastSpell(member, SPELL_MERCENARY_CONTRACT_ALLIANCE);
-            }
+			if (ginfo->Team != member->GetTeam())
+			{
+				if (member->GetTeam() == ALLIANCE)
+					member->CastSpell(member, 193472);
+				else
+					member->CastSpell(member, 193475);
+			}
         }
     }
     else
@@ -279,7 +283,7 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(Player* leader, Group* grp, uint16 B
 
 void BattlegroundQueue::PlayerInvitedToBGUpdateAverageWaitTime(GroupQueueInfo* ginfo, uint8 bracketID)
 {
-    uint32 timeInQueue = getMSTimeDiff(ginfo->JoinTime, GameTime::GetGameTime()) * IN_MILLISECONDS;
+    uint32 timeInQueue = getMSTimeDiff(ginfo->JoinTime, time(nullptr)) * IN_MILLISECONDS;
     uint8 team_index = TEAM_ALLIANCE;
     if (!ginfo->JoinType)
     {
@@ -323,9 +327,10 @@ uint32 BattlegroundQueue::GetAverageQueueWaitTime(GroupQueueInfo* ginfo, uint8 b
 
 void BattlegroundQueue::RemovePlayer(ObjectGuid guid, bool decreaseInvitedCount)
 {
-    AddDelayedEvent(10, [=, this]() -> void
+    AddDelayedEvent(10, [=]() -> void
     {
-        RemovePlayerQueue(guid, decreaseInvitedCount);
+        if (this)
+            RemovePlayerQueue(guid, decreaseInvitedCount);
     });
 }
 
@@ -336,7 +341,7 @@ void BattlegroundQueue::RemovePlayerQueue(ObjectGuid guid, bool decreaseInvitedC
     auto itr = _queuedPlayers.find(guid);
     if (itr == _queuedPlayers.end())
     {
-        TC_LOG_ERROR("bg.battleground", "BattlegroundQueue: couldn't find player to remove GUID: %lu", guid.GetCounter());
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattlegroundQueue: couldn't find player to remove GUID: %u", guid.GetCounter());
         return;
     }
 
@@ -348,6 +353,7 @@ void BattlegroundQueue::RemovePlayerQueue(ObjectGuid guid, bool decreaseInvitedC
     {
         for (uint32 j = index; j < MS::Battlegrounds::QueueGroupTypes::Max; j += MAX_TEAMS)
         {
+			if(_queuedGroups[bracket_id_tmp])// crash , en ocasiones  se intenta evaluar un array por encima de su capacidad
             for (auto group_itr_tmp = _queuedGroups[bracket_id_tmp][j].begin(); group_itr_tmp != _queuedGroups[bracket_id_tmp][j].end(); ++group_itr_tmp)
             {
                 if (*group_itr_tmp && *group_itr_tmp == group)
@@ -363,7 +369,7 @@ void BattlegroundQueue::RemovePlayerQueue(ObjectGuid guid, bool decreaseInvitedC
 
     if (bracketID == -1)
     {
-        TC_LOG_ERROR("bg.battleground", "BattlegroundQueue: ERROR Cannot find groupinfo for player GUID: %lu", guid.GetCounter());
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattlegroundQueue: ERROR Cannot find groupinfo for player GUID: %u", guid.GetCounter());
         return;
     }
 
@@ -464,7 +470,7 @@ bool BattlegroundQueue::InviteGroupToBG(GroupQueueInfo* ginfo, Battleground* bg,
         if (bg->IsArena() && bg->IsRated())
             bg->SetGroupForTeam(ginfo->Team, ginfo->GroupId);
 
-        ginfo->RemoveInviteTime = GameTime::GetGameTime() + (bg->IsArena() ? ARENA_INVITE_ACCEPT_WAIT_TIME : BG_INVITE_ACCEPT_WAIT_TIME);
+        ginfo->RemoveInviteTime = time(nullptr) + (bg->IsArena() ? ARENA_INVITE_ACCEPT_WAIT_TIME : BG_INVITE_ACCEPT_WAIT_TIME);
 
         for (auto itr = ginfo->Players.begin(); itr != ginfo->Players.end(); ++itr)
         {
@@ -482,7 +488,7 @@ bool BattlegroundQueue::InviteGroupToBG(GroupQueueInfo* ginfo, Battleground* bg,
 
             uint32 queueSlot = player->GetBattlegroundQueueIndex(bgQueueTypeId);
 
-            TC_LOG_DEBUG("bg.battleground", "Battleground: invited player %s (%lu) to BG instance %u queueindex %u bgtype %u, I can't help it if they don't press the enter battle button.", player->GetName(), player->GetGUID().GetCounter(), bg->GetInstanceID(), queueSlot, bg->GetTypeID());
+            TC_LOG_DEBUG(LOG_FILTER_BATTLEGROUND, "Battleground: invited player %s (%u) to BG instance %u queueindex %u bgtype %u, I can't help it if they don't press the enter battle button.", player->GetName(), player->GetGUID().GetCounter(), bg->GetInstanceID(), queueSlot, bg->GetTypeID());
 
             WorldPackets::Battleground::BattlefieldStatusNeedConfirmation battlefieldStatus;
             sBattlegroundMgr->BuildBattlegroundStatusNeedConfirmation(&battlefieldStatus, bg, player, queueSlot, player->GetBattlegroundQueueJoinTime(bgQueueTypeId), bg->IsArena() ? ARENA_INVITE_ACCEPT_WAIT_TIME : BG_INVITE_ACCEPT_WAIT_TIME, ginfo->JoinType, bracketID);
@@ -591,7 +597,7 @@ bool BattlegroundQueue::CheckPremadeMatch(uint8 bracketID, uint32 MinPlayersPerT
         }
     }
 
-    uint32 time_before = GameTime::GetGameTime() - sWorld->getIntConfig(CONFIG_BATTLEGROUND_PREMADE_GROUP_WAIT_FOR_MATCH);
+    uint32 time_before = time(nullptr) - sWorld->getIntConfig(CONFIG_BATTLEGROUND_PREMADE_GROUP_WAIT_FOR_MATCH);
     for (uint32 i = TEAM_ALLIANCE; i < MAX_TEAMS; i++)
     {
         if (!_queuedGroups[bracketID][MS::Battlegrounds::QueueGroupTypes::PremadeAlliance + i].empty())
@@ -605,6 +611,23 @@ bool BattlegroundQueue::CheckPremadeMatch(uint8 bracketID, uint32 MinPlayersPerT
         }
     }
 
+    return false;
+}
+
+bool BattlegroundQueue::CheckNormalMatchDeathMatch(uint8 bracketID, uint32 MinPlayers, uint32 MaxPlayers)
+{
+    if (_queuedGroups[bracketID][MS::Battlegrounds::QueueGroupTypes::NormalAlliance].size() + _queuedGroups[bracketID][MS::Battlegrounds::QueueGroupTypes::NormalHorde].size() >= MinPlayers)
+    {
+        for (auto & ali_group : _queuedGroups[bracketID][MS::Battlegrounds::QueueGroupTypes::NormalAlliance])
+            if (!ali_group->IsInvitedToBGInstanceGUID && !m_SelectionPools[TEAM_ALLIANCE].AddGroup(ali_group, MaxPlayers))
+                break;
+
+        for (auto & horde_group : _queuedGroups[bracketID][MS::Battlegrounds::QueueGroupTypes::NormalHorde])
+            if (!horde_group->IsInvitedToBGInstanceGUID && !m_SelectionPools[TEAM_HORDE].AddGroup(horde_group, MaxPlayers))
+                break;
+
+        return true;
+    }
     return false;
 }
 
@@ -940,7 +963,7 @@ bool BattlegroundQueue::CalculateSoloQTeams(uint8 bracketID)
                 continue;
             }
             PlayerQueueInfo& info = _queuedPlayers[(*iter)->Players.begin()->first];
-            info.LastOnlineTime = GameTime::GetGameTime();
+            info.LastOnlineTime = time(nullptr);
             info.GroupInfo = group1;
             group1->Players[(*iter)->Players.begin()->first] = &info;
         }
@@ -956,7 +979,7 @@ bool BattlegroundQueue::CalculateSoloQTeams(uint8 bracketID)
                 continue;
             }
             PlayerQueueInfo& info = _queuedPlayers[(*iter)->Players.begin()->first];
-            info.LastOnlineTime = GameTime::GetGameTime();
+            info.LastOnlineTime = time(nullptr);
             info.GroupInfo = group2;
             group2->Players[(*iter)->Players.begin()->first] = &info;
         }
@@ -977,7 +1000,7 @@ bool BattlegroundQueue::CalculateSoloQTeams(uint8 bracketID)
 
 bool BattlegroundQueue::SelectRatedTeams(uint32 bracket_id, GroupQueueInfo* & team1, GroupQueueInfo* & team2)
 {
-    uint32 discardTime = GameTime::GetGameTime() >= sBattlegroundMgr->GetRatingDiscardTimer() ? GameTime::GetGameTime() - sBattlegroundMgr->GetRatingDiscardTimer() : 0;
+    uint32 discardTime = time(nullptr) >= sBattlegroundMgr->GetRatingDiscardTimer() ? time(nullptr) - sBattlegroundMgr->GetRatingDiscardTimer() : 0;
 
     GroupQueueInfo* selectedTeam1 = nullptr;
     GroupQueueInfo* selectedTeam2 = nullptr;
@@ -1001,7 +1024,7 @@ bool BattlegroundQueue::SelectRatedTeams(uint32 bracket_id, GroupQueueInfo* & te
         uint32 selectedRating = selectedTeam->MatchmakerRating;
 
         float periodic = sGameEventMgr->IsActiveEvent(194) ? 300 : 60; // if it is night time -> period longer for avoid sleavers
-        float mmrSteps = floor(float((GameTime::GetGameTime() - selectedTeam->JoinTime) / periodic));
+        float mmrSteps = floor(float((time(nullptr) - selectedTeam->JoinTime) / periodic)); 
         uint32 mmrMaxDiff = mmrSteps * 100;
 
         uint32 MinRating = (selectedRating <= sBattlegroundMgr->GetMaxRatingDifference()) ? 0 : selectedRating - sBattlegroundMgr->GetMaxRatingDifference();
@@ -1069,7 +1092,7 @@ uint16 BattlegroundQueue::GenerateRandomMap(uint16 bgTypeId)
     BattlemasterListEntry const* bl = sBattlemasterListStore.LookupEntry(bgTypeId);
     if (!bl)
     {
-        TC_LOG_ERROR("bg.battleground", "BattlegroundQueue:GenerateRandomMap - BattlemasterListEntry not found for %u", bgTypeId);
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattlegroundQueue:GenerateRandomMap - BattlemasterListEntry not found for %u", bgTypeId);
         return MS::Battlegrounds::BattlegroundTypeId::None;
     }
 
@@ -1162,7 +1185,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, uint16 bgTypeId
         next = itr;
         ++next;
 
-        if ((*itr)->IsBattleground() && ((*itr)->GetTypeID(true) == bgTypeId || (bgTypeId == MS::Battlegrounds::BattlegroundTypeId::BattlegroundRandom && !(*itr)->IsBrawl()))
+        if ((*itr)->IsBattleground() && ((*itr)->GetTypeID(true) == bgTypeId || (bgTypeId == MS::Battlegrounds::BattlegroundTypeId::BattlegroundRandom && !(*itr)->IsBrawl()) && (*itr)->GetTypeID(true) != MS::Battlegrounds::BattlegroundTypeId::BattlegroundDeathMatch)
         && (*itr)->GetMinLevel() == bracket_MinLevel && (*itr)->GetStatus() > STATUS_WAIT_QUEUE && (*itr)->GetStatus() < STATUS_WAIT_LEAVE)
         {
             auto bg = *itr;
@@ -1188,14 +1211,14 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, uint16 bgTypeId
     Battleground* bg_template = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
     if (!bg_template)
     {
-        TC_LOG_ERROR("bg.battleground", "Battleground: Update: bg template not found for %u", bgTypeId);
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "Battleground: Update: bg template not found for %u", bgTypeId);
         return;
     }
 
     PVPDifficultyEntry const* bracketEntry = sDB2Manager.GetBattlegroundBracketById(bg_template->GetMapId(), bracketID);
     if (!bracketEntry)
     {
-        TC_LOG_ERROR("bg.battleground", "Battleground: Update: bg bracket entry not found for map %u bracket id %u", bg_template->GetMapId(), bracketID);
+        TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "Battleground: Update: bg bracket entry not found for map %u bracket id %u", bg_template->GetMapId(), bracketID);
         return;
     }
 
@@ -1212,15 +1235,33 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, uint16 bgTypeId
     for (uint32 i = TEAM_ALLIANCE; i < MAX_TEAMS; ++i)
         m_SelectionPools[i].Init();
 
-    if (bg_template->IsBattleground() && !bg_template->IsRBG())
+    if (bgTypeId == MS::Battlegrounds::BattlegroundTypeId::BattlegroundDeathMatch)
+    {
+        if (CheckNormalMatchDeathMatch(bracketID, MinPlayersPerTeam, MaxPlayersPerTeam))
+        {            
+            Battleground* bg = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, 0, true, GenerateRandomMap(bgTypeId));
+            if (!bg)
+            {
+                TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattlegroundQueue::Update - Cannot create battleground: %u", bgTypeId);
+                return;
+            }
+
+            for (uint32 i = TEAM_ALLIANCE; i < MAX_TEAMS; i++)
+                for (std::list<GroupQueueInfo*>::const_iterator citr = m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.begin(); citr != m_SelectionPools[TEAM_ALLIANCE + i].SelectedGroups.end(); ++citr)
+                    InviteGroupToBG(*citr, bg, (*citr)->Team);
+
+            bg->StartBattleground();
+        }
+    }
+    else if (bg_template->IsBattleground() && !bg_template->IsRBG())
     {
         if (CheckPremadeMatch(bracketID, MinPlayersPerTeam, MaxPlayersPerTeam))
         {
-            TC_LOG_DEBUG("bg.battleground", "BattlegroundQueue::Update - create battleground: %u", bgTypeId);
+            TC_LOG_DEBUG(LOG_FILTER_BATTLEGROUND, "BattlegroundQueue::Update - create battleground: %u", bgTypeId);
             Battleground* bg = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, 0, isRated, GenerateRandomMap(bgTypeId));
             if (!bg)
             {
-                TC_LOG_ERROR("bg.battleground", "BattlegroundQueue::Update - Cannot create battleground: %u", bgTypeId);
+                TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattlegroundQueue::Update - Cannot create battleground: %u", bgTypeId);
                 return;
             }
 
@@ -1245,7 +1286,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, uint16 bgTypeId
             Battleground* bg = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, joinType, false, GenerateRandomMap(bgTypeId));
             if (!bg)
             {
-                TC_LOG_ERROR("bg.battleground", "BattlegroundQueue::Update - Cannot create battleground: %u", bgTypeId);
+                TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattlegroundQueue::Update - Cannot create battleground: %u", bgTypeId);
                 return;
             }
 
@@ -1276,7 +1317,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, uint16 bgTypeId
         Battleground* bg = sBattlegroundMgr->CreateNewBattleground(bgTypeId, bracketEntry, joinType, true, GenerateRandomMap(bgTypeId));
         if (!bg)
         {
-            TC_LOG_ERROR("bg.battleground", "BattlegroundQueue::Update couldn't create bg instance for rated arena or bg match!");
+            TC_LOG_ERROR(LOG_FILTER_BATTLEGROUND, "BattlegroundQueue::Update couldn't create bg instance for rated arena or bg match!");
             return;
         }
 
@@ -1302,7 +1343,7 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, uint16 bgTypeId
         InviteGroupToBG(aTeam, bg, ALLIANCE);
         InviteGroupToBG(hTeam, bg, HORDE);
 
-        TC_LOG_DEBUG("bg.battleground", "Starting rated bg match!");
+        TC_LOG_DEBUG(LOG_FILTER_BATTLEGROUND, "Starting rated bg match!");
         bg->StartBattleground();
 
         if (bg->IsArena() && bg->GetJoinType() != MS::Battlegrounds::JoinType::Arena1v1)

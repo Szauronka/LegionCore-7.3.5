@@ -1,0 +1,2 @@
+UPDATE `trinity_string` SET `content_default`='|cff00ff00 You gained %u ingame shop credits. |r' WHERE  `entry`=20063;
+UPDATE `trinity_string` SET `content_default`='A previous purchase confirmation is in progress, please wait!' WHERE  `entry`=20079;

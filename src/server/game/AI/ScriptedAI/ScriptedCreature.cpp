@@ -320,12 +320,6 @@ void ScriptedAI::DoStartMovement(Unit* victim, float distance, float angle)
         me->GetMotionMaster()->MoveChase(victim, distance, angle);
 }
 
-void ScriptedAI::DoStopAttack()
-{
-    me->AttackStop();
-    me->SetReactState(REACT_PASSIVE);
-}
-
 void ScriptedAI::DoStartNoMovement(Unit* victim)
 {
     if (!victim)
@@ -354,12 +348,12 @@ Creature* ScriptedAI::DoSpawnCreature(uint32 entry, float offsetX, float offsetY
     return me->SummonCreature(entry, me->GetPositionX() + offsetX, me->GetPositionY() + offsetY, me->GetPositionZ() + offsetZ, angle, TempSummonType(type), despawntime);
 }
 
-void ScriptedAI::SummonCreatureDelay(uint32 delayTimer, uint32 entry, const Position &pos, TempSummonType spawnType, uint32 despawnTime)
+void ScriptedAI::SummonCreatureDelay(uint32 delayTimer, uint32 entry, float x, float y, float z, float orient, TempSummonType spawnType, uint32 despawnTime)
 {
-    me->AddDelayedCombat(delayTimer, [this, entry, pos, spawnType, despawnTime]() -> void
+    me->AddDelayedCombat(delayTimer, [this, entry, x, y, z, orient, spawnType, despawnTime]() -> void
     {
         if (me)
-            me->SummonCreature(entry, pos, spawnType, despawnTime);
+            me->SummonCreature(entry, x, y, z, orient, spawnType, despawnTime);
     });
 }
 
@@ -440,7 +434,7 @@ void ScriptedAI::DoResetThreat()
 {
     if (!me->CanHaveThreatList() || me->getThreatManager().isThreatListEmpty())
     {
-        TC_LOG_ERROR("scripts", "DoResetThreat called for creature that either cannot have threat list or has empty threat list (me entry = %d)", me->GetEntry());
+        TC_LOG_ERROR(LOG_FILTER_TSCR, "DoResetThreat called for creature that either cannot have threat list or has empty threat list (me entry = %d)", me->GetEntry());
         return;
     }
 
@@ -489,7 +483,7 @@ void ScriptedAI::DoTeleportPlayer(Unit* unit, float x, float y, float z, float o
     if (Player* player = unit->ToPlayer())
         player->TeleportTo(unit->GetMapId(), x, y, z, o, TELE_TO_NOT_LEAVE_COMBAT);
     else
-        TC_LOG_ERROR("scripts", "Creature " UI64FMTD " (Entry: %u) Tried to teleport non-player unit (Type: %u GUID: " UI64FMTD ") to x: %f y:%f z: %f o: %f. Aborted.", me->GetGUID().GetCounter(), me->GetEntry(), unit->GetTypeId(), unit->GetGUID().GetCounter(), x, y, z, o);
+        TC_LOG_ERROR(LOG_FILTER_TSCR, "Creature " UI64FMTD " (Entry: %u) Tried to teleport non-player unit (Type: %u GUID: " UI64FMTD ") to x: %f y:%f z: %f o: %f. Aborted.", me->GetGUID().GetCounter(), me->GetEntry(), unit->GetTypeId(), unit->GetGUID().GetCounter(), x, y, z, o);
 }
 
 void ScriptedAI::DoTeleportAll(float x, float y, float z, float o)
@@ -500,7 +494,7 @@ void ScriptedAI::DoTeleportAll(float x, float y, float z, float o)
 
     map->ApplyOnEveryPlayer([&](Player* player)
     {
-        if (player->IsAlive())
+        if (player->isAlive())
             player->TeleportTo(me->GetMapId(), x, y, z, o, TELE_TO_NOT_LEAVE_COMBAT);
     });
 }
@@ -637,7 +631,7 @@ bool ScriptedAI::EnterEvadeIfOutOfCombatArea(uint32 const diff)
             return false;
         break;
     default: // For most of creatures that certain area is their home area.
-        TC_LOG_INFO("misc", "TSCR: EnterEvadeIfOutOfCombatArea used for creature entry %u, but does not have any definition. Using the default one.", me->GetEntry());
+        TC_LOG_INFO(LOG_FILTER_GENERAL, "TSCR: EnterEvadeIfOutOfCombatArea used for creature entry %u, but does not have any definition. Using the default one.", me->GetEntry());
         uint32 homeAreaId = me->GetMap()->GetAreaId(me->GetHomePosition().GetPositionX(), me->GetHomePosition().GetPositionY(), me->GetHomePosition().GetPositionZ());
         if (me->GetAreaId() == homeAreaId)
             return false;
@@ -781,7 +775,7 @@ void BossAI::_Reset()
     summons.DespawnAll();
     me->SetHealth(me->GetMaxHealth());
 
-    if (instance && me->IsAlive())
+    if (instance && me->isAlive())
     {
         instance->SetBossState(_bossId, NOT_STARTED);
         instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
@@ -860,7 +854,7 @@ void BossAI::_EnterCombat()
         if (!instance->CheckRequiredBosses(_bossId, me->GetEntry()))
         {
             EnterEvadeMode();
-            AddDelayedEvent(200, [=, this]() -> void
+            AddDelayedEvent(200, [=]() -> void
             {
                 if (instance)
                     instance->RepopPlayersAtGraveyard();
@@ -977,10 +971,10 @@ void BossAI::UpdateAI(uint32 diff)
 
 bool BossAI::_EnterEvadeMode()
 {
-    if (!me->IsAlive())
+    if (!me->isAlive())
         return false;
 
-    TC_LOG_DEBUG("network", "BossAI::_EnterEvadeMode %u enters evade mode.", me->GetEntry());
+    TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "BossAI::_EnterEvadeMode %u enters evade mode.", me->GetEntry());
 
     // dont remove vehicle auras, passengers arent supposed to drop off the vehicle
     me->RemoveAllAurasExceptType(SPELL_AURA_CONTROL_VEHICLE);
@@ -1013,7 +1007,7 @@ WorldBossAI::WorldBossAI(Creature* creature) :
 
 void WorldBossAI::_Reset()
 {
-    if (!me->IsAlive())
+    if (!me->isAlive())
         return;
 
     events.Reset();
@@ -1083,7 +1077,7 @@ void BrawlersBossAI::_WinRound()
         Player* player = me->GetAnyOwner()->ToPlayer();
         player->AddDelayedEvent(700, [player]() -> void
         {
-            if (player && player->IsAlive())
+            if (player && player->isAlive())
                 if (BrawlersGuild* brawlerGuild = player->GetBrawlerGuild())
                     brawlerGuild->BossReport(player->GetGUID(), true);
         });
@@ -1123,6 +1117,32 @@ void BrawlersBossAI::KilledUnit(Unit* who)
 }
 
 
+// SD2 grid searchers.
+Creature* GetClosestCreatureWithEntry(WorldObject* source, uint32 entry, float maxSearchRange, bool alive /*= true*/)
+{
+    return source->FindNearestCreature(entry, maxSearchRange, alive);
+}
+
+GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, float maxSearchRange)
+{
+    return source->FindNearestGameObject(entry, maxSearchRange);
+}
+
+void GetCreatureListWithEntryInGrid(std::list<Creature*>& list, WorldObject* source, uint32 entry, float maxSearchRange)
+{
+    source->GetCreatureListWithEntryInGrid(list, entry, maxSearchRange);
+}
+
+void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& list, WorldObject* source, uint32 entry, float maxSearchRange)
+{
+    source->GetGameObjectListWithEntryInGrid(list, entry, maxSearchRange);
+}
+
+void GetPlayerListInGrid(std::list<Player*>& list, WorldObject* source, float maxSearchRange)
+{
+    source->GetPlayerListInGrid(list, maxSearchRange);
+}
+
 void GetPositionWithDistInOrientation(Unit* pUnit, float dist, float orientation, float& x, float& y)
 {
     x = pUnit->GetPositionX() + (dist * cos(orientation));
@@ -1139,7 +1159,7 @@ void GetPosInRadiusWithRandomOrientation(Unit* unit, float dist, float &x, float
 
 void GetRandPosFromCenterInDist(float centerX, float centerY, float dist, float& x, float& y)
 {
-    float randOrientation = frand(0, float(2 * M_PI));
+    float randOrientation = frand(0, 2 * M_PI);
 
     x = centerX + (dist * cos(randOrientation));
     y = centerY + (dist * sin(randOrientation));

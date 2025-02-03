@@ -1,4 +1,5 @@
-/* Custom Events
+/*
+    Uwow.biz Custom Events
 */
 
 #ifndef CUSTOM_EVENTS

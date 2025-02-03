@@ -90,7 +90,7 @@ void WorldSession::HandlePetitionBuy(WorldPackets::Petition::PetitionBuy& packet
     }
 
     ItemPosCountVec dest;
-    InventoryResult msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, charterid, pProto->VendorStackCount);
+    InventoryResult msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, charterid, pProto->GetBuyCount());
     if (msg != EQUIP_ERR_OK)
     {
         player->SendEquipError(msg, nullptr, nullptr, charterid);
@@ -107,7 +107,7 @@ void WorldSession::HandlePetitionBuy(WorldPackets::Petition::PetitionBuy& packet
     charter->SetState(ITEM_CHANGED, player);
     player->SendNewItem(charter, 1, true, false);
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION_BY_OWNER);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION_BY_OWNER);
     stmt->setUInt64(0, player->GetGUIDLow());
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
@@ -125,9 +125,9 @@ void WorldSession::HandlePetitionBuy(WorldPackets::Petition::PetitionBuy& packet
 
     ssInvalidPetitionGUIDs << '\'' << charter->GetGUIDLow() << '\'';
 
-    TC_LOG_DEBUG("network", "Invalid petition GUIDs: %s", ssInvalidPetitionGUIDs.str().c_str());
+    TC_LOG_DEBUG(LOG_FILTER_NETWORKIO, "Invalid petition GUIDs: %s", ssInvalidPetitionGUIDs.str().c_str());
     CharacterDatabase.EscapeString(packet.Title);
-    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM petition WHERE petitionguid IN (%s)", ssInvalidPetitionGUIDs.str().c_str());
     trans->PAppend("DELETE FROM petition_sign WHERE petitionguid IN (%s)", ssInvalidPetitionGUIDs.str().c_str());
 
@@ -150,7 +150,7 @@ void WorldSession::HandlePetitionShowSignatures(WorldPackets::Petition::Petition
 
     ObjectGuid::LowType petitionGuidLow = packet.Item.GetCounter();
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION_TYPE);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION_TYPE);
     stmt->setUInt64(0, petitionGuidLow);
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
     if (!result)
@@ -208,7 +208,7 @@ void WorldSession::SendPetitionQueryOpcode(ObjectGuid petitionguid)
     WorldPackets::Petition::QueryPetitionResponse responsePacket;
     responsePacket.PetitionID = uint32(petitionguid.GetCounter());
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION);
     stmt->setUInt64(0, petitionguid.GetCounter());
     if (PreparedQueryResult result = CharacterDatabase.Query(stmt))
     {
@@ -259,7 +259,7 @@ void WorldSession::HandlePetitionRenameGuild(WorldPackets::Petition::PetitionRen
         return;
     }
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_PETITION_NAME);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_PETITION_NAME);
     stmt->setString(0, packet.NewGuildName);
     stmt->setUInt64(1, packet.PetitionGuid.GetCounter());
     CharacterDatabase.Execute(stmt);
@@ -278,7 +278,7 @@ void WorldSession::HandleSignPetition(WorldPackets::Petition::SignPetition& pack
 
     ObjectGuid playerGUID = player->GetGUID();
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION_SIGNATURES);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION_SIGNATURES);
     stmt->setUInt64(0, packet.PetitionGUID.GetCounter());
     stmt->setUInt64(1, packet.PetitionGUID.GetCounter());
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
@@ -348,7 +348,7 @@ void WorldSession::SendPetitionSignResult(ObjectGuid const& playerGuid, ObjectGu
 
 void WorldSession::HandleDeclinePetition(WorldPackets::Petition::DeclinePetition& packet)
 {
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION_OWNER_BY_GUID);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION_OWNER_BY_GUID);
     stmt->setUInt64(0, packet.PetitionGUID.GetCounter());
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
     if (!result)
@@ -370,7 +370,7 @@ void WorldSession::HandleOfferPetition(WorldPackets::Petition::OfferPetition& pa
     if (!player)
         return;
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION_TYPE);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION_TYPE);
     stmt->setUInt64(0, packet.ItemGUID.GetCounter());
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
     if (!result)
@@ -461,7 +461,7 @@ void WorldSession::HandleTurnInPetition(WorldPackets::Petition::TurnInPetition& 
     ObjectGuid::LowType ownerguidlo;
     std::string name;
 
-    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION);
     stmt->setUInt64(0, packet.Item.GetCounter());
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
     if (result)
@@ -492,8 +492,7 @@ void WorldSession::HandleTurnInPetition(WorldPackets::Petition::TurnInPetition& 
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PETITION_SIGNATURE);
     stmt->setUInt64(0, packet.Item.GetCounter());
-    result = CharacterDatabase.Query(stmt);
-    if (result)
+    if (result = CharacterDatabase.Query(stmt))
         signatures = uint8(result->GetRowCount());
 
     if (signatures < sWorld->getIntConfig(CONFIG_MIN_PETITION_SIGNS))
@@ -530,7 +529,7 @@ void WorldSession::HandleTurnInPetition(WorldPackets::Petition::TurnInPetition& 
         result->NextRow();
     }
 
-    CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PETITION_BY_GUID);
     stmt->setUInt64(0, packet.Item.GetCounter());

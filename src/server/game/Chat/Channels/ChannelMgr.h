@@ -26,7 +26,7 @@
 #define MAX_CHANNEL_NAME_STR 31
 #define MAX_CHANNEL_PASS_STR 31
 
-class TC_GAME_API ChannelMgr
+class ChannelMgr
 {
     public:
         ChannelMgr() { team = 0; }
@@ -44,6 +44,6 @@ class TC_GAME_API ChannelMgr
         static void SendNotOnChannelNotify(Player const* player, std::string const& name);
 };
 
-TC_GAME_API ChannelMgr* channelMgr(uint32 team);
+ChannelMgr* channelMgr(uint32 team);
 
 #endif

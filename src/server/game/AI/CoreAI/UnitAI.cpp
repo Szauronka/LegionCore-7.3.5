@@ -28,7 +28,15 @@
 void UnitAI::AttackStart(Unit* victim)
 {
     if (victim && me->Attack(victim, true))
+    {
+        // Clear distracted state on attacking
+        if (me->HasUnitState(UNIT_STATE_DISTRACTED))
+        {
+            me->ClearUnitState(UNIT_STATE_DISTRACTED);
+            me->GetMotionMaster()->Clear();
+        }
         me->GetMotionMaster()->MoveChase(victim);
+    }
 }
 
 void UnitAI::AttackStartCaster(Unit* victim, float dist)
@@ -95,6 +103,8 @@ bool UnitAI::DoSpellAttackIfReady(uint32 spell, TriggerCastFlags triggerFlags /*
 
 Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float dist, bool playerOnly, int32 aura)
 {
+    if (!this)
+        return nullptr;
     return SelectTarget(targetType, position, DefaultTargetSelector(me, dist, playerOnly, aura));
 }
 
@@ -182,7 +192,7 @@ void UnitAI::DoCastTopAggro(uint32 spellId, bool triggered, bool onlyPlayer /*= 
 void UnitAI::DoCast(uint32 spellId)
 {
     Unit* target = nullptr;
-    //TC_LOG_ERROR("misc", "aggre %u %u", spellId, (uint32)AISpellInfo[spellId].target);
+    //TC_LOG_ERROR(LOG_FILTER_GENERAL, "aggre %u %u", spellId, (uint32)AISpellInfo[spellId].target);
     switch (AISpellInfo[spellId].target)
     {
     default:
@@ -374,13 +384,15 @@ void SimpleCharmedAI::UpdateAI(uint32 /*diff*/)
     //kill self if charm aura has infinite duration
     if (charmer->IsInEvadeMode())
     {
-        Unit::AuraEffectList const& auras = me->GetAuraEffectsByType(SPELL_AURA_MOD_CHARM);
-        for (Unit::AuraEffectList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
-            if ((*iter)->GetCasterGUID() == charmer->GetGUID() && (*iter)->GetBase()->IsPermanent())
-            {
-                charmer->Kill(me);
-                return;
-            }
+        if (Unit::AuraEffectList const* auras = me->GetAuraEffectsByType(SPELL_AURA_MOD_CHARM))
+        {
+            for (Unit::AuraEffectList::const_iterator iter = auras->begin(); iter != auras->end(); ++iter)
+                if ((*iter)->GetCasterGUID() == charmer->GetGUID() && (*iter)->GetBase()->IsPermanent())
+                {
+                    charmer->Kill(me);
+                    return;
+                }
+        }
     }
 
     if (!charmer->isInCombat())

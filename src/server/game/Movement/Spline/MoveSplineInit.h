@@ -24,10 +24,16 @@
 
 class Unit;
 
-enum class AnimTier : uint8;
-
 namespace Movement
 {
+    enum AnimType
+    {
+        ToGround    = 0, // 460 = ToGround, index of AnimationData.dbc
+        FlyToFly    = 1, // 461 = FlyToFly?
+        ToFly       = 2, // 458 = ToFly
+        FlyToGround = 3, // 463 = FlyToGround
+    };
+
     // Transforms coordinates from global to transport offsets
     class TransportPathTransform
     {
@@ -43,7 +49,7 @@ namespace Movement
 
     /*  Initializes and launches spline movement
      */
-    class TC_GAME_API MoveSplineInit
+    class MoveSplineInit
     {
     public:
 
@@ -66,7 +72,7 @@ namespace Movement
         /* Plays animation after movement done
          * can't be combined with parabolic movement
          */
-        void SetAnimation(AnimTier anim);
+        void SetAnimation(AnimType anim);
 
         /* Adds final facing animation
          * sets unit's facing to specified point/angle after all path done
@@ -185,12 +191,10 @@ namespace Movement
         args.flags.EnableParabolic();
     }
 
-    inline void MoveSplineInit::SetAnimation(AnimTier anim)
+    inline void MoveSplineInit::SetAnimation(AnimType anim)
     {
         args.time_perc = 0.f;
-        args.animTier.emplace();
-        args.animTier->AnimTier = anim;
-        args.flags.EnableAnimation();
+        args.flags.EnableAnimation(static_cast<uint8>(anim));
     }
 
     inline void MoveSplineInit::SetFacing(G3D::Vector3 const& spot)

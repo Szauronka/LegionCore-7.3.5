@@ -1,0 +1,4 @@
+DELETE FROM `creature` WHERE `guid`=306078400;
+INSERT INTO `creature` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `phaseMask`, `PhaseId`, `modelid`, `equipment_id`, `position_x`, `position_y`, `position_z`, `orientation`, `spawntimesecs`, `spawndist`, `currentwaypoint`, `curhealth`, `curmana`, `MovementType`, `npcflag`, `npcflag2`, `unit_flags`, `dynamicflags`, `ScriptName`, `AiID`, `MovementID`, `MeleeID`, `isActive`, `skipClone`, `personal_size`, `isTeemingSpawn`, `unit_flags3`, `WpID`, `BoxID`, `protec_anti_doublet`) VALUES (306078400, 40107, 1, 616, 4861, 1, 1, '', 0, 0, 5081.24, -1432.34, 1341.25, 3.30354, 300, 0, 0, 39413, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL);
+DELETE FROM `creature_loot_template` WHERE `entry`=40107 AND `item`=53454;
+INSERT INTO `creature_loot_template` (`entry`, `item`, `ChanceOrQuestChance`, `lootmode`, `groupid`, `mincountOrRef`, `maxcount`, `shared`) VALUES (40107, 53454, 99.6423, 1, 0, 1, 1, 0);

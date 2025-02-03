@@ -142,16 +142,6 @@ namespace Battlepay
 {
     const float g_CurrencyPrecision = 10000.0f;
 
-    namespace BattlepayCustomType
-    {
-        enum : uint8
-        {
-            BattlePayShop,
-            VendorBuyCurrency,
-            VendorBuyItem,
-        };
-    };
-
     namespace BattlepayProductGroupFlag
     {
         enum : uint8
@@ -164,15 +154,6 @@ namespace Battlepay
             HideForNonveterans = 0x10,
         };
     };
-
-    namespace BattlepayDisplayInfoFlag
-    {
-        enum : uint8
-        {
-            None = 0x0,
-            HidePrice = 0x8,
-        };
-    }
 
     /// Client error enum See Blizzard_StoreUISecure.lua Last update : 6.2.3 20779
     enum Error
@@ -242,6 +223,28 @@ namespace Battlepay
         };
     }
 
+    namespace CustomMessage
+    {
+        enum
+        {
+            StoreBalance,
+            AccountId,
+            StoreBuyFailed
+        };
+
+        static const char* CustomMessage[] =
+        {
+            "Battle Coins: ",
+            "Account Name: ",
+            "Sorry!"
+        };
+
+        inline const char* GetCustomMessage(uint8 id)
+        {
+            return CustomMessage[id];
+        }
+    }
+
     enum BattlePayCurrency
     {
         Unknow = 0,
@@ -305,6 +308,53 @@ namespace Battlepay
         CategoryGold = 26,
         CharacterBoost = 29,
         BattlePet = 30,
+        AppareanceArtifact = 31,
+        Gold1 = 32,
+        Gold2 = 33,
+        Gold3 = 34,
+        Gold4 = 35,
+        Gold5 = 36,
+        Gold6 = 37,
+        ProfPriAlchemy = 40,
+        ProfPriSastre = 41,
+        ProfPriJoye = 42,
+        ProfPriHerre = 43,
+        ProfPriPele = 44,
+        ProfPriInge = 45,
+        ProfPriInsc = 46,
+        ProfPriEncha = 47,
+        ProfPriDesu = 48,
+        ProfPriMing = 49,
+        ProfPriHerb = 50,
+        ProfSecCoci = 51,
+        ProfSecPrau = 52,
+        ProfSecArque = 53,
+        ProfSecFish = 54,
+        RepClassic = 56,
+        RepBurnig = 57,
+        RepTLK = 58,
+        RepCata = 59,
+        RepPanda = 60,
+        RepDraenor = 61,
+        RepLegion = 62,
+        Unbinall = 63,
+        AppareanceArtifac = 31,
+        RacesAlliedVoidElf = 68,
+        RacesAlliedLighForgedDraenei = 69,
+        RacesAlliedNightborne = 70,
+        RacesAlliedHighmountainTauren = 71,
+        ArtifactPower101 = 72,
+        HonorLvl = 73,
+        //Transmogs
+        MOPChallengeModeTransmog = 74,
+        WODChallengeModeTransmog = 75,
+        WarglaivesOfAzzinothTransmog = 76,
+        HeritageHighmountainTauren = 77,
+        HeritageNightborne = 78,
+        HeritageVoidElf = 79,
+        HeritageLightforgedDraenei = 80,
+        AllArtifactAppearanceForClass = 81,
+        //
 
         MaxWebsiteType
     };
@@ -337,17 +387,21 @@ namespace Battlepay
         };
     }
 
+    namespace CallbackEvent
+    {
+        enum
+        {
+            SavePurchase
+        };
+    }
+
     struct ProductGroup
     {
         uint32 GroupID;
-        uint32 IconFileDataID;
-        uint32 Ordering;
-        uint32 Flags;
+        int32 IconFileDataID;
+        int32 Ordering;
         std::string Name;
         uint8 DisplayType; ///< BattlepayGroupDisplayType
-        uint8 TokenType;
-        bool IngameOnly;
-        bool OwnsTokensOnly;
     };
 
     struct DisplayInfo
@@ -422,16 +476,7 @@ namespace Battlepay
 
     struct ProductGroupLocale
     {
-        std::vector<std::string> Name;
-    };
-
-    struct TokenType
-    {
-        uint8 type;
-        std::string name;
-        bool hasLoginMessage;
-        std::string loginMessage;
-        bool listIfNone;
+        StringVector Name;
     };
 }
 
@@ -444,6 +489,7 @@ class BattlepayManager
     uint64 _purchaseIDCount;
     uint64 _distributionIDCount;
     std::string _walletName;
+	bool _isInGameStore;
 public:
     explicit BattlepayManager(WorldSession* session);
     ~BattlepayManager();
@@ -451,7 +497,10 @@ public:
     Battlepay::BattlePayCurrency GetShopCurrency() const;
     bool IsAvailable() const;
     bool AlreadyOwnProduct(uint32 itemId) const;
+    void SavePurchase(Battlepay::Purchase* purchase);
+    void OnPrepareStatementCallbackEvent(uint8 callbackEvent);
     void ProcessDelivery(Battlepay::Purchase* purchase);
+    void OnPaymentSucess(uint32 newBalance);
     void RegisterStartPurchase(Battlepay::Purchase purchase);
     uint64 GenerateNewPurchaseID();
     uint64 GenerateNewDistributionId();
@@ -464,6 +513,9 @@ public:
     void SendBattlePayDistribution(uint32 productId, uint8 status, uint64 distributionId, ObjectGuid targetGuid = ObjectGuid::Empty);
     void AssignDistributionToCharacter(ObjectGuid const& targetCharGuid, uint64 distributionId, uint32 productId, uint16 specialization_id, uint16 choice_id);
     void Update(uint32 diff);
+    std::vector<uint32>WODChallengeTransmogIDs = { 66543, 66544, 66545, 66546, 66547, 66550, 66551, 66552, 66553, 66554, 66555, 66556, 66557, 66558, 66559, 66560, 66561, 66549 };
+	bool IsInGameStore() { return _isInGameStore; }
+	void SetInGameStore(bool isInGameStore) { _isInGameStore = isInGameStore; }
 };
 
 #endif

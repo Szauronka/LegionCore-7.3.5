@@ -20,7 +20,6 @@
 #define _INSTANCESAVEMGR_H
 
 #include "DBCEnums.h"
-#include "GameTime.h"
 #include "ObjectDefines.h"
 #include <safe_ptr.h>
 
@@ -99,7 +98,7 @@ class InstanceSave
         void SetExtended(bool extended) { m_extended = extended; }
         bool GetExtended() const { return m_extended; }
 
-        bool SaveIsOld() const { return m_resetTime && m_resetTime <= GameTime::GetGameTime(); }
+        bool SaveIsOld() const { return m_resetTime && m_resetTime <= time(nullptr); }
 
         /* currently it is possible to omit this information from this structure
            but that would depend on a lot of things that can easily change in future */
@@ -134,7 +133,7 @@ class InstanceSave
         sf::contention_free_shared_mutex< > _groupListLock;
 };
 
-class TC_GAME_API InstanceSaveManager
+class InstanceSaveManager
 {
     friend class InstanceSave;
 
@@ -178,7 +177,7 @@ class TC_GAME_API InstanceSaveManager
         uint32 GetNumInstanceSaves() { return m_instanceSaveById.size(); }
         uint32 GetNumBoundPlayersTotal();
         uint32 GetNumBoundGroupsTotal();
-        void ResetOrWarnAll(uint32 mapid, Difficulty difficulty, CharacterDatabaseTransaction& trans);
+        void ResetOrWarnAll(uint32 mapid, Difficulty difficulty, SQLTransaction& trans);
 
         void UnloadAll();
 

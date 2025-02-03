@@ -1,11 +1,10 @@
 /*
+    http://uwow.biz
     Dungeon : Vault of the Wardens 100-110
 */
 
 #ifndef VAULT_OF_THE_WARDENS_H_
 #define VAULT_OF_THE_WARDENS_H_
-
-#define DataHeader "VOW"
 
 enum eData
 {

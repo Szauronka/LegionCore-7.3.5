@@ -11,6 +11,12 @@
 #include "Player.h"
 #include "GossipDef.h"
 #include "QuestDef.h"
+#include "Define.h"
+#include <string>
+
+class Creature;
+class ObjectGuid;
+class Player;
 
 // Gossip Item Text
 #define GOSSIP_TEXT_BROWSE_GOODS        "I'd like to browse your goods."
@@ -34,6 +40,7 @@ enum eTradeskill
     TRADESKILL_SKINNING                 = 13,
     TRADESKILL_JEWLCRAFTING             = 14,
     TRADESKILL_INSCRIPTION              = 15,
+    TRADESKILL_ARCHAEOLOGY              = 16,
 
     TRADESKILL_LEVEL_NONE               = 0,
     TRADESKILL_LEVEL_APPRENTICE         = 1,
@@ -42,6 +49,7 @@ enum eTradeskill
     TRADESKILL_LEVEL_ARTISAN            = 4,
     TRADESKILL_LEVEL_MASTER             = 5,
     TRADESKILL_LEVEL_GRAND_MASTER       = 6,
+    TRADESKILL_LEVEL_ILLUSTRIOUS        = 7,
 
     // Gossip defines
     GOSSIP_ACTION_TRADE                 = 1,
@@ -70,21 +78,32 @@ enum eTradeskill
     GOSSIP_SENDER_SEC_STABLEMASTER      = 10
 };
 
-// Defined functions to use with player.
+// Defined fuctions to use with player.
 
-// This function adds a menu item,
+// This fuction add's a menu item,
 // a - Icon Id
 // b - Text
 // c - Sender(this is to identify the current Menu with this item)
-// d - Action (identifies this Menu Item)
+// d - Action (identifys this Menu Item)
 // e - Text to be displayed in pop up box
 // f - Money value in pop up box
 #define ADD_GOSSIP_ITEM(a, b, c, d)   PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, a, b, c, d, "", 0)
 #define ADD_GOSSIP_ITEM_DB(h, i, c, d)   PlayerTalkClass->GetGossipMenu().AddMenuItem(h, i, c, d)
-#define ADD_GOSSIP_ITEM_EXTENDED(a, b, c, d, e, f, g)   PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, a, b, c, d, e, f, g)
+#define ADD_GOSSIP_ITEM_EXTENDED(a, b, c, d, e, f, g)   PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, a, b, c, d, e, f, 0, g)
 
-// This function Sends the current menu to show to client, a - NPCTEXTID(uint32), b - npc guid(uint64)
-#define SEND_GOSSIP_MENU(a, b)      PlayerTalkClass->SendGossipMenu(a, b)
+void ClearGossipMenuFor(Player* player);
+// Using provided text, not from DB
+void AddGossipItemFor(Player* player, uint32 icon, std::string const& text, uint32 sender, uint32 action);
+// Using provided texts, not from DB
+void AddGossipItemFor(Player* player, uint32 icon, std::string const& text, uint32 sender, uint32 action, std::string const& popupText, uint32 popupMoney, bool coded);
+// Uses gossip item info from DB
+void AddGossipItemFor(Player* player, uint32 gossipMenuID, uint32 gossipMenuItemID, uint32 sender, uint32 action);
+void SendGossipMenuFor(Player* player, uint32 npcTextID, ObjectGuid const& guid);
+void SendGossipMenuFor(Player* player, uint32 npcTextID, Creature const* creature);
+void CloseGossipMenuFor(Player* player);
+
+// This fuction Sends the current menu to show to client, a - NPCTEXTID(uint32), b - npc guid(uint64)
+#define SEND_GOSSIP_MENU(a, b)      PlayerTalkClass->SendGossipMenu(a, b, 0)
 
 // Closes the Menu
 #define CLOSE_GOSSIP_MENU()        PlayerTalkClass->SendCloseGossip()
