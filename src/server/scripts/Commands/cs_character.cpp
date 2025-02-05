@@ -63,7 +63,8 @@ public:
             { "rename",         SEC_GAMEMASTER,     true,  &HandleCharacterRenameCommand,          ""},
             { "reputation",     SEC_GAMEMASTER,     true,  &HandleCharacterReputationCommand,      ""},
             { "titles",         SEC_GAMEMASTER,     true,  &HandleCharacterTitlesCommand,          ""},
-            { "getrename",      SEC_GAMEMASTER,     true,  &HandleCharacterGetrenameCommand,    ""}
+            { "sendachi",       SEC_GAMEMASTER,     true,  &HandleCharacterSendAchiCommand,        ""},
+			{ "getrename",      SEC_GAMEMASTER,     true,  &HandleCharacterGetrenameCommand,    ""}
         };
 
         static std::vector<ChatCommand> commandTable =
@@ -957,8 +958,39 @@ public:
         }
         return true;
     }
-};
+    
+	static bool HandleCharacterSendAchiCommand(ChatHandler* handler, char const* args)
+    {
+        char* nameStr;
+        char* achievementID;
+        handler->extractOptFirstArg((char*)args, &nameStr, &achievementID);
+        if (!achievementID)
+            return false;
 
+        Player* target;
+        ObjectGuid targetGuid;
+        std::string targetName;
+        int32 achievementId = atoi(achievementID);
+		
+        if (!handler->extractPlayerTarget(nameStr, &target, &targetGuid, &targetName))
+            return false;
+
+        if (!achievementId)
+            return false;
+
+        if (!target)
+        {
+            handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        if (AchievementEntry const* achievementEntry = sAchievementStore.LookupEntry(achievementId))
+            target->CompletedAchievement(achievementEntry);
+
+        return true;
+    }
+};
 
 void AddSC_character_commandscript()
 {

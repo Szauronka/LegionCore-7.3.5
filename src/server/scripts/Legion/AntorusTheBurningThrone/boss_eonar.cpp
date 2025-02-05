@@ -1,5 +1,14 @@
+/*
+    https://uwow.biz/
+*/
+
 #include "antorus.h"
 #include "ScriptUtils.h"
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+#include "ScriptedGossip.h"
+#include "SpellScript.h"
+#include "SpellAuraEffects.h"
 
 enum eSays
 {
@@ -425,8 +434,8 @@ struct npc_eonar_the_paraxis : public ScriptedAI
 
         if (IsMythicRaid())
         {
-            events.RescheduleEvent(EVENT_FINAL_DOOM, 60000);
-            finalDoomTimer = { 126000, 98000, 106000, 100000 };
+            //events.RescheduleEvent(EVENT_FINAL_DOOM, 60000);
+            //finalDoomTimer = { 126000, 98000, 106000, 100000 };
         }
     }
 
@@ -439,8 +448,8 @@ struct npc_eonar_the_paraxis : public ScriptedAI
         instance->SendEncounterUnit(ENCOUNTER_FRAME_INSTANCE_END, me);
         SwitchDoorState(false);
 
-        if (auto owner = me->GetAnyOwner())
-            owner->GetAI()->DoAction(ACTION_RESTART);
+        //if (auto owner = me->GetAnyOwner())
+            //owner->GetAI()->DoAction(ACTION_RESTART);
     }
 
     void JustDied(Unit* killer) override
@@ -611,7 +620,7 @@ struct npc_eonar_the_paraxis : public ScriptedAI
         {
             if (auto player = Player::GetPlayer(*me, ref->getUnitGuid()))
             {
-                if (player->IsAlive() && player->GetCurrentAreaID() == 9333)
+                if (player->isAlive() && player->GetCurrentAreaID() == 9333)
                 {
                     if (player->GetPositionZ() < 672.0f)
                     {
@@ -1459,7 +1468,7 @@ struct npc_eonar_spear_of_doom : public ScriptedAI
                 moveTimer = 1000;
                 
                 auto player = Player::GetPlayer(*me, targetGUID);
-                if (!player || !player->IsAlive())
+                if (!player || !player->isAlive())
                 {
                     if (auto player = me->FindNearestPlayer(30.0f, true))
                         targetGUID = player->GetGUID();
@@ -1569,7 +1578,7 @@ struct npc_eonar_focusing_crystal : public ScriptedAI
     npc_eonar_focusing_crystal(Creature* creature) : ScriptedAI(creature)
     {
         me->SetReactState(REACT_PASSIVE);
-        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+        //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
     }
 
     bool disabled = true;
@@ -1607,15 +1616,15 @@ struct npc_eonar_focusing_crystal : public ScriptedAI
         if (actionId == ACTION_1)
         {
             disabled = false;
-            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            //me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             me->SetFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
         }
 
         if (actionId == ACTION_2)
         {
             disabled = true;
-            me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-            me->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+            //me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            //me->RemoveFlag(UNIT_FIELD_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
             me->RemoveAllAuras();
             me->SetAnimKitId(0);
 
@@ -1635,9 +1644,9 @@ struct npc_eonar_focusing_crystal : public ScriptedAI
         if (disabled)
             return;
 
-        for (auto spellId : {SPELL_TARGETED, SPELL_BURNING_EMBERS, SPELL_FOUL_STEPS, SPELL_ARCANE_SINGULARITY})
-            if (clicker->HasAura(spellId))
-                return;
+        //for (auto spellId : {SPELL_TARGETED, SPELL_BURNING_EMBERS, SPELL_FOUL_STEPS, SPELL_ARCANE_SINGULARITY})
+            //if (clicker->HasAura(spellId))
+                //return;
 
         clicker->CastSpell(me, SPELL_SHATTER, true);
     }
@@ -1849,7 +1858,7 @@ class spell_eonar_jump_pad : public SpellScript
             if ((pad->GetPositionZ() - caster->GetPositionZ()) > -10.0f && (pad->GetPositionZ() - caster->GetPositionZ()) < 10.0f)
                 return true;
 
-            if (!owner->isInFront(pad, float(M_PI / 4)))
+            if (!owner->isInFront(pad, M_PI/4))
                 return true;
 
             return false;
@@ -1981,6 +1990,7 @@ void AddSC_boss_eonar()
     RegisterCreatureAI(npc_eonar_spear_of_doom);
     RegisterCreatureAI(npc_eonar_paraxis_inquisitor);
     RegisterCreatureAI(npc_eonar_focusing_crystal);
+
     RegisterSpellScript(spell_eonar_paraxis_artillery);
     RegisterSpellScript(spell_eonar_paraxis_purge_filter);
     RegisterSpellScript(spell_eonar_spear_of_doom_filter);
