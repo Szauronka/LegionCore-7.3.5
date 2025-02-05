@@ -142,7 +142,7 @@ class solocraft_player_instance_handler : public PlayerScript {
 public:
 	solocraft_player_instance_handler() : PlayerScript("solocraft_player_instance_handler")
 	{
-		TC_LOG_INFO(LOG_FILTER_CHARACTER, "[SoloCraft] solocraft_player_instance_handler Loaded");
+		TC_LOG_INFO("entities.player.character", "[SoloCraft] solocraft_player_instance_handler Loaded");
 	}
 
 	void OnLogin(Player* player, bool /*firstLogin*/) override
@@ -310,7 +310,7 @@ class spell_solocraft_aura_167349 : public AuraScript
 		player->SetFullHealth();
 
 		// Filling up the mana if the player has
-		if (player->getPowerType() == POWER_MANA)
+		if (player->GetPowerType() == POWER_MANA)
 			player->SetPower(POWER_MANA, player->GetMaxPower(POWER_MANA));
 
 		// Cooldown Cheat (be careful)
@@ -344,7 +344,7 @@ class spell_solocraft_aura_167349 : public AuraScript
 
 		ChatHandler(player->GetSession()).PSendSysMessage("Welcome to the %s! Power Increase System activated. Your base stat multiplier x%u, rating multiplier x%u.", map->GetMapName(), uint32(final_multiplier_stat), uint32(final_multiplier_rat));
 
-		TC_LOG_INFO(LOG_FILTER_PLAYER, "[SoloCraft] Player %s entered map: %s (mapid: %u), stat multiplier is %u, rating multiplier is %u.", player->GetName(), map->GetMapName(), map->GetId(), uint32(final_multiplier_stat), uint32(final_multiplier_rat));
+		TC_LOG_INFO("entities.player" "[SoloCraft] Player %s entered map: %s (mapid: %u), stat multiplier is %u, rating multiplier is %u.", player->GetName(), map->GetMapName(), map->GetId(), uint32(final_multiplier_stat), uint32(final_multiplier_rat));
 	}
 
 	void ClearSoloCraft(Player* player, Map* map, int difficulty, int numInGroup)

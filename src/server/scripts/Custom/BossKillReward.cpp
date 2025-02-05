@@ -58,10 +58,10 @@ public:
 	void SendReward(Player* player, MapEntry const* map, uint32 amount_expansion)
 	{
 		if (map->IsDungeon())
-			player->AddDonateTokenCount(amount_expansion);
+			player->ChangeTokenCount(0, 10000, Battlepay::BattlepayCustomType::BattlePayShop, 0);
 
 		if (map->IsRaid())
-			player->AddDonateTokenCount(amount_expansion * raid_multiplier);
+			player->ChangeTokenCount(0, 10000, Battlepay::BattlepayCustomType::BattlePayShop, 0);
 	}
 	
     void OnCreatureKill(Player* player, Creature* killed)
@@ -70,7 +70,7 @@ public:
         if (sConfigMgr->GetBoolDefault("BossKillReward.Enable", true))
         {	
 			// If the creature too low level skip reward
-			if (killed->getLevelForTarget(player) < player->getLevel() - 5)
+			if (killed->GetLevelForTarget(player) < player->getLevel() - 5)
 				return;
 
 			// If not boss

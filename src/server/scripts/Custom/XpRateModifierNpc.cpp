@@ -114,7 +114,7 @@ class npc_rate_xp_modifier : public CreatureScript
                     std::ostringstream gossipText;
                     gossipText << "Change my xp rate to: x" << i;
                     //AddGossipItemFor(player, GOSSIP_ICON_CHAT, gossipText.str(), GOSSIP_SENDER_MAIN, i);
-					player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, gossipText.str(), GOSSIP_SENDER_MAIN, i);
+					player->ADD_GOSSIP_ITEM(GossipOptionNpc::None, gossipText.str(), GOSSIP_SENDER_MAIN, i);
                 }
             }
             else
@@ -122,7 +122,7 @@ class npc_rate_xp_modifier : public CreatureScript
                 std::ostringstream gossipText;
                 gossipText << "The Custom XP Rate NPC |cff4CFF00 is unavailable now. |r.";
                 //AddGossipItemFor(player, GOSSIP_ICON_CHAT, gossipText.str(), GOSSIP_SENDER_MAIN, 0);
-				player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, gossipText.str(), GOSSIP_SENDER_MAIN, 0);
+				player->ADD_GOSSIP_ITEM(GossipOptionNpc::None,  gossipText.str(), GOSSIP_SENDER_MAIN, 0);
             }
 
             if (player->GetPersonnalXpRate())

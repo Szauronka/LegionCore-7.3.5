@@ -540,6 +540,8 @@ public:
     uint32 LFGRoleRequirementCondition(uint32 lfgDungeonsId, uint8 roleType);
     uint32 GetScalingByLevel(uint8 MinLevel, uint16 MaxLevel) const;
 
+    MapEntry const* GetMapByID(uint32 mapID);
+    
     uint32 GetHostileSpellVisualId(uint32 spellVisualId);
 
     ItemSetSpellsContainer _itemSetSpells;

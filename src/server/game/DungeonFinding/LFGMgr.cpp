@@ -39,7 +39,7 @@
 
 namespace lfg
 {
-LFGMgr::LFGMgr() : m_QueueTimer(0), m_ShortageCheckTimer(0), m_lfgProposalId(1), m_options(sWorld->getIntConfig(CONFIG_LFG_OPTIONSMASK))
+LFGMgr::LFGMgr() : m_QueueTimer(0), m_ShortageCheckTimer(0), m_lfgProposalId(1), m_options(sWorld->getIntConfig(CONFIG_LFG_OPTIONSMASK)), m_isSoloLFG(false)
 {
 }
 
@@ -3018,5 +3018,10 @@ void LFGMgr::SendLfgUpdateQueue(ObjectGuid guid)
         sLFGMgr->SendLfgUpdatePlayer(guid, sLFGMgr->GetLfgStatus(guid, queue), true);
 }
 
+
+void LFGMgr::ToggleSoloLFG()
+{
+    m_isSoloLFG = !m_isSoloLFG;
+}
 
 } // namespace lfg

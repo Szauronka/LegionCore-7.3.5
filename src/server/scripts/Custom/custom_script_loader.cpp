@@ -18,11 +18,9 @@
  // This is where scripts' loading functions should be declared:
 void AddSC_Loskutik();
 void AddSC_midsummer_fire_festival();
-void AddSC_custom_arena_1v1();
 void AddSC_GOMove_commandscript();
 void AddSC_darkmoon();
 void AddSC_BossKillReward();
-void AddSC_KeyStoneGenerator_npc();
 void AddSC_solocraft();
 void AddLfgSoloScripts();
 void AddSC_ClassRewards();
@@ -36,11 +34,9 @@ void AddCustomScripts()
 {
 	AddSC_Loskutik();
     AddSC_midsummer_fire_festival();
-    AddSC_custom_arena_1v1();
     AddSC_GOMove_commandscript();
     AddSC_darkmoon();
-    AddSC_KeyStoneGenerator_npc();
-	AddSC_BossKillReward();
+    AddSC_BossKillReward();
 	AddSC_solocraft();
 	AddLfgSoloScripts();
 	AddSC_ClassRewards();
