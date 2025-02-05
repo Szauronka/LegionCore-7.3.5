@@ -2733,6 +2733,21 @@ ItemModifiedAppearanceEntry const* DB2Manager::GetDefaultItemModifiedAppearance(
     return _itemModifiedAppearancesByItem[itemId][0];
 }
 
+HeirloomEntry const* DB2Manager::FindHeirloom(uint32 itemId) const
+{
+    for (auto heirloom : _heirlooms)
+        if (heirloom.first == itemId
+            || heirloom.second->LegacyItemID == itemId
+            || heirloom.second->LegacyUpgradedItemID == itemId
+            || heirloom.second->UpgradeItemID[0] == itemId
+            || heirloom.second->UpgradeItemID[1] == itemId
+            || heirloom.second->UpgradeItemID[2] == itemId
+            || heirloom.second->UpgradeItemID[3] == itemId)
+            return heirloom.second;
+
+    return nullptr;
+}
+
 uint32 DB2Manager::GetTransmogId(uint32 itemId, uint8 appearanceModId) const
 {
     if (!itemId)

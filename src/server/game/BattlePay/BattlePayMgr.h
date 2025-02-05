@@ -305,6 +305,53 @@ namespace Battlepay
         CategoryGold = 26,
         CharacterBoost = 29,
         BattlePet = 30,
+        AppareanceArtifact = 31,
+        Gold1 = 32,
+        Gold2 = 33,
+        Gold3 = 34,
+        Gold4 = 35,
+        Gold5 = 36,
+        Gold6 = 37,
+        ProfPriAlchemy = 40,
+        ProfPriSastre = 41,
+        ProfPriJoye = 42,
+        ProfPriHerre = 43,
+        ProfPriPele = 44,
+        ProfPriInge = 45,
+        ProfPriInsc = 46,
+        ProfPriEncha = 47,
+        ProfPriDesu = 48,
+        ProfPriMing = 49,
+        ProfPriHerb = 50,
+        ProfSecCoci = 51,
+        ProfSecPrau = 52,
+        ProfSecArque = 53,
+        ProfSecFish = 54,
+        RepClassic = 56,
+        RepBurnig = 57,
+        RepTLK = 58,
+        RepCata = 59,
+        RepPanda = 60,
+        RepDraenor = 61,
+        RepLegion = 62,
+        Unbinall = 63,
+        AppareanceArtifac = 31,
+        RacesAlliedVoidElf = 68,
+        RacesAlliedLighForgedDraenei = 69,
+        RacesAlliedNightborne = 70,
+        RacesAlliedHighmountainTauren = 71,
+        ArtifactPower101 = 72,
+        HonorLvl = 73,
+        //Transmogs
+        MOPChallengeModeTransmog = 74,
+        WODChallengeModeTransmog = 75,
+        WarglaivesOfAzzinothTransmog = 76,
+        HeritageHighmountainTauren = 77,
+        HeritageNightborne = 78,
+        HeritageVoidElf = 79,
+        HeritageLightforgedDraenei = 80,
+        AllArtifactAppearanceForClass = 81,
+        //
 
         MaxWebsiteType
     };
@@ -464,6 +511,7 @@ public:
     void SendBattlePayDistribution(uint32 productId, uint8 status, uint64 distributionId, ObjectGuid targetGuid = ObjectGuid::Empty);
     void AssignDistributionToCharacter(ObjectGuid const& targetCharGuid, uint64 distributionId, uint32 productId, uint16 specialization_id, uint16 choice_id);
     void Update(uint32 diff);
+    std::vector<uint32>WODChallengeTransmogIDs = { 66543, 66544, 66545, 66546, 66547, 66550, 66551, 66552, 66553, 66554, 66555, 66556, 66557, 66558, 66559, 66560, 66561, 66549 };
 };
 
 #endif

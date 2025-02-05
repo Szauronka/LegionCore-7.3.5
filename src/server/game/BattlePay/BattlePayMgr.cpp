@@ -126,16 +126,24 @@ void BattlepayManager::ProcessDelivery(Purchase* purchase)
     // _existProducts.insert
     auto player = _session->GetPlayer(); // atm only ingame shop -_-
 
-    auto const* product = sBattlePayDataStore->GetProduct(purchase->ProductID);
-    if (!product)
-        return;
-
+    auto const& product = sBattlePayDataStore->GetProduct(purchase->ProductID);
     switch (product->WebsiteType)
     {
     case Battlepay::Item:
         for (auto const& itr : product->Items)
             if (player)
-                player->AddItem(itr.ItemID, itr.Quantity);
+            {
+                // Check if the item is heirloom we unlock in collectionmgr instead of adding it
+                if (HeirloomEntry const* heirloom = sDB2Manager.FindHeirloom(itr.ItemID))
+                {
+                    player->GetCollectionMgr()->AddHeirloom(heirloom->ItemID, 0);
+
+                    // We also upgrade it to 110lvl cuz we are cool
+                    player->GetCollectionMgr()->UpgradeHeirloom(heirloom->ItemID, heirloom->UpgradeItemID[2]);
+                }
+                else
+                    player->AddItem(itr.ItemID, itr.Quantity);
+            }
         break;
     case Battlepay::BattlePet:
         if (player)
@@ -157,10 +165,19 @@ void BattlepayManager::ProcessDelivery(Purchase* purchase)
         if (player)
             sCharacterService->Customize(player);
         break;
+    case AppareanceArtifact:
+        if (player)
+            sCharacterService->AppareanceArtifact(player);
+        break;
     case Race:
         if (player)
             sCharacterService->ChangeRace(player);
         break;
+    case CategoryGold:
+        if (player)
+
+            break;
+
     case CharacterBoost:
     {
         if (_session->HasAuthFlag(AT_AUTH_FLAG_90_LVL_UP)) //@send error?
@@ -168,23 +185,193 @@ void BattlepayManager::ProcessDelivery(Purchase* purchase)
 
         //SendBattlePayDistribution(purchase->ProductID, DistributionStatus::BATTLE_PAY_DIST_STATUS_AVAILABLE, 1);
 
-        //if (player)
-        //    sCharacterService->Boost(player);
+        /* if (player)
+           sCharacterService->Boost(player);
         break;
+        */
     }
-
     //case Category:
     //    break;
     //case Battlepay::Spell:
     //    break;
     //case Currency:
     //    break;
-    //case GuildRename:
-    //    break;
-    //case Gold:
-    //    break;
-    //case Level:
-    //    break;
+    case Gold1:
+        if (player)
+            sCharacterService->Gold20k(player);
+        break;
+    case Gold2:
+        if (player)
+            sCharacterService->Gold50k(player);
+        break;
+    case Gold3:
+        if (player)
+            sCharacterService->Gold100k(player);
+        break;
+    case Gold4:
+        if (player)
+            sCharacterService->Gold250k(player);
+        break;
+    case Gold5:
+        if (player)
+            sCharacterService->Gold500k(player);
+        break;
+    case Gold6:
+        if (player)
+            sCharacterService->Gold1000k(player);
+        break;
+    case ProfPriAlchemy:
+        if (player)
+            sCharacterService->ProfPriAlchemy(player);
+        break;
+    case ProfPriSastre:
+        if (player)
+            sCharacterService->ProfPriSastre(player);
+        break;
+    case ProfPriJoye:
+        if (player)
+            sCharacterService->ProfPriJoye(player);
+        break;
+    case ProfPriHerre:
+        if (player)
+            sCharacterService->ProfPriHerre(player);
+        break;
+    case ProfPriPele:
+        if (player)
+            sCharacterService->ProfPriPele(player);
+        break;
+    case ProfPriInge:
+        if (player)
+            sCharacterService->ProfPriInge(player);
+        break;
+    case ProfPriInsc:
+        if (player)
+            sCharacterService->ProfPriInsc(player);
+        break;
+    case ProfPriEncha:
+        if (player)
+            sCharacterService->ProfPriEncha(player);
+        break;
+    case ProfPriDesu:
+        if (player)
+            sCharacterService->ProfPriDesu(player);
+        break;
+    case ProfPriMing:
+        if (player)
+            sCharacterService->ProfPriMing(player);
+        break;
+    case ProfPriHerb:
+        if (player)
+            sCharacterService->ProfPriHerb(player, _session);
+        break;
+    case ProfSecCoci:
+        if (player)
+            sCharacterService->ProfSecCoci(player);
+        break;
+    case ProfSecArque:
+        if (player)
+            sCharacterService->ProfSecArque(player);
+        break;
+    case ProfSecPrau:
+        if (player)
+            sCharacterService->ProfSecPrau(player);
+        break;
+    case ProfSecFish:
+        if (player)
+            sCharacterService->ProfSecFish(player);
+        break;
+    case RepClassic:
+        if (player)
+            sCharacterService->RepClassic(player);
+        break;
+    case RepBurnig:
+        if (player)
+            sCharacterService->RepBurnig(player);
+        break;
+    case RepTLK:
+        if (player)
+            sCharacterService->RepTLK(player);
+        break;
+    case RepCata:
+        if (player)
+            sCharacterService->RepCata(player);
+        break;
+    case RepPanda:
+        if (player)
+            sCharacterService->RepPanda(player);
+        break;
+    case RepDraenor:
+        if (player)
+            sCharacterService->RepDraenor(player);
+        break;
+    case RepLegion:
+        if (player)
+            sCharacterService->RepLegion(player);
+        break;
+    case Unbinall:
+        if (player)
+            sCharacterService->Unbinall(player);
+        break;
+    case RacesAlliedHighmountainTauren:
+        if (player)
+            sCharacterService->RacesAlliedHighmountainTauren(player);
+        break;
+
+    case RacesAlliedNightborne:
+        if (player)
+            sCharacterService->RacesAlliedNightborne(player);
+        break;
+
+    case RacesAlliedVoidElf:
+        if (player)
+            sCharacterService->RacesAlliedVoidElf(player);
+        break;
+
+    case RacesAlliedLighForgedDraenei:
+        if (player)
+            sCharacterService->RacesAlliedLighForgedDraenei(player);
+        break;
+    case MOPChallengeModeTransmog:
+        if (player)
+            sCharacterService->UnlockMOPChallengeModeTransmog(player);
+        break;
+
+    case WODChallengeModeTransmog:
+        if (player)
+            for (uint32 tmogid : WODChallengeTransmogIDs)
+            {
+                if (!player->GetCollectionMgr()->HasTransmog(tmogid))
+                    player->GetCollectionMgr()->AddTransmog(tmogid, 0);
+            }
+        break;
+
+    case WarglaivesOfAzzinothTransmog:
+        if (player)
+        {
+            player->CompletedAchievement(sAchievementStore.LookupEntry(11869));
+            player->GetCollectionMgr()->AddTransmogSet(1347);
+        }
+        break;
+
+    case HeritageHighmountainTauren:
+        if (player)
+            player->GetCollectionMgr()->AddTransmogSet(1522);
+        break;
+
+    case HeritageLightforgedDraenei:
+        if (player)
+            player->GetCollectionMgr()->AddTransmogSet(1525);
+        break;
+
+    case HeritageNightborne:
+        if (player)
+            player->GetCollectionMgr()->AddTransmogSet(1523);
+        break;
+
+    case HeritageVoidElf:
+        if (player)
+            player->GetCollectionMgr()->AddTransmogSet(1524);
+        break;
     //case PremadeCharacter:
     //    break;
     //case RealmTransfer:
@@ -211,8 +398,103 @@ void BattlepayManager::ProcessDelivery(Purchase* purchase)
     //    break;
     //case CategoryExpansionTransfer:
     //    break;
-    //case CategoryGold:
-    //    break;
+    case Gold:
+    {
+        if (!player)
+            break;
+
+        if (!product->ScriptName.compare("battlepay_nethershard_1k"))
+        {
+            player->ModifyCurrency(1226, 1000);
+            break;
+        }
+        else if (!product->ScriptName.compare("battlepay_resources_1k"))
+        {
+            player->ModifyCurrency(1220, 1000);
+            break;
+        }
+        else if (!product->ScriptName.compare("battlepay_supplies_1k"))
+        {
+            player->ModifyCurrency(1342, 1000);
+            break;
+        }
+        else if (!product->ScriptName.compare("battlepay_badge_1k"))
+        {
+            player->ModifyCurrency(1166, 1000);
+            break;
+        }
+        else if (!product->ScriptName.compare("battlepay_garrison_200"))
+        {
+            player->ModifyCurrency(824, 200);
+            break;
+        }
+        else if (!product->ScriptName.compare("battlepay_crystal_5k"))
+        {
+            player->ModifyCurrency(823, 5000);
+            break;
+        }
+        else if (!product->ScriptName.compare("battlepay_timeless_5k"))
+        {
+            player->ModifyCurrency(777, 5000);
+            break;
+        }
+        else if (!product->ScriptName.compare("battlepay_argunite_2k"))
+        {
+            player->ModifyCurrency(1508, 2000);
+            break;
+        }
+        else if (!product->ScriptName.compare("battlepay_sightless_1k"))
+        {
+            player->ModifyCurrency(1149, 1000);
+            break;
+        }
+        else if (!product->ScriptName.compare("battlepay_echoes of battle_1k"))
+        {
+            player->ModifyCurrency(1356, 100);
+            break;
+        }
+        else if (!product->ScriptName.compare("battlepay_echoes of domination_1k"))
+        {
+            player->ModifyCurrency(1357, 100);
+            break;
+        }
+        else if (!product->ScriptName.compare("battlepay_essence_1k"))
+        {
+            player->ModifyCurrency(1533, 1000);
+            break;
+        }
+        else if (!product->ScriptName.compare("goblin_hunter"))
+        {
+            player->AddItem(3000203, 1);
+            break;
+        }
+        else if (!product->ScriptName.compare("goblin_warrior"))
+        {
+            player->AddItem(3000202, 1);
+            break;
+        }
+        else if (!product->ScriptName.compare("goblin_fist"))
+        {
+            player->AddItem(3000204, 1);
+            break;
+        }
+        else if (!product->ScriptName.compare("goblin_grit"))
+        {
+            player->AddItem(3000205, 1);
+            break;
+        }
+        else if (!product->ScriptName.compare("wod_pathfinder"))
+        {
+            player->learnSpell(191645, true);
+            break;
+        }
+        else if (!product->ScriptName.compare("legion_pathfinder"))
+        {
+            player->learnSpell(226342, true);
+            player->learnSpell(233368, true);
+            break;
+        }
+    }
     default:
         break;
     }
@@ -220,6 +502,22 @@ void BattlepayManager::ProcessDelivery(Purchase* purchase)
     if (!product->ScriptName.empty())
         sScriptMgr->OnBattlePayProductDelivery(_session, product);
 }
+
+auto GroupFilterForSession = [](uint32 groupId) -> bool
+    {
+        switch (groupId)
+        {
+        case ProductGroups::Mount:
+        case ProductGroups::Pets:
+        case ProductGroups::Services:
+        case ProductGroups::Boosts:
+        case ProductGroups::Heirlooms:
+            return true;
+        default:
+            return false;
+        }
+    };
+
 
 bool BattlepayManager::AlreadyOwnProduct(uint32 itemId) const
 {

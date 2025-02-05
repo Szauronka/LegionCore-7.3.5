@@ -439,6 +439,7 @@ public:
     std::set<uint32> const* GetItemsByBonusTree(uint32 itemBonusTreeMod) const;
     std::set<ItemBonusTreeNodeEntry const*> const* GetItemBonusSet(uint32 itemBonusTree) const;
     HeirloomEntry const* GetHeirloomByItemId(uint32 itemId) const;
+    HeirloomEntry const* FindHeirloom(uint32 itemId) const;
     bool IsToyItem(uint32 toy) const;
     uint32 GetXPForNextFollowerLevel(uint32 level, uint8 followerTypeID);
     uint32 GetXPForNextFollowerQuality(uint32 quality, uint8 followerTypeID);
