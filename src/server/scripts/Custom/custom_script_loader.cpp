@@ -16,7 +16,6 @@
  */
 
  // This is where scripts' loading functions should be declared:
-void AddSC_Loskutik();
 void AddSC_midsummer_fire_festival();
 void AddSC_GOMove_commandscript();
 void AddSC_darkmoon();
@@ -32,8 +31,7 @@ void AddSC_XP_Modifier();
 // void Add${NameOfDirectory}Scripts()
 void AddCustomScripts()
 {
-	AddSC_Loskutik();
-    AddSC_midsummer_fire_festival();
+	AddSC_midsummer_fire_festival();
     AddSC_GOMove_commandscript();
     AddSC_darkmoon();
     AddSC_BossKillReward();
