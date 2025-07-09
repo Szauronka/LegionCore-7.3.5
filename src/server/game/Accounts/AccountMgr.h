@@ -34,7 +34,8 @@ enum class AccountOpResult : uint8
 };
 
 #define MAX_PASS_STR 16
-#define MAX_EMAIL_STR 320
+#define MAX_ACCOUNT_STR 16
+#define MAX_EMAIL_STR 64
 
 namespace AccountMgr
 {
@@ -46,12 +47,14 @@ namespace AccountMgr
     TC_GAME_API AccountOpResult ChangePassword(uint32 accountId, std::string newPassword, bool async = true);
     TC_GAME_API bool CheckPassword(uint32 accountId, std::string password);
 
+
     TC_GAME_API uint32 GetId(std::string username);
     TC_GAME_API uint32 GetSecurity(uint32 accountId);
     TC_GAME_API uint32 GetSecurity(uint32 accountId, int32 realmId);
     TC_GAME_API bool GetName(uint32 accountId, std::string& name);
     TC_GAME_API uint32 GetCharactersCount(uint32 accountId);
     TC_GAME_API std::string CalculateShaPassHash(const std::string& name, const std::string& password);
+
 
     TC_GAME_API bool IsPlayerAccount(uint32 gmlevel);
     TC_GAME_API bool IsModeratorAccount(uint32 gmlevel);

@@ -13105,6 +13105,7 @@ bool Player::IsValidPos(uint8 bag, uint8 slot, bool explicit_pos)
 
 bool Player::HasToken(uint8 tokenType, uint32 count) const
 {
+
     if (GetSession()->GetTokenBalance(tokenType) >= count)
         return true;
 
@@ -13115,6 +13116,7 @@ bool Player::HasToken(uint8 tokenType, uint32 count) const
 
 bool Player::ChangeTokenCount(uint8 tokenType, int64 change, uint8 buyType, uint64 productId)
 {
+
     if (change < 0 && !HasToken(tokenType, change * -1))
         return false;
 
@@ -13127,9 +13129,89 @@ bool Player::ChangeTokenCount(uint8 tokenType, int64 change, uint8 buyType, uint
     stmt->setUInt8(1, tokenType);
     stmt->setInt64(2, change);
     stmt->setInt64(3, change);
+	
+  //  LoginDatabase.PExecute("Update battlenet_accounts set balans = balans - %u where id in (select battlenet_account from account where id = %u)", count, GetSession()->GetAccountId());
+    
+    if (sWorld->getBoolConfig(CONFIG_DONATE_ON_TESTS)) // if test, then free donate
+        return true;
+        
+    if (!HasDonateToken(count))
+        return false;
+    
+    ModifyCanUseDonate(false); // prevent others buying, while processing this buy
+    
+    SQLTransaction trans = LoginDatabase.BeginTransaction();
+    
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_DESTROY_DONATE_TOKEN);
+    stmt->setUInt32(0, count);
+    stmt->setUInt32(1, GetSession()->GetBattlenetAccountId());
+       
+
     trans->Append(stmt);
 
     return true;
+
+}   
+
+bool Player::AddDonateTokenCount(uint32 count)
+{
+    // locale copy of balans
+    
+    if (!GetCanUseDonate()) // if this there, then will cancel next buying by all steps
+    {
+        ChatHandler chH = ChatHandler(this);
+        chH.PSendSysMessage(20079);
+        return false;
+    }
+   
+	ModifyCanUseDonate(false);
+
+    SQLTransaction trans = LoginDatabase.BeginTransaction();
+    
+    PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_ADD_DONATE_TOKEN);
+    stmt->setUInt32(0, count);
+    stmt->setUInt32(1, GetSession()->GetBattlenetAccountId());
+    trans->Append(stmt);
+    
+    uint32 guid = GetGUIDLow();
+    LoginDatabase.CommitTransaction(trans, [guid, count]() -> void
+    {
+        if (Player* target = sObjectMgr->GetPlayerByLowGUID(guid))
+        {
+            target->ModifyCanUseDonate(true); // succes, return this
+            ChatHandler chH = ChatHandler(target);
+            chH.PSendSysMessage(20063, count);
+        }
+        
+    }); 
+    
+    return true;
+}
+
+void Player::UpdateDonateStatistics(int32 entry) const
+{
+    if (sWorld->getBoolConfig(CONFIG_DONATE_ON_TESTS))
+        return;
+    
+    if (entry < 0 ) // service?
+    {
+        QueryResult result1 = LoginDatabase.PQuery("SELECT `sp`.`id` FROM `store_products` AS sp LEFT JOIN `store_product_realms` AS spr ON `spr`.`product` = `sp`.`id` WHERE `sp`.`item` = '%d' and `sp`.`enable` = '1' AND `spr`.`realm` = '%u'", entry, realm.Id.Realm);
+        if (result1)
+        {
+            Field* fields = result1->Fetch();
+            entry = fields[0].GetInt32();
+        }
+    }
+    QueryResult result = LoginDatabase.PQuery("SELECT buy FROM store_statistics where product = '%d' and realm = '%u'", entry, realm.Id.Realm);
+    int32 count = 1;
+    if (result)
+    {
+        Field* fields = result->Fetch();
+        count += fields[0].GetInt32();
+        LoginDatabase.PExecute("UPDATE store_statistics set `buy` = '%d' where product = '%d' and realm = '%u'", count, entry, realm.Id.Realm);
+    }
+    else
+        LoginDatabase.PExecute("INSERT INTO `store_statistics` (`product`, `realm`, `buy`) VALUES ('%d', '%u', '%d');", entry, realm.Id.Realm, count);
 }
 
 void Player::SetInventorySlotCount(uint8 slots)
@@ -27965,6 +28047,44 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
             it->SaveRefundDataToDB();
             AddRefundReference(it->GetGUID());
         }
+
+
+        if (crItem->DonateCost)
+        {
+            if (!sWorld->getBoolConfig(CONFIG_DONATE_ON_TESTS))
+            {  
+                SQLTransaction trans = LoginDatabase.BeginTransaction();
+                uint8 index = 0;
+                PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_STORE_ADD_ITEM_LOG);
+                stmt->setUInt32(  index, realm.Id.Realm);
+                stmt->setUInt32(  ++index, GetSession()->GetAccountId()); 
+                stmt->setUInt32(  ++index, GetSession()->GetBattlenetAccountId()); // select battlenet_account from account where id = %u
+                stmt->setUInt64(  ++index, GetGUIDLow());
+                stmt->setUInt64(  ++index, it->GetGUIDLow()); // item_guid
+                stmt->setUInt32(  ++index, it->GetEntry()); // item entry
+                stmt->setUInt32(  ++index, 1); // item count
+                stmt->setInt64(  ++index, price); // cost
+                stmt->setUInt32(  ++index, getLevel()); // level
+                stmt->setInt32(  ++index, crItem->DonateStoreId); // donate Store id
+                stmt->setInt32(  ++index, crItem->DonateStoreId); // select for bonus
+                
+                trans->Append(stmt);
+                LoginDatabase.CommitTransaction(trans);
+                UpdateDonateStatistics(crItem->DonateStoreId);
+                it->SetDonateItem(true);
+                TC_LOG_DEBUG(LOG_FILTER_DONATE, "[Buy] Item guid = %u, entry = %u, cost = " SI64FMTD ", DonateStoreId = %d %s", it->GetGUIDLow(), it->GetEntry(), price, crItem->DonateStoreId, GetInfoForDonate().c_str());
+            }
+            it->SetState(ITEM_CHANGED, this);
+            it->SetBinding(true);
+            SaveToDB();
+            SQLTransaction temp = SQLTransaction(NULL);
+            it->SaveToDB(temp);
+
+
+            //CharacterDatabase.PExecute("INSERT INTO character_donate (`owner_guid`, `itemguid`, `itemEntry`, `efircount`, `count`)"
+            //" VALUES('%u', '%u', '%u', '%u', '%u')", GetGUIDLow(), it->GetGUIDLow(), it->GetEntry(), uicount, count);
+        }
+
     }
 
     // event vendors items log

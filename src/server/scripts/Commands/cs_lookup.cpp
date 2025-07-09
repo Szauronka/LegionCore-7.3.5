@@ -41,7 +41,7 @@ public:
         static std::vector<ChatCommand> lookupPlayerCommandTable =
         {
             { "ip",             SEC_GAMEMASTER,     true,  &HandleLookupPlayerIpCommand,        ""},
-            { "account",        SEC_GAMEMASTER,     true,  &HandleLookupPlayerEmailCommand,     ""},
+            { "account",        SEC_GAMEMASTER,     true,  &HandleLookupPlayerAccountCommand,   ""},
             { "email",          SEC_GAMEMASTER,     true,  &HandleLookupPlayerEmailCommand,     ""}
         };
         static std::vector<ChatCommand> lookupCommandTable =
@@ -1150,6 +1150,31 @@ public:
         return true;
     }
 
+    static bool HandleLookupPlayerAccountCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        std::string account = strtok((char*)args, " ");
+        char* limitStr = strtok(NULL, " ");
+        int32 limit = limitStr ? atoi(limitStr) : -1;
+
+        if (!Utf8ToUpperOnlyLatin(account))
+            return false;
+
+        PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_LIST_BY_NAME);
+        stmt->setString(0, account);
+
+        uint32 accountId = handler->GetSession()->GetAccountId();
+        LoginDatabase.CallBackQuery(stmt, [accountId, limit](PreparedQueryResult result) -> void
+        {
+            if (WorldSessionPtr sess = sWorld->FindSession(accountId))
+                sess->LookupPlayerSearchCommand(result, limit);
+        });
+
+        return true;
+    }
+
     static bool HandleLookupPlayerEmailCommand(ChatHandler* handler, char const* args)
     {
         if (!*args)
@@ -1159,8 +1184,9 @@ public:
         char* limitStr = strtok(NULL, " ");
         int32 limit = limitStr ? atoi(limitStr) : -1;
 
+
         // the account name and email address are the same since the switch to bnet accounts
-        LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_LIST_BY_NAME);
+        LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_LIST_BY_EMAIL);
         stmt->setString(0, email);
         PreparedQueryResult result = LoginDatabase.Query(stmt);
 

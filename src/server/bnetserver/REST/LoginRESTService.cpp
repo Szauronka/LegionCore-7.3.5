@@ -288,9 +288,32 @@ int32 LoginRESTService::HandlePost(soap* soapClient)
     Utf8ToUpperOnlyLatin(login);
     Utf8ToUpperOnlyLatin(password);
     
-    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_BNET_ACCOUNT_INFO);
-    stmt->setString(0, login);
 
+    LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_BNET_ACCOUNT_EMAIL_BY_ACC));
+
+    if (sConfigMgr->GetBoolDefault("Login.with.account", false))
+    {
+        const char* c_login = login.c_str();
+        if (c_login)
+        {
+
+            char* sobaka = strchr((char*)c_login, '@');
+            if (sobaka == NULL) // not email
+            {
+                stmt->setString(0, login);
+                if (PreparedQueryResult result = LoginDatabase.Query(stmt)) // select email for auth process
+                {
+                    Field* field = result->Fetch();
+                    login = field[0].GetString();
+                    Utf8ToUpperOnlyLatin(login);
+                }
+            }
+
+        }
+    }
+    stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_BNET_ACCOUNT_INFO);
+
+    stmt->setString(0, login);
     std::string sentPasswordHash = CalculateShaPassHash(login, password);
 
     std::shared_ptr<AsyncLoginRequest> request = std::make_shared<AsyncLoginRequest>(*reinterpret_cast<std::shared_ptr<soap>*>(soapClient->user));
@@ -325,11 +348,21 @@ int32 LoginRESTService::HandlePost(soap* soapClient)
          .WithChainingPreparedCallback([request](QueryCallback& callback, PreparedQueryResult characterCountsResult)
     {
         if (characterCountsResult)
+        
+	    stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_BNET_CHARACTER_COUNTS_BY_BNET_ID);
+        stmt->setUInt32(0, accountInfo->Id);
+        if (PreparedQueryResult characterCountsResult = LoginDatabase.Query(stmt))
+
         {
             do
             {
                 Field* fields = characterCountsResult->Fetch();
+
                 request->GetResult()->CharacterCounts[Battlenet::RealmHandle{ fields[3].GetUInt8(), fields[4].GetUInt8(), fields[2].GetUInt32() }.GetAddress()] = fields[1].GetUInt8();
+
+                accountInfo->GameAccounts[fields[0].GetUInt32()]
+                    .CharacterCounts[Battlenet::RealmHandle{ fields[3].GetUInt8(), fields[4].GetUInt8(), fields[2].GetUInt32() }.GetAddress()] = fields[1].GetUInt8();
+
             } while (characterCountsResult->NextRow());
         }
 
@@ -341,11 +374,17 @@ int32 LoginRESTService::HandlePost(soap* soapClient)
     {
         if (lastPlayerCharactersResult)
         {
+
             do
             {
                 Field* fields = lastPlayerCharactersResult->Fetch();
                 Battlenet::RealmHandle realmId{ fields[1].GetUInt8(), fields[2].GetUInt8(), fields[3].GetUInt32() };
                 Battlenet::Session::LastPlayedCharacterInfo& lastPlayedCharacter = request->GetResult()->LastPlayedCharacters[realmId.GetSubRegionAddress()];
+
+            Field* fields = lastPlayerCharactersResult->Fetch();
+            Battlenet::RealmHandle realmId{ fields[1].GetUInt8(), fields[2].GetUInt8(), fields[3].GetUInt32() };
+            Battlenet::Session::LastPlayedCharacterInfo& lastPlayedCharacter = accountInfo->GameAccounts[fields[0].GetUInt32()]
+                .LastPlayedCharacters[realmId.GetSubRegionAddress()];
 
                 lastPlayedCharacter.RealmId = realmId;
                 lastPlayedCharacter.CharacterName = fields[4].GetString();

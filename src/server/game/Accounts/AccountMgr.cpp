@@ -24,24 +24,21 @@
 #endif
 #include "Util.h"
 #include "SHA1.h"
-#include "SHA256.h"
 
 namespace AccountMgr
 {
 
 AccountOpResult CreateAccount(std::string username, std::string password, bool async)
 {
-    if (utf8length(username) > MAX_EMAIL_STR)
+    if (utf8length(username) > MAX_ACCOUNT_STR)
         return AccountOpResult::AOR_NAME_TOO_LONG;          // username's too long
-
-    if (utf8length(password) > MAX_PASS_STR)
-        return AccountOpResult::AOR_PASS_TOO_LONG;
 
     Utf8ToUpperOnlyLatin(username);
     Utf8ToUpperOnlyLatin(password);
 
     if (GetId(username))
         return AccountOpResult::AOR_NAME_ALREADY_EXIST;     // username does already exist
+
 
     LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_ACCOUNT);
     stmt->setString(0, username);
@@ -51,6 +48,11 @@ AccountOpResult CreateAccount(std::string username, std::string password, bool a
         LoginDatabase.Execute(stmt);
     else
         LoginDatabase.DirectExecute(stmt);
+
+
+    //stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_REALM_CHARACTERS_INIT);
+
+    //LoginDatabase.Execute(stmt);
 
     return AccountOpResult::AOR_OK;                         // everything's fine
 }
@@ -138,10 +140,10 @@ AccountOpResult ChangeUsername(uint32 accountId, std::string newUsername, std::s
     if (!result)
         return AccountOpResult::AOR_NAME_NOT_EXIST;
 
-    if (utf8length(newUsername) > MAX_EMAIL_STR)
+    if (utf8length(newUsername) > MAX_ACCOUNT_STR)
         return AccountOpResult::AOR_NAME_TOO_LONG;
 
-    if (utf8length(newPassword) > MAX_PASS_STR)
+    if (utf8length(newPassword) > MAX_ACCOUNT_STR)
         return AccountOpResult::AOR_PASS_TOO_LONG;
 
     Utf8ToUpperOnlyLatin(newUsername);
@@ -168,7 +170,7 @@ AccountOpResult ChangePassword(uint32 accountId, std::string newPassword, bool a
     if (!GetName(accountId, username))
         return AccountOpResult::AOR_NAME_NOT_EXIST;     // account doesn't exist
 
-    if (utf8length(newPassword) > MAX_PASS_STR)
+    if (utf8length(newPassword) > MAX_ACCOUNT_STR)
         return AccountOpResult::AOR_PASS_TOO_LONG;
 
     Utf8ToUpperOnlyLatin(username);
@@ -258,19 +260,16 @@ uint32 GetCharactersCount(uint32 accountId)
     return result ? (*result)[0].GetUInt64() : 0;
 }
 
-std::string CalculateShaPassHash(const std::string& name, const std::string& password)
+std::string CalculateShaPassHash(std::string& name, std::string& password)
 {
-    SHA256Hash email;
-    email.UpdateData(name);
-    email.Finalize();
-
-    SHA256Hash sha;
-    sha.UpdateData(ByteArrayToHexStr(email.GetDigest(), email.GetLength()));
+    SHA1Hash sha;
+    sha.Initialize();
+    sha.UpdateData(name);
     sha.UpdateData(":");
     sha.UpdateData(password);
     sha.Finalize();
 
-    return ByteArrayToHexStr(sha.GetDigest(), sha.GetLength(), true);
+    return ByteArrayToHexStr(sha.GetDigest(), sha.GetLength());
 }
 
 bool IsPlayerAccount(uint32 gmlevel)

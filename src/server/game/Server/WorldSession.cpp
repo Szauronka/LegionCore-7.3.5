@@ -73,10 +73,10 @@ void WorldPackets::Null::Read()
     _worldPacket.rfinish();
 }
 
-WorldSession::WorldSession(uint32 id, std::string&& name, const std::shared_ptr<WorldSocket>& sock, AccountTypes sec, uint8 expansion, time_t mute_time, std::string os, LocaleConstant locale, uint32 recruiter, bool isARecruiter, AuthFlags flag, std::unordered_map<uint8, int64>&& accountTokenMap):
-m_muteTime(mute_time), m_timeOutTime(0), _countPenaltiesHwid(0), _player(nullptr), m_map(nullptr), _security(sec), _accountId(id), m_expansion(expansion), m_accountExpansion(expansion), _logoutTime(0), m_inQueue(false), m_playerLogout(false), m_playerRecentlyLogout(false),
-m_playerSave(false), m_sessionDbLocaleIndex(locale), m_latency(0), _tutorialsChanged(TUTORIALS_FLAG_NONE), recruiterId(recruiter), isRecruiter(isARecruiter), playerLoginCounter(0), forceExit(false), m_sUpdate(false), wardenModuleFailed(false), atAuthFlag(flag), canLogout(false),
-tokens(accountTokenMap)
+
+WorldSession::WorldSession(uint32 id, std::string&& name, uint32 battlenetAccountId, const std::shared_ptr<WorldSocket>& sock, AccountTypes sec, uint8 expansion, time_t mute_time, std::string os, LocaleConstant locale, uint32 recruiter, bool isARecruiter, AuthFlags flag):
+m_muteTime(mute_time), m_timeOutTime(0), _countPenaltiesHwid(0), _player(nullptr), m_map(nullptr), _security(sec), _accountId(id), _battlenetAccountId(battlenetAccountId), m_expansion(expansion), m_accountExpansion(expansion), _logoutTime(0), m_inQueue(false), m_playerLogout(false), m_playerRecentlyLogout(false),
+m_playerSave(false), m_sessionDbLocaleIndex(locale), m_latency(0), _tutorialsChanged(false), recruiterId(recruiter), isRecruiter(isARecruiter), timeCharEnumOpcode(0), playerLoginCounter(0), forceExit(false), m_sUpdate(false), wardenModuleFailed(false), atAuthFlag(flag), canLogout(false)
 {
     _os = std::move(os);
     _accountName = std::move(name);
@@ -108,7 +108,7 @@ tokens(accountTokenMap)
     m_IsPetBattleJournalLocked = false;
     
     // Personal Rate
-    QueryResult result = LoginDatabase.PQuery("SELECT rate from `account_rates` where realm = %u and account = %u", sWorld->GetRealmId(), GetAccountId());
+    QueryResult result = LoginDatabase.PQuery("SELECT rate from `account_rates` where realm = %u and account = %u and bnet_account = %u", sWorld->GetRealmId(), GetAccountId(), GetBattlenetAccountId());
     
     if (result)
     {
@@ -1051,7 +1051,7 @@ ObjectGuid WorldSession::GetAccountGUID() const
 
 ObjectGuid  WorldSession::GetBattlenetAccountGUID() const
 {
-    return ObjectGuid::Create<HighGuid::BNetAccount>(GetAccountId());
+    return ObjectGuid::Create<HighGuid::BNetAccount>(GetBattlenetAccountId());
 }
 
 class AccountInfoQueryHolderPerRealm : public CharacterDatabaseQueryHolder
@@ -1071,7 +1071,7 @@ public:
         SetSize(MAX_QUERIES);
     }
 
-    bool Initialize(uint32 accountId)
+    bool Initialize(uint32 accountId, uint32 /*battlenetAccountId*/)
     {
         bool ok = true;
 
@@ -1107,7 +1107,7 @@ public:
         SetSize(MAX_QUERIES);
     }
 
-    bool Initialize(uint32 accountId, uint32 _realmID)
+    bool Initialize(uint32 accountId, uint32 /*battlenetAccountId*/, uint32 _realmID)
     {
         bool ok = true;
 
@@ -1126,15 +1126,17 @@ public:
 
 void WorldSession::InitializeSession()
 {
-    std::shared_ptr<AccountInfoQueryHolderPerRealm> realmHolder = std::make_shared<AccountInfoQueryHolderPerRealm>();
-    if (!realmHolder->Initialize(GetAccountId()))
-    {
+
+    auto realmHolder = new AccountInfoQueryHolderPerRealm();
+    if (!realmHolder->Initialize(GetAccountId(), GetBattlenetAccountId()))
+	{
         SendAuthResponse(ERROR_INTERNAL, false);
         return;
     }
 
-    std::shared_ptr<AccountInfoQueryHolder> holder = std::make_shared<AccountInfoQueryHolder>();
-    if (!holder->Initialize(GetAccountId(), _realmID))
+
+    auto holder = new AccountInfoQueryHolder();
+    if (!holder->Initialize(GetAccountId(), GetBattlenetAccountId(), _realmID))
     {
         SendAuthResponse(ERROR_INTERNAL, false);
         return;
@@ -1209,9 +1211,9 @@ void WorldSession::InitializeSessionCallback(LoginDatabaseQueryHolder const& hol
 void WorldSession::SetPersonalXPRate(float rate)
 {
     if (!rate)
-        LoginDatabase.PExecute("delete from `account_rates` where realm = %u and account = %u", sWorld->GetRealmId(), GetAccountId());
+        LoginDatabase.PExecute("delete from `account_rates` where realm = %u and account = %u and bnet_account = %u", sWorld->GetRealmId(), GetAccountId(), GetBattlenetAccountId());
     else
-        LoginDatabase.PExecute("REPLACE INTO `account_rates` (`account`, `realm`, `rate`) VALUES ('%u', '%u', '%f');", GetAccountId(), sWorld->GetRealmId(), rate);
+        LoginDatabase.PExecute("REPLACE INTO `account_rates` (`account`, `bnet_account`, `realm`, `rate`) VALUES ('%u', '%u', '%u', '%f');", GetAccountId(), GetBattlenetAccountId(), sWorld->GetRealmId(), rate);
     
     PersonalXPRate = rate;
 }
